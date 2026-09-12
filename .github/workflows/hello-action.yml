@@ -11,18 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1：最簡單的輸出，確認 Runner 已經開始工作。
+      # Step 1：確認 Runner 已經開始工作。
       - name: Say hello to Claire
         run: echo "Hello Claire"
 
-      # Step 2：做一個明確可驗證的小運算。
-      - name: Calculate 9 x 9
-        run: echo "9 x 9 = $((9 * 9))"
+      # Step 2：由 Runner 在執行當下產生驗證碼。
+      # Claire 與 AI 事前都不知道結果，用來驗證 AI 能否自行讀取 Action Log。
+      - name: Generate runtime verification code
+        run: |
+          code=$(shuf -i 100000-999999 -n 1)
+          echo "Verification code: $code"
 
       # Step 3：顯示這次臨時 Runner 的基本環境資訊。
       - name: Show runner information
         run: |
           echo "Runner OS: $RUNNER_OS"
           echo "Runner architecture: $RUNNER_ARCH"
-          echo "Working directory: $(pwd)"
+          echo "Runner name: $RUNNER_NAME"
           echo "Current UTC time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
