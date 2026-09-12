@@ -15,28 +15,33 @@
 - Evidence Index：`evidence/index.md`
 - Artifact：`experiments/auth/index.html`
 
-### B. Supabase Data API — CRUD / Application Access — In Progress
+### B. Supabase Data API — CRUD / Application Access — Completed / Verified
 
 目的：驗證 Supabase 自動提供的 Native CRUD / Data API 是否可作為 Browser Data Access baseline，並實際驗證 Nook Works Application Access Boundary。
 
-目前範圍：
-- 由 Browser 直接呼叫 Supabase Native Data API。
-- 使用語意中立的 `test_k7m4x2` 與 AI 製造的 Test Data。
-- 驗證 SELECT / INSERT / UPDATE / DELETE。
-- INSERT 的 PK 由 Database Identity 自動產生，不由 UI 輸入。
-- Grid 顯示 SELECT 結果，可由 Grid 選取資料進行 UPDATE / DELETE。
-- 使用 PostgreSQL Grant + RLS + `private.can_access_application()` 控制 CRUD。
-- 驗證四種 Identity / Application Access 狀態：
-  - Anonymous：無 Supabase Auth Session。
-  - TU02：有 Auth Identity，但沒有 `app_user`。
-  - TU01：有 Auth Identity、有 `app_user`，但 `is_active = false`。
-  - Claire：有 Auth Identity、有 active `app_user`。
-- Public Playground 不顯示完整 Auth User ID、Token、Session，也不把臨時 Test Identity 寫入正式 Seed。
+結果：已於 2026-09-12 由 Claire 在 iPad Safari 完成 Browser Evidence。
 
-目前狀態：
-- `test_k7m4x2` 已具備 identity PK、測試資料、authenticated CRUD grant 與四個 RLS policies。
-- 四個 RLS policies 均透過 `private.can_access_application()` 判斷 Application Access。
-- Experiment B Browser Artifact 已建立於 `experiments/data-api/index.html`，等待 iPad Safari 實際驗證。
+已驗證：
+- Claire active `app_user` 可透過 Browser Native Data API 完成 SELECT / INSERT / UPDATE / DELETE。
+- TU01 有 Auth + inactive `app_user`，無 Application Data Access。
+- TU02 有 Auth + no `app_user`，無 Application Data Access。
+- Authentication Success 不等於 Application Access。
+- RLS 對 SELECT / INSERT / UPDATE / DELETE 的 observable response semantics 不完全相同。
+- `error = null` 不等於 Business Operation Success；UPDATE / DELETE 空結果不能單靠 response 區分 target 不存在與不可見。
+- Anonymous INSERT 可在 table privilege layer 直接被拒絕；authenticated Identity 則可進一步由 RLS 判斷。
+- INSERT PK 由 Database Identity 自動產生，UI 不輸入 OID。
+
+Experiment Limitation：
+- Probe UPDATE / DELETE 使用不存在 OID，未直接驗證「existing row 被 RLS 擋」的可區分 response。
+- Anonymous 未逐項完成完整 CRUD response matrix。
+
+Playground Experience：
+- API Result / JSON Evidence 應提供 Copy Result，方便 Claire 從 iPad Browser 將結構化 Evidence 帶回 AI 分析。
+- Evidence UI 應兼顧可觀察與可搬運，不只把 debug output 丟進 `<pre>` 就假裝人類手指不存在。
+
+- Evidence Record：`experiments/data-api/README.md`
+- Evidence Index：`evidence/index.md`
+- Artifact：`experiments/data-api/index.html`
 
 ### C. Supabase Custom API — Read Test Data
 
@@ -61,14 +66,15 @@
 
 ## 後續比較
 
-A 已完成並取得 Authentication 實際 Evidence。
+A 已完成 Authentication baseline；B 已完成 Native Data API CRUD / Application Access baseline。
 
-B 先建立 Native Data API CRUD 與 Application Access baseline；C、D 再以相同 Test Object 延伸 Custom API / RPC 實驗，避免 Business Logic 與正式 Business Semantic 污染 Technical Mechanism 的比較。
+C、D 再以相同 Test Object 延伸 Custom API / RPC 實驗，避免 Business Logic 與正式 Business Semantic 污染 Technical Mechanism 的比較。
 
-B、C、D 完成後，再依實際 Evidence 討論：
-- Supabase Data API 適合負責什麼。
-- Custom API 適合負責什麼。
-- RPC 適合負責什麼。
+B 的結果已提醒後續比較不能只問「能不能讀寫資料」，還要比較：
+- Business Result semantics 是否清楚。
+- Authorization failure / Not Found / affected rows 是否可被 Application 正確判讀。
+- Business Validation 與 Transaction 應由哪一層負責。
+- Native Data API、Custom API、RPC 各自適合負責什麼。
 - RPC vs Custom API 是否需要二選一，或應形成不同適用情境的 Platform Rule。
 
 目前不預設結論，也不把實驗結果直接視為 Production Architecture。
