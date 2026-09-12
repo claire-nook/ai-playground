@@ -1,0 +1,46 @@
+name: Delete Hello Action
+
+# Experiment C-0 cleanup path.
+# Claire starts this workflow manually from GitHub Actions.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  delete-hello-action:
+    runs-on: ubuntu-latest
+
+    env:
+      # Project Ref is public project metadata, not a secret.
+      SUPABASE_PROJECT_REF: cctonymfrxneonxryqei
+      # Access Token must exist only in GitHub Actions Secrets.
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      # Step 1: checkout the repository so the run is tied to a known commit.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: install the Supabase CLI on the temporary GitHub-hosted Runner.
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Step 3: confirm the CLI exists without printing any credential.
+      - name: Show Supabase CLI version
+        run: supabase --version
+
+      # Step 4: delete only the deployed C-0 hello-action function from Nook Core.
+      # This does not delete the source file from this repository.
+      - name: Delete hello-action
+        run: |
+          supabase functions delete hello-action \
+            --project-ref "$SUPABASE_PROJECT_REF"
+
+      # Step 5: leave an explicit cleanup marker in the run log.
+      - name: Show cleanup result
+        run: |
+          echo "Requested deletion of hello-action from project ${SUPABASE_PROJECT_REF}."
