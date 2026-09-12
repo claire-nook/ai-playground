@@ -43,26 +43,38 @@ Playground Experience：
 - Evidence Index：`evidence/index.md`
 - Artifact：`experiments/data-api/index.html`
 
-### B-1. Supabase Data API — View Read / Security — In Progress
+### B-1. Supabase Data API — View Read / Security — Completed / Verified
 
 目的：延伸 B 的 Native Data API baseline，但保持 B Artifact 封箱不修改；專門驗證 PostgreSQL View 作為 Read Model 的 Data API 與 Security 行為。
 
-目前範圍：
-- `test_k7m4x2` 額外加入語意中立 linkage `oid_ooxx`。
-- 建立 `test_vw_r8n3q5`，join `app_user` 並輸出 `app_user_name AS happy_name`。
-- View 明確使用 `security_invoker = true`。
-- `authenticated` 僅授予 View SELECT；不測 View C/U/D。
-- Browser 驗證 Claire / TU01 / TU02 / Anonymous 的 View SELECT observable result。
-- 驗證 View alias / join 是否能形成不直接等同 Physical Table Column 的 Read Contract。
-- Artifact 內提供 Copy Result，方便 iPad 將結構化 Evidence 帶回 AI。
+結果：已於 2026-09-12 由 Claire 在 iPad Safari 完成 Claire / TU01 / TU02 / Anonymous Browser Evidence。
 
-目前狀態：
-- Database test object / View 已完成。
-- Direct DB inspection 已確認 View join / alias 與 `security_invoker=true` 設定。
-- Browser Artifact 已建立，等待 Claire iPad Safari Evidence。
-- Direct privileged DB query 不視為 Browser RLS Evidence。
+已驗證：
+- `test_vw_r8n3q5` 可由 Supabase Native Data API 直接 SELECT。
+- View 可 join `test_k7m4x2` + `app_user`，並輸出 `app_user_name AS happy_name`。
+- `security_invoker = true` 在本次實驗中保留 invoking identity 的 underlying Base Table privilege / RLS security behavior。
+- Claire active `app_user`：View SELECT success，3 rows。
+- TU01 inactive `app_user`：technical success，0 rows。
+- TU02 no `app_user`：technical success，0 rows。
+- Anonymous：View privilege layer 直接 `42501 permission denied`。
+- View privilege 與 Base Table RLS / Application Access 是可觀察到的不同 security boundaries。
+- View join / alias 可形成不直接等於 Physical Table Schema 的 Browser Read Contract。
 
-- Experiment Record：`experiments/data-api-view/README.md`
+Experiment Limitation：
+- 只測 View SELECT，不評估 View C/U/D。
+- 不把單一實驗推廣成「所有 View 自動安全」；未來仍需 review `security_invoker`、View privilege、underlying grants、RLS 與 exposed columns。
+
+Platform Candidate：
+
+```text
+Write Model → Base Table
+Read Model  → Table or security-reviewed View → Native Data API
+```
+
+此 Candidate 仍需後續 C / D 的 Custom API / RPC Evidence 一起比較，才適合形成 Technical Platform Rule。
+
+- Evidence Record：`experiments/data-api-view/README.md`
+- Evidence Index：`evidence/index.md`
 - Artifact：`experiments/data-api-view/index.html`
 
 ### C. Supabase Custom API — Read Test Data
@@ -88,7 +100,7 @@ Playground Experience：
 
 ## 後續比較
 
-A 已完成 Authentication baseline；B 已完成 Native Data API CRUD / Application Access baseline；B-1 正在補 View Read / Security Evidence。
+A 已完成 Authentication baseline；B 已完成 Native Data API CRUD / Application Access baseline；B-1 已完成 View Read / Security / Read Model baseline。
 
 C、D 再以相同 Test Object 延伸 Custom API / RPC 實驗，避免 Business Logic 與正式 Business Semantic 污染 Technical Mechanism 的比較。
 
