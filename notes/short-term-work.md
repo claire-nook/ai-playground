@@ -3,6 +3,32 @@
 > 無交期。依 Claire 有空研究的時間逐項進行。
 > 這不是正式開發排程，也不是 Nook Works Specification；只是 Playground 的近期實驗清單，避免跨對話後遺失上下文。
 
+## Playground Execution Capability
+
+### GitHub Actions Remote Execution — Completed / Verified
+
+2026-09-12 已完成 GitHub Actions Remote Execution Environment 實驗。
+
+這項結果不只服務後續 Supabase deployment。Playground 已實證 GitHub Actions 可以作為 AI 可使用的外部 Remote Execution Environment：
+
+```text
+AI modifies Repo
+→ commit to controlled path
+→ push trigger
+→ GitHub-hosted Runner executes
+→ AI independently reads Run / Job / Log
+→ AI obtains runtime result
+```
+
+同時已驗證 Manual Approval Mode：Claire 可由 iPad Safari 手動啟動 `workflow_dispatch`，AI 負責後續 Run / Job / Log retrieval 與分析。
+
+未來 AI 若在自身 sandbox 缺少 Linux / CLI / runtime / build / CI-CD execution context，先查 `experiments/github-actions/README.md`，不要重新從零猜 GitHub Actions 能不能用。正式或高影響操作仍應依風險保留適當 Human Approval Gate。
+
+- Evidence Record：`experiments/github-actions/README.md`
+- Evidence Index：`evidence/index.md`
+- Manual Workflow：`.github/workflows/hello-action.yml`
+- Autonomous Push Workflow：`.github/workflows/push-playground.yml`
+
 ## Login / API Platform Experiments
 
 ### A. Supabase Auth — Completed / Verified
