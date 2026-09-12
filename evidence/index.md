@@ -111,3 +111,86 @@ Browser Evidence 必須容易回傳給 AI。後續 Playground Artifact 若顯示
 Experiment B 建立了 Native Data API 的 Internal Application Data Access baseline，也證明 `auth.users` Authentication Identity 與 `app_user` Application Business Identity 可以透過 RLS / Application Access Function 分層。
 
 此 Evidence 不代表所有 Nook Works Business Function 都應直接使用 Native CRUD。後續 Custom API / RPC Experiment 應以 B 作為 mechanism comparison baseline，再依 Business Contract、Authorization Complexity、Transaction 與 Result Semantics 決定責任分層。
+
+---
+
+## Supabase Native Data API / View Read / Security Invoker
+
+- Experiment: B-1 — Supabase Native Data API View Read / Security
+- Date: 2026-09-12
+- Status: Completed / Verified
+- Topics: Data API, PostgreSQL View, Read Model, Join, Alias, security_invoker, RLS, PostgreSQL Grant, Application Access, Supabase, Browser, iPadOS
+- Record: `experiments/data-api-view/README.md`
+- Artifact: `experiments/data-api-view/index.html`
+
+### Question
+
+PostgreSQL View 是否可以透過 Supabase Native Data API 作為 Browser Read Model，使用 join / alias 重塑 Read Contract，同時在 `security_invoker = true` 下保留 invoking identity 對 underlying tables 的 privilege / RLS security semantics？
+
+### Result
+
+**YES，在本次實驗條件下已由 iPad Safari Browser Evidence 驗證。**
+
+### Key Evidence
+
+- Claire（authenticated + active `app_user`）：View SELECT 成功，回傳 3 rows。
+- View join `test_k7m4x2` + `app_user` 成功，並將 `app_user_name` 以 `happy_name` 回傳。
+- TU01（authenticated + inactive `app_user`）：View SELECT technical success，`count = 0`、`rows = []`。
+- TU02（authenticated + no `app_user`）：View SELECT technical success，`count = 0`、`rows = []`。
+- Anonymous：在 View privilege layer 得到 `42501 permission denied for view test_vw_r8n3q5`。
+- 實驗結果清楚區分 View privilege boundary 與 underlying Base Table RLS / Application Access boundary。
+
+### Security Observation
+
+本次 observable path：
+
+```text
+Anonymous
+→ View privilege DENY
+→ 42501
+
+Authenticated but no Application Access
+→ View privilege ALLOW
+→ security_invoker View
+→ Base Table RLS / Application Access
+→ success + 0 rows
+
+Authenticated + active Application Access
+→ View privilege ALLOW
+→ security_invoker View
+→ Base Table RLS ALLOW
+→ rows returned
+```
+
+Claire 可讀到 joined `happy_name = TU01`，即使 TU01 本身 inactive。這符合目前 `can_access_application()` 的設計：它判斷 invoking user 是否有 Application Access，不是依 target `app_user` row 的 active state 做資料過濾。
+
+### Read Model Evidence
+
+View 可讓 Data API Response 不直接等於 Physical Table Schema：
+
+```text
+Physical Tables
+→ View join / alias
+→ Read Model
+→ Native Data API
+→ Browser
+```
+
+因此，單純為了 join、display name、alias 或 read-oriented shape，不一定需要先建立 Custom API；View + Native Data API 已具有可行性 Evidence。
+
+### Important Constraints
+
+- B-1 只驗證 SELECT，不評估 View C/U/D。
+- 此結果不代表所有 View 自動安全；每張 View 仍需審查 `security_invoker`、View privilege、underlying table grants、RLS 與 exposed columns。
+- Read 若帶有 Business Operation Semantics、Business Validation、Transaction 或明確 Result Contract，仍需與 Custom API / RPC 比較責任歸屬。
+
+### Platform Relevance
+
+B-1 支持以下候選方向進入後續 Technical Platform 討論：
+
+```text
+Write Model → Base Table
+Read Model  → Table or security-reviewed View → Native Data API
+```
+
+這仍是 Evidence，不是 Production Platform Rule。後續 C / D 應繼續比較 Custom API / RPC 在 Business Semantics 與責任邊界上的價值。
