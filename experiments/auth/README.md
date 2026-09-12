@@ -3,6 +3,9 @@
 - Date: 2026-09-12
 - Status: Completed / Verified
 - Topics: Authentication, Session, Supabase Auth, Browser, Netlify, iPadOS
+- Tags: `nook-platform`, `ipad-first`, `authentication`, `session`, `supabase`, `netlify`, `browser`
+- Supports: [`Nook Technical Platform Research`](../../knowledge/maps/nook-technical-platform.md) / Browser Authentication
+- Also relevant to: [`Open Exploration`](../../knowledge/open-exploration.md) / iPad-first Development
 
 ## Question
 
