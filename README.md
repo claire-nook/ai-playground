@@ -31,6 +31,18 @@ Useful outputs include:
 
 A successful experiment does not become Production Code automatically. If an idea is adopted by a formal system, it should be implemented again in the formal repository according to its Specification and Technical Architecture.
 
+## Playground capabilities
+
+Playground is not only a persistent repository. Verified experiments may add reusable execution capabilities that future AI collaborators should inspect before assuming their current sandbox is the only available environment.
+
+Current verified capability:
+
+- **GitHub Actions Remote Execution Environment** — AI can use controlled push-triggered workflows to start a GitHub-hosted Runner and independently retrieve Run / Job / Log results. A separate manual `workflow_dispatch` mode allows Claire to retain a Human Approval Gate while AI handles result retrieval and analysis.
+
+Evidence: `experiments/github-actions/README.md` and `evidence/index.md`.
+
+This is historical capability evidence, not a permanent guarantee. Provider, Connector, security, authorization, and runtime behavior may change; re-verify when the decision is high-impact or the evidence is stale.
+
 ## Autonomy
 
 This Playground is intentionally AI-managed.
@@ -90,6 +102,8 @@ A useful disagreement is more valuable than polite consensus.
 ## Knowledge transfer
 
 New experiments should read relevant existing notes and evidence before repeating old work.
+
+For execution or provider capability questions, check `evidence/index.md` and the relevant Experiment Record before returning to provider documentation or rebuilding a proof from zero. Existing Evidence means "verified under these conditions at this time", not "true forever".
 
 Existing conclusions are not sacred. Re-run, contradict, or replace them when better evidence appears.
 
