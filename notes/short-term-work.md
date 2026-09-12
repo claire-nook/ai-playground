@@ -15,15 +15,28 @@
 - Evidence Index：`evidence/index.md`
 - Artifact：`experiments/auth/index.html`
 
-### B. Supabase Data API — Read Test Data
+### B. Supabase Data API — CRUD / Application Access — In Progress
 
-目的：驗證 Supabase 自動提供的 CRUD / Data API，作為最便宜的 baseline。
+目的：驗證 Supabase 自動提供的 Native CRUD / Data API 是否可作為 Browser Data Access baseline，並實際驗證 Nook Works Application Access Boundary。
 
-暫定範圍：
-- 由已登入的 Browser 呼叫 Data API。
-- 使用語意中立的 `test_` Database Object 與 AI 製造的 Test Data。
-- 先觀察實際呼叫方式、Authentication Context、Response、RLS 與限制，不延伸 Business Logic。
-- 不讀取正式 `app_user` 資料，避免 Public Playground 暴露正式 Business Semantic 或真實 Identity。
+目前範圍：
+- 由 Browser 直接呼叫 Supabase Native Data API。
+- 使用語意中立的 `test_k7m4x2` 與 AI 製造的 Test Data。
+- 驗證 SELECT / INSERT / UPDATE / DELETE。
+- INSERT 的 PK 由 Database Identity 自動產生，不由 UI 輸入。
+- Grid 顯示 SELECT 結果，可由 Grid 選取資料進行 UPDATE / DELETE。
+- 使用 PostgreSQL Grant + RLS + `private.can_access_application()` 控制 CRUD。
+- 驗證四種 Identity / Application Access 狀態：
+  - Anonymous：無 Supabase Auth Session。
+  - TU02：有 Auth Identity，但沒有 `app_user`。
+  - TU01：有 Auth Identity、有 `app_user`，但 `is_active = false`。
+  - Claire：有 Auth Identity、有 active `app_user`。
+- Public Playground 不顯示完整 Auth User ID、Token、Session，也不把臨時 Test Identity 寫入正式 Seed。
+
+目前狀態：
+- `test_k7m4x2` 已具備 identity PK、測試資料、authenticated CRUD grant 與四個 RLS policies。
+- 四個 RLS policies 均透過 `private.can_access_application()` 判斷 Application Access。
+- Experiment B Browser Artifact 已建立於 `experiments/data-api/index.html`，等待 iPad Safari 實際驗證。
 
 ### C. Supabase Custom API — Read Test Data
 
@@ -50,7 +63,7 @@
 
 A 已完成並取得 Authentication 實際 Evidence。
 
-B、C、D 刻意完成相同且極簡的 Test Data Read 需求，避免 Business Logic 與正式 Business Semantic 污染 Technical Mechanism 的比較。
+B 先建立 Native Data API CRUD 與 Application Access baseline；C、D 再以相同 Test Object 延伸 Custom API / RPC 實驗，避免 Business Logic 與正式 Business Semantic 污染 Technical Mechanism 的比較。
 
 B、C、D 完成後，再依實際 Evidence 討論：
 - Supabase Data API 適合負責什麼。
