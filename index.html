@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Playground</title>
+  <style>
+    /* 基本頁面樣式：保持簡單，避免測試首頁本身變成另一個專案。 */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 2rem;
+      line-height: 1.6;
+      background: #f6f7f9;
+      color: #1f2328;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .status {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #d0d7de;
+      border-radius: 10px;
+      background: #f6f8fa;
+    }
+
+    code {
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p><strong>AI Playground</strong></p>
+    <h1>撞牆環境已就緒</h1>
+    <p>
+      這裡不是正式開發環境，也不是測試環境。這裡是公開的技術實驗桌。
+      可以失敗、可以推翻、可以整片刪掉；真正要帶回正式專案的是經驗與證據。
+    </p>
+
+    <section class="status" aria-labelledby="runtime-title">
+      <h2 id="runtime-title">Runtime Check</h2>
+      <p id="js-status">JavaScript 尚未執行。</p>
+      <p>Current URL: <code id="current-url">讀取中…</code></p>
+      <p>Browser Time: <code id="browser-time">讀取中…</code></p>
+    </section>
+  </main>
+
+  <script>
+    // 執行最小 Runtime Check，確認部署後瀏覽器端 JavaScript 正常運作。
+    document.getElementById("js-status").textContent = "JavaScript 執行成功。";
+
+    // 顯示目前實際載入的網址，方便確認 Netlify Domain / Redirect 結果。
+    document.getElementById("current-url").textContent = window.location.href;
+
+    // 顯示瀏覽器本地時間，作為最簡單的 Client-side Runtime 證據。
+    document.getElementById("browser-time").textContent = new Date().toLocaleString();
+  </script>
+</body>
+</html>
