@@ -33,15 +33,22 @@ A successful experiment does not become Production Code automatically. If an ide
 
 ## Playground capabilities
 
-Playground is not only a persistent repository. Verified experiments may add reusable execution capabilities that future AI collaborators should inspect before assuming their current sandbox is the only available environment.
+Playground is not only a persistent repository. Verified experiments may add reusable execution capabilities that future AI collaborators should inspect before assuming their current sandbox or Claire's local device is the only available environment.
 
-Current verified capability:
+Current verified capabilities:
 
 - **GitHub Actions Remote Execution Environment** — AI can use controlled push-triggered workflows to start a GitHub-hosted Runner and independently retrieve Run / Job / Log results. A separate manual `workflow_dispatch` mode allows Claire to retain a Human Approval Gate while AI handles result retrieval and analysis.
+- **Supabase Edge Function iPad-first Deployment Lifecycle** — GitHub Actions + Supabase CLI has been used from Claire's iPad-first workflow to deploy and delete a real Nook Core Edge Function; the ChatGPT Supabase Connector has independently deployed the same GitHub source, and an Actions workflow successfully deleted the Connector-deployed function. A local Desktop / Mac was not required for the verified lifecycle.
 
-Evidence: `experiments/github-actions/README.md` and `evidence/index.md`.
+Evidence:
 
-This is historical capability evidence, not a permanent guarantee. Provider, Connector, security, authorization, and runtime behavior may change; re-verify when the decision is high-impact or the evidence is stale.
+- `experiments/github-actions/README.md`
+- `experiments/custom-api/README.md`
+- `evidence/index.md`
+
+Important deployment caveat: the GitHub Actions Supabase experiment required a PAT. At experiment time Claire did not have a usable Scoped PAT in the Supabase UI, so the test used a short-lived Classic PAT stored only in GitHub Actions Secrets. Classic PAT authority is broad; repository privacy and Secret masking reduce exposure probability but do not reduce the credential's blast radius. The Supabase Connector deployment avoided this user-managed PAT path, but its available Edge Function lifecycle was less complete because delete was not exposed by the Connector.
+
+This is historical capability evidence, not a permanent guarantee or Production deployment decision. Provider, Connector, security, authorization, credential, and runtime behavior may change; re-verify when the decision is high-impact or the evidence is stale.
 
 ## Autonomy
 
