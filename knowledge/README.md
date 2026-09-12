@@ -18,6 +18,7 @@ Playground 使用幾種不同的 Knowledge Object，各自只回答自己的問�
 | --- | --- | --- |
 | Research Map | 為什麼研究？脈絡走到哪？還有哪些 Branch？ | `knowledge/maps/` |
 | Open Exploration | 尚未形成明確 Research Intent 的探索有哪些？ | `knowledge/open-exploration.md` |
+| Experiment Catalog | 我們曾經做過哪些 Experiment，而且當時為什麼做？ | `knowledge/experiments.md` |
 | Experiment Record | 實際做了什麼？怎麼驗證？ | `experiments/**/README.md` |
 | Evidence Index | 做完後我們實際知道了什麼？ | `evidence/index.md` |
 | Short-term Work | 現在正在做什麼？ | `notes/short-term-work.md` |
@@ -67,6 +68,19 @@ Research Map 的 Progress 是 **Research Coverage**，不是假裝精準的百�
 - `Superseded`：已有更新 Evidence 或新的研究路徑取代，保留歷史關係。
 
 同一個 Experiment 可以被多張 Research Map 引用，不需要複製 Experiment 或 Evidence。
+
+---
+
+## Experiment Catalog｜實驗目錄
+
+[`knowledge/experiments.md`](experiments.md) 保存所有值得長期記得的 Experiment 與 Candidate Experiment 的短摘要。
+
+它不是 Evidence Index 的另一份副本：
+
+- Experiment Catalog 問：「**為什麼當時要做？它打開了什麼下一步？**」
+- Evidence Index 問：「**做完之後我們實際知道了什麼？**」
+
+Catalog 應維持短小，只放 Intent、Status、Tags、Links、Why it existed、What it unlocked。完整 Method / Evidence 留在 Experiment Record。
 
 ---
 
@@ -166,10 +180,13 @@ Status 不必重複當 Tag；使用文件中的 `Status` 欄位即可。
 有意義的 Experiment 完成或形成新 Evidence 時，未來 AI 應順手完成以下維護，不要累積到第 1000 個 Experiment 才進行數位考古：
 
 1. **Experiment Record**：更新 Question / Purpose、Scope、Method、Evidence、Constraint、Current Judgment。
-2. **Evidence Index**：加入可重用的 Result / Evidence / Limitation，不複製整份 Experiment Record。
-3. **Research Map**：更新相關節點 Status；若實驗暴露新的合理 Candidate Branch，留下 Branch，即使尚未實驗。
-4. **Links / Tags**：補上跨 Research Intent 可重用的關係與少量穩定 Tags。
-5. **Short-term Work**：完成的工作標示 Completed；真正值得長期保存的 Context 應畢業到 Research Map / Evidence，而不是永遠靠 TODO 墓碑保存。
+2. **Experiment Catalog**：更新 Why it existed / What it unlocked / Status / Tags / Links。
+3. **Evidence Index**：加入可重用的 Result / Evidence / Limitation，不複製整份 Experiment Record。
+4. **Research Map**：更新相關節點 Status；若實驗暴露新的合理 Candidate Branch，留下 Branch，即使尚未實驗。
+5. **Links / Tags**：補上跨 Research Intent 可重用的關係與少量穩定 Tags。
+6. **Short-term Work**：完成的工作標示 Completed；真正值得長期保存的 Context 應畢業到 Research Map / Catalog / Evidence，而不是永遠靠 TODO 墓碑保存。
+
+建立新 Experiment 時可以從 [`experiment-template.md`](experiment-template.md) 開始，但 Template 是提醒，不是官僚表單。沒有內容的 section 可以刪掉。
 
 如果 Experiment 沒有明確 Research Intent，就更新 Open Exploration；未來形成 Cluster 時再 Promote。
 
@@ -196,10 +213,13 @@ Knowledge Base 需要同時服務 Claire、未來 AI，以及幻想中可能真�
 
 ---
 
-## Current Research Maps｜目前研究地圖
+## Current Knowledge Entry Points｜目前入口
 
+- [`Experiment Catalog`](experiments.md)：快速看曾經做過什麼、為什麼做、打開了什麼下一步。
 - [`Nook Technical Platform Research`](maps/nook-technical-platform.md)：沿著 Nook Works Technical Platform 的 Responsibility / Capability 節點逐步取得實作 Evidence。
 - [`Open Exploration`](open-exploration.md)：尚未形成獨立 Research Map，或可支援多種未來 Intent 的探索線索。
+- [`Experiment Record Template`](experiment-template.md)：新 Experiment 的輕量 Knowledge Capture 提醒。
+- [`Evidence Index`](../evidence/index.md)：集中檢索已形成的 Evidence。
 
 未來如果 `ipad-first`、`ai-engineering` 或其他 Cluster 累積出明確 Research Question，再 Promote 成自己的 Research Map。不要為了分類完整而預先建立一堆空地圖。
 
@@ -212,6 +232,7 @@ Knowledge Base 需要同時服務 Claire、未來 AI，以及幻想中可能真�
 ```text
 README.md
 → knowledge/README.md
+→ knowledge/experiments.md
 → relevant Research Map / Open Exploration
 → evidence/index.md
 → relevant Experiment Record
