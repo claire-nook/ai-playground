@@ -8,6 +8,60 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## GitHub Actions / AI Remote Execution Environment
+
+- Experiment: GitHub Actions Remote Execution Environment
+- Date: 2026-09-12
+- Status: Completed / Verified
+- Topics: GitHub Actions, GitHub-hosted Runner, Remote Execution, CI/CD, Workflow, workflow_dispatch, push trigger, AI Autonomy, iPadOS
+- Record: `experiments/github-actions/README.md`
+- Artifacts: `.github/workflows/hello-action.yml`, `.github/workflows/push-playground.yml`, `experiments/action-push/trigger.txt`
+
+### Question
+
+AI Playground 是否可以把 GitHub Actions 當成外部 Remote Execution Environment，並形成 AI 建立工作 → GitHub Runner 執行 → AI 自行讀回 runtime result 的完整閉環？
+
+### Result
+
+**YES，在 2026-09-12 的 GitHub / Connector 能力下已實證。**
+
+### Key Evidence
+
+- Manual Mode：Claire 由 iPad Safari 啟動 `workflow_dispatch`，AI 可自行找到 Run / Job / Log 並讀回事前未知的 runtime verification code `784094`。
+- Autonomous Mode：AI 建立 path-filtered push Workflow、commit trigger file，GitHub 自動啟動 Runner；AI 再自行找到 Run / Job / Log 並讀回 runtime verification code `811888`。
+- Push-triggered Run ID `34697965162`，event=`push`，branch=`main`，result=`success`。
+- 實測 Runner 為 Linux X64；當次 image 為 Ubuntu 24.04。
+- `811888` 為 Runner 執行時隨機產生，Claire 沒有提供結果，證明 runtime result 可由 AI 自行取回。
+
+### Execution Modes
+
+```text
+Manual Approval Mode
+Claire → Run workflow → Runner → AI reads result
+
+Autonomous Playground Mode
+AI → controlled commit → push trigger → Runner → AI reads result
+```
+
+Manual Mode 適合 Deployment / Migration 等希望保留 Human Approval Gate 的操作；Autonomous Mode 適合低風險 Experiment / Build / Test / CLI / PoC。
+
+### Important Constraints / Pitfalls
+
+- Autonomous trigger 應優先使用 branch + path filter，不應讓任何普通 commit 都無條件啟動 Runner。
+- 當時 Connector 未提供直接建立全新 `workflow_dispatch` Run 的 action，因此 Manual Mode 仍由 Claire 啟動。
+- Connector 可讀 Run / Job / Log，並有既有 failed / cancelled job 的 rerun 能力，但不等於能任意重新啟動成功 Run。
+- Connector 未提供 GitHub Actions repository secrets 管理能力；Secret 不可寫入 public Playground repository 或 log。
+- GitHub Actions 可補 execution environment / toolchain / CI-CD context 的能力缺口，不代表可以繞過 AI、GitHub 或其他 Provider 的 policy / safety / authorization boundary。
+- Provider capability 會改變。此 Evidence 表示「2026-09-12 曾經實證可行」，不是永久保證。
+
+### Playground Relevance
+
+未來 AI 若需要暫時 Linux 工作站、特定 CLI / runtime / build environment、真實 GitHub CI/CD context，或需要把 exact commit 與 runtime evidence 綁在一起，應先把 GitHub Actions 視為候選執行環境，再依風險與時效決定是否重驗。
+
+這項 Evidence 將 Playground 從「持久化 Experiment Repository」擴充成具有外部 Remote Execution capability 的實驗設施。
+
+---
+
 ## Supabase Auth / Browser Authentication
 
 - Experiment: A — Supabase Auth
