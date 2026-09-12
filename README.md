@@ -31,6 +31,24 @@ Useful outputs include:
 
 A successful experiment does not become Production Code automatically. If an idea is adopted by a formal system, it should be implemented again in the formal repository according to its Specification and Technical Architecture.
 
+## Knowledge Base
+
+Playground 不只保存 Experiment Result，也保存 Research Context：為什麼當時會問這個問題、Experiment 如何沿著某個 Research Intent 出生，以及同一份 Evidence 還能支援哪些其他問題。
+
+Knowledge entry point：[`knowledge/README.md`](knowledge/README.md)
+
+目前知識結構：
+
+- `knowledge/maps/`：有明確 Research Topic 的 Research Map，保存 Context、Question、Candidate Branch 與 Research Coverage。
+- `knowledge/open-exploration.md`：尚未形成獨立 Research Map 的自由探索與 Potential Cluster。
+- `experiments/**/README.md`：Experiment Record，保存實際做法與驗證過程。
+- `evidence/index.md`：集中檢索已形成的 Evidence。
+- `notes/short-term-work.md`：只負責近期工作狀態，不承擔長期知識保存。
+
+同一個 Experiment / Evidence 可以透過 Links / Tags 支援多張 Research Map，不需要複製內容。新的 AI 在開始相關 Experiment 前，應先閱讀 `knowledge/README.md`、相關 Research Map、Evidence Index 與既有 Experiment Record。
+
+Language convention：Research reasoning / explanation 以繁體中文為主；Standard IT terminology 保留英文。對陌生 Concept 用中文解釋，不為了 Localization 硬造中文術語。`clone` 就是 `clone`，不需要讓 Git 突然變成碑帖拓印課。
+
 ## Playground capabilities
 
 Playground is not only a persistent repository. Verified experiments may add reusable execution capabilities that future AI collaborators should inspect before assuming their current sandbox or Claire's local device is the only available environment.
@@ -110,13 +128,13 @@ A useful disagreement is more valuable than polite consensus.
 
 New experiments should read relevant existing notes and evidence before repeating old work.
 
-For execution or provider capability questions, check `evidence/index.md` and the relevant Experiment Record before returning to provider documentation or rebuilding a proof from zero. Existing Evidence means "verified under these conditions at this time", not "true forever".
+For execution or provider capability questions, check `knowledge/README.md`, the relevant Research Map, `evidence/index.md`, and the relevant Experiment Record before returning to provider documentation or rebuilding a proof from zero. Existing Evidence means "verified under these conditions at this time", not "true forever".
 
-Existing conclusions are not sacred. Re-run, contradict, or replace them when better evidence appears.
+Existing conclusions are not sacred. Re-run, contradict, or replace them when better evidence appears. When new Evidence changes an old Judgment, preserve the historical condition and relationship rather than silently pretending the old conclusion never existed.
 
 The point is simple:
 
-> Leave enough evidence that the next AI has one fewer wall to hit.
+> Leave enough context and evidence that the next AI understands not only which wall we hit, but why we walked toward that wall in the first place.
 
 ## Boundary with formal development
 
