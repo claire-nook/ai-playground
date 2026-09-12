@@ -10,11 +10,13 @@
 2026-09-13 已把 2026-09-12 的第一批 Playground Experiments 整理成可持續生長的 Knowledge Architecture。
 
 - Knowledge Model / Capture Protocol：`knowledge/README.md`
+- Experiment Catalog：`knowledge/experiments.md`
+- Experiment Record Template：`knowledge/experiment-template.md`
 - Nook Technical Platform Research Map：`knowledge/maps/nook-technical-platform.md`
 - Open Exploration / Potential Clusters：`knowledge/open-exploration.md`
 - Evidence Index：`evidence/index.md`
 
-後續每次 Experiment 形成有效 Evidence 時，應順手更新 Experiment Record、Evidence Index、相關 Research Map 或 Open Exploration，以及必要的 Links / Tags。
+後續每次 Experiment 形成有效 Evidence 時，應順手更新 Experiment Record、Experiment Catalog、Evidence Index、相關 Research Map 或 Open Exploration，以及必要的 Links / Tags。
 
 Short-term 只保存「現在正在做什麼」；Research Context 與 Evidence 不再依賴這份檔案長期存活。
 
