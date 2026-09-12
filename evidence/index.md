@@ -8,6 +8,79 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Supabase Edge Function / iPad-first Deployment Lifecycle
+
+- Experiment: C-0 — Supabase Edge Function Deployment Lifecycle
+- Date: 2026-09-12
+- Status: Completed / Verified
+- Topics: Supabase Edge Functions, Deployment, GitHub Actions, Supabase CLI, ChatGPT Supabase Connector, PAT, Credential, iPadOS, Remote Execution, CI/CD
+- Record: `experiments/custom-api/README.md`
+- Source: `supabase/functions/hello-action/index.ts`
+- Workflows: `.github/workflows/deploy-hello-action.yml`, `.github/workflows/delete-hello-action.yml`
+
+### Question
+
+Claire 的 iPad-first 開發環境是否能在沒有本地 Desktop / Mac CLI 工作站的情況下，完成 Supabase Edge Function 的部署、HTTP 驗證與刪除生命週期？GitHub Actions + Supabase CLI 與 ChatGPT Supabase Connector 是否都能成為實際 deployment path？
+
+### Result
+
+**YES，在 2026-09-12 的實驗條件下已實證。**
+
+### Key Evidence
+
+- GitHub Actions `workflow_dispatch` → GitHub-hosted Linux Runner → Supabase CLI `2.117.0` → Nook Core → `hello-action` deployment success。
+- Deploy Run ID `34700593732`，result=`success`；CLI 明確回報 function deployed。
+- Claire 在 iPad Safari 直接開啟 Edge Function URL，取得預期 JSON；Supabase Dashboard 亦確認 function 存在與收到 requests。
+- GitHub Actions Delete Run #1 `34701381528` 成功刪除 Action-deployed function；Connector 隨後確認 Edge Function list 為空。
+- AI 從 GitHub 讀取同一份 `hello-action` source，再透過 Supabase Connector 直接部署；Connector 回傳 `ACTIVE`, version `1`, `verify_jwt=false`。
+- Connector deployment 不需要 Claire 另外建立、貼給 AI 或注入一顆新的 PAT；使用既有 platform-managed Connector authorization context。
+- Claire 再次由 iPad Safari 驗證 Connector-deployed function 回傳相同 JSON。
+- GitHub Actions Delete Run #2 `34701914597` 成功刪除 Connector-deployed function；兩次 deletion 的 CLI success message 完全相同。
+- 第二次刪除後 Connector 再次確認 `functions=[]`。
+
+### Cross-mechanism Finding
+
+```text
+GitHub Actions Deploy → GitHub Actions Delete  ✅
+Connector Deploy      → GitHub Actions Delete  ✅
+```
+
+在本次條件下，Edge Function 進入 Supabase Project state 後，刪除工具不需要與原始部署工具相同。Deployment transport 與 deployed function state 可視為可分離的 concerns，但 Provider capability 改變時仍需重驗。
+
+### Credential / Security Finding
+
+GitHub Actions 路線在本次實驗需要 Supabase PAT。Claire 當時的 Supabase UI 未提供可用 Scoped PAT，因此使用 1-hour temporary Classic PAT，僅存於 GitHub Actions Secret，未分享給 AI、未 commit，log 中顯示為 `***`。
+
+即使正式 Development Repository 為 Private，Repository privacy 主要降低未授權接觸 Repo / Workflow 的機率，**不會縮小 Classic PAT 本身的 account-level credential blast radius**。因此在目前沒有 Scoped PAT 的條件下，Classic PAT 權限過大是 GitHub Actions deployment 的重要安全 Trade-off。
+
+Connector deployment 則不需要 Claire 自行建立並注入另一顆 PAT，因而消除 `Classic PAT → GitHub Secret → Workflow → Runner` 這條 user-managed credential path。這提高 Connector 作為 deployment candidate 的評價，但不足以推出「Connector 永遠比較安全」；Connector authorization scope、auditability、available actions 與 lifecycle completeness 仍需納入正式 Decision。
+
+### iPad-first / Hardware Relevance
+
+本實驗支持以下結論：
+
+> 截至 2026-09-12，Supabase Edge Function 的 source management、deployment、HTTP invocation verification 與 deletion lifecycle，不要求 Claire 擁有本地 Desktop / Mac 開發機。iPad-first workflow 可把 CLI / Linux execution 委派給 GitHub-hosted Runner，也可由 Supabase Connector 直接 deployment。
+
+因此，「為了部署 Supabase Edge Function 必須購買 Mac mini」不再是有 Evidence 支持的技術前提。
+
+這不代表 Mac mini 對所有未來工作都沒有價值，只代表 Supabase Edge Function deployment 本身目前不足以構成硬體購買理由。
+
+### Decision Triggers
+
+- 若 Claire 未來可取得 Nook Core / Edge Functions scoped credential，重新評估 GitHub Actions deployment 的 security priority。
+- 若 Supabase Connector 增加 Edge Function delete、完整 lifecycle、audit / approval 或更細 authorization，重新評估 Connector 作為主要 deployment mechanism。
+- Production governance、environment promotion、rollback、approval 等需求明確後，再形成正式 Technical Decision。
+
+### Not Yet Verified
+
+- Browser Application cross-origin `fetch()` / CORS
+- Custom API Auth / JWT propagation
+- Database access / RLS through Edge Function
+- Business validation / transaction / error contract
+- Formal Production deployment architecture
+
+---
+
 ## GitHub Actions / AI Remote Execution Environment
 
 - Experiment: GitHub Actions Remote Execution Environment
