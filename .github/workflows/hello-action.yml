@@ -1,0 +1,28 @@
+name: Hello Action
+
+# 只允許手動啟動這個 Workflow。
+# 目前不綁 push / commit，避免每次修改 Repo 都自動執行。
+on:
+  workflow_dispatch:
+
+jobs:
+  hello-action:
+    # GitHub 會臨時提供一台 Linux Runner 執行這個 Job。
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1：最簡單的輸出，確認 Runner 已經開始工作。
+      - name: Say hello to Claire
+        run: echo "Hello Claire"
+
+      # Step 2：做一個明確可驗證的小運算。
+      - name: Calculate 9 x 9
+        run: echo "9 x 9 = $((9 * 9))"
+
+      # Step 3：顯示這次臨時 Runner 的基本環境資訊。
+      - name: Show runner information
+        run: |
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner architecture: $RUNNER_ARCH"
+          echo "Working directory: $(pwd)"
+          echo "Current UTC time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
