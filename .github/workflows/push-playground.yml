@@ -1,0 +1,36 @@
+name: Push Playground
+
+# 只有 main 分支下的 experiments/action-push/** 有變更時才啟動。
+# 這樣可以測試 AI 是否能透過 commit 間接叫醒 GitHub Runner，
+# 又不會讓 Repo 裡每一次普通 commit 都觸發這支 Workflow。
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "experiments/action-push/**"
+
+jobs:
+  push-playground:
+    # GitHub 提供一台臨時 Linux Runner 執行工作。
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1：確認這次是由 push 事件啟動。
+      - name: Confirm push trigger
+        run: echo "Push-triggered runner is awake"
+
+      # Step 2：在 Runner 執行當下產生隨機驗證碼，供 AI 後續從 Log 讀回。
+      - name: Generate runtime verification code
+        run: |
+          code=$(shuf -i 100000-999999 -n 1)
+          echo "Push verification code: $code"
+
+      # Step 3：輸出這次 Runner 與觸發 Commit 的基本資訊。
+      - name: Show execution context
+        run: |
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner architecture: $RUNNER_ARCH"
+          echo "Commit SHA: $GITHUB_SHA"
+          echo "Ref: $GITHUB_REF"
+          echo "Current UTC time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
