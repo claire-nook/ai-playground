@@ -1,0 +1,48 @@
+name: Deploy Hello Action
+
+# Experiment C-0 keeps deployment behind a human approval gate.
+# Claire starts this workflow manually from GitHub Actions.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-hello-action:
+    runs-on: ubuntu-latest
+
+    env:
+      # Project Ref is public project metadata, not a secret.
+      SUPABASE_PROJECT_REF: cctonymfrxneonxryqei
+      # Access Token must exist only in GitHub Actions Secrets.
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      # Step 1: checkout the exact repository revision selected for this run.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: install the Supabase CLI on the temporary GitHub-hosted Runner.
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Step 3: confirm the CLI exists without printing any credential.
+      - name: Show Supabase CLI version
+        run: supabase --version
+
+      # Step 4: deploy only the C-0 hello-action function.
+      # JWT verification is disabled intentionally because this DB-free endpoint
+      # exists only to verify deployment + public invocation lifecycle.
+      - name: Deploy hello-action
+        run: |
+          supabase functions deploy hello-action \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --no-verify-jwt
+
+      # Step 5: print the public endpoint for Claire to open after deployment.
+      - name: Show deployed endpoint
+        run: |
+          echo "Endpoint: https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/hello-action"
