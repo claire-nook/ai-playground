@@ -31,8 +31,21 @@ Short-term 只保存「現在正在做什麼」；Research Context 與 Evidence 
 - Experiment B-1 — View Read / Security / Read Model：`Verified`
 - GitHub Actions Remote Execution Environment：`Verified`
 - Experiment C-0 — Supabase Edge Function Deployment Lifecycle：`Verified`
+- Netlify Git Deployment Boundary：`Verified`
+
+Netlify Publish Boundary 已於 2026-09-13 驗證：`public/` 是 Static Public Artifact boundary，Browser Artifact 已與 `experiments/**/README.md` Experiment Record 分離。完整記錄：`experiments/netlify-deployment-boundary/README.md`。
+
+跨 Provider 的 Boundary Pitfall 已另外整理於：`evidence/provider-boundary-pitfalls.md`。
 
 這些 Completed items 的完整脈絡、Evidence、Constraint 與 Current Judgment 請回到 Knowledge Base / Experiment Record 閱讀，不在 Short-term 重複維護。
+
+## Candidate — Netlify Trigger Boundary
+
+Publish Boundary 已回答「哪些檔案可以進 Site Deploy」，但目前 `main` 的其他變更仍可能讓 Netlify 啟動 build / deploy 判斷。
+
+後續獨立研究：如何讓與 `public/` / Netlify runtime 無關的 Repository change 不觸發不必要的 Netlify Deploy，同時保留未來 `netlify/functions/` 等 server runtime source 的正確 trigger semantics。
+
+這題刻意等 Repository 搬家與文件路徑穩定後再做，避免一邊改 Deployment ownership、一邊改 Trigger condition，最後 debugging 變成猜拳。
 
 ## Candidate — Custom API Runtime Sibling Probe
 
