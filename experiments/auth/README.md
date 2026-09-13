@@ -35,7 +35,9 @@ Browser 使用 Supabase JavaScript Client 直接呼叫 Supabase Auth：
 5. Client 設定 `persistSession: true`、`autoRefreshToken: true`。
 6. Logout 使用 local scope，只登出目前 Browser Session。
 
-Experiment Artifact：`experiments/auth/index.html`
+Experiment Record：`experiments/auth/README.md`
+
+Public Browser Artifact：`public/auth/index.html`
 
 ## Result
 
