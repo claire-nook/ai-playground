@@ -74,16 +74,39 @@ Current verified capabilities:
 
 - **GitHub Actions Remote Execution Environment** — AI can use controlled push-triggered workflows to start a GitHub-hosted Runner and independently retrieve Run / Job / Log results. A separate manual `workflow_dispatch` mode allows Claire to retain a Human Approval Gate while AI handles result retrieval and analysis.
 - **Supabase Edge Function iPad-first Deployment Lifecycle** — GitHub Actions + Supabase CLI has been used from Claire's iPad-first workflow to deploy and delete a real Nook Core Edge Function; the ChatGPT Supabase Connector has independently deployed the same GitHub source, and an Actions workflow successfully deleted the Connector-deployed function. A local Desktop / Mac was not required for the verified lifecycle.
+- **Netlify Static Publish Boundary** — Netlify Continuous Deployment has been verified with `public/` as the static Publish directory. Repository research material remains in GitHub while only intentional Browser Artifacts under `public/` enter the Site Deploy.
 
 Evidence:
 
 - `experiments/github-actions/README.md`
 - `experiments/custom-api/README.md`
+- `experiments/netlify-deployment-boundary/README.md`
+- `evidence/provider-boundary-pitfalls.md`
 - `evidence/index.md`
 
 Important deployment caveat: the GitHub Actions Supabase experiment required a PAT. At experiment time Claire did not have a usable Scoped PAT in the Supabase UI, so the test used a short-lived Classic PAT stored only in GitHub Actions Secrets. Classic PAT authority is broad; repository privacy and Secret masking reduce exposure probability but do not reduce the credential's blast radius. The Supabase Connector deployment avoided this user-managed PAT path, but its available Edge Function lifecycle was less complete because delete was not exposed by the Connector.
 
 This is historical capability evidence, not a permanent guarantee or Production deployment decision. Provider, Connector, security, authorization, credential, and runtime behavior may change; re-verify when the decision is high-impact or the evidence is stale.
+
+## Deployment boundary
+
+The Git repository is the Laboratory. Netlify is a deployment surface, not a repository mirror.
+
+Current static Browser deployment ownership:
+
+```text
+experiments/**/README.md  = Experiment Record / Research Context
+public/                   = Netlify static Public Artifact boundary
+netlify/functions/        = Netlify server runtime source, when used
+```
+
+Current Netlify Build settings keep the Repository root as Base directory and use `public` as Publish directory. Browser Experiment HTML therefore lives under `public/<experiment>/`, while its Result / Evidence remains under `experiments/<experiment>/README.md`.
+
+`Publish Boundary` and `Trigger Boundary` are separate concerns. The current `public/` boundary controls what can enter the Site Deploy; reducing unnecessary Netlify deploy triggers for unrelated `main` changes remains a separate research item.
+
+Verified record: [`experiments/netlify-deployment-boundary/README.md`](experiments/netlify-deployment-boundary/README.md)
+
+Cross-provider boundary pitfall: [`evidence/provider-boundary-pitfalls.md`](evidence/provider-boundary-pitfalls.md)
 
 ## Autonomy
 
