@@ -170,6 +170,14 @@ supabase/functions/       = Supabase CLI-deployable Experiment Source, when used
 
 Browser Experiment HTML lives under `public/<experiment>/`. Provider-compatible function source lives under the layout expected by that provider / CLI so the real deployment path can be exercised. Both are disposable experiment artifacts; Result / Evidence remains under `experiments/<experiment>/README.md` and the Knowledge / Evidence layers.
 
+### Experiment Catalog convention
+
+- 需要在 Gallery 被獨立找到的 Experiment / Probe，以 `experiments/**/*.catalog.json` 保存穩定索引；研究問題、過程、Evidence 與結論仍保存在 Experiment Record。Generator 不解析 README 猜測 metadata。
+- 一個研究目錄可以有多個 Catalog entries。Catalog 使用可重用的 canonical `tags`，不以目錄建立 Category Tree；新增 Tag 前先檢查既有 vocabulary，避免同義異名。
+- Browser Demo 不是收錄條件：沒有 Demo 使用 `demoStatus: none`，拆除後使用 `retired`。只有 `live` entry 提供 `demoPath`，其頁面必須包含指向 `/` 的 `← AI Playground`。
+- `verificationStatus` 只依 Primary / Evidence judgment 更新，不能由 build 或 Implementation Agent 自行升格。新增 Experiment 時維護 metadata 即可，不要手動新增首頁 Card。
+- Catalog metadata 或 generator 變更會觸發 Gallery build；Research README / Evidence-only 變更仍維持 repository-only skip boundary。
+
 `Publish Boundary`、`Provider Source Boundary` 與 `Trigger Boundary` 是不同 concerns。相關 Evidence 請從 [`knowledge/experiments.md`](knowledge/experiments.md) 路由到對應 Experiment Record，不在 root README 重養完整實驗報告。
 
 ## Autonomy
