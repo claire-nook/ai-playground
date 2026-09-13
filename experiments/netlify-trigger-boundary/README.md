@@ -1,7 +1,7 @@
 # Netlify Trigger Boundary
 
 - Date: 2026-09-13
-- Status: In Progress
+- Status: Verified for Deploy Preview and Production repository-only skip
 - Topics: Netlify, Git Deployment, Trigger Boundary, Ignore Builds
 - Tags: `nook-platform`, `ipad-first`, `deployment`, `netlify`
 
@@ -9,175 +9,146 @@
 
 當 `ai-playground` Repository 直接連接 Netlify Continuous Deployment，如何只讓真正影響 Netlify deployable surface 的 Git change 觸發 build / deploy，而讓 Knowledge、Evidence、Experiment Record、Agent Work 等 Repository-only change 提前停止？
 
-## Existing Evidence
+## Verified Design
 
-Publish Boundary 已驗證為 `public/`，但 Trigger Boundary 尚未建立。
+採 whitelist 的 Deploy Trigger Surface：
 
-2026-09-13 已至少兩次直接觀察到與 deployable static artifact 無關的 Pull Request 仍產生 Netlify Deploy Preview：
+- `public/`
+- `netlify/functions/`
+- `netlify/edge-functions/`
+- `netlify.toml`
+- Root package manifests / lockfiles：`package.json`、`package-lock.json`、`yarn.lock`、`pnpm-lock.yaml`
 
-1. PR #1 只加入 `agent-work/reports/` 的 Audit Report。
-2. PR #2 只修改 `experiments/` 與 `evidence/` 的文件路徑。
+Netlify `[build].ignore` 的 decision semantics：
 
-因此 `Publish Boundary = public/` 不能單獨回答「哪些 Repository changes 值得讓 Netlify 起床」。
+- exit `0`：SKIP build / deploy。
+- exit `1`：繼續 build / deploy。
 
-## Design
+兩種 Context 使用不同 change boundary：
 
-採 whitelist / fail-closed 的 Deploy Trigger Surface，而不是維護「哪些目錄不要 deploy」的 blacklist。
+### Deploy Preview
 
-目前視為會影響 Netlify deployment 的 paths：
+不能信任 checkout 既有的 `origin/main` / local `main`，因為 PR #7 已直接觀察到它們可能 stale。
 
-- `public/`：Static Browser Artifact。
-- `netlify/functions/`：Netlify Functions source。
-- `netlify/edge-functions/`：保留未來 Edge Functions runtime source。
-- `netlify.toml`：Netlify deployment configuration 本身。
-- Root package manifests / lockfiles：保留未來 Netlify runtime dependency / build dependency 的 trigger semantics。
+目前 verified model：
 
-原 Candidate 使用 `netlify.toml` 的 `[build].ignore`，比較 `$CACHED_COMMIT_REF` 與 `$COMMIT_REF` 在上述 paths 的差異。
+1. fresh-fetch current `main` 到 isolated ref。
+2. 取得 `merge-base(fresh main, COMMIT_REF)`。
+3. 比較 `merge-base..COMMIT_REF` changed paths。
+4. changed paths 命中 Deploy Trigger Surface 則 DEPLOY，否則 SKIP。
+5. fetch / ref / diff / history failure 一律 fail-safe DEPLOY。
 
-Netlify `ignore` command 的 exit semantics：
+### Production
 
-- exit `0`：沒有 relevant change，停止 build。
-- exit `1`：有 relevant change，繼續 build。
+Production 不可套用 Deploy Preview 的 fresh-base model，因為 push 完後 current `main` 本身就是 `COMMIT_REF`，會失去 event boundary。
 
-## Planned Validation
+目前 verified model：
 
-### Case A — Configuration change should deploy
+1. 使用 `CACHED_COMMIT_REF -> COMMIT_REF` 作為 production change boundary。
+2. changed paths 命中 Deploy Trigger Surface 則 DEPLOY，否則 SKIP。
+3. `CACHED_COMMIT_REF` missing / unresolved、diff failure，或 `CACHED_COMMIT_REF == COMMIT_REF` 時一律 fail-safe DEPLOY。
 
-加入 `netlify.toml` 本身屬於 Deploy Trigger Surface，因此首次導入設定應繼續 Netlify build / deploy。
+## Evidence Trail
 
-### Case B — Repository-only documentation change should skip
+### PR #5 — Cached boundary mismatch
 
-在 Trigger Boundary 生效後，只修改 `agent-work/`、`evidence/`、`experiments/`、`knowledge/` 或 `notes/` 等非 Deploy Trigger Surface，預期 Netlify 在 ignore check 提前停止，不建立新的有效 Deploy artifact。
+Docs-only PR 仍 deploy。後續證明原因不是 path regex，而是 comparison boundary 錯誤。
 
-### Case C — Static public artifact change should deploy
+### PR #6 — Observability Probe
 
-只修改 `public/`，預期 ignore check 回報 relevant change，Netlify 繼續 deploy。
+直接觀察到 `CACHED_COMMIT_REF != PR base`，而 cached-to-current diff 包含舊的 `netlify.toml` change，因此 rule 合理地繼續 deploy。
 
-### Case D — Netlify runtime source should remain trigger-capable
+同一對 refs 改用 `merge-base` 也無法修正，因為 merge-base 仍是 cached ref。
 
-`netlify/functions/` / `netlify/edge-functions/` 已納入 Trigger Surface。是否另外建立 harmless runtime probe，待 Functions / Edge Functions Experiment 需要時再取得直接 runtime Evidence；本次不為了測門鈴先蓋一間廚房。
+### PR #7 — Git Ref Topology Probe
 
-## Case B v2 — Observed Boundary Mismatch
+checkout 內 `origin/main` 與 local `main` 都可能 stale；`ref exists` 不等於 `ref trustworthy`。
 
-PR #5 的 GitHub-visible diff 只有 `experiments/netlify-trigger-boundary/README.md`，不包含 `public/`、`netlify/`、`netlify.toml` 或 root package manifest / lockfile。
+### PR #10 — Fresh Base Fetch Probe
 
-但在 repository preparation 成功的 Deploy Preview 中，既有 custom ignore rule 仍讓 build / deploy 繼續。
+Netlify Deploy Preview `ignore` stage 可以 fresh-fetch `main` 到 isolated ref。
 
-第一次 PR #5 Deploy Preview 因 `Host key verification failed` 在 repository preparation 階段失敗，不能算 Trigger Boundary 執行結果。正常 retry 後 Provider 成功取得 repository，custom ignore command 才真正被執行。
-
-這表示：
-
-> Provider Triggered ≠ Experiment Executed。
-
-必須區分 Repository Preparation、Trigger Decision、Build、Deploy 各階段。
-
-## Observability Probe — PR #6
-
-為避免繼續猜測 `$CACHED_COMMIT_REF`，PR #6 暫時把 `ignore` rule 換成只記錄 comparison context、最後固定 `exit 1` 的 Observability Probe。
-
-Netlify Deploy Preview #6 直接觀察到：
+Provider log：
 
 ```text
-CONTEXT=deploy-preview
-BRANCH=pull/6/head
-HEAD=codex/-observability-probe-work-order
-COMMIT_REF=8a2527cab3930cb24ed1b9eabffec642d831edfd
-CACHED_COMMIT_REF=a1ff93b720fe6b066ac0bddcfbb638f859ea5be1
-REVIEW_ID=6
-```
-
-Workspace `git rev-parse HEAD` 同樣為：
-
-```text
-8a2527cab3930cb24ed1b9eabffec642d831edfd
-```
-
-HEAD parent 為：
-
-```text
-302a0b3be5866ee38c81344cc6466dee774deea0
-```
-
-因此本次直接 Evidence 證明：
-
-- `COMMIT_REF` = PR #6 GitHub-visible head / Workspace HEAD。
-- `CACHED_COMMIT_REF` != PR #6 base commit。
-- 兩者都能在 Netlify clone 中成功 resolve。
-
-`git diff --name-only "$CACHED_COMMIT_REF" "$COMMIT_REF"` 實際包含：
-
-```text
-agent-work/experience/codex-review-investigation.md
-agent-work/reports/2026-09-13-netlify-trigger-observability-probe.md
-agent-work/reports/README.md
-agent-work/work-orders/2026-09-13-netlify-trigger-boundary-case-b-v2.md
-agent-work/work-orders/2026-09-13-netlify-trigger-boundary-observability-probe.md
+FRESH_FETCH_SUCCESS
+FRESH_FETCHED_BASE_SHA=dded27fba13060d4461fa4ff62d5d2c1b7e5fdda
+MERGE_BASE_SUCCESS_SHA=dded27fba13060d4461fa4ff62d5d2c1b7e5fdda
+CHANGED_PATHS_BEGIN
+agent-work/reports/2026-09-13-netlify-trigger-fresh-base-fetch-probe.md
 experiments/netlify-trigger-boundary/README.md
 netlify.toml
+CHANGED_PATHS_END
 ```
 
-其中 `netlify.toml` 屬於 Deploy Trigger Surface，因此使用 cached-to-current boundary 的 ignore rule 會合理地判定 relevant change 存在並繼續 deploy。
+changed paths 與 GitHub-visible PR diff 一致。
 
-`git merge-base "$CACHED_COMMIT_REF" "$COMMIT_REF"` 直接回傳同一個 `CACHED_COMMIT_REF`：
+### PR #11 — Deploy Preview positive control
+
+PR 只修改 `netlify.toml`，Provider 判定：
 
 ```text
-a1ff93b720fe6b066ac0bddcfbb638f859ea5be1
+TRIGGER_DECISION=DEPLOY reason=deploy_surface_changed
 ```
 
-所以單純把同一對 refs 改成 merge-base comparison 不能修正這個 mismatch。
+並完成 build / deploy。
 
-完整 Provider Evidence：`agent-work/reports/2026-09-13-netlify-trigger-observability-probe.md`。
+### PR #12 — Deploy Preview repository-only skip
+
+PR 只新增：
+
+```text
+experiments/netlify-trigger-boundary/case-b-docs-only-probe.md
+```
+
+Provider 判定：
+
+```text
+TRIGGER_DECISION=SKIP reason=repository_only_change
+User-specified ignore command returned exit code 0. Returning early from build.
+```
+
+Deploy Preview 顯示 Canceled；Deploying / Cleanup / Post-processing 均 skipped。
+
+### Production repository-only skip — Verified
+
+在 PR #13 merge 後，production-specific rule 已進入 `main`。後續 commit `1ce0fe7e3e4204dffee1cf3b910816155d14d1a6` 只新增：
+
+```text
+agent-work/report-language-guideline.txt
+```
+
+Netlify Provider 直接觀察：
+
+```text
+CONTEXT=production
+COMMIT_REF=1ce0fe7e3e4204dffee1cf3b910816155d14d1a6
+CACHED_COMMIT_REF=8c6d6edb2e89980bcfe65a2c573948a6ae0b9a23
+CHANGE_BOUNDARY=production_cached_to_current
+CHANGED_PATHS_BEGIN
+agent-work/report-language-guideline.txt
+CHANGED_PATHS_END
+TRIGGER_DECISION=SKIP reason=repository_only_change
+User-specified ignore command returned exit code 0. Returning early from build.
+```
+
+Netlify UI 顯示 Production deploy `Canceled`，Deploying / Cleanup / Post-processing 均 skipped。
+
+這直接證明 production `CACHED_COMMIT_REF -> COMMIT_REF` model 在本次 repository-only scenario 能正確阻止無關部署。
 
 ## Current Judgment
 
-`Partial / Boundary Mismatch Verified`。
+`Verified`：目前 `ai-playground` 的 Netlify Git Trigger Boundary 已能區分：
 
-Case B 已不應描述成「ignore rule 理應 skip，但 Provider 不知為何 deploy」。目前直接 Evidence 支持更精確的結論：
+- Deploy Preview repository-only change → SKIP。
+- Deploy Preview deploy-surface change → DEPLOY。
+- Production repository-only change → SKIP。
+- Production deploy-surface change → DEPLOY candidate 已由 rule 設計與 PR #13 install path 支持；若未來有自然發生的 `public/` / runtime production change，可再補直接 Provider Evidence，不必為了測試另外製造 production artifact change。
 
-> 現有 comparison model 與 Research Question 不一致。
+## Remaining Limits / Unknowns
 
-目前：
-
-```text
-git diff $CACHED_COMMIT_REF $COMMIT_REF
-```
-
-回答的是：
-
-> 從 Netlify cached comparison point 到本次 commit 之間，Deploy Trigger Surface 是否曾改變？
-
-但我們真正想回答的是：
-
-> 本次 Git change / PR 自己是否改變 Deploy Trigger Surface？
-
-兩者只有在 cached ref 恰好等於正確 change baseline 時才等價；PR #6 的 Provider Evidence 已直接證明本次不是如此。
-
-下一步不是再調 regex，而是先確認 Deploy Preview 是否提供穩定可用的 PR base / event change boundary，再設計最小 comparison strategy。
-
-## Git Ref Topology Probe — PR #7 Provider Result
-
-由於既有 Observability Probe 已證明 `$CACHED_COMMIT_REF` 不是該次 PR base，下一個 Deploy Preview 暫時改以 fail-safe probe 觀察 provider checkout 中實際存在的 Git topology，而不是繼續假設 cached ref 的語意。
-
-Probe 將記錄 allowlisted build identity、經 URL 遮蔽的 remote 列表、local / remote / pull-related refs，並分別嘗試解析 `refs/remotes/origin/main`、`origin/main`、`refs/heads/main` 與 `main`。若 candidate 與 `$COMMIT_REF` 都可解析，probe 會記錄 merge-base 及 merge-base-to-commit changed paths；每個失敗路徑也會留下固定 marker。
-
-PR #7 的 Provider Result 顯示：`COMMIT_REF` 是 PR head `656ff7aaf5ff6d4256ccfeeb7ef55825101c9739`，GitHub-visible PR base 是 `72e4ac393c9e2e5689d340f15224c59f1526a7f0`，但 checkout `origin/main` 仍是 `a1ff93b720fe6b066ac0bddcfbb638f859ea5be1`，local `main` 更舊，為 `64b55130098b903117ec1bdb3399b4f2ddd9c660`。stale `origin/main` 到 PR head 的 diff 有 9 paths，而 GitHub 真正 PR diff 只有 3 files。
-
-因此「checkout 裡存在 `origin/main` 就可以直接拿來當 current PR baseline」已被排除。下一個最小 candidate 是只在 Deploy Preview probe 中 fresh-fetch current base 到隔離 ref，再比較 merge-base-to-head；完整 investigation：`agent-work/reports/2026-09-13-netlify-trigger-boundary-next-investigation.md`。本結果仍不決定 final Trigger Boundary。
-
-## Fresh Base Fetch Probe — Prepared / Provider Result Pending
-
-下一個 temporary `ignore` observability probe 已依 Work Order 準備完成。它只在 `CONTEXT=deploy-preview` 且 `COMMIT_REF` 可解析時，把 `origin` 的 `main` bounded shallow-fetch 到隔離的 `refs/netlify-probe/base`，再記錄 fresh base、merge-base 與完整 merge-base-to-head changed paths。初次 depth 為 64；只有 merge-base 不可得時才以 depth 256 retry 一次。所有 fetch diagnostic 均被抑制以避免 remote URL 或 credential material 進入 probe log，且 probe 所有路徑最後固定 non-zero，繼續 build / deploy。
-
-Local Runtime-side Validation 已通過 TOML parse、抽出 command 的 shell syntax check、controlled fresh-fetch success / fetch failure / context skip simulations、固定 non-zero exit、secret / remote URL absence check 與 `git diff --check`。這些結果只證明 local probe control flow，不是 Netlify Provider Evidence。
-
-**Provider Result: Pending.** 在 Claire 建立 PR、Netlify 執行 Deploy Preview 且 Primary Agent review provider log 前，不宣稱 ignore stage 可以 outbound fetch、history 足夠、diff 符合 GitHub-visible PR diff，亦不把 Fresh Base Fetch 升格為 final Trigger Boundary architecture。完整 prepared report：`agent-work/reports/2026-09-13-netlify-trigger-fresh-base-fetch-probe.md`。
-
-## Constraint / Unknown
-
-- 本次不改 Base directory；Repository root 仍保留為 Netlify build context。
-- 本次不建立無需求的 Build command。
-- Build Hook 不受 `ignore` command 阻止，不屬於本次 Git-trigger boundary。
-- 尚未證明所有 Deploy Preview 都使用相同 `CACHED_COMMIT_REF` lifecycle。
-- 尚未確認 Netlify 是否提供可直接使用的 immutable PR base SHA / event-before SHA。
-- 尚未決定 final Trigger Boundary strategy。
-- Netlify Product behavior 可能變更；結論以本次直接 Evidence 為準。
+- Build Hook 不受此 Git-trigger `ignore` boundary 控制。
+- `main` 是此 repository 當前 production branch 假設；未抽象成多 production branch model。
+- `CACHED_COMMIT_REF == COMMIT_REF`（例如 no-cache 情況）目前刻意 fail-safe DEPLOY，尚未另做 provider probe。
+- Fresh fetch 的 bounded history 目前使用 depth 64，merge-base unavailable 時 retry depth 256；極深 history scenario 尚未實測。
+- Netlify Product behavior 可能變更；上述結論以 2026-09-13 direct Provider Evidence 為準。
