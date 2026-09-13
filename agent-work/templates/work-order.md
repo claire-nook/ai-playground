@@ -118,6 +118,8 @@ Codex Cloud Workspace 目前已觀察到可能只有 local `work` branch、沒�
 
 ## Report｜執行後填寫
 
+Report 預設遵守 `agent-work/report-language-guideline.txt`：說明與判斷使用繁體中文，technical terms、code、path、command、field、log marker 與 raw provider output 保留英文。除非 Work Order 明確要求，避免整份 Report 全英文。
+
 ### Result
 
 實際結果。
