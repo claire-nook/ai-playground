@@ -1,6 +1,8 @@
 {
   "id": "C-EXT-1",
   "title": "Custom API Orchestration",
+  "completedDate": "2026-09-13",
+  "recordPath": "experiments/custom-api/README.md",
   "summary": "驗證 Custom API 可以組合另一支 caller-aware API，再呼叫外部 Open-Meteo，最後做 application-side normalization。",
   "tags": [
     "Supabase",

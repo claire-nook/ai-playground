@@ -7,7 +7,21 @@
       name="description"
       content="AI Playground 公開實驗展示頁，整理目前可操作與已完成的技術實驗。"
     />
-    <title>AI Playground · Experiment Gallery</title>
+    <title>AI Playground · Human View</title>
+    <link rel="stylesheet" href="/assets/markdown-reader.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
+    ></script>
+    <script defer src="/assets/markdown-reader.js"></script>
 
     <style>
       /* Theme tokens and document-wide defaults. */
@@ -101,6 +115,35 @@
         border-left: 4px solid var(--border);
         background: var(--surface-muted);
         color: var(--text-muted);
+      }
+
+      /* Human View tabs keep the shell stable while switching canonical sources. */
+      .view-tabs {
+        display: flex;
+        gap: 0.4rem;
+        margin-top: 1.25rem;
+        padding: 0.35rem;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+      }
+      .view-tab {
+        flex: 0 0 auto;
+        padding: 0.7rem 1rem;
+        border: 0;
+        border-radius: 10px;
+        color: var(--text-muted);
+        background: transparent;
+        cursor: pointer;
+        font-weight: 750;
+      }
+      .view-tab[aria-selected="true"] {
+        color: #284a3b;
+        background: #dce9e2;
+      }
+      .view-panel[hidden] {
+        display: none;
       }
 
       /* Catalog heading and search/filter controls. */
@@ -347,97 +390,172 @@
         </p>
       </header>
 
-      <section class="section" aria-labelledby="experiments-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Current Gallery</p>
-            <h2 id="experiments-title">Public Experiments</h2>
-          </div>
-          <p>Status 是 Demo 狀態，不是研究可信度分數。</p>
-        </div>
-        <div class="catalog-controls">
-          <div class="control">
-            <label for="search">Search</label
-            ><input
-              id="search"
-              type="search"
-              placeholder="ID、名稱、摘要或 Tag"
-            />
-          </div>
-          <div class="control">
-            <label for="tag-filter">Tag</label
-            ><select id="tag-filter">
-              <option value="">All tags</option>
-            </select>
-          </div>
-          <div class="control">
-            <label for="demo-filter">Demo status</label
-            ><select id="demo-filter">
-              <option value="">All demo statuses</option>
-              <option value="live">Live Demo</option>
-              <option value="retired">Demo Retired</option>
-              <option value="none">No Demo</option>
-            </select>
-          </div>
-          <div class="control">
-            <label for="verification-filter">Verification</label
-            ><select id="verification-filter">
-              <option value="">All verification statuses</option>
-              <option value="verified">Verified</option>
-              <option value="partial">Partial</option>
-              <option value="candidate">Candidate</option>
-            </select>
-          </div>
-        </div>
-        <p
-          id="catalog-state"
-          class="catalog-state"
-          role="status"
-          aria-live="polite"
+      <nav class="view-tabs" role="tablist" aria-label="Repository views">
+        <button
+          id="tab-experiments"
+          class="view-tab"
+          role="tab"
+          aria-selected="true"
+          aria-controls="view-experiments"
+          data-view="experiments"
         >
-          Catalog 載入中…
-        </p>
-        <div id="experiment-grid" class="experiment-grid" hidden></div>
-        <nav
-          id="pagination"
-          class="pagination"
-          aria-label="Catalog pages"
-          hidden
-        ></nav>
-        <div class="gallery-note">
-          <strong>關於狀態：</strong> Demo status 只描述目前入口；Verification
-          status 描述既有研究判定。Demo 退休不會讓 Experiment Record / Evidence
-          失效。
+          Experiments
+        </button>
+        <button
+          id="tab-short-term"
+          class="view-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="view-short-term"
+          data-view="short-term"
+        >
+          Short Term
+        </button>
+        <button
+          id="tab-knowledge-map"
+          class="view-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="view-knowledge-map"
+          data-view="knowledge-map"
+        >
+          Knowledge Map
+        </button>
+      </nav>
+
+      <div
+        id="view-experiments"
+        class="view-panel"
+        role="tabpanel"
+        aria-labelledby="tab-experiments"
+      >
+        <section class="section" aria-labelledby="experiments-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Current Gallery</p>
+              <h2 id="experiments-title">Public Experiments</h2>
+            </div>
+            <p>Status 是 Demo 狀態，不是研究可信度分數。</p>
+          </div>
+          <div class="catalog-controls">
+            <div class="control">
+              <label for="search">Search</label
+              ><input
+                id="search"
+                type="search"
+                placeholder="ID、名稱、摘要或 Tag"
+              />
+            </div>
+            <div class="control">
+              <label for="tag-filter">Tag</label
+              ><select id="tag-filter">
+                <option value="">All tags</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="demo-filter">Demo status</label
+              ><select id="demo-filter">
+                <option value="">All demo statuses</option>
+                <option value="live">Live Demo</option>
+                <option value="retired">Demo Retired</option>
+                <option value="none">No Demo</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="verification-filter">Verification</label
+              ><select id="verification-filter">
+                <option value="">All verification statuses</option>
+                <option value="verified">Verified</option>
+                <option value="partial">Partial</option>
+                <option value="candidate">Candidate</option>
+              </select>
+            </div>
+          </div>
+          <p
+            id="catalog-state"
+            class="catalog-state"
+            role="status"
+            aria-live="polite"
+          >
+            Catalog 載入中…
+          </p>
+          <div id="experiment-grid" class="experiment-grid" hidden></div>
+          <nav
+            id="pagination"
+            class="pagination"
+            aria-label="Catalog pages"
+            hidden
+          ></nav>
+          <div class="gallery-note">
+            <strong>關於狀態：</strong> Demo status 只描述目前入口；Verification
+            status 描述既有研究判定。Demo 退休不會讓 Experiment Record /
+            Evidence 失效。
+          </div>
+        </section>
+      </div>
+
+      <section
+        id="view-short-term"
+        class="view-panel reader-panel"
+        role="tabpanel"
+        aria-labelledby="tab-short-term"
+        hidden
+      >
+        <div class="reader-toolbar">
+          <strong>Human-facing Research Navigation</strong
+          ><a class="github-record" href="#">在 GitHub 查看</a>
         </div>
+        <p class="reader-state" role="status">
+          選擇此視角後讀取最新 Markdown。
+        </p>
+        <article class="markdown-body" hidden></article>
+      </section>
+      <section
+        id="view-knowledge-map"
+        class="view-panel reader-panel"
+        role="tabpanel"
+        aria-labelledby="tab-knowledge-map"
+        hidden
+      >
+        <div class="reader-toolbar">
+          <strong>Canonical Knowledge Map</strong
+          ><a class="github-record" href="#">在 GitHub 查看</a>
+        </div>
+        <p class="reader-state" role="status">
+          選擇此視角後讀取最新 Markdown。
+        </p>
+        <article class="markdown-body" hidden></article>
       </section>
 
-      <section class="section" aria-labelledby="runtime-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Deployment Surface</p>
-            <h2 id="runtime-title">Runtime Check</h2>
+      <div id="view-runtime" class="view-panel">
+        <section class="section" aria-labelledby="runtime-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Deployment Surface</p>
+              <h2 id="runtime-title">Runtime Check</h2>
+            </div>
+            <p>
+              只是確認這張 Gallery 本身有正常被 Netlify 送到 Browser，沒有玄學。
+            </p>
           </div>
-          <p>
-            只是確認這張 Gallery 本身有正常被 Netlify 送到 Browser，沒有玄學。
-          </p>
-        </div>
-        <div class="runtime-card">
-          <div class="runtime-grid">
-            <div class="runtime-item">
-              <span class="runtime-label">JavaScript</span
-              ><code id="js-status">尚未執行</code>
-            </div>
-            <div class="runtime-item">
-              <span class="runtime-label">Current URL</span
-              ><code id="current-url">讀取中…</code>
-            </div>
-            <div class="runtime-item">
-              <span class="runtime-label">Browser Time</span
-              ><code id="browser-time">讀取中…</code>
+          <div class="runtime-card">
+            <div class="runtime-grid">
+              <div class="runtime-item">
+                <span class="runtime-label">JavaScript</span
+                ><code id="js-status">尚未執行</code>
+              </div>
+              <div class="runtime-item">
+                <span class="runtime-label">Current URL</span
+                ><code id="current-url">讀取中…</code>
+              </div>
+              <div class="runtime-item">
+                <span class="runtime-label">Browser Time</span
+                ><code id="browser-time">讀取中…</code>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
       <footer>
         AI Playground · Experiment Demo is disposable; Evidence should not be.
       </footer>
@@ -500,11 +618,12 @@
         const flow = entry.flow
           ? `<div class="flow"><code>${escapeHtml(entry.flow)}</code></div>`
           : "";
-        const action =
+        const demoAction =
           entry.demoStatus === "live"
-            ? `<div class="card-actions"><a href="${escapeHtml(entry.demoPath)}">開啟 Demo</a></div>`
+            ? `<a href="${escapeHtml(entry.demoPath)}">開啟 Live Demo</a>`
             : "";
-        return `<article class="experiment-card"><div class="experiment-meta"><span class="experiment-id">Experiment ${escapeHtml(entry.id)}</span><span class="badges"><span class="status-badge status-${entry.demoStatus}">${labels[entry.demoStatus]}</span><span class="status-badge status-${entry.verificationStatus}">${labels[entry.verificationStatus]}</span></span></div><h3>${escapeHtml(entry.title)}</h3><p>${escapeHtml(entry.summary)}</p><div class="tags">${entry.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>${flow}${action}</article>`;
+        const action = `<div class="card-actions"><a href="/result/?id=${encodeURIComponent(entry.id)}">查看實驗結果</a>${demoAction ? ` · ${demoAction}` : ""}</div>`;
+        return `<article class="experiment-card"><div class="experiment-meta"><span class="experiment-id">Experiment ${escapeHtml(entry.id)} · 完成於 ${escapeHtml(entry.completedDate)}</span><span class="badges"><span class="status-badge status-${entry.demoStatus}">${labels[entry.demoStatus]}</span><span class="status-badge status-${entry.verificationStatus}">${labels[entry.verificationStatus]}</span></span></div><h3>${escapeHtml(entry.title)}</h3><p>${escapeHtml(entry.summary)}</p><div class="tags">${entry.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>${flow}${action}</article>`;
       }
 
       // Pagination: show one twelve-item slice and omit navigation when it adds no value.
@@ -570,6 +689,47 @@
         state.page += direction === "next" ? 1 : -1;
         renderCatalog();
       });
+
+      const documentViews = {
+        "short-term": {
+          path: "notes/short-term-work.md",
+          id: "view-short-term",
+        },
+        "knowledge-map": {
+          path: "knowledge/maps/nook-technical-platform.md",
+          id: "view-knowledge-map",
+        },
+      };
+      const loadedViews = new Set();
+      document
+        .querySelector(".view-tabs")
+        .addEventListener("click", async (event) => {
+          const tab = event.target.closest("[data-view]");
+          if (!tab) return;
+          document
+            .querySelectorAll(".view-tab")
+            .forEach((item) =>
+              item.setAttribute("aria-selected", String(item === tab)),
+            );
+          document.querySelectorAll(".view-panel").forEach((panel) => {
+            panel.hidden =
+              panel.id !== `view-${tab.dataset.view}` &&
+              !(
+                tab.dataset.view === "experiments" &&
+                panel.id === "view-runtime"
+              );
+          });
+          const config = documentViews[tab.dataset.view];
+          if (config && !loadedViews.has(config.id)) {
+            const container = document.getElementById(config.id);
+            loadedViews.add(config.id);
+            await window.PlaygroundReader.renderMarkdown({
+              path: config.path,
+              container,
+              fallback: container.querySelector(".github-record"),
+            });
+          }
+        });
 
       document.getElementById("js-status").textContent = "執行成功";
       document.getElementById("current-url").textContent = window.location.href;

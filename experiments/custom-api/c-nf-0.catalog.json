@@ -1,6 +1,8 @@
 {
   "id": "C-NF-0",
   "title": "Netlify Functions Lifecycle",
+  "completedDate": "2026-09-13",
+  "recordPath": "experiments/custom-api/netlify-functions-lifecycle.md",
   "summary": "驗證 Git source 可建立 Deploy Preview Function、Browser invoke、Cloud logs、Production lifecycle，並在刪除 source 後由新 Deploy 移除 Function。",
   "tags": ["Netlify", "Functions", "Deployment", "Lifecycle"],
   "demoStatus": "retired",

@@ -9,6 +9,8 @@ const requiredStringFields = [
   "id",
   "title",
   "summary",
+  "completedDate",
+  "recordPath",
   "demoStatus",
   "verificationStatus",
 ];
@@ -64,6 +66,26 @@ function validateCatalogEntry(entry, sourcePath) {
     throw new Error(`${sourcePath}: invalid demoStatus`);
   if (!verificationStatuses.has(entry.verificationStatus))
     throw new Error(`${sourcePath}: invalid verificationStatus`);
+  const parsedCompletedDate = new Date(`${entry.completedDate}T00:00:00Z`);
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(entry.completedDate) ||
+    Number.isNaN(parsedCompletedDate.valueOf()) ||
+    parsedCompletedDate.toISOString().slice(0, 10) !== entry.completedDate
+  ) {
+    throw new Error(
+      `${sourcePath}: completedDate must be a valid YYYY-MM-DD date`,
+    );
+  }
+  if (
+    path.isAbsolute(entry.recordPath) ||
+    !entry.recordPath.startsWith("experiments/") ||
+    !entry.recordPath.endsWith(".md") ||
+    entry.recordPath.split("/").includes("..")
+  ) {
+    throw new Error(
+      `${sourcePath}: recordPath must be a repository-relative Experiment Markdown path`,
+    );
+  }
   if (
     entry.demoStatus === "live" &&
     (typeof entry.demoPath !== "string" || !entry.demoPath.startsWith("/"))
@@ -104,9 +126,11 @@ for (const entry of catalog) {
   ids.add(entry.id);
 }
 
-// Sorting: use natural ID order to keep generated output deterministic.
-catalog.sort((left, right) =>
-  left.id.localeCompare(right.id, "en", { numeric: true }),
+// Completion date is the research chronology; natural ID order breaks same-day ties.
+catalog.sort(
+  (left, right) =>
+    right.completedDate.localeCompare(left.completedDate) ||
+    left.id.localeCompare(right.id, "en", { numeric: true }),
 );
 
 // Output generation: emit the disposable browser artifact only after every entry is valid.
