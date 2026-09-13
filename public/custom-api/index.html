@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database-centric Custom API Probe</title>
+  <style>
+    /* Experiment UI：優先讓 iPad 使用者能正常操作，同時保留可觀察的工程證據。 */
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 1rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; background: #f6f7f9; color: #1f2328; }
+    main { width: min(100%, 980px); margin: 0 auto; }
+    section { margin-bottom: 1rem; padding: 1rem; background: #fff; border: 1px solid #d0d7de; border-radius: 14px; }
+    h1, h2 { margin-top: 0; }
+    .muted { color: #59636e; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+    .field label { display: block; margin-bottom: .3rem; font-weight: 700; }
+    input, button { width: 100%; min-height: 44px; padding: .65rem .75rem; font: inherit; border: 1px solid #8c959f; border-radius: 9px; background: #fff; }
+    button { cursor: pointer; font-weight: 700; }
+    button.primary { background: #1f2328; color: #fff; border-color: #1f2328; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+    .actions button { width: auto; }
+    .status-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+    .status-item { padding: .75rem; background: #f6f8fa; border-radius: 9px; }
+    .status-item strong { display: block; margin-bottom: .2rem; }
+    .message { min-height: 1.5rem; margin: .75rem 0 0; font-weight: 700; overflow-wrap: anywhere; }
+    .places { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .8rem; margin-top: 1rem; }
+    .place-card { padding: 1rem; border: 1px solid #d8dee4; border-radius: 12px; background: #fff; }
+    .place-card h3 { margin: 0 0 .25rem; font-size: 1.15rem; }
+    .country { margin: 0; color: #59636e; }
+    .code { display: inline-block; margin-top: .65rem; padding: .2rem .5rem; border-radius: 999px; background: #f0f2f4; font-size: .85rem; }
+    details { margin-top: .5rem; }
+    summary { cursor: pointer; font-weight: 700; }
+    pre { max-height: 360px; overflow: auto; padding: .85rem; background: #0d1117; color: #e6edf3; border-radius: 9px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    [hidden] { display: none !important; }
+    @media (max-width: 680px) {
+      body { padding: .65rem; }
+      .grid, .status-panel { grid-template-columns: 1fr; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <p class="muted">AI Playground · Database-centric Custom API</p>
+      <h1>有效地點查詢</h1>
+      <p>登入後由 Supabase Edge Function 呼叫 PostgreSQL RPC，再透過 Native Data API 補齊國家資料。上面給人看，下面留給 SA 靈魂驗屍。</p>
+    </section>
+
+    <section aria-labelledby="identity-title">
+      <h2 id="identity-title">登入</h2>
+      <div id="login-panel">
+        <form id="login-form">
+          <div class="grid">
+            <div class="field">
+              <label for="account">Account</label>
+              <input id="account" type="email" autocomplete="username" required>
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" type="password" autocomplete="current-password" required>
+            </div>
+          </div>
+          <div class="actions"><button id="login-button" class="primary" type="submit">登入</button></div>
+        </form>
+      </div>
+
+      <div id="session-panel" hidden>
+        <div class="status-panel">
+          <div class="status-item"><strong>Auth State</strong><span>authenticated</span></div>
+          <div class="status-item"><strong>User</strong><span id="user-display">-</span></div>
+        </div>
+        <div class="actions"><button id="logout-button" type="button">登出</button></div>
+      </div>
+      <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="result-section" hidden aria-labelledby="result-title">
+      <h2 id="result-title">有效地點</h2>
+      <p class="muted">這裡顯示 Custom API 整理後的 application result。</p>
+      <div class="actions"><button id="load-button" class="primary" type="button">載入有效地點</button></div>
+      <p id="api-message" class="message" role="status" aria-live="polite"></p>
+      <div id="places" class="places"></div>
+    </section>
+
+    <section aria-labelledby="evidence-title">
+      <h2 id="evidence-title">Evidence / Debug</h2>
+      <p class="muted">不顯示 JWT 或完整 Session，只保留 HTTP status 與 API response。</p>
+      <div class="status-panel">
+        <div class="status-item"><strong>HTTP Status</strong><span id="http-status">尚未呼叫</span></div>
+        <div class="status-item"><strong>Endpoint</strong><span>test-place-country</span></div>
+      </div>
+      <details>
+        <summary>查看 Raw JSON</summary>
+        <div class="actions"><button id="copy-button" type="button">Copy Result</button></div>
+        <pre id="raw-result">尚未呼叫 Custom API。</pre>
+      </details>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+
+    // Public Browser configuration。Publishable Key 可以公開，Secret / service_role 絕不可放入 Playground。
+    const SUPABASE_URL = "https://cctonymfrxneonxryqei.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MN0_kx6LzCPyNbtI4CWZ9w_y-5hew_g";
+    const API_URL = `${SUPABASE_URL}/functions/v1/test-place-country`;
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+
+    const loginPanel = document.getElementById("login-panel");
+    const sessionPanel = document.getElementById("session-panel");
+    const resultSection = document.getElementById("result-section");
+    const authMessage = document.getElementById("auth-message");
+    const apiMessage = document.getElementById("api-message");
+    const rawResult = document.getElementById("raw-result");
+    const httpStatus = document.getElementById("http-status");
+    const places = document.getElementById("places");
+    let lastRawText = "";
+
+    // Public Experiment 只顯示遮罩 Email，避免 Evidence 截圖留下完整 Identity。
+    function maskEmail(email) {
+      if (!email || !email.includes("@")) return "-";
+      const [local, domain] = email.split("@");
+      return `${local.slice(0, 2)}***@${domain}`;
+    }
+
+    // 登入狀態只控制測試 UI，不在畫面輸出 Access Token。
+    function setSessionUi(session) {
+      const authenticated = Boolean(session);
+      loginPanel.hidden = authenticated;
+      sessionPanel.hidden = !authenticated;
+      resultSection.hidden = !authenticated;
+      document.getElementById("user-display").textContent = authenticated ? maskEmail(session.user?.email) : "-";
+      if (!authenticated) {
+        places.textContent = "";
+        apiMessage.textContent = "";
+      }
+    }
+
+    // 將 application result 轉成人類可讀卡片；Raw JSON 另留在 Evidence 區。
+    function renderPlaces(rows) {
+      places.textContent = "";
+      if (!Array.isArray(rows) || rows.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent = "沒有可見的有效地點。這可能是資料為空，也可能是目前 Identity 被 RLS 過濾。";
+        places.appendChild(empty);
+        return;
+      }
+
+      for (const row of rows) {
+        const card = document.createElement("article");
+        card.className = "place-card";
+        const title = document.createElement("h3");
+        title.textContent = row.place_name ?? row.place_code ?? "未命名地點";
+        const country = document.createElement("p");
+        country.className = "country";
+        country.textContent = [row.country_name, row.country_name_en].filter(Boolean).join(" · ") || "國家資料未取得";
+        const code = document.createElement("span");
+        code.className = "code";
+        code.textContent = `${row.place_code ?? "-"} / ${row.country_code ?? "-"}`;
+        card.append(title, country, code);
+        places.appendChild(card);
+      }
+    }
+
+    // 使用目前 Supabase Session 的 Access Token 呼叫受 JWT 保護的 Edge Function。
+    async function callCustomApi() {
+      const loadButton = document.getElementById("load-button");
+      loadButton.disabled = true;
+      apiMessage.textContent = "Custom API 呼叫中…";
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        loadButton.disabled = false;
+        apiMessage.textContent = "目前沒有有效 Session，請重新登入。";
+        setSessionUi(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const text = await response.text();
+        lastRawText = text;
+        httpStatus.textContent = `${response.status} ${response.statusText}`;
+        rawResult.textContent = text || "(empty response)";
+
+        let body = null;
+        try { body = text ? JSON.parse(text) : null; } catch { body = null; }
+
+        if (!response.ok) {
+          renderPlaces([]);
+          apiMessage.textContent = `Custom API 失敗：HTTP ${response.status}`;
+          return;
+        }
+
+        renderPlaces(body?.rows ?? []);
+        apiMessage.textContent = `完成：RPC 回傳 ${body?.rpc_row_count ?? 0} 筆，Country Data API 取得 ${body?.country_row_count ?? 0} 筆。`;
+      } catch (error) {
+        httpStatus.textContent = "Browser request failed";
+        lastRawText = String(error);
+        rawResult.textContent = lastRawText;
+        renderPlaces([]);
+        apiMessage.textContent = "Browser 無法完成 Custom API request，請查看 Evidence / Debug。";
+      } finally {
+        loadButton.disabled = false;
+      }
+    }
+
+    document.getElementById("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const loginButton = document.getElementById("login-button");
+      loginButton.disabled = true;
+      authMessage.textContent = "登入驗證中…";
+
+      const email = document.getElementById("account").value.trim();
+      const password = document.getElementById("password").value;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      document.getElementById("password").value = "";
+      loginButton.disabled = false;
+
+      if (error || !data.session) {
+        authMessage.textContent = "登入失敗，請確認帳號與密碼。";
+        return;
+      }
+
+      setSessionUi(data.session);
+      authMessage.textContent = "Authentication Success。可以用目前 Session 呼叫 Custom API。";
+    });
+
+    document.getElementById("logout-button").addEventListener("click", async () => {
+      await supabase.auth.signOut({ scope: "local" });
+      setSessionUi(null);
+      authMessage.textContent = "已登出。";
+    });
+
+    document.getElementById("load-button").addEventListener("click", callCustomApi);
+
+    document.getElementById("copy-button").addEventListener("click", async () => {
+      if (!lastRawText) return;
+      await navigator.clipboard.writeText(lastRawText);
+      document.getElementById("copy-button").textContent = "Copied";
+      setTimeout(() => { document.getElementById("copy-button").textContent = "Copy Result"; }, 1200);
+    });
+
+    // 若 Browser 已保存 Session，重新整理頁面後直接恢復登入狀態。
+    const { data: initialSession } = await supabase.auth.getSession();
+    setSessionUi(initialSession.session);
+  </script>
+</body>
+</html>
