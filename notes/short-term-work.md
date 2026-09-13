@@ -3,6 +3,8 @@
 > 無交期。依 Claire 有空研究的時間逐項進行。
 > 這不是正式開發排程，也不是 Nook Works Specification；只記錄 Playground **目前仍值得放在手邊的近期研究工作**。
 >
+> **Human-facing Research Navigation：** `short-term-work.md` 的主要用途之一，是讓 Claire 在長對話或跨對話後，不必重新翻閱多個 Repository 目錄，就能直接理解「現在研究到哪裡、接下來要研究什麼、為什麼值得研究」。因此 Current / Next / Candidate 等仍在手邊的研究主題與目的，必須使用 Claire 可直接理解的描述；Technical Term 可以保留英文作為精確術語，但不得只用 Agent / Engineer shorthand 當作研究主題。中文本身不等於可讀，應優先表達實際問題與研究目的。
+>
 > Completed work 的長期意義應畢業到 `knowledge/`、`evidence/` 與 Experiment Record，不讓 Short-term 變成一整排 Completed 墓碑。
 
 ## Knowledge Base Bootstrap — Completed
@@ -57,6 +59,10 @@ Netlify Functions 保留為 credible secondary candidate，較可能適用於 st
 
 ### Current Research Question
 
+> **Claire-readable summary：我們現在要確認的是，未來 Nook Works 常見的 Custom API 工作，是否大多可以安心交給 Supabase Edge Functions；如果 Supabase 確實遇到限制，再研究哪些工作需要改放其他 Runtime。**
+
+精確 Research Question：
+
 > Nook Works 可合理預期會出現的 Custom API workload，是否都能在 Supabase Edge Functions 上以可接受的 runtime、integration、operability 與 free-tier / cost constraint 實作？
 
 研究重點因此由「兩個平台哪一個跑得比較好」調整為：
@@ -67,22 +73,22 @@ Netlify Functions 保留為 credible secondary candidate，較可能適用於 st
 
 後續 Experiment 應挑選能代表真實 Nook Works responsibility 的最小 Probe，而不是繼續增加 Hello World：
 
-1. **Database-centric / Application-side Processing**
+1. **Database-centric / Application-side Processing｜需要讀資料庫並在 API 端繼續加工資料**
    - API 需要讀取 Database。
    - 資料無法只靠 View 或 Stored Procedure 完成最終結果。
    - API 需要進一步做較複雜的 application-side aggregation / transformation / calculation。
 
-2. **Stored Procedure / RPC Orchestration**
+2. **Stored Procedure / RPC Orchestration｜API 呼叫資料庫程序後，再繼續執行後續邏輯**
    - API 呼叫 PostgreSQL Function / RPC / Stored Procedure 執行資料處理。
    - Procedure 回傳結果後，API 繼續執行後續 application logic。
    - 應觀察 DB boundary、error propagation、transaction boundary 與後續處理責任。
 
-3. **External API Orchestration**
+3. **External API Orchestration｜API 整合外部服務並整理結果**
    - API 呼叫一個或多個 external API。
    - 可能包含 normalize、aggregate、timeout、retry、secret management 或 response shaping。
    - 用來驗證 Supabase Edge Functions 是否適合作為 Nook Works 對外服務整合 runtime。
 
-4. **Pure Compute / Longer-running Processing**
+4. **Pure Compute / Longer-running Processing｜測試較耗運算或執行時間較長的 API 工作**
    - 不依賴 Database，主要是 application code 運算。
    - 逐步增加 execution duration / workload，觀察 runtime duration、CPU / memory、timeout 與 free-tier / cost model 是否形成限制。
 
@@ -109,7 +115,7 @@ Netlify Functions 保留為 credible secondary candidate，較可能適用於 st
 
 不要求每個 Probe 都與 Netlify 做 sibling benchmark。只有當 Supabase 在某一 responsibility 出現可疑或不可接受限制，或 workload 本身屬於另一個 standalone project boundary，才需要拉 Netlify Functions 或其他 runtime 進場比較。
 
-## Candidate — Custom API Application Integration
+## Candidate — Custom API Application Integration｜讓 Nook Works Browser 正式接上 Custom API
 
 C-0 與 C-NF-0 已驗證 Deployment Lifecycle，但尚未代表 Nook Works Browser Application 已完成正式 Custom API integration。
 
@@ -123,7 +129,7 @@ C-0 與 C-NF-0 已驗證 Deployment Lifecycle，但尚未代表 Nook Works Brows
 
 這些 responsibility 不需要一次全部綁在第一隻 API 上。Research Question 要能活著走出 Experiment，比展示一隻什麼都會的怪獸 API 重要。
 
-## Candidate — PostgreSQL RPC
+## Candidate — PostgreSQL RPC｜研究哪些 Application Operation 適合由資料庫 Function 提供明確 Contract
 
 Experiment D 的原始目的仍成立：驗證 PostgreSQL Function + RPC 是否能在某些 Application Operation responsibility 下提供比 Native CRUD 更明確的 contract，並與 Custom API / Native Data API 形成 mechanism comparison Evidence。
 
@@ -131,7 +137,7 @@ RPC 同時也是後續 `Stored Procedure / RPC Orchestration` Custom API Probe �
 
 Status：`Candidate`。尚未開始 Experiment。
 
-## Open — Batch Runtime / Scheduling
+## Open — Batch Runtime / Scheduling｜未來批次工作應該在哪裡執行與排程
 
 Batch Runtime 已被辨識為未來 Nook Technical Platform 的 Responsibility，但目前不急著宣布 Provider winner。
 
