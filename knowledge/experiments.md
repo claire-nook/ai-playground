@@ -10,6 +10,27 @@
 
 ---
 
+## 2026-09-13
+
+### Netlify Git Deployment Boundary
+
+- Status: `Verified`
+- Record: [`../experiments/netlify-deployment-boundary/README.md`](../experiments/netlify-deployment-boundary/README.md)
+- Related Evidence: [`../evidence/provider-boundary-pitfalls.md`](../evidence/provider-boundary-pitfalls.md)
+- Primary Intent: `Playground / Static Deployment Boundary`
+- Also Supports: `Nook Technical Platform / Deployment`
+- Tags: `nook-platform`, `ipad-first`, `deployment`, `netlify`, `browser`
+
+**Why it existed**
+
+研究 Netlify Git deployment 時，Deploy file browser 顯示 Playground 的 Research Record、Knowledge、Evidence 與其他 Repository directories 一起進入 Site Deploy。問題因此從「Netlify 怎麼自動部署」收斂成「Repository 與 Public Artifact 的 Deployment Boundary 應該在哪裡」。
+
+**What it unlocked**
+
+建立 `public/` 作為 Static Public Artifact boundary，並把 Browser Artifact 與 `experiments/**/README.md` Experiment Record 分離。新的 Netlify Deploy 已直接驗證只包含 `public/` 內容。同時留下後續獨立問題：Publish Boundary 已完成，但 Trigger Boundary 仍需研究。
+
+---
+
 ## 2026-09-12
 
 ### Experiment A — Supabase Auth
