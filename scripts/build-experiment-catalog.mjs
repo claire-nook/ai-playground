@@ -42,10 +42,14 @@ function validateCatalogEntry(entry, sourcePath) {
   }
   if (
     !Array.isArray(entry.tags) ||
-    entry.tags.some((tag) => typeof tag !== "string" || !tag.trim())
+    entry.tags.length === 0 ||
+    entry.tags.some(
+      (tag) =>
+        typeof tag !== "string" || tag.trim() === "" || tag !== tag.trim(),
+    )
   ) {
     throw new Error(
-      `${sourcePath}: tags must be an array of non-empty strings`,
+      `${sourcePath}: tags must be a non-empty array of trimmed, non-empty strings`,
     );
   }
   const normalizedTags = entry.tags.map((tag) =>
