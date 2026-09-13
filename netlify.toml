@@ -7,7 +7,80 @@
 
 [build]
   publish = "public"
-  ignore = "sh -c 'git diff --name-only \"$CACHED_COMMIT_REF\" \"$COMMIT_REF\" | grep -Eq \"^(public/|netlify/|netlify\\.toml$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)\" && exit 1 || exit 0'"
+  ignore = '''
+sh -c '
+echo "NETLIFY_TRIGGER_GIT_REF_TOPOLOGY_PROBE_BEGIN"
+printf "CONTEXT=%s\n" "${CONTEXT:-UNSET}"
+printf "BRANCH=%s\n" "${BRANCH:-UNSET}"
+printf "HEAD=%s\n" "${HEAD:-UNSET}"
+printf "COMMIT_REF=%s\n" "${COMMIT_REF:-UNSET}"
+printf "REVIEW_ID=%s\n" "${REVIEW_ID:-UNSET}"
+
+echo "GIT_HEAD_RESOLVE_BEGIN"
+git rev-parse HEAD 2>&1 || echo "GIT_HEAD_RESOLVE_FAILED"
+git show -s --format="HEAD_IDENTITY=%H|PARENTS=%P|DATE=%cI|SUBJECT=%s" HEAD 2>&1 || echo "GIT_HEAD_IDENTITY_FAILED"
+echo "GIT_HEAD_RESOLVE_END"
+
+echo "GIT_REMOTES_BEGIN"
+remote_output=$(git remote -v 2>&1)
+remote_status=$?
+if [ "$remote_status" -eq 0 ] && [ -n "$remote_output" ]; then
+  printf "%s\n" "$remote_output" | awk "{ print \$1, \"[URL_REDACTED]\", \$3 }"
+elif [ "$remote_status" -eq 0 ]; then
+  echo "GIT_REMOTES_NONE"
+else
+  printf "%s\n" "$remote_output"
+  echo "GIT_REMOTES_FAILED"
+fi
+echo "GIT_REMOTES_END"
+
+echo "GIT_BRANCHES_BEGIN"
+git branch -a 2>&1 || echo "GIT_BRANCHES_FAILED"
+echo "GIT_BRANCHES_END"
+echo "GIT_SHOW_REF_BEGIN"
+git show-ref 2>&1 || echo "GIT_SHOW_REF_NONE_OR_FAILED"
+echo "GIT_SHOW_REF_END"
+echo "GIT_RELEVANT_REFS_BEGIN"
+git for-each-ref --format="%(objectname)|%(refname)" refs/heads refs/remotes refs/pull 2>&1 || echo "GIT_RELEVANT_REFS_FAILED"
+echo "GIT_RELEVANT_REFS_END"
+
+if [ -n "${COMMIT_REF:-}" ] && git rev-parse --verify "${COMMIT_REF}^{commit}" >/dev/null 2>&1; then
+  probe_commit=$(git rev-parse --verify "${COMMIT_REF}^{commit}")
+  echo "COMMIT_REF_RESOLVED=$probe_commit"
+  git show -s --format="COMMIT_REF_IDENTITY=%H|PARENTS=%P|DATE=%cI|SUBJECT=%s" "$probe_commit" 2>&1 || echo "COMMIT_REF_IDENTITY_FAILED"
+else
+  probe_commit=""
+  echo "COMMIT_REF_RESOLVE_FAILED"
+fi
+
+for candidate in refs/remotes/origin/main origin/main refs/heads/main main; do
+  marker=$(printf "%s" "$candidate" | tr "/" "_" | tr "[:lower:]" "[:upper:]")
+  echo "CANDIDATE_${marker}_BEGIN"
+  if resolved=$(git rev-parse --verify "${candidate}^{commit}" 2>/dev/null); then
+    echo "CANDIDATE_${marker}_RESOLVED=$resolved"
+    git show -s --format="CANDIDATE_IDENTITY=%H|PARENTS=%P|DATE=%cI|SUBJECT=%s" "$resolved" 2>&1 || echo "CANDIDATE_${marker}_IDENTITY_FAILED"
+    if [ -n "$probe_commit" ]; then
+      if merge_base=$(git merge-base "$resolved" "$probe_commit" 2>/dev/null); then
+        echo "CANDIDATE_${marker}_MERGE_BASE=$merge_base"
+        echo "CANDIDATE_${marker}_CHANGED_PATHS_BEGIN"
+        git diff --name-only "$merge_base" "$probe_commit" 2>&1 || echo "CANDIDATE_${marker}_CHANGED_PATHS_FAILED"
+        echo "CANDIDATE_${marker}_CHANGED_PATHS_END"
+      else
+        echo "CANDIDATE_${marker}_MERGE_BASE_FAILED"
+      fi
+    else
+      echo "CANDIDATE_${marker}_COMPARISON_SKIPPED_COMMIT_REF_UNRESOLVED"
+    fi
+  else
+    echo "CANDIDATE_${marker}_RESOLVE_FAILED"
+  fi
+  echo "CANDIDATE_${marker}_END"
+done
+
+echo "NETLIFY_TRIGGER_GIT_REF_TOPOLOGY_PROBE_END"
+exit 1
+'
+'''
 
 [functions]
   directory = "netlify/functions"
