@@ -154,13 +154,15 @@ git diff $CACHED_COMMIT_REF $COMMIT_REF
 
 下一步不是再調 regex，而是先確認 Deploy Preview 是否提供穩定可用的 PR base / event change boundary，再設計最小 comparison strategy。
 
-## Git Ref Topology Probe — Prepared
+## Git Ref Topology Probe — PR #7 Provider Result
 
 由於既有 Observability Probe 已證明 `$CACHED_COMMIT_REF` 不是該次 PR base，下一個 Deploy Preview 暫時改以 fail-safe probe 觀察 provider checkout 中實際存在的 Git topology，而不是繼續假設 cached ref 的語意。
 
 Probe 將記錄 allowlisted build identity、經 URL 遮蔽的 remote 列表、local / remote / pull-related refs，並分別嘗試解析 `refs/remotes/origin/main`、`origin/main`、`refs/heads/main` 與 `main`。若 candidate 與 `$COMMIT_REF` 都可解析，probe 會記錄 merge-base 及 merge-base-to-commit changed paths；每個失敗路徑也會留下固定 marker。
 
-Status: `Prepared / Provider Result Pending`。目前只有 local syntax validation 與 controlled simulation，尚未取得 Netlify Provider Log；本次不據此選定 final Trigger Boundary strategy。Probe 最後固定以 non-zero 結束，讓 Netlify 繼續 build / deploy。
+PR #7 的 Provider Result 顯示：`COMMIT_REF` 是 PR head `656ff7aaf5ff6d4256ccfeeb7ef55825101c9739`，GitHub-visible PR base 是 `72e4ac393c9e2e5689d340f15224c59f1526a7f0`，但 checkout `origin/main` 仍是 `a1ff93b720fe6b066ac0bddcfbb638f859ea5be1`，local `main` 更舊，為 `64b55130098b903117ec1bdb3399b4f2ddd9c660`。stale `origin/main` 到 PR head 的 diff 有 9 paths，而 GitHub 真正 PR diff 只有 3 files。
+
+因此「checkout 裡存在 `origin/main` 就可以直接拿來當 current PR baseline」已被排除。下一個最小 candidate 是只在 Deploy Preview probe 中 fresh-fetch current base 到隔離 ref，再比較 merge-base-to-head；完整 investigation：`agent-work/reports/2026-09-13-netlify-trigger-boundary-next-investigation.md`。本結果仍不決定 final Trigger Boundary。
 
 ## Constraint / Unknown
 
