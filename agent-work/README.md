@@ -36,6 +36,18 @@ Research Question、Architecture / Responsibility Boundary、Technical Pattern�
 
 依 Work Order 執行 implementation / experiment，使用自己的 Workspace / Runtime / Tooling，保留 Diff、Test、Logs、Artifacts、Failure / Unknown，commit 可審查成果。Implementation authority 不等於 Architecture Decision authority。
 
+### 2.1 Naming / Semantic Intent
+
+Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名或技術詞彙，預設視為**語意指稱**，不是正式 Identifier Contract。Primary Agent 應先理解「這個東西代表什麼」，再依 Domain、Platform、Language、Repository convention、grammar 與未來維護性決定正式命名。
+
+例如 Claire 說「加一個 `completeDate`」，預設意思是「需要一個表示 Experiment 完成日期的欄位」，不是要求正式欄位一定叫 `completeDate`。正式名稱可由 Primary 依語境決定，例如 `completedDate`、`completedAt` 或其他更合適的 Identifier。
+
+只有 Claire 明確表示「這是正式名稱」、「名稱不要改」、「欄位就叫 X」或既有 Domain Specification 已定義 canonical term 時，才把字面名稱視為 Requirement。既有 Domain Term 不應因 Agent 覺得另一個英文比較順眼就私自改名。
+
+如果 Claire 提出的 **Domain Name 本身語意含糊、容易誤導、與既有 Domain vocabulary 衝突，或真的取得有點蠢而可能留下長期技術債**，Primary 不應默默照抄，也不應擅自改掉；先指出問題與替代方案，跟 Claire 討論後再定正式名稱。Typo、漏字母與口語簡寫則應優先依上下文修正，不把打字失誤升格成 Architecture Decision。
+
+> **Casual Name ≠ Required Identifier. Semantic Intent first; canonical naming is a design responsibility.**
+
 ---
 
 ## 3. Handoff Model
@@ -68,7 +80,7 @@ Human / Provider Gate when required
 
 ### 3.1 Current Codex Dispatch Procedure
 
-截至 2026-09-13，一般 ChatGPT Project Primary Agent 沒有直接 Dispatch Codex 的工具，Claire 是 Human Relay / Dispatch Gate。
+截至 2026-09-14，一般 ChatGPT Project Primary Agent 沒有直接 Dispatch Codex 的工具，Claire 是 Human Relay / Dispatch Gate。
 
 1. Primary + Claire 將 Research Question / Specification / Scope 討論到足以委派。
 2. Primary 建立 Work Order 並 commit 必要 Context。
@@ -83,6 +95,8 @@ Human / Provider Gate when required
 11. Runtime / Functional Evidence 需要人類環境時，由 Claire 執行；最後才依 Knowledge Capture Protocol 升格 Verified Judgment。
 
 如果 Primary 在 Codex Workspace 建立後才 commit 新必要 Context，不假設舊 Workspace 自動 refresh；目前保守做法是開新 task / workspace。
+
+**Rework 例外：**新 Workspace 也不保證能接續既有 PR implementation branch。2026-09-14 Experiment Catalog REWORK 實際觀察到新 Workspace 只有 snapshot branch `work`、沒有 Git remote、沒有 PR #18 branch/ref，甚至缺少該 PR 才新增的 implementation files，因此無法在「不重做平行 implementation」的前提下修改既有 PR。遇到這種情況，Codex 應停止並回報，不要自行建立新的平行 PR。Primary 若具有 GitHub branch write capability，可直接對既有 PR head branch 做小型、低風險修正；否則應重新建立可取得正確 implementation context 的 execution surface。
 
 ### 3.2 Deployment-specific limitation learned from C-EXT-1
 
@@ -133,7 +147,7 @@ Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Imp
 
 ## 7. Current Judgment
 
-2026-09-13 已實際跑過 Documentation Audit/Fix 與 C-EXT-1 multi-artifact implementation + deployment handoff。目前可成立：
+截至 2026-09-14，已實際跑過 Documentation Audit/Fix、C-EXT-1 multi-artifact implementation + deployment handoff，以及 Experiment Catalog 的多輪 PR / REWORK handoff。目前可成立：
 
 - Work Order as Handoff Contract：有效。
 - Claire as Human Relay, not Requirement Translator：有效。
@@ -144,6 +158,8 @@ Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Imp
 - Codex local SHA：不可當 GitHub Review identity。
 - Codex direct GitHub Actions trigger：本次 execution surface 不可用。
 - Human-gated `workflow_dispatch` → GitHub Actions → provider deployment：已實際跑通。
+- **New Codex Workspace ≠ existing PR branch continuation**：已實際觀察；沒有 PR branch/ref/remote 時，REWORK 應停止，不得假裝能接續或自行重建平行 implementation。
+- **Primary direct GitHub patch 可作為小型 REWORK fallback**：當既有 PR branch 可由 Primary GitHub connector 寫入，且修正範圍小、Architecture 已定、風險可直接 QC 時成立；不要把它擴張成取代 Codex interactive implementation loop 的常態。
 - Work Order 會迫使 Primary 將隱性 Architecture / Security / Acceptance Rule 顯性化，這是 delegation 的附帶價值；成熟 Pattern 應讓未來 Work Order 更短，而不是越寫越胖。
 
 完整 Evidence / Unknown / Product-behavior boundary 見 [`experience/codex-cloud-workspace.md`](experience/codex-cloud-workspace.md)。
