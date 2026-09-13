@@ -76,6 +76,10 @@ Netlify `ignore` command 的 exit semantics：
 
 此段文字本身就是 Case B 的 controlled input；結果必須等 Provider direct evidence 後再填，不用文字預言冒充測試通過。
 
+### Case B v2 controlled probe marker
+
+本次 v2 change 僅屬 Repository-only documentation；不修改 `public/`、`netlify/`、`netlify.toml`，也不修改 root package manifest / lockfile。預期 current Netlify custom ignore rule 會判定 deployable surface 無變更並停止 build；實際結果仍等待 Provider Evidence，不預寫為成功。
+
 ## Constraint / Unknown
 
 - 本次不改 Base directory；Repository root 仍保留為 Netlify build context。
