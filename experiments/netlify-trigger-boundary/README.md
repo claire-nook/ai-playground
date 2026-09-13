@@ -84,6 +84,31 @@ Netlify `ignore` command 的 exit semantics：
 - Build Hook 不受 `ignore` command 阻止，不屬於本次 Git-trigger boundary。
 - Netlify Product behavior 可能變更；結論以本次直接 Evidence 為準。
 
+## Observability Probe — Case B v2 Follow-up
+
+Case B v2 的 GitHub-visible diff 只有本 Experiment Record，但 Netlify 在成功取得
+`pull/5/head` 並執行既有 custom `ignore` command 後仍繼續 publish / deploy。這是既有
+comparison model 與「本次 PR 自己改了什麼」之間存在 boundary mismatch 的強烈
+Evidence；它並未證明哪一種 comparison strategy 才是最終答案。
+
+為避免繼續猜測 cache / ref semantics，`netlify.toml` 暫時將 `ignore` rule 換成
+fail-safe-toward-deploy 的 Observability Probe。下一次 Deploy Preview 預計記錄：
+
+- Netlify 提供的 `CONTEXT`、`BRANCH`、`HEAD`、`COMMIT_REF`、
+  `CACHED_COMMIT_REF`、`REVIEW_ID`。
+- Workspace `git rev-parse HEAD`，以及 HEAD commit identity、parents 與 subject。
+- `COMMIT_REF`、`CACHED_COMMIT_REF` 各自是否能解析成 commit。
+- refs 都可解析時，cached-to-commit 的完整 changed-path output 與 merge-base。
+- merge-base 可取得時，merge-base-to-commit 的完整 changed-path output。
+- 每個重要 Git operation 的成功或失敗 marker。
+
+這些資料只用於觀察實際 comparison context；額外列印 merge-base diff 不表示已選定
+merge-base 作為 final Trigger Boundary。Probe 無論個別診斷成功或失敗都以 non-zero
+結束，使 Netlify 繼續 build / deploy。
+
+**Provider Result：尚未取得。** 必須等待下一次 Netlify Deploy Preview Log，由
+Primary Agent Review 後才能記錄結果；Case B 目前不標為 Verified / Passed。
+
 ## Current Judgment
 
 `Candidate`，等待 Case A / B / C 的 Netlify direct evidence 後再升格。

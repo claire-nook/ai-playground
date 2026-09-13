@@ -1,13 +1,93 @@
 # Netlify deployment configuration for AI Playground.
 #
-# Trigger Boundary principle:
-# only changes that can affect Netlify deployable output or runtime should wake
-# the Netlify build pipeline. Research records and other laboratory context stay
-# in the repository without causing a deployment by themselves.
+# Temporary observability probe for the Git comparison context used by Netlify's
+# custom ignore command. This deliberately exits non-zero so diagnostics can
+# never suppress the associated build/deploy.
 
 [build]
   publish = "public"
-  ignore = "sh -c 'git diff --name-only \"$CACHED_COMMIT_REF\" \"$COMMIT_REF\" | grep -Eq \"^(public/|netlify/|netlify\\.toml$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)\" && exit 1 || exit 0'"
+  ignore = '''
+echo "NETLIFY_TRIGGER_OBSERVABILITY_PROBE_BEGIN"
+for name in CONTEXT BRANCH HEAD COMMIT_REF CACHED_COMMIT_REF REVIEW_ID; do
+  eval "value=\${$name-}"
+  if [ -n "$value" ]; then
+    printf "ENV_%s=%s\n" "$name" "$value"
+  else
+    printf "ENV_%s=<unset>\n" "$name"
+  fi
+done
+
+echo "GIT_REV_PARSE_HEAD_BEGIN"
+if git rev-parse HEAD; then
+  echo "GIT_REV_PARSE_HEAD_OK"
+else
+  echo "GIT_REV_PARSE_HEAD_FAILED"
+fi
+echo "GIT_REV_PARSE_HEAD_END"
+
+echo "GIT_SHOW_HEAD_BEGIN"
+if git show -s --format="commit=%H%nparents=%P%nauthor=%an <%ae>%nauthor_date=%aI%ncommitter=%cn <%ce>%ncommitter_date=%cI%nsubject=%s" HEAD; then
+  echo "GIT_SHOW_HEAD_OK"
+else
+  echo "GIT_SHOW_HEAD_FAILED"
+fi
+echo "GIT_SHOW_HEAD_END"
+
+commit_resolved=""
+cached_resolved=""
+echo "COMMIT_REF_RESOLVE_BEGIN"
+if [ -z "${COMMIT_REF-}" ]; then
+  echo "COMMIT_REF_RESOLVE_FAILED reason=unset"
+elif commit_resolved=$(git rev-parse --verify "${COMMIT_REF}^{commit}" 2>&1); then
+  printf "COMMIT_REF_RESOLVE_OK sha=%s\n" "$commit_resolved"
+else
+  printf "COMMIT_REF_RESOLVE_FAILED output=%s\n" "$commit_resolved"
+  commit_resolved=""
+fi
+echo "COMMIT_REF_RESOLVE_END"
+
+echo "CACHED_COMMIT_REF_RESOLVE_BEGIN"
+if [ -z "${CACHED_COMMIT_REF-}" ]; then
+  echo "CACHED_COMMIT_REF_RESOLVE_FAILED reason=unset"
+elif cached_resolved=$(git rev-parse --verify "${CACHED_COMMIT_REF}^{commit}" 2>&1); then
+  printf "CACHED_COMMIT_REF_RESOLVE_OK sha=%s\n" "$cached_resolved"
+else
+  printf "CACHED_COMMIT_REF_RESOLVE_FAILED output=%s\n" "$cached_resolved"
+  cached_resolved=""
+fi
+echo "CACHED_COMMIT_REF_RESOLVE_END"
+
+if [ -n "$commit_resolved" ] && [ -n "$cached_resolved" ]; then
+  echo "CACHED_TO_COMMIT_DIFF_NAME_ONLY_BEGIN"
+  if git diff --name-only "$cached_resolved" "$commit_resolved"; then
+    echo "CACHED_TO_COMMIT_DIFF_NAME_ONLY_OK"
+  else
+    echo "CACHED_TO_COMMIT_DIFF_NAME_ONLY_FAILED"
+  fi
+  echo "CACHED_TO_COMMIT_DIFF_NAME_ONLY_END"
+
+  echo "MERGE_BASE_BEGIN"
+  merge_base_output=""
+  if merge_base_output=$(git merge-base "$cached_resolved" "$commit_resolved" 2>&1); then
+    printf "MERGE_BASE_OK sha=%s\n" "$merge_base_output"
+    echo "MERGE_BASE_TO_COMMIT_DIFF_NAME_ONLY_BEGIN"
+    if git diff --name-only "$merge_base_output" "$commit_resolved"; then
+      echo "MERGE_BASE_TO_COMMIT_DIFF_NAME_ONLY_OK"
+    else
+      echo "MERGE_BASE_TO_COMMIT_DIFF_NAME_ONLY_FAILED"
+    fi
+    echo "MERGE_BASE_TO_COMMIT_DIFF_NAME_ONLY_END"
+  else
+    printf "MERGE_BASE_FAILED output=%s\n" "$merge_base_output"
+  fi
+  echo "MERGE_BASE_END"
+else
+  echo "PAIR_COMPARISON_SKIPPED reason=unresolved_ref"
+fi
+
+echo "NETLIFY_TRIGGER_OBSERVABILITY_PROBE_END"
+exit 1
+'''
 
 [functions]
   directory = "netlify/functions"
