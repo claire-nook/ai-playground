@@ -250,28 +250,56 @@ Report 遵守 `agent-work/report-language-guideline.txt`。
 
 ### Result
 
-待 Codex 填寫。
+已完成 scoped implementation：新增 `test-weather-orchestrator` Supabase Edge Function、專用 manual deployment workflow，以及獨立的 Netlify Browser Test UI。Local mock runtime 已觀察到 missing Authorization、zero-place short circuit、caller Authorization 原樣 forward，以及兩個 Place 中一成功／一失敗時的 failure isolation。
+
+Deployment execution 目前停在 **Human Gate**。此 execution surface 沒有 Git remote，且 `gh auth status` 顯示未登入 GitHub，因此無法觸發 GitHub `workflow_dispatch` 或取得 provider run result；沒有改用不安全 workaround，也不宣稱已部署。Claire 可在 GitHub Actions 手動執行 workflow **Deploy Test Weather Orchestrator**。
 
 ### Evidence
 
-待 Codex 填寫。
+- Source：`supabase/functions/test-weather-orchestrator/index.ts`
+  - `Authorization` 缺少時回傳 explicit `401` JSON。
+  - 以 `SUPABASE_URL` 建立 `/functions/v1/test-place-country` endpoint，server-to-server request 使用未修改的 caller `Authorization` value。
+  - downstream non-2xx 轉為 `502`，保留 `valid_place_api_status` 與受限長度的 safe diagnostic。
+  - `places.length === 0` 在 `Promise.all` / Open-Meteo call 之前直接回傳 empty success。
+  - per-place request 使用指定 Open-Meteo contract；每個 promise 自行表達 `ok`、`provider_status`、normalized D-1 weather 或 safe error。
+  - Source inspection 未發現 `.from(...)`、`.rpc(...)`、`service_role` 或其他 direct DB / privileged access。
+- Workflow：`.github/workflows/deploy-test-weather-orchestrator.yml`
+  - `workflow_dispatch` human gate、`actions/checkout@v4`、`supabase/setup-cli@v1`。
+  - 僅以 `${{ secrets.SUPABASE_ACCESS_TOKEN }}` 引用 access token；deploy command 保留 JWT verification default。
+- Browser artifact：`public/custom-api-orchestration/index.html`
+  - email/password login、persisted session restore、masked email、caller access token request、per-place normalized cards、HTTP status / endpoint / Raw JSON debug。
+  - DOM 不輸出 JWT / Refresh Token；responsive breakpoint 支援窄螢幕 / iPad Safari 操作。
+- Checks / observations：
+  - `tsc --noEmit --strict --lib ES2022,DOM /tmp/deno-globals.d.ts supabase/functions/test-weather-orchestrator/index.ts`：pass。
+  - compiled mock runtime + `node /tmp/orchestrator-test.mjs`：`orchestrator runtime branches OK`；確認 `401`、zero-place 僅一次 downstream fetch、Authorization value unchanged、兩個 weather fan-out 可得到 `1 success / 1 failure`。
+  - Ruby YAML parse、extracted Browser module `node --check`、`git diff --check`：pass。
+  - boundary scan：`no direct database API access`、`no forbidden deployment/security pattern`。
+  - `gh auth status`：`You are not logged into any GitHub hosts.`；`git remote -v` 無輸出。
 
 ### Deviations
 
-待 Codex 填寫。
+- Work Order `Context / Read First` 指定的 root `playground.md` 在 snapshot 中不存在；實際 root entrypoint 為 `README.md`，已閱讀作為 repository boundary / security context。其餘指定 target / context files均存在。此缺檔未改變 API contract 或施工 boundary，因此保留於 Report 而未自行建立猜測內容。
+- 首次嘗試 `npx --yes typescript@5.9.2 ...` 被 npm registry policy 以 HTTP `403` 阻擋；environment 已有 global TypeScript `6.0.3`，後續使用 `tsc` 完成相同 static check。
+- Environment 沒有可用 Chromium / Playwright browser binary，因此未產生 local screenshot；Browser artifact 僅完成 markup/script static checks，實際 Netlify / iPad Safari 畫面與操作仍待 Human Gate 後驗證。
 
 ### Failure / Unknown
 
-待 Codex 填寫。
+- **Unknown / 未自我認證**：Edge Function 尚未由此 surface 部署，沒有 GitHub Action run URL / log 或 Supabase deployment result。
+- **Unknown / 待 runtime Evidence**：Active Claire 的 real valid places、Open-Meteo provider response、normalized time-dependent values 尚未觀察。
+- **Unknown / 待 runtime Evidence**：TU01 / TU02 是否在完整 deployed chain 得到 `place_count: 0`，以及實際 provider fan-out 是否為 0。
+- **Unknown / 待 Browser Evidence**：Netlify-hosted page 的 CORS、session restore 與 iPad Safari rendering / interaction。
 
 ### Observation
 
-待 Codex 填寫。
+在 local controlled runtime 中，orchestrator 對 valid-place API 只傳 caller 提供的 Authorization header；zero rows path 沒有 Open-Meteo fetch；非空 rows 使用 per-place request，單一 `503` 會成為該 row 的 failure，而另一 row 仍保留 normalized success。這是 implementation-level observation，不是 deployed provider evidence。
 
 ### Candidate Conclusion
 
-待 Codex 填寫。
+Source 與 local runtime observation 支持此 implementation **可作為** Custom API orchestration runtime probe candidate，且設計符合 caller identity、RLS responsibility、zero-place short circuit 與 per-place failure isolation constraint。因 deployment 與 real identity/provider chain 尚未執行，不將此結論升格為 `Verified` 或 Production Decision。
 
 ### Follow-up / Decision Needed
 
-待 Codex 填寫。
+1. Claire 在 GitHub Actions 執行 **Deploy Test Weather Orchestrator**（`workflow_dispatch`）。
+2. Primary Agent 取得 Action run / deploy log，確認 selected revision 與 Supabase deployment result。
+3. Netlify 發布 `public/custom-api-orchestration/index.html` 後，由 Claire 在 iPad Safari 依序用 Active Claire、TU01、TU02 呼叫並保留 HTTP status / raw response evidence；不得截入 credential。
+4. Primary Agent 依 runtime evidence 做 QC 與 Evidence 判斷；本 Report 不自行更新 Knowledge Catalog / Evidence Index / Technical Platform Judgment。
