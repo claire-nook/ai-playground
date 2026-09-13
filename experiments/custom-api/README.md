@@ -4,28 +4,8 @@
 
 - Date: 2026-09-12
 - Status: Completed / Verified
-- Question: iPad-first workflow 能否在沒有 Local Desktop / Mac CLI 的情況下部署、呼叫、檢查與移除 Supabase Edge Function？
 
-### Result
-
-C-0 已驗證兩條可行 deployment path：
-
-```text
-GitHub source → GitHub Actions → Supabase CLI → Edge Function
-GitHub source → ChatGPT Supabase Connector → Edge Function
-```
-
-GitHub Actions + CLI 完成 deploy / invoke / delete；Connector 完成 deploy / inspect，Connector-deployed function 亦可由 Actions delete。Claire 以 iPad Safari 實際取得 `hello-action` 預期 JSON。
-
-因此在已測條件下，Supabase Edge Function lifecycle 不要求 Claire 擁有 Local Desktop / Mac。正式 Production deployment mechanism 尚未決定。
-
-### Credential observation
-
-GitHub Actions route 在當時需要 Supabase PAT；Claire 可用的是 temporary Classic PAT，權限範圍偏大。Connector deployment 不需要 Claire 另外建立並注入 user-managed PAT，但當時 Connector 沒有 Edge Function delete action。這是 deployment governance / credential trade-off，不是 provider winner 結論。
-
-### C-0 scope boundary
-
-C-0 刻意使用無 DB、Auth、RLS、CORS、Business Logic 的 Hello World，只回答 deployment lifecycle。後續 Database-centric probe 已補上這些 Application Integration Evidence。
+GitHub source → GitHub Actions → Supabase CLI → Edge Function，以及 GitHub source → ChatGPT Supabase Connector → Edge Function 均已驗證。iPad-first lifecycle 不要求 Local Desktop / Mac。完整 lifecycle Evidence 延續既有 C-0 結論。
 
 ---
 
@@ -33,187 +13,159 @@ C-0 刻意使用無 DB、Auth、RLS、CORS、Business Logic 的 Hello World，�
 
 - Date: 2026-09-13
 - Status: Completed / Verified
-- Runtime: Supabase Edge Functions
-- Browser Host: Netlify
-- API source: `supabase/functions/test-place-country/index.ts`
-- Browser artifact: `public/custom-api/index.html`
+- API: `supabase/functions/test-place-country/index.ts`
+- Browser: `public/custom-api/index.html`
 - PostgreSQL Function: `public.test_get_valid_places()`
 
-### Question
-
-Supabase Edge Function 作為 Nook Works Custom API runtime 時，是否能在 authenticated Browser request 中：
-
-1. 接受 Supabase Auth JWT；
-2. 透過 RPC 呼叫 PostgreSQL Function；
-3. 再由 Custom API 使用 Supabase Native Data API 讀取 Table；
-4. 在 Application Layer 做 mapping / response shaping；
-5. 保留 caller-scoped RLS / Application Access behavior？
-
-### Probe design
-
-這是一個刻意有點繞路的最小 Probe。Database 本來可以直接 join country，但本次故意拆開責任，讓一支 API 同時實際走過 RPC 與 Native Data API：
+### Verified chain
 
 ```text
 Netlify Browser
-→ Supabase Auth Session / JWT
-→ Supabase Edge Function: test-place-country
-→ RPC: test_get_valid_places()
-→ place + country_code
-→ Native Data API: country SELECT
-→ Edge Function mapping
-→ JSON response
-→ Browser human-readable cards + Evidence / Debug
+→ Supabase Auth JWT
+→ test-place-country Edge Function
+→ RPC / PostgreSQL Function
+→ Native Data API SELECT
+→ application-side mapping
+→ Browser result
 ```
 
-Edge Function 使用 Publishable/Anon runtime credential 加上 caller `Authorization` header，而不是 `service_role`，目的就是讓 RPC 與 Data API 在 caller identity 下執行並觀察既有 RLS / Application Access Boundary。
+具有效 Application Access 的 Claire 測試帳號得到 HTTP 200、2 個 Place；TU01 / TU02 均 Authentication Success，但因 tested RLS / Application Access behavior 得到 HTTP 200 + `rows=[]`。這支持 caller-scoped RLS boundary 在 tested chain 中被保留。
 
-### Browser / CORS
+RLS empty rows 仍不能區分 `No Data` 與 `No Application Access`。Explicit Business Authorization / 403 semantics 尚未驗證。Custom API 內 Native INSERT / UPDATE / DELETE 也不屬於本 Probe；Native CRUD 已由 Experiment B 驗證。
 
-Netlify 與 Supabase Edge Function 是不同 Origin。帶 `Authorization` header 的 Browser request 會觸發 CORS preflight，因此 API 明確處理 `OPTIONS`，並回傳允許 `authorization`, `x-client-info`, `apikey`, `content-type` 的 CORS headers。
+---
 
-這次實測證明：
+## C-EXT-1 — Custom API Orchestration / External API
+
+- Date: 2026-09-13
+- Status: Completed / Runtime Verified
+- Weather API: `supabase/functions/test-weather-orchestrator/index.ts`
+- Internal API: `supabase/functions/test-place-country/index.ts`
+- Browser: `public/custom-api-orchestration/index.html`
+- Deployment: `.github/workflows/deploy-test-weather-orchestrator.yml`
+- External Provider: Open-Meteo Weather Forecast API
+
+### Research Question
+
+Supabase Edge Function 是否能承擔 Nook Works 常見的 orchestration workload：一支 Custom API 以 caller identity 呼叫另一支 Custom API，取得 RLS-filtered application data，再呼叫 External API，最後 normalize 成 Browser 可使用的 response？
+
+### Probe design
 
 ```text
-Netlify-hosted Browser → cross-origin Supabase Edge Function
+Netlify Browser
+→ Supabase Auth JWT
+→ test-weather-orchestrator
+→ forward same Authorization header
+→ test-place-country
+→ PostgreSQL / RLS valid places
+→ Weather Orchestrator
+→ Open-Meteo per Place
+→ application-side normalization
+→ Browser
 ```
 
-在 authenticated request 下可成功完成，不再只是 C-0 的 Safari direct navigation。
+Weather Orchestrator 刻意不直接碰 DB / RPC。`test-place-country` 負責「caller 可見的有效 Place」，Weather API 負責「取得這些 Place 的外部天氣並 normalize」。本 Probe 不寫 DB、不測 CUD、不加 scheduler / queue / retry framework，也不做 Open-Meteo Multiple Locations optimization。
 
-### Verified capability results
+### Deployment Evidence
 
-#### 1. Custom API 建立與 authenticated Browser invocation
+PR #16 經 Primary Agent Technical QC 後 merge 至 `main`，merge commit：
 
-**VERIFIED**
+`08cdadb027490e298ae72f9ff0ba1d5440cdc8de`
 
-Supabase Edge Function `test-place-country` 已部署並由 Netlify-hosted Browser 以 Supabase Auth Session 成功呼叫。正常 request 回傳 HTTP `200`。
-
-#### 2. Custom API → RPC → PostgreSQL Function
-
-**VERIFIED**
-
-Edge Function 使用：
+Claire 由 GitHub UI 觸發 `Deploy Test Weather Orchestrator` workflow。GitHub Actions Run `34762954904` completed / success；checkout 正是上述 main commit。Supabase CLI `2.117.0` 實際輸出：
 
 ```text
-rpc("test_get_valid_places")
+Deploying Function: test-weather-orchestrator (script size: 4.5 kB)
+Deployed Functions on project cctonymfrxneonxryqei: test-weather-orchestrator
 ```
 
-成功取得 active place rows。Claire 的有效 Application Identity 實測 `rpc_row_count = 2`。
+Workflow 使用 GitHub Actions secret `SUPABASE_ACCESS_TOKEN`，log 中值被 masking；deploy command 沒有 `--no-verify-jwt`。
 
-#### 3. Custom API → Supabase Native Data API
+### Runtime Evidence
 
-**VERIFIED for SELECT**
+#### 1. No Authorization header
 
-Edge Function 取得 RPC 回傳的 distinct country codes 後，以一次 batched `IN` query 讀取 `country`，沒有做 N+1 request。Claire 的有效 Identity 實測 `country_row_count = 2`。
-
-本次 Custom API probe 只驗證 Native Data API `SELECT`。INSERT / UPDATE / DELETE 的 Native CRUD capability 已由 Experiment B 在 Browser → Native Data API path 驗證，但不應偷渡成「Custom API 內 CRUD 四項都已測」。
-
-#### 4. Application-side mapping / response shaping
-
-**VERIFIED**
-
-Edge Function 將 RPC place rows 與 Native Data API country rows mapping 後回傳 application result。實測 response：
+直接開 Weather endpoint，未攜帶 Authorization：
 
 ```json
-{
-  "experiment": "database-centric-custom-api",
-  "rpc_row_count": 2,
-  "country_row_count": 2,
-  "rows": [
-    {
-      "oid": 1,
-      "place_code": "sapporo",
-      "place_name": "札幌",
-      "country_code": "JP",
-      "country_name": "日本",
-      "country_name_en": "Japan"
-    },
-    {
-      "oid": 2,
-      "place_code": "sydney",
-      "place_name": "雪梨",
-      "country_code": "AU",
-      "country_name": "澳洲",
-      "country_name_en": "Australia"
-    }
-  ]
-}
+{"code":"UNAUTHORIZED_NO_AUTH_HEADER","message":"Missing authorization header"}
 ```
 
-Browser UI 亦將結果顯示為正常人類可讀的地點卡片，Raw JSON / HTTP Status 則保留在 Evidence / Debug 區，不把 SA 永久關在 `<pre>` 裡。
+這證明未取得 / 未攜帶 caller JWT 的 request 不會進入正常 orchestration path。精確語意是 Authentication 未成立，不應寫成「登入後但未授權」。
 
-### Identity / RLS evidence
+#### 2. Valid Application Access identity
 
-三種 authenticated Identity 均由同一 Netlify Browser Artifact 實測：
-
-| Identity | Authentication | Observable API result |
-| --- | --- | --- |
-| Claire / active Application User | Success | HTTP 200, RPC 2 rows, Country 2 rows, final 2 rows |
-| TU01 / inactive Application User | Success | HTTP 200, RPC 0 rows, Country 0 rows, `rows=[]` |
-| TU02 / no effective Application User mapping | Success | HTTP 200, RPC 0 rows, Country 0 rows, `rows=[]` |
-
-這支持 caller JWT / RLS boundary 在本次 Edge Function → RPC / Data API path 中被保留。Custom API 沒有因 server-side execution 自動取得所有資料。
-
-### Important semantic observation
-
-TU01 / TU02 的 observable result 是：
+具有效 Application Access 的 Claire 測試帳號由 Netlify Browser UI 實測：
 
 ```text
 HTTP 200
-rpc_row_count = 0
-country_row_count = 0
-rows = []
+valid_place_api_status = 200
+place_count = 2
+weather_success_count = 2
+weather_failure_count = 0
 ```
 
-因此 RLS 可以作為 Data Security Boundary，但 `rows=[]` 本身不能區分：
+札幌與雪梨兩筆均 `provider_status = 200`，並成功 normalize temperature min/max、precipitation、weather code、sunrise、sunset、daylight duration 與 timezone。
+
+因此下列完整 runtime chain 已實際成立：
 
 ```text
-真的沒有資料
-vs
-目前 Identity 沒有 Application Access
+Browser → Custom API A → Custom API B → RLS-filtered data
+        → Custom API A → External API → normalization → Browser
 ```
 
-這與 Experiment B 的 Native Data API Evidence 一致：technical request success / row visibility 不等於完整 Business Authorization semantics。
+#### 3. TU01 / TU02
 
-若未來 API Contract 需要明確 `403 No Application Access` 與 `200 No Data`，Custom API 必須額外建立 Application Authorization / Business Semantics，而不能只期待 RLS 自動翻譯。
+TU01 與 TU02 均能正常 Authentication，但兩者 observable result 相同：
 
-### PostgreSQL Function DDL preservation
+```json
+{
+  "experiment": "custom-api-orchestration",
+  "valid_place_api_status": 200,
+  "place_count": 0,
+  "weather_success_count": 0,
+  "weather_failure_count": 0,
+  "rows": []
+}
+```
 
-本次 PostgreSQL Function 是 `public.test_get_valid_places()`，使用 `SECURITY INVOKER`，讓 query 以 caller context 執行。
+Browser UI 顯示沒有可見有效地點，因此沒有發出 Open-Meteo request。這與 C-DB-1 Evidence 一致，並進一步支持 caller identity / RLS visibility behavior 在 `Weather API → Valid Place API` 的 API composition 中仍被保留。
 
-**限制揭露：** 本次建立 Function 時的 exact DDL 沒有先寫入 Git source；之後嘗試透過 Supabase Connector 讀回 `pg_get_functiondef()` / function body 被工具安全檢查阻擋。因此目前不能誠實地在 Experiment Record 偽造一份「看起來差不多」的 DDL。
+這仍不是 explicit Business Authorization Evidence：`HTTP 200 + rows=[]` 無法區分真正無資料與沒有 Application Access。
 
-Exact DDL 尚待從 Supabase Dashboard / SQL Editor 或可讀取 function definition 的 execution surface 補回本 Record。這不影響已完成的 runtime Evidence，但 DDL preservation 這個文件要求目前仍是 **Pending**。
+### Place-local D-1 observation
 
-### Initial capability conclusion
+本次同一個 request 中：
 
-截至本次 Probe，可以先形成以下 Supabase Custom API capability baseline：
+- Sapporo / `Asia/Tokyo` → `weather_date = 2026-09-12`
+- Sydney / `Australia/Sydney` → `weather_date = 2026-09-13`
+
+Open-Meteo request 使用 `timezone=auto`，因此「D-1」應理解為 **each Place timezone based previous local calendar date**，而不是 Browser、Claire 所在地或 server 的單一全域昨天。
+
+這是未來 Daily Weather Batch Specification 必須明確寫出的 Business / Time Semantics，否則「昨天」會成為一顆很有文化底蘊的時區地雷。
+
+### Verified capability baseline
 
 ```text
-Supabase Custom API / Edge Function                       VERIFIED
-Netlify Browser → authenticated Custom API + CORS         VERIFIED
-Custom API → RPC → PostgreSQL Function                    VERIFIED
-Custom API → Native Data API SELECT                       VERIFIED
-Custom API application-side mapping / response shaping    VERIFIED
-Caller-scoped RLS behavior through tested chain           VERIFIED
-Explicit Business Authorization semantics                NOT YET
-Custom API Native INSERT / UPDATE / DELETE                NOT TESTED IN THIS PROBE
+Supabase Edge Function outbound HTTP                         VERIFIED
+Custom API → Custom API composition                         VERIFIED
+Caller Authorization forwarding through tested API chain   VERIFIED
+Caller-scoped RLS visibility through composition            VERIFIED
+External API per-Place calls                                VERIFIED
+Application-side external response normalization            VERIFIED
+Zero-visible-place short-circuit                            VERIFIED
+GitHub Actions → Supabase deployment                        VERIFIED
+Explicit Business Authorization / 403 semantics             NOT YET
+DB CUD inside Custom API                                     NOT TESTED HERE
+Retry / queue / scheduling / long-running behavior           NOT TESTED HERE
+Secret management for external provider credential           NOT TESTED (Open-Meteo probe needs no key)
 ```
 
 ### Architecture implication, not Production Decision
 
-本次 Evidence 支持一個目前很自然的 Nook Works platform direction：
+C-DB-1 與 C-EXT-1 合併後，Supabase Edge Functions 已對兩種 Nook Works 預期主要 workload class 留下 runtime Evidence：
 
-```text
-Netlify
-→ Web / UI delivery
+1. Database-centric / application processing.
+2. Internal API composition + External API orchestration.
 
-Supabase
-→ Auth
-→ Custom API / Edge Functions
-→ Native Data API / RPC
-→ PostgreSQL / RLS
-```
-
-這表示 Supabase 已具備 Database-centric Custom API 所需的基本 integration path，並強化其作為 Nook Works Primary Custom API Runtime Candidate 的可信度。
-
-這仍不是 Production Architecture Decision。External API orchestration、Pure Compute / longer-running workload、runtime limits、observability、secrets、cost 與更明確的 Business Contract 還需要後續 Evidence。
+因此 `Supabase = Auth + Primary Custom API + PostgreSQL/RLS` 的候選架構可信度進一步提高；Netlify 可自然維持 Web/UI delivery responsibility。這仍不是 Production Architecture Decision，Pure Compute / longer-running、runtime limits、observability、cost 與需要時的 explicit Business Contract 仍待後續研究。
