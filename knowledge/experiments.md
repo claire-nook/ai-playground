@@ -8,6 +8,21 @@
 
 ## 2026-09-13
 
+### C-EXT-1 — Custom API Orchestration / External API
+
+- Status: `Verified`
+- Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
+- Primary Intent: `Nook Technical Platform / External API Orchestration Feasibility`
+- Tags: `nook-platform`, `custom-api`, `supabase`, `api-composition`, `external-api`, `open-meteo`, `jwt`, `rls`, `netlify`, `github-actions`
+
+**Why it existed**
+
+C-DB-1 已證明 Database-centric API，但 Nook Works 也常見「Custom API call Custom API，再接 External API」的 orchestration。這次刻意讓 Weather API 不直接碰 DB，而是沿用 Valid Place API 的 responsibility boundary。
+
+**What it unlocked**
+
+`Netlify Browser → Weather Edge Function → same caller JWT → Valid Place Edge Function → RLS-filtered places → Open-Meteo → normalization → Browser` 已 runtime verified。有效 Application Access identity 得到 2 places / 2 weather success；TU01 / TU02 均得到 0 places / 0 provider calls。另觀察到 D-1 必須以各 Place local timezone 定義。
+
 ### C-DB-1 — Database-centric Supabase Custom API
 
 - Status: `Verified`
@@ -21,7 +36,7 @@ C-0 只證明 Edge Function 能部署，不代表它能承擔 Nook Works 真正�
 
 **What it unlocked**
 
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。Claire 得到 2 筆結果；TU01 / TU02 均得到 HTTP 200 + empty rows，支持 caller-scoped RLS behavior，也再次證明 row visibility 不等於完整 Business Authorization semantics。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。具有效 Application Access 的 Claire 測試帳號得到 2 筆結果；TU01 / TU02 均得到 HTTP 200 + empty rows，支持 caller-scoped RLS behavior，也再次證明 row visibility 不等於完整 Business Authorization semantics。
 
 ### C-NF-0 — Netlify Functions Deployment Lifecycle
 
@@ -29,7 +44,7 @@ C-0 只證明 Edge Function 能部署，不代表它能承擔 Nook Works 真正�
 - Record: [`../experiments/custom-api/netlify-functions-lifecycle.md`](../experiments/custom-api/netlify-functions-lifecycle.md)
 - Tags: `nook-platform`, `custom-api`, `deployment`, `netlify`, `ipad-first`
 
-Git source → Deploy Preview → invoke / logs → Production → source delete / function absent 已驗證。Netlify 保留為 credible secondary runtime candidate。
+Git source → Deploy Preview → invoke / logs → Production → source delete / function absent 已驗證。Netlify Functions 保留為 credible secondary runtime candidate。
 
 ### Netlify Git Deployment Boundary
 
@@ -82,15 +97,15 @@ GitHub-hosted Runner 可補 iPadOS / AI 缺少 CLI / Linux runtime 的 execution
 - Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
 - Tags: `custom-api`, `deployment`, `supabase`, `github-actions`, `ipad-first`
 
-Edge Function deployment lifecycle 已在 iPad-first workflow 驗證，並成為 C-DB-1 的 runtime baseline。
+Edge Function deployment lifecycle 已在 iPad-first workflow 驗證，並成為後續 Custom API probes 的 runtime baseline。
 
 ---
 
 ## Current Candidate Experiments
 
-- **External API Orchestration**：outbound API、secret、timeout / retry、normalize / aggregate。
 - **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
+- **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補，不為了把 checklist 填滿硬測。
 
 ---
 
