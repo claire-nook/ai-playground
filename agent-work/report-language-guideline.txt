@@ -1,0 +1,1 @@
+Agent reports should use Traditional Chinese for explanations while preserving English technical terms, code, paths, commands, fields, log markers, and raw provider output.
