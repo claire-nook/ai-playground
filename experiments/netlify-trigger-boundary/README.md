@@ -164,6 +164,14 @@ PR #7 的 Provider Result 顯示：`COMMIT_REF` 是 PR head `656ff7aaf5ff6d4256c
 
 因此「checkout 裡存在 `origin/main` 就可以直接拿來當 current PR baseline」已被排除。下一個最小 candidate 是只在 Deploy Preview probe 中 fresh-fetch current base 到隔離 ref，再比較 merge-base-to-head；完整 investigation：`agent-work/reports/2026-09-13-netlify-trigger-boundary-next-investigation.md`。本結果仍不決定 final Trigger Boundary。
 
+## Fresh Base Fetch Probe — Prepared / Provider Result Pending
+
+下一個 temporary `ignore` observability probe 已依 Work Order 準備完成。它只在 `CONTEXT=deploy-preview` 且 `COMMIT_REF` 可解析時，把 `origin` 的 `main` bounded shallow-fetch 到隔離的 `refs/netlify-probe/base`，再記錄 fresh base、merge-base 與完整 merge-base-to-head changed paths。初次 depth 為 64；只有 merge-base 不可得時才以 depth 256 retry 一次。所有 fetch diagnostic 均被抑制以避免 remote URL 或 credential material 進入 probe log，且 probe 所有路徑最後固定 non-zero，繼續 build / deploy。
+
+Local Runtime-side Validation 已通過 TOML parse、抽出 command 的 shell syntax check、controlled fresh-fetch success / fetch failure / context skip simulations、固定 non-zero exit、secret / remote URL absence check 與 `git diff --check`。這些結果只證明 local probe control flow，不是 Netlify Provider Evidence。
+
+**Provider Result: Pending.** 在 Claire 建立 PR、Netlify 執行 Deploy Preview 且 Primary Agent review provider log 前，不宣稱 ignore stage 可以 outbound fetch、history 足夠、diff 符合 GitHub-visible PR diff，亦不把 Fresh Base Fetch 升格為 final Trigger Boundary architecture。完整 prepared report：`agent-work/reports/2026-09-13-netlify-trigger-fresh-base-fetch-probe.md`。
+
 ## Constraint / Unknown
 
 - 本次不改 Base directory；Repository root 仍保留為 Netlify build context。
