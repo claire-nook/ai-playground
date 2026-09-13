@@ -104,6 +104,37 @@ Agent 不需要共享大腦，也不需要相信對方的口頭保證；應盡�
 >
 > **Agent Report ≠ Verified Evidence.**
 
+### 3.1 Dispatch Procedure｜目前怎麼真的叫 Codex 工作
+
+**重要：目前一般 ChatGPT Project 對話中的 Primary Agent 沒有直接呼叫 Codex 開始工作的工具。這不代表 Work Order 只能停在紙上。Claire 是目前刻意保留的 Human Relay / Dispatch Gate。**
+
+當 Primary Agent 判斷工作適合交給 Codex 時，不要只告訴 Claire「可以去 Codex 做」，也不要要求 Claire重新轉述整份需求。Primary Agent 應先把交接物準備好，再交一個很短的 Dispatch Instruction。
+
+目前標準流程：
+
+1. Primary Agent 與 Claire 先把 Research Question / Specification / Scope 討論到足以委派。
+2. Primary Agent 建立 Work Order，Playground 工作優先放在 `agent-work/work-orders/`；檔名使用可辨識的日期與短名稱，例如 `2026-09-13-codex-handoff-probe.md`。
+3. Primary Agent 將 Work Order 與必要的 Context / Rule 更新 Commit 到 Git。
+4. Primary Agent 明確告訴 Claire：
+   - Target Repository。
+   - Work Order 的完整 Repo path。
+   - 建議 Codex 從哪個 branch / commit 開始。
+   - 一句可直接交給 Codex 的 Dispatch Prompt。
+5. Claire 到 Codex 對話／工作環境，只需要做 Human Relay，例如：
+
+   > 請到 `claire-nook/ai-playground` 閱讀 `agent-work/work-orders/<work-order>.md`，依 Work Order 執行。完成後 Commit 所有要求的 Artifact / Report，並回報 Commit SHA。不要自行擴張 Scope。
+
+6. Codex 在自己的 Workspace 讀 Repo、執行、測試、修正並 Commit。Work Order 本身才是主要 Handoff Contract，Claire 不需要重新當一次人工 Prompt Compiler。
+7. Claire 把完成訊息或 Commit SHA 帶回 Primary Agent；如果 Primary Agent 的 GitHub 工具已能看到最新 Commit，也可以直接從 Repo 取得。
+8. Primary Agent Review Diff / Report / Evidence。需要 Rework 時，更新 Work Order 或建立明確 Review Instruction，再由 Claire Relay 給 Codex。
+9. 通過 QC 後，才依 Knowledge Capture Protocol 將 Experiment Result 升格成相應 Evidence / Judgment；正式功能則再進 Claire Functional Acceptance。
+
+這個流程的設計重點是：
+
+> **Claire 負責按門鈴，不負責替兩個 Agent 重講一次需求。**
+
+如果未來產品提供 Primary Agent → Codex 的直接 Dispatch Tool，可以替換第 4–7 步的人工作業，但 Git Work Order、可觀察成果與獨立 QC 原則仍然成立。
+
 ---
 
 ## 4. Work Order 最小內容
@@ -186,5 +217,6 @@ Playground Experiment 的委派工作留在 `ai-playground/agent-work/`；正式
 - Commit 粒度是否容易 Review。
 - 執行者是否會越過 Scope 或擅自形成 Architecture Decision。
 - Failure 如何交付最有價值。
+- Claire 作為 Human Relay 時，是否真的只需要傳遞 Repo / Work Order / Commit，而不必人工重述需求。
 
 等實際跑過幾次，再用 Evidence 修改這份規則。治理應該從撞牆長出來，不是坐在會議室裡一次幻想完整。
