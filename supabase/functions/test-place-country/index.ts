@@ -69,6 +69,7 @@ Deno.serve(async (request: Request) => {
   }
 
   const placeRows = places ?? [];
+  const placeOids = placeRows.map((place: { oid: number }) => place.oid);
   const countryCodes = [
     ...new Set(
       placeRows
@@ -77,7 +78,7 @@ Deno.serve(async (request: Request) => {
     ),
   ];
 
-  // Step 2: query country through the Native Data API in one batch.
+  // Step 2: read country display data through the Native Data API in one batch.
   let countries: Array<{
     country_code: string;
     country_name: string;
@@ -104,9 +105,40 @@ Deno.serve(async (request: Request) => {
     countries = countryRows ?? [];
   }
 
-  // Step 3: application-side mapping, intentionally kept outside PostgreSQL for this probe.
+  // Step 3: read location metadata required by downstream service composition.
+  let placeDetails: Array<{
+    oid: number;
+    latitude: number | null;
+    longitude: number | null;
+    timezone: string | null;
+  }> = [];
+
+  if (placeOids.length > 0) {
+    const { data: detailRows, error: detailsError } = await supabase
+      .from("place")
+      .select("oid,latitude,longitude,timezone")
+      .in("oid", placeOids)
+      .eq("is_active", true);
+
+    if (detailsError) {
+      return jsonResponse(
+        {
+          error: "place_detail_query_failed",
+          detail: detailsError,
+        },
+        500,
+      );
+    }
+
+    placeDetails = detailRows ?? [];
+  }
+
+  // Step 4: application-side mapping, intentionally kept outside PostgreSQL for this probe.
   const countryByCode = new Map(
     countries.map((country) => [country.country_code, country]),
+  );
+  const placeDetailByOid = new Map(
+    placeDetails.map((place) => [place.oid, place]),
   );
 
   const result = placeRows.map(
@@ -117,6 +149,7 @@ Deno.serve(async (request: Request) => {
       country_code: string;
     }) => {
       const country = countryByCode.get(place.country_code);
+      const detail = placeDetailByOid.get(place.oid);
 
       return {
         oid: place.oid,
@@ -125,6 +158,9 @@ Deno.serve(async (request: Request) => {
         country_code: place.country_code,
         country_name: country?.country_name ?? null,
         country_name_en: country?.country_name_en ?? null,
+        latitude: detail?.latitude ?? null,
+        longitude: detail?.longitude ?? null,
+        timezone: detail?.timezone ?? null,
       };
     },
   );
@@ -133,6 +169,7 @@ Deno.serve(async (request: Request) => {
     experiment: "database-centric-custom-api",
     rpc_row_count: placeRows.length,
     country_row_count: countries.length,
+    place_detail_row_count: placeDetails.length,
     rows: result,
   });
 });
