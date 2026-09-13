@@ -428,4 +428,4 @@ Report 遵守 `agent-work/report-language-guideline.txt`。
 
 ### Human Gate
 
-完成 local commit 後停止。由 Claire 更新既有 **PR #17**，Primary Agent 再依 GitHub-visible PR / Diff / build evidence做 Technical QC。不要把 local SHA 當最終 review identity。
+PR #18 為本次正式 implementation candidate；Primary Agent 直接依 GitHub-visible PR #18 最新 head / diff / Deploy Preview 做 Technical QC。PR #17 與後續誤建的平行 PR 不作為 merge candidate。
