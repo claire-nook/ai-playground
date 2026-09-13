@@ -2,51 +2,41 @@
 
 - Date: 2026-09-13
 - Status: Observed / Verified within current product behavior
-- Context: `claire-nook/ai-playground` first real Codex Work Order → Audit → Fix → PR → Primary Agent Review cycle
+- Context: `claire-nook/ai-playground` real Codex Work Orders, PR handoff, deployment-gated experiment
 - Related: `agent-work/README.md`
-- Related PRs: `#1`, `#2`
+- Related PRs: `#1`, `#2`, `#16`
 
 ## Purpose
 
-這份紀錄保存第一次把 Codex 當成 Implementation Agent 實際加入 Playground 工作流程後，觀察到的 Workspace model、Git / GitHub handoff behavior、Human Relay friction 與可重用操作原則。
+這份紀錄保存把 Codex 當成 Implementation Agent 加入 Playground 後，實際觀察到的 Workspace model、Git / GitHub handoff behavior、deployment boundary、Human Relay friction 與可重用操作原則。
 
 它不是 Codex 產品文件，也不宣稱描述永久不變的產品實作。以下內容只代表 2026-09-13 在本次 `ai-playground` 協作中真正觀察到的行為。
 
 核心提醒：
 
-> **不要把 Codex Cloud Workspace 想像成 Claire 本機上一個普通的 Git clone。**
+> **不要把 Codex Cloud Workspace 想像成 Claire 本機上一個普通的 Git clone，也不要把「能 Create PR」誤認成「擁有 GitHub execution authority」。**
 
 ---
 
 ## 1. 三個角色真的開始協作
 
-這次流程首次實際跑通三個不同角色：
-
-- **Claire / Human Relay & Functional Owner**：決定工作是否開始、在產品 UI 中選擇 Codex Workspace、轉交極短 Dispatch Instruction、觸發 Create PR，並保留最終 Human Gate。
-- **Primary Agent / Architecture & Technical QC**：形成 Scope、建立 Work Order、審查 Codex Report / Diff / Evidence、決定 Accepted / Rework，並在授權後 Merge。
+- **Claire / Human Relay & Functional Owner**：決定工作是否開始、在產品 UI 中選擇 Codex Workspace、轉交極短 Dispatch Instruction、觸發 Create PR，並保留必要 Human Gate。
+- **Primary Agent / Architecture & Technical QC**：形成 Scope、建立 Work Order、審查 Codex Report / Diff / Evidence、決定 Accepted / Rework、Deployment Judgment，並在授權後 Merge。
 - **Codex / Implementation Agent**：在自己的 Cloud Workspace 讀 Repo、執行 Shell / Search / Edit / Validation、建立 local commit，並準備 PR handoff。
 
-這次最大的流程證據不是「Codex 可以改 Markdown」，而是：
+核心 Evidence：
 
 > **Experiment Ownership 與 Experiment Execution 可以分離，而且 GitHub PR 可以成為兩個 Agent 之間可重新檢查的交接面。**
 
-Claire 不需要重新向 Codex解釋完整需求。Work Order 才是 Handoff Contract。
+Claire 不需要重新向 Codex 解釋完整需求。Work Order 才是 Handoff Contract。
 
 ---
 
 ## 2. Workspace Selection 是真實執行 Context
 
-第一次 Audit Dispatch 曾因登入 / MFA / Browser navigation 後選到錯誤 Workspace。Codex 當時看到的環境不是預期的 `ai-playground`，Work Order 不存在，而且無法從該環境取得正確 GitHub Repository。
+第一次 Audit Dispatch 曾因登入 / MFA / Browser navigation 後選到錯誤 Workspace。Codex 看不到預期 Work Order，也無法取得正確 Repository，因此停止執行而沒有猜測內容。
 
-Codex沒有猜測內容，也沒有偽造 Report，而是停止執行並回報環境 mismatch。
-
-### Observation
-
-Codex 的「目前在哪一個 Workspace」不是無關緊要的 UI 狀態，而是實際決定它能讀到哪些 Repository files 的 Execution Context。
-
-### Operational Rule
-
-Dispatch 前應確認產品 UI 選到預期 Repository / Workspace。若登入、MFA 或重新導航發生過，不能假設 Workspace selection 仍然正確。
+Operational Rule：Dispatch 前確認產品 UI 選到預期 Repository / Workspace；登入、MFA 或重新導航後，不假設 Workspace selection 仍正確。
 
 > **Work Order 寫對 ≠ Codex 一定站在對的工地。**
 
@@ -54,289 +44,209 @@ Dispatch 前應確認產品 UI 選到預期 Repository / Workspace。若登入�
 
 ## 3. Codex Cloud Workspace 不一定具有傳統 Git Remote Model
 
-第二輪 Documentation Fix 的第一版 Preflight 假設 Codex Workspace 應具有：
+實際觀察過：local branch `work`、無 Git remote、無 local / remote-tracking `main`、`gh auth status` 無 GitHub authentication；但 Workspace snapshot 仍可包含正確 Work Order / Repository content，並可 Shell / Edit / Test / local commit。
 
-- `origin` remote
-- local / remote-tracking `main`
-- GitHub CLI authentication
+因此 Preflight 應驗證真正需要的 Context：Work Order、Read First、target files、baseline artifacts、working tree，而不是硬要求 remote / main / gh auth。
 
-實際觀察到的 Workspace 卻是：
-
-- local branch 為 `work`
-- `git remote -v` 沒有 remote
-- 沒有 local / remote-tracking `main`
-- `gh auth status` 顯示沒有 GitHub authentication
-- 但 Workspace HEAD 正好是 Primary Agent 剛建立 Work Order 的最新 `main` commit snapshot
-- Work Order 與 Audit Report 都存在
-- working tree clean
-
-因此第一次 Fix Work Order 的 Preflight 失敗，Codex依規則在任何修改前停止。
-
-### Judgment
-
-這個結果支持目前的工作模型：
-
-```text
-Codex UI Repository / Workspace Selection
-        ↓
-Platform prepares repository snapshot
-        ↓
-Codex Cloud Workspace
-  local branch may be `work`
-  remote may be absent
-  local `main` may be absent
-  GitHub CLI auth may be absent
-        ↓
-Shell / Edit / Test / local Git commit
-```
-
-這是根據本次 Evidence 建立的操作模型，不代表已驗證 Codex 平台內部實作細節。
-
-### Operational Rule
-
-不要用「必須存在 Git remote / local main / gh auth」當作 Codex Cloud Workspace repository identity 的必要條件。
-
-Preflight 應優先驗證可觀察 Context，例如：
-
-- 指定 Work Order 是否存在
-- Read First 文件是否存在
-- 預期 Repository structure / target files 是否存在
-- working tree 是否 clean
-- 任務需要的 baseline artifacts 是否存在
-- Workspace 是否由 Claire 在 Codex UI 選到預期 Repository
+> **Prompt Access ≠ Tool Access ≠ Workspace Access.**
 
 ---
 
 ## 4. Workspace Snapshot 有時間邊界
 
-第一次 Fix Work Order 停止後，Primary Agent 建立了新的 v2 Work Order。
+若 Primary Agent 在 Codex Workspace 建立後才 commit 新的必要 Context，不假設舊 Workspace 自動取得最新 Repository state。2026-09-13 的保守可行做法是建立新 Codex task / workspace、重新選 Repository，再確認新 Work Order 存在。
 
-舊 Codex Workspace 沒有 remote，因此不能合理假設它可以自行 fetch 剛進 `main` 的新文件。實際操作改為重新建立 Codex 工作並重新選擇 `claire-nook/ai-playground`，讓新 Workspace 取得新的 Repository snapshot。
-
-### Operational Rule
-
-如果 Primary Agent 在 Codex Workspace 建立後又把必要 Work Order / Context commit 到 `main`：
-
-> **不要假設既有 Codex Workspace 自動取得最新 Repository state。**
-
-目前保守做法是建立新的 Codex task / workspace，重新選擇 Repository，再確認新 Work Order 存在。
-
-是否存在其他可靠 refresh / sync mechanism，本次沒有驗證。
+可靠 refresh / sync mechanism 尚未驗證。
 
 ---
 
 ## 5. Local Commit 與 GitHub-visible Commit 是兩個 State
 
-第一次 Audit 中，Codex曾完成 local commit，但 Primary Agent 一開始在 GitHub 找不到該 SHA。直到 Claire 使用 Codex UI 的 Create PR 流程後，成果才成為 GitHub 可觀察的 PR。
+實測曾出現 Codex reported local SHA 與 Create PR 後 GitHub PR head SHA 不同。平台是否 rebase / recreate commit 沒有 Evidence，不推測原因。
 
-第二次 Fix 更進一步提供直接 Evidence：
-
-- Codex Reported Local Commit: `b38537e2b5f6c5fd80a82d13123b76aead98d09a`
-- GitHub PR #2 Head Commit: `240b5890f38ccdf21edf40bb4e56bd4d3183471a`
-
-兩者不同。
-
-本次沒有 Evidence 可以確認 Create PR 流程中平台是否 rebase、重新建立 commit、轉換 Git state，或使用其他內部機制，因此不推測原因。
-
-可以確認的是：
+Operational Rule：Primary Agent Review 以 GitHub-visible PR `head_sha`、Diff、Files changed、Report 為準，不以 Codex local SHA 當 GitHub Observable Identity。
 
 > **Codex Local Commit ≠ necessarily GitHub-visible PR Commit.**
 
-### Operational Rule
-
-- Codex 回報 local SHA，可以用來理解它在 Workspace 內完成了 commit。
-- Primary Agent 真正 Review / Merge 時，應以 GitHub PR 的 `head_sha`、Diff、Files changed 與 GitHub-visible state 為準。
-- 不要拿 Codex local SHA 當成 GitHub Observable Identity。
-
 ---
 
-## 6. Create PR 是目前的重要 Publication Boundary
+## 6. Create PR 是 Publication Boundary，不是 GitHub Execution Authority
 
-本次觀察到 Codex Workspace 內沒有可用的 GitHub CLI authentication，但 Codex Product UI 可以提供 Create PR 流程，把 Workspace 成果發布成 GitHub PR。
-
-因此目前 Handoff 應拆成：
+Codex Workspace 內沒有可用 GitHub CLI authentication，但 Codex Product UI 可以由 Claire 觸發 Create PR，把 Workspace 成果發布成 GitHub-visible PR。
 
 ```text
-Codex executes
-    ↓
-Local changes
-    ↓
-Local commit
-    ↓
-Codex UI Create PR
-    ↓
-GitHub-visible branch / commit / PR
-    ↓
+Codex executes / local validates / commits
+        ↓
+Claire triggers Codex UI Create PR
+        ↓
+GitHub-visible PR
+        ↓
 Primary Agent Review
 ```
 
-這個 Publication Boundary 很重要。
+C-EXT-1 / PR #16 又補出一個重要限制：Codex 能建立 GitHub Actions workflow source，但在本次 Workspace 中不能自行使用 `gh` 或 GitHub API 觸發 `workflow_dispatch`。
 
-> **「弟弟寫完作業」與「哥哥在 GitHub 收到作業」不是同一個 State。**
+因此：
 
-目前 Claire 的 Human Relay 工作之一，就是在 Codex Product UI 觸發這個 Create PR publication step。
+> **Codex 能寫 deployment mechanism ≠ Codex 能執行 GitHub-side deployment trigger。**
 
----
+同理，GitHub Actions 具有 `SUPABASE_ACCESS_TOKEN` secret，只代表 Runner 執行 workflow 時能取得 Supabase deployment credential；它不會反向賦予 Codex GitHub Actions execution authority。
 
-## 7. Preflight 的目的不是模仿 Local Git，而是防止在錯 Context 施工
+> **Provider Credential ≠ GitHub Execution Credential。**
 
-第一次錯 Workspace 證明 Preflight 必要；第二次過度依賴 Git remote / main / gh auth 又證明 Preflight 不能把錯誤的 Workspace model 寫成硬規則。
-
-因此 Preflight 的真正目的應該是：
-
-> **在修改前取得足夠 Evidence，確認 Codex 正在正確的 Context 上執行正確的 Work Order。**
-
-而不是：
-
-> 強迫 Cloud Agent 看起來像 Claire 本機的一個標準 Git clone。
-
-Failure Is Deliverable 在這裡也得到實證。第二輪 Codex 因 Preflight mismatch 停止，沒有修改檔案、沒有 commit、working tree 保持 clean。這個「失敗」直接暴露 Primary Agent 對 Codex Workspace model 的錯誤假設，價值高於硬著頭皮繼續施工。
+這兩層 Authorization 必須分開思考，否則很容易煮成一鍋 Auth 粥。
 
 ---
 
-## 8. Audit → Review → Fix 比直接叫 Codex 改更可靠
+## 7. New `workflow_dispatch` 有 Default Branch Publication Gate
 
-本次 Netlify Documentation Cleanup 刻意拆成兩輪：
+PR #16 新增 `.github/workflows/deploy-test-weather-orchestrator.yml`。PR 尚未 merge 時，Claire 在 Repository Actions 頁面看不到正常可手動執行的 `Deploy Test Weather Orchestrator` 入口。
+
+Primary Agent Technical QC 通過後，PR #16 merge 至 default branch `main`；workflow 隨即成為 Actions 可見的手動 workflow，Claire 再由 UI 觸發 Run #1，成功完成：
 
 ```text
-Audit Work Order
-    ↓
-Codex只找問題，不修改既有文件
-    ↓
-PR #1: Audit Report
-    ↓
-Primary Agent Review
-    ↓
-Accepted Findings
-    ↓
-Fix Work Order
-    ↓
-Codex只修已核准 Findings
-    ↓
-PR #2: Minimal Diff
-    ↓
-Primary Agent Review
+Claire Human Gate
+→ GitHub workflow_dispatch
+→ GitHub-hosted Runner
+→ Supabase CLI 2.117.0
+→ test-weather-orchestrator deployed
 ```
 
-Audit 結果顯示 Codex 不只是做字串搜尋。它能區分：
-
-- Current stale Artifact metadata
-- 應保留的 Historical Evidence
-- 尚未解決但不屬於文件 defect 的 Trigger Boundary
-
-Fix 階段則精準只改兩份文件、四個 path replacements，沒有 Scope Creep。
-
-### Current Judgment
-
-對「範圍不大，但需要 Repository-wide reasoning，且修正前值得獨立判斷」的工作：
-
-> **Audit First → Primary Agent accepts findings → Fix Second**
-
-是目前已實際跑通且容易 QC 的 Candidate Pattern。
-
-不代表所有小修改都要拆兩張 Work Order。治理重量仍應與風險成正比，不要因為弟弟會寫報告，就把換燈泡也送交兩階段委員會。
-
----
-
-## 9. GitHub Identity 與 Review Limitation
-
-Codex Create PR 最終以 Claire 的 GitHub identity 建立 PR；Primary Agent 透過 Claire 已連接的 GitHub Connector 進行 Review 時，GitHub 因此把 Reviewer 與 PR Author 視為同一個 GitHub user。
-
-實際結果：
-
-- `APPROVE` 被 GitHub拒絕，理由是不能 approve 自己的 PR。
-- Primary Agent 可以留下 `COMMENT` Review，記錄 `Primary Agent Review: ACCEPTED`。
-- 在 Claire 明確授權後，Primary Agent 可以執行 Merge。
+GitHub-visible Run ID：`34762954904`，conclusion `success`。
 
 ### Operational Rule
 
-目前不要把 GitHub native `APPROVED` state 當成 Primary Agent QC 的唯一表示方式。
-
-在現有 identity model 下，可使用：
+當 Work Order **新增一支尚不存在 default branch 的 manual workflow** 時，目前不要把流程寫成「Create PR 後直接 Run workflow」。已驗證的安全流程是：
 
 ```text
-Primary Agent COMMENT Review: ACCEPTED / REWORK
-        ↓
-Claire authorization when required
-        ↓
-Merge
+Codex implementation
+→ Create PR
+→ Primary Technical QC
+→ Merge workflow to default branch
+→ Claire Run workflow
+→ GitHub Actions executes provider deployment
+→ Primary verifies Action / Provider Evidence
 ```
 
-如果未來不同 Agent 具有獨立 GitHub identity，再重新評估 native Review / Approval semantics。
+這個 Merge 只代表 deployment mechanism 經 QC 後進入 Playground main，不代表 Experiment runtime 已 Verified。Provider / Browser Evidence 仍須另外取得。
 
 ---
 
-## 10. Current Dispatch Model
+## 8. Preflight 的目的不是模仿 Local Git
 
-截至 2026-09-13，較符合實際產品行為的流程是：
+Preflight 真正目的：在修改前取得足夠 Evidence，確認 Codex 正在正確 Context 執行正確 Work Order。第一次錯 Workspace 證明 Preflight 必要；過度要求 remote / main / gh auth 又證明不能把錯誤 Workspace model 寫成硬規則。
+
+Failure Is Deliverable：Codex 曾因 Preflight mismatch 停止、保持 working tree clean，直接暴露 Primary Agent 對 Workspace model 的錯誤假設。這種失敗比硬做一份錯誤成果更有價值。
+
+---
+
+## 9. Work Order 會反過來改善 Primary Agent 的 Specification
+
+C-EXT-1 是第一次把跨多個 artifact 的實驗施工完整交給 Codex：Edge Function、Browser UI、GitHub Actions workflow、report / evidence preparation。
+
+實際協作顯示，Work Order 的成本不只是 delegation overhead，也會迫使 Primary Agent 把原本存在於高 Context 對話中的「當然」顯性化，例如：
+
+- Weather API 不可直接 DB / RPC，必須使用 Valid Place API。
+- caller JWT 必須原樣往 downstream 傳。
+- 不得使用 `service_role`。
+- zero places 不呼叫 provider。
+- per-Place provider failure 必須隔離。
+- deployment 不可使用 `--no-verify-jwt`。
+- Agent Report 不是 Provider Evidence。
+
+這些規則若未來沉澱成穩定 Pattern，Work Order 應逐漸縮短成 Requirement + Exceptions + Acceptance，而不是每次重新寫一篇技術小說。
+
+> **越能委派，Primary Agent 越需要把隱性設計原則整理成可交接的 Contract。**
+
+這是 delegation 的真實收益之一，不只是「少寫幾行 code」。
+
+---
+
+## 10. Audit → Review → Fix 是 Candidate Pattern，不是宗教
+
+Netlify Documentation Cleanup 已跑通 Audit Work Order → Primary Review → Fix Work Order → Minimal Diff。對範圍不大但值得先獨立判斷的 Repository-wide consistency work，這是可用 Pattern。
+
+不代表所有小修改都要拆兩張 Work Order。治理重量應與風險成正比，不要因為弟弟會寫報告，就把換燈泡送交兩階段委員會。
+
+---
+
+## 11. GitHub Identity 與 Review Limitation
+
+Codex Create PR 與 Primary Agent GitHub Connector 最終都使用 Claire 的 GitHub identity，因此 native `APPROVE` 會被 GitHub 視為 self-approval。Primary Agent 可用 COMMENT Review 記錄 `ACCEPTED` / `REWORK`，再依 Human / Governance Gate Merge。
+
+如果未來不同 Agent 有獨立 GitHub identity，再重新評估 native Review semantics。
+
+---
+
+## 12. Current Dispatch / Deployment Model
+
+截至 2026-09-13，目前最符合實證的完整模型：
 
 ```text
 Claire + Primary Agent
         ↓
 Discussion / Scope / Architecture
         ↓
-Primary Agent writes Work Order
+Primary Agent writes Work Order and commits Context
         ↓
-Work Order committed to GitHub
+Claire opens new Codex task / expected Repository
         ↓
-Claire opens Codex and selects expected Repository / Workspace
+Codex context-oriented Preflight
         ↓
-Codex reads Work Order and performs context-oriented Preflight
-        ↓
-Codex executes / validates / creates local commit
+Implementation / local validation / local commit
         ↓
 Claire triggers Codex UI Create PR
         ↓
 GitHub-visible PR
         ↓
-Primary Agent reviews GitHub Diff / Report / Evidence
+Primary Agent reviews Diff / Report / Evidence
         ↓
-COMMENT Review: ACCEPTED / REWORK
+ACCEPTED / REWORK
         ↓
-Merge only after the applicable Human / Governance gate
+Merge when applicable
+        ↓
+If deployment needs manual workflow:
+Claire triggers workflow_dispatch
+        ↓
+GitHub Actions executes with provider credential
+        ↓
+Primary Agent verifies GitHub / Provider Evidence
+        ↓
+Claire performs human/runtime acceptance when needed
 ```
 
-Human Relay 的理想工作量仍然很小：
-
-- 選對 Workspace
-- 貼短 Dispatch Prompt
-- 必要時處理登入 / MFA
-- 按 Create PR
-- 把「PR 已建立」帶回 Primary Agent
-
-Claire 不應負責重新轉述完整 Requirement，也不應人工抄 Codex local SHA 給 Primary Agent，因為 Primary Agent應以 GitHub-visible PR state 為準。
+Human Relay 理想工作量仍應很小：選對 Workspace、貼短 Dispatch Prompt、必要登入 / MFA、Create PR、按必要 Human Gate。Claire 不應重新翻譯 Requirement，也不應人工搬運 local SHA / logs 給 Primary Agent，能從 GitHub-visible state 取得的就由 Primary 自己讀。
 
 ---
 
-## 11. Unknown / Not Verified
-
-本次仍未驗證：
+## 13. Unknown / Not Verified
 
 - Codex Cloud Workspace 內部如何建立 Repository snapshot。
-- Create PR 時 local commit 為什麼可能轉成不同 GitHub commit SHA。
-- 是否存在可靠的 Workspace refresh / sync mechanism，可在不開新 task 的情況下取得新的 `main`。
-- 不同 Repository / account / permission configuration 是否會得到相同的 no-remote / no-`gh auth` behavior。
-- 未來 Codex Product UI 更新後，上述操作模型是否仍成立。
-- 是否能讓 Primary Agent 未來直接 Dispatch Codex，而不經 Claire Human Relay。
+- Create PR 時 local commit 為什麼可能變成不同 GitHub commit SHA。
+- 是否存在可靠 Workspace refresh / sync mechanism。
+- 不同 Repository / account / permission 是否都有相同 no-remote / no-`gh auth` behavior。
+- Codex 未來是否能直接取得 GitHub Actions trigger authority。
+- Primary Agent 未來是否能直接 Dispatch Codex，而不經 Claire Human Relay。
+- 新 workflow 在其他 GitHub configuration 下的 `workflow_dispatch` visibility 是否完全相同。
 
-這些 Unknown 不妨礙目前流程工作，但不應被寫成已知平台事實。
+以上是 Product / Environment behavior observation，不應包裝成永久平台規格。
 
 ---
 
-## 12. Current Judgment
-
-第一次實戰後，原本的 Handoff Model 可以從純 Candidate 往前推一步：
+## 14. Current Judgment
 
 - **Work Order as Contract**：有效。
 - **Claire as Human Relay, not Requirement Translator**：有效。
 - **Codex as independent Implementation Agent**：有效。
 - **GitHub PR as Observable Handoff Surface**：有效。
-- **Primary Agent independent QC**：有效，但目前 GitHub identity 限制使 native `APPROVE` 不可用，需以 COMMENT Review 表達。
-- **Traditional local-Git preflight assumptions**：不適用，已被本次 Evidence 修正。
-- **Codex local SHA as review identity**：不可靠；以 GitHub-visible PR head 為準。
+- **Primary Agent independent Technical QC**：有效，但 native APPROVE 受同 identity 限制。
+- **Codex implementation → Human-gated GitHub Actions deployment**：已在 C-EXT-1 實際跑通。
+- **Codex direct GitHub Actions trigger**：本次 execution surface 不可用，不應寫進派工假設。
+- **Traditional local-Git preflight assumptions**：不適用。
+- **Codex local SHA as review identity**：不可靠，以 GitHub-visible PR state 為準。
 
-最值得保留的經驗不是某個按鈕在哪裡，而是：
+最值得保留的經驗仍是：
 
-> **Agent 有自己的 Workspace model。Handoff Rule 必須依可觀察 State 設計，而不是假設所有 Agent 都活在同一台電腦、同一個 Git context、同一組 Credential 裡。**
+> **Agent 有自己的 Workspace、Credential 與 Publication Boundary。Handoff Rule 必須依可觀察 State 設計，而不是假設所有 Agent 活在同一台電腦、同一個 Git context、同一組權限裡。**
 
 這個家現在確實有三個工作個體。一個人類，兩個不是人；GitHub 暫時兼任餐桌、聯絡簿與家庭會議紀錄。
