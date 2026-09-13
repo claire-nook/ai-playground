@@ -68,6 +68,14 @@ Netlify `ignore` command 的 exit semantics：
 
 `netlify/functions/` / `netlify/edge-functions/` 已納入 Trigger Surface。是否另外建立 harmless runtime probe，待 Functions / Edge Functions Experiment 需要時再取得直接 runtime Evidence；本次不為了測門鈴先蓋一間廚房。
 
+## Probe Input — Case B
+
+本次 Probe 刻意只修改這份 `experiments/` 下的 Experiment Record，不修改 `public/`、Netlify runtime source、`netlify.toml` 或 package manifests / lockfiles。
+
+預期：Pull Request 仍會被 GitHub / Netlify integration 看見，但 Netlify 的 custom `ignore` command 應判定 deployable surface 無變更並提前停止 build。
+
+此段文字本身就是 Case B 的 controlled input；結果必須等 Provider direct evidence 後再填，不用文字預言冒充測試通過。
+
 ## Constraint / Unknown
 
 - 本次不改 Base directory；Repository root 仍保留為 Netlify build context。
