@@ -1,0 +1,52 @@
+<!-- Claire Textastic Markdown Preview reference asset.
+     Design/behavior source for Playground Reader; not deployable source as-is. -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" />
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  // Convert fenced Mermaid output into Mermaid containers before rendering.
+  function upgradeMermaidIn(root) {
+    if (!root) return;
+
+    var selector =
+      'pre > code.language-mermaid,' +
+      'pre > code.lang-mermaid,' +
+      'pre > code.mermaid';
+
+    var blocks = root.querySelectorAll(selector);
+    if (!blocks.length) return;
+
+    blocks.forEach(function (code) {
+      var pre = code.parentElement;
+      var container = document.createElement('div');
+      container.className = 'mermaid';
+      container.textContent = code.textContent;
+      pre.replaceWith(container);
+    });
+
+    if (!window.mermaid) return;
+
+    try {
+      mermaid.initialize({ startOnLoad: false });
+
+      var mermaidNodes = root.querySelectorAll('.mermaid');
+      if (!mermaidNodes.length) return;
+
+      // Keep compatibility with both newer and older Mermaid browser APIs.
+      if (typeof mermaid.run === 'function') {
+        mermaid.run({ nodes: mermaidNodes });
+      } else if (typeof mermaid.init === 'function') {
+        mermaid.init(undefined, mermaidNodes);
+      }
+    } catch (e) {
+      console.log('Mermaid render error:', e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    upgradeMermaidIn(document.body);
+  });
+</script>
