@@ -16,9 +16,9 @@ ai-playground/
 ├─ experiments/     Experiment Record：實際做過什麼、條件、方法與結果
 ├─ evidence/        Evidence Index：哪些能力 / 行為已被實際觀察與驗證
 ├─ agent-work/      Agent delegation：Work Order、Handoff Rule、協作 Experience
-├─ public/          Netlify Browser Experiment / Demo Artifacts
-├─ supabase/        Supabase runtime source / experimental functions
-├─ netlify/         Netlify runtime source / experimental functions
+├─ public/          Browser Experiment / Demo Artifacts；可退休，不是 Knowledge Source of Truth
+├─ supabase/        Supabase CLI-compatible deployable Experiment Source；可退休 / 刪除
+├─ netlify/         Netlify-compatible deployable Experiment Source；可退休 / 刪除
 ├─ notes/           Short-lived working notes，不是長期 Source of Truth
 └─ .github/         GitHub Actions：remote execution / deployment workflows
 ```
@@ -33,7 +33,8 @@ ai-playground/
 | 某個 Experiment 到底怎麼測、限制是什麼 | relevant `experiments/<topic>/README.md` |
 | 要委派 Codex / Implementation Agent 工作 | [`agent-work/README.md`](agent-work/README.md) |
 | 要找 Browser 可操作 Artifact | `public/<experiment>/`；但先確認 Experiment backend 是否仍保留 |
-| 要找實際 runtime / deployment source | `supabase/`、`netlify/`、`.github/workflows/`，再回頭對照 Experiment Record |
+| 要找 Provider-deployable Experiment Source | `supabase/`、`netlify/`，再回頭對照 Experiment Record；Source 可能是 disposable artifact |
+| 要找 remote execution / deployment mechanism | `.github/workflows/` |
 | 只是想知道近期正在忙什麼 | [`notes/short-term-work.md`](notes/short-term-work.md)，但不要把它當長期知識 |
 
 ### Current Research Orientation｜不要一進門就掃整棟樓
@@ -50,11 +51,37 @@ Research Context
 
 不要為了回答一個已經有 Evidence 的問題，先把整個 Repository 掃一遍重新考古。這裡是實驗室，不是新進員工的耐力測驗。
 
-### Artifact Lifetime｜Browser Demo 不等於永久服務
+### Artifact Lifetime｜Demo / Runtime Source 不等於永久服務
 
-`public/` 下的 Browser Artifact 是 Experiment Demo / Human-observable Evidence surface，不保證永久可操作。Experiment 使用的 `test_*` table / view / function / API 可能在研究完成後刪除；保留 HTML 不代表必須永久保留實驗 backend。
+`public/`、`supabase/`、`netlify/` 下的 Experiment Artifact 都屬於 **實驗器材**，不是長期 Knowledge Source of Truth。
 
-未來若建立 Experiment Gallery / Index，應能區分 `Live Demo`、`Historical / Retired` 等狀態。**Live Demo 是 Evidence / Teaching 的附件，不是 Experiment Knowledge 的 Source of Truth。** 真正的長期紀錄仍在 Experiment Record / Evidence / Research Map。
+- `public/`：Browser Demo / Human-observable Evidence surface。
+- `supabase/`：為了讓 Supabase CLI / deployment mechanism 能直接使用的 Provider-compatible Experiment Source。
+- `netlify/`：為了讓 Netlify deployment / runtime mechanism 能直接使用的 Provider-compatible Experiment Source。
+
+Experiment 使用的 `test_*` table / view / database function / Edge Function / Netlify Function / Browser page，可能在研究完成後退休或刪除。保留某個 HTML 或 provider source directory，不代表必須永久保留它依賴的 test backend；反過來，刪除 runtime artifact 也不會刪除已形成的 Experiment Knowledge。
+
+真正長期保存的是：
+
+```text
+Research Context
+→ Experiment Record
+→ Evidence
+→ Judgment / Decision Input
+```
+
+Provider-compatible Source 的生命週期可以是：
+
+```text
+Experiment needs real runtime
+→ create source under supabase/ or netlify/
+→ deploy / invoke / observe
+→ capture Evidence
+→ keep or retire source as useful
+→ Experiment Record / Evidence remain
+```
+
+未來若建立 Experiment Gallery / Index，應能區分 `Live Demo`、`Historical / Retired` 等狀態。**Live Demo 與 deployable source 都是 Evidence / Teaching 的附件，不是 Experiment Knowledge 的 Source of Truth。**
 
 ---
 
@@ -131,19 +158,19 @@ Historical capability evidence 不代表永久 Provider guarantee；高影響決
 
 ## Deployment boundary
 
-The Git repository is the Laboratory. Netlify is a deployment surface, not a repository mirror.
+The Git repository is the Laboratory. Provider source directories are deployment-compatible experiment surfaces, not permanent application modules.
 
 ```text
 experiments/**/README.md  = Experiment Record / Research Context
-public/                   = Netlify static Public Artifact boundary
-netlify/functions/        = Netlify server runtime source, when used
-supabase/functions/       = Supabase Edge Function experimental source
+public/                   = Browser Experiment / Demo Artifact boundary
+netlify/functions/        = Netlify-deployable Experiment Source, when used
+supabase/functions/       = Supabase CLI-deployable Experiment Source, when used
 .github/workflows/        = Remote execution / deployment mechanism
 ```
 
-Browser Experiment HTML lives under `public/<experiment>/`, while Result / Evidence remains under `experiments/<experiment>/README.md` and the Knowledge / Evidence layers.
+Browser Experiment HTML lives under `public/<experiment>/`. Provider-compatible function source lives under the layout expected by that provider / CLI so the real deployment path can be exercised. Both are disposable experiment artifacts; Result / Evidence remains under `experiments/<experiment>/README.md` and the Knowledge / Evidence layers.
 
-`Publish Boundary` and `Trigger Boundary` are separate concerns。相關 Evidence 請從 [`knowledge/experiments.md`](knowledge/experiments.md) 路由到對應 Experiment Record，不在 root README 重養完整實驗報告。
+`Publish Boundary`、`Provider Source Boundary` 與 `Trigger Boundary` 是不同 concerns。相關 Evidence 請從 [`knowledge/experiments.md`](knowledge/experiments.md) 路由到對應 Experiment Record，不在 root README 重養完整實驗報告。
 
 ## Autonomy
 
@@ -170,6 +197,8 @@ This Playground may share managed infrastructure with formal applications when t
 For experimental database objects, prefer names such as `test_auth_flow`, `test_rls_case`, `test_batch_runtime`.
 
 Experimental work should not silently alter formal tables, functions, policies, data structures, or production semantics. If an experiment must affect formal database objects, the impact and risk must be explicitly confirmed first.
+
+Experimental database objects follow the same lifetime principle as provider runtime artifacts: once Evidence has been captured and the object no longer serves an active experiment, it may be retired / removed. Knowledge preservation belongs in Experiment Record / Evidence, not in keeping test objects alive forever.
 
 ## Collaboration
 
