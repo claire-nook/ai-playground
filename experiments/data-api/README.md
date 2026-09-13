@@ -3,7 +3,7 @@
 - Date: 2026-09-12
 - Status: Completed / Verified
 - Environment: Netlify + iPad Safari + Supabase Nook Core
-- Artifact: `experiments/data-api/index.html`
+- Artifact: `public/data-api/index.html`
 
 ## Question
 
