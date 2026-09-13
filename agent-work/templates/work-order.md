@@ -26,6 +26,22 @@
 
 不要假設執行 Agent 自動知道 Claire / Nook / Playground 的歷史脈絡。
 
+## Execution Context Preflight｜執行環境確認（需要時）
+
+Preflight 的目的，是在修改前確認 Agent 正在正確的 Context 執行正確的 Work Order，不是強迫所有 Cloud Workspace 模仿傳統 local Git clone。
+
+Codex Cloud Workspace 目前已觀察到可能只有 local `work` branch、沒有 Git remote、沒有 local / remote-tracking `main`、也沒有 `gh` authentication；因此除非任務本身真的依賴這些能力，不要把它們寫成 repository identity 的必要條件。
+
+可依任務選擇驗證：
+
+- 指定 Work Order / Read First 文件存在。
+- 預期 Repository structure / target files 存在。
+- working tree 在施工前 clean。
+- 必要 baseline Artifact / Context 存在。
+- Claire 已在 Codex UI 選擇預期 Repository / Workspace。
+
+如果任何必要 Context mismatch，停止修改並回報。完整已觀察工作模式見 `agent-work/experience/codex-cloud-workspace.md`。
+
 ## Scope｜範圍
 
 可以做：
@@ -79,8 +95,11 @@
 
 - Code / Experiment Artifact:
 - Report:
-- Commit:
+- Local Commit（若 Workspace 支援）:
+- GitHub-visible PR / Commit（若需要 Primary Agent Review）:
 - Other:
+
+若執行者是 Codex Cloud，不要預設 local commit SHA 等於 GitHub PR head SHA。Primary Agent Review 應以 Create PR 後的 GitHub-visible state 為準。
 
 ## Decision Boundary｜決策邊界
 
