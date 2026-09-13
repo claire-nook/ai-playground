@@ -12,16 +12,18 @@
 
 ## Objective｜目標
 
-把目前 `public/index.html` 內手寫 Experiment Cards 的 Gallery，改造成由 Experiment metadata 驅動的 **Experiment Catalog**。
+把目前 `public/index.html` 內手寫 Experiment Cards 的 Gallery，改造成由 Experiment metadata 驅動的 **Experiment Catalog**，並完成目前 Gallery Experiment 的 Catalog migration，建立未來新增 Experiment / Probe 時可持續沿用的 Catalog Convention。
 
-目標不是導入 CMS，也不是把 Playground 改造成第二套 Eleventy Site。核心只有一件事：
+目標不是導入 CMS，也不是把 Playground 改造成第二套 Eleventy Site。核心原則：
 
 > Experiment 應描述自己；Gallery 應自動收集，不應在每新增一個 Experiment 時再手動修改首頁 Card。
+
+> Experiment README / Record 保存研究內容；`*.catalog.json` 保存 Catalog 所需的結構化索引。Generator 不解析自由文字 README 來猜 metadata。
 
 預期流程：
 
 ```text
-experiments/**/*.catalog.json
+Experiment Record + *.catalog.json
         ↓
 small Node build generator
         ↓
@@ -31,7 +33,7 @@ public/index.html
         ↓
 Search + Tag Filter + Status Filter + Pagination
         ↓
-Browser Experiment Page
+Browser Experiment Page (optional)
         ↓
 ← AI Playground
 ```
@@ -63,9 +65,17 @@ experiments/custom-api/c-nf-0.catalog.json
 
 現有 `experiments/` 研究目錄只是 Repository organization，不是 Catalog Category。**Catalog 不提供 category 欄位，也不以目錄作 UI 分類。**
 
-同一研究目錄可以有多個 `*.catalog.json`，因此不要假設「一個資料夾 = 一個 Experiment」。
+同一研究目錄可以有多個 `*.catalog.json`，因此不要假設「一個資料夾 = 一個 Experiment」。像 `experiments/custom-api/README.md` 可同時承載多個 Probe 的研究脈絡，而各 Probe 以自己的 Catalog entry 被獨立索引。
 
-### 2. Tag-only Classification
+### 2. Experiment Record 與 Catalog Metadata 的責任邊界
+
+- `README.md` / Experiment Record：Research Question、Conditions、Process、Evidence、Observation、Conclusion、Failure / Unknown 等研究內容，維持人類與 AI 可讀的自由文件。
+- `*.catalog.json`：只保存 Gallery / Catalog 所需的穩定結構化 metadata。
+- Generator **不得解析 README 正文來推論** title、status、tags、demo path 或 verification state。
+- README 不需要為 Catalog 全面改造成 machine-readable 格式。
+- Catalog metadata 不是第二份研究結論；若 metadata 與 Experiment Record / Evidence 衝突，停止並回報 Primary，不要自行改寫研究結論。
+
+### 3. Tag-only Classification
 
 Catalog 不建立 Category Tree。分類全部使用 `tags[]`。
 
@@ -77,6 +87,7 @@ Tag 規則：
 - 大小寫、單複數、縮寫應固定，例如只保留一種 `Edge Function`，不要同時出現 `Edge Functions` / `edge-function` / `EdgeFunction`。
 - UI filtering 可以使用 normalized key，但 metadata 顯示值維持一致 canonical label。
 - Generator 至少應拒絕同一 Experiment 內 case-insensitive duplicate tags；語義重複由既有 vocabulary reuse rule 控制，不需要做 NLP 猜同義詞。
+- Tag vocabulary 可以隨真正的新技術概念成長，不做僵硬 enum；但新增前必須先檢查既有 Catalog tags 是否已有同義語義。
 
 本次現有 Catalog 使用以下 canonical tags，除非 source inspection 證明不合適，不要自行創造同義版本：
 
@@ -107,7 +118,7 @@ Tag 規則：
 | C-EXT-1 · Custom API Orchestration | `Supabase`, `Custom API`, `Edge Function`, `External API`, `Orchestration`, `RLS` |
 | C-NF-0 · Netlify Functions Lifecycle | `Netlify`, `Functions`, `Deployment`, `Lifecycle` |
 
-### 3. Status is multi-dimensional
+### 4. Status is multi-dimensional
 
 不要用單一 `status` 同時塞 Demo state 與 Evidence state。C-NF-0 已證明兩者可以不同：Demo 已退休，但 Runtime Evidence 仍然 Verified。
 
@@ -123,9 +134,9 @@ Metadata 至少分開：
 
 不要把「Demo Retired」解讀成研究結論失效。
 
-## Suggested Metadata Contract｜資料格式
+## Metadata Contract｜資料格式
 
-可做小幅 implementation-level 調整，但不得改變上述 semantics。建議每個 `*.catalog.json`：
+每個 `*.catalog.json` 至少遵守：
 
 ```json
 {
@@ -145,9 +156,37 @@ Rules：
 - `id` 必填且全 Catalog 唯一。
 - `title`、`summary`、`tags`、`demoStatus`、`verificationStatus` 必填。
 - `demoPath` 只在 `demoStatus = live` 時必填；`retired` / `none` 不得因缺少 Browser page 而讓 Experiment 從 Catalog 消失。
-- `flow` optional，但目前既有 Gallery 已有 flow 的 Experiment 可保留。
+- `flow` optional，但目前既有 Gallery 已有 flow 的 Experiment可保留。
 - 不新增 `category`。
 - 不新增純粹為了人工排序的 `sortOrder`，除非實作證明沒有 deterministic sort 會造成實際問題。預設用 Experiment `id` natural sort 即可。
+- implementation-level validation 可補強，但不得改變上述責任與 status semantics。
+
+## Future Experiment Catalog Convention｜未來新增實驗的固定規則
+
+本次 implementation 必須把以下規則補入**既有適當的 repository guidance**，優先更新既有 README，不要為此另起大型文件體系：
+
+1. 新增一個可獨立識別、未來需要在 Catalog 中被找到的 Experiment / Probe 時，建立或更新對應 `*.catalog.json`。
+2. Experiment Record 與 Catalog metadata 是不同責任：研究內容寫在 Record；Gallery 索引寫在 metadata。不要把完整研究內容複製進 JSON。
+3. 一個研究目錄可以有多個 Probe / Catalog entries；不要為了 Catalog 強迫「一個 folder = 一個 Experiment」。
+4. 新 Experiment 不需要 Browser Demo 才能進 Catalog。沒有 Demo 使用 `demoStatus = none`；Demo 後來拆除則改為 `retired`，不要因此刪掉 Catalog entry 或歷史 Evidence。
+5. 有 Browser Experiment Page 時，使用 `demoStatus = live` + `demoPath`，並提供 `← AI Playground` 回主頁入口。
+6. Experiment 從 Candidate / Partial 升格為 Verified 時，才依 Primary / Evidence judgment 更新 `verificationStatus`；Implementation Agent 不因 source/test 自行把研究結論升格。
+7. Tag 由建立 / 維護 Experiment 的 Agent 依內容選擇。新增 Tag 前先掃既有 Catalog vocabulary，語義相同必須重用既有 canonical label；只有真正的新概念才增加新 Tag。
+8. 不建立 Category Tree，不以資料夾名稱作 Catalog taxonomy。
+9. 新增或修改 Catalog metadata 必須能觸發 Gallery build；純 Research README / Evidence-only 變更仍遵守 repository-only skip 原則。
+10. 未來 Work Order 若新增可獨立 Catalog 的 Experiment / Browser Test Page，Acceptance 應包含對應 metadata 與 home navigation，不再另外手動修改 Gallery Card。
+
+本次 Codex 可以把上述規則沉澱到現有 `README.md` 或最合適的既有 guidance section；Primary Agent 會在 PR Review 時確認文字是否與實際 implementation contract 一致。
+
+## Existing Experiment Migration｜既有實驗遷移
+
+本次不是只把六張 Card 換成 JSON，而是要做一次**有來源依據的 Catalog migration**：
+
+- 以現有 Experiment Record、Evidence 與目前 Gallery 為來源，建立六個 `*.catalog.json`。
+- 不要求重寫現有 Experiment README；只有在缺少必要、且不補會造成未來維護誤解的 convention 說明時才做最小文件調整。
+- 不假設 folder 與 Catalog entry 一對一；尤其 `custom-api` 下的多個 Probe 必須保持獨立 Catalog identity。
+- 如果現有 README / Evidence 與目前 Gallery 對某個 status、demo path 或名稱互相矛盾，標記 `Decision Needed`，不要自行選一個版本假裝一致。
+- 本次只 migration 目前首頁已展示的六個 Experiment，不趁機把所有歷史研究一股腦塞進 Catalog。
 
 ## Context / Read First｜施工前閱讀
 
@@ -170,44 +209,34 @@ Rules：
 ## Execution Context Preflight｜施工前確認
 
 1. 確認 target repository 為 `claire-nook/ai-playground`。
-2. 確認目前沒有 repository root `package.json`；若 repo 現況已改變，以現況為準並在 Report 說明。
-3. 確認 `netlify.toml` 目前 publish directory 為 `public`，且 deployment trigger whitelist 尚未包含 `experiments/**/*.catalog.json` / catalog build script path。
+2. 確認 repository root 是否已有 `package.json`；若與 Work Order 預期不同，以現況為準並在 Report 說明。
+3. 確認 `netlify.toml` 目前 publish directory 為 `public`，且 deployment trigger whitelist 尚未包含 Catalog metadata / generator path。
 4. 確認 `public/index.html` 目前 Cards 為手寫 static HTML。
 5. 確認現有 Live Browser Experiment Pages 與其 URLs。
-6. working tree 若有與本任務無關的未提交修改，停止並回報，不要覆蓋。
+6. 確認六個 Catalog entries 的研究來源足以支持 metadata；遇到矛盾停止該 entry 的猜測並回報。
+7. working tree 若有與本任務無關的未提交修改，停止並回報，不要覆蓋。
 
 不要把 Git remote / local `main` / `gh auth` 當 repository identity 的必要條件。
 
 ## Scope｜可以做
 
-1. 為目前 Gallery 六個 Experiment 建立 `*.catalog.json` metadata。
-2. 新增一支**無外部 dependency**的小型 Node generator，例如：
-   - `scripts/build-experiment-catalog.mjs`
-3. Generator recursive 掃描 `experiments/**/*.catalog.json`，validate metadata，輸出 Catalog artifact 到 `public/` 供 Browser 使用。
-4. Generated catalog artifact 必須被視為 build output，不是人工維護 Source of Truth。優先避免 commit generated JSON；需要時更新 `.gitignore`。
-5. 修改 `public/index.html`：
-   - 不再手寫 Experiment Cards。
-   - runtime 讀取 generated catalog data 並 render cards。
-   - Search。
-   - Tag filter。
-   - Demo / Verification status filter。
-   - Pagination。
-6. Pagination default 每頁 **12** 個；Filter / Search 變更後 reset 到第 1 頁；不足一頁時不顯示多餘 pagination noise。
-7. Search 至少比對：`id`、`title`、`summary`、`tags`。
-8. Tag filter 至少支援單一 Tag；若低風險可支援 multi-tag AND filtering，但不是必要條件，不要為此做複雜 state framework。
-9. Status filtering 要能分辨：
-   - Live Demo / Retired / No Demo
-   - Verified / Partial / Candidate
-10. 保留目前 Experiment Gallery 的主要視覺語言與「Demo 是 display surface、Evidence 才是研究依據」的說明，不需要重新設計成全新產品。
-11. 為現有 Browser Experiment Pages 增加一致的 `← AI Playground` 回主頁入口，連到 `/`。
-12. 更新 Netlify build flow，使 deploy 時在 publish 前執行 generator。
-13. 更新 Netlify trigger boundary，使下列變更能合理觸發 deploy：
-   - Catalog metadata (`experiments/**/*.catalog.json`)
-   - Catalog build script
-   - 既有 deploy surfaces
-14. 不要把整個 `experiments/` 一律加入 trigger surface；Research README / Evidence-only 變更仍不應因為 Catalog build 而喚醒 Netlify。請使用足夠窄的 path/pattern。
-15. 執行 local build / generator / static verification，並保留 Report。
-16. 建立 local commit，之後由 Claire 使用 Codex Product UI Create PR。
+1. 為目前 Gallery 六個 Experiment 建立 `*.catalog.json` metadata，完成 Catalog migration。
+2. 在既有 repository guidance 補入 Future Experiment Catalog Convention，讓未來新增 Experiment / Probe 時知道何時建立 metadata、如何選 Tag、如何處理 Demo / Verification status 與 Browser home navigation。
+3. 新增一支**無外部 dependency**的小型 Node generator，例如 `scripts/build-experiment-catalog.mjs`。
+4. Generator recursive 掃描 `experiments/**/*.catalog.json`，validate metadata，輸出 Catalog artifact 到 `public/` 供 Browser 使用。
+5. Generated catalog artifact 必須被視為 build output，不是人工維護 Source of Truth。優先避免 commit generated JSON；需要時更新 `.gitignore`。
+6. 修改 `public/index.html`，不再手寫 Experiment Cards，runtime 讀取 generated catalog data 並提供 Search、Tag filter、Demo / Verification status filter、Pagination。
+7. Pagination default 每頁 **12** 個；Filter / Search 變更後 reset 到第 1 頁；不足一頁時不顯示多餘 pagination noise。
+8. Search 至少比對：`id`、`title`、`summary`、`tags`。
+9. Tag filter 至少支援單一 Tag；若低風險可支援 multi-tag AND filtering，但不是必要條件，不要為此做複雜 state framework。
+10. Status filtering 要能分辨 Live Demo / Retired / No Demo，以及 Verified / Partial / Candidate。
+11. 保留目前 Experiment Gallery 的主要視覺語言與「Demo 是 display surface、Evidence 才是研究依據」的說明，不需要重新設計成全新產品。
+12. 為現有 Browser Experiment Pages 增加一致的 `← AI Playground` 回主頁入口，連到 `/`。
+13. 更新 Netlify build flow，使 deploy 時在 publish 前執行 generator。
+14. 更新 Netlify trigger boundary，使 Catalog metadata、Catalog build script、既有 deploy surfaces 的變更能合理觸發 deploy。
+15. 不要把整個 `experiments/` 一律加入 trigger surface；Research README / Evidence-only 變更仍不應因為 Catalog build 而喚醒 Netlify。請使用足夠窄的 path/pattern。
+16. 執行 local build / generator / static verification，並保留 Report。
+17. 建立 local commit，之後由 Claire 使用 Codex Product UI Create PR。
 
 ## Build / Netlify Constraint｜很重要，別順手把已驗證邊界踩爛
 
@@ -222,7 +251,7 @@ Preferred implementation：
 - 若 shell regex 對 `**` path pattern 的處理需調整，請以實際 changed path matching 為準，不要照字面搬 glob。
 - Build generation failure 應 fail deploy，不要默默產生空 Gallery。
 
-若現況迫使導入 `package.json`，必須在 Report 說明原因；不要只是因為習慣先 `npm init`。人類已經有足夠多 `package.json` 了。
+若現況迫使導入 `package.json`，必須在 Report 說明原因；不要只是因為習慣先 `npm init`。
 
 ## UX / Browser Rules
 
@@ -249,7 +278,7 @@ Preferred implementation：
 
 不要寫「上一頁」；這是 Information Architecture link，不是 Browser history action。
 
-未來 Browser Experiment Page 應沿用此 convention。將此 convention 補入適當 README / repository guidance，但不要為一句規則新增大型文件。
+未來 Browser Experiment Page 應沿用此 convention。
 
 ## Out of Scope｜不要把 Catalog 變成 CMS 王國
 
@@ -262,17 +291,25 @@ Preferred implementation：
 - 不做 tag synonym AI classifier。
 - 不新增全文搜尋服務。
 - 不把 existing Experiment README 全部重構成新的文件格式。
-- 不把所有歷史 Experiment 都一次 catalog 化；本次只遷移目前首頁已展示的六個 Experiment。未來 Experiment 依 convention 增加 metadata。
+- 不把所有歷史 Experiment 都一次 catalog 化；本次只遷移目前首頁已展示的六個 Experiment。
 - 不刪除或改變現有 Experiment runtime / API / DB implementation。
 - 不自行改寫 Knowledge Catalog / Evidence conclusion；若發現文件因 Trigger Boundary current-state 改變而會誤導，可做最小必要 current-state note，保留歷史 Verified Evidence。
+- 不另外建立大型 Catalog Governance / Tag Dictionary 文件；規則優先沉澱在既有 repository guidance，避免文件增生。
 
 ## Required Validation / Acceptance｜必要驗收
 
 Codex Report 提供 observation；最終 ACCEPTED 由 Primary Agent Review GitHub-visible PR 決定。
 
-### Metadata / Generator
+### Metadata / Migration / Convention
 
-- [ ] 六個既有 Gallery Experiment 都有 `*.catalog.json`。
+- [ ] 六個既有 Gallery Experiment 都有 `*.catalog.json`，且 metadata 可追溯到現有 Experiment Record / Evidence / Gallery state。
+- [ ] `custom-api` 多 Probe 不被錯誤壓成單一 Catalog entry。
+- [ ] Repository guidance 已記錄未來 Experiment Catalog Convention，至少涵蓋 metadata 建立時機、Tag reuse、Demo / Verification status、Browser home navigation。
+- [ ] Convention 明確說明 README / Record 與 `*.catalog.json` 的責任不同，Generator 不靠解析 README 猜 metadata。
+- [ ] 未來新增 Experiment 不需要手動修改 Gallery Card。
+
+### Generator
+
 - [ ] Generator recursive 掃描 metadata，不 hard-code 六個檔名或 Experiment IDs。
 - [ ] Duplicate `id` 會 fail build。
 - [ ] Invalid required fields / invalid status values 會 fail build。
@@ -325,7 +362,7 @@ Codex Report 提供 observation；最終 ACCEPTED 由 Primary Agent Review GitHu
 - `public/index.html`
 - 現有 Live Browser Experiment Pages 的 home navigation update
 - `netlify.toml`
-- 最小必要 README / convention update
+- 既有 repository guidance 的 Future Experiment Catalog Convention update
 - local build / verification result
 - local commit
 - Claire 透過 Codex Product UI Create PR
@@ -339,6 +376,7 @@ Codex 可以自行決定：
 - Search / filter / pagination 的小型 plain-JS implementation detail。
 - UI spacing / badge layout 等不改變資訊架構的小型視覺調整。
 - 最小的 `.gitignore` 實作。
+- 在既有 README 中選擇最合理 section 放置已指定的 Future Experiment Catalog Convention。
 
 Codex 不得自行決定：
 
@@ -346,9 +384,11 @@ Codex 不得自行決定：
 - 新增 Category 欄位或 directory-based taxonomy。
 - 導入 Site Generator / SPA framework / external dependency。
 - 把 generated artifact 當人工 Source of Truth 維護。
+- 解析 README 自動猜 metadata / verification judgment。
 - 把整個 `experiments/` 或整個 `scripts/` 無差別加入 Netlify trigger whitelist。
 - 改變 Demo / Verification 雙 status semantics。
 - 修改既有 Experiment technical conclusion、API、DB 或 security semantics。
+- 自行創造與既有 Tag 同義的新 label。
 - 因為某個 Live Demo runtime 暫時失敗就刪掉其 Verified Evidence；若 runtime regression 被觀察到，保留 Failure / Unknown 並回報 Primary。
 
 ## Report｜執行後填寫
@@ -368,6 +408,10 @@ Report 遵守 `agent-work/report-language-guideline.txt`。
 待執行。
 
 ### Trigger Boundary Observation
+
+待執行。
+
+### Migration / Convention Observation
 
 待執行。
 
