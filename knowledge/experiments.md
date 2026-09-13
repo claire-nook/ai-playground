@@ -1,33 +1,44 @@
 # Experiment Catalog
 
-這份 Catalog 回答一個很樸素、但 Evidence Index 不負責回答的問題：
+這份 Catalog 回答：**我們曾經做過哪些 Experiment，而且當時為什麼要做？**
 
-> **我們曾經做過哪些 Experiment，而且當時為什麼要做？**
-
-`evidence/index.md` 以「做完知道什麼」為中心；這份 Catalog 以「為什麼設計這個 Experiment」為中心。
-
-同一個 Experiment 可以支援多個 Research Intent。Catalog 只保存短摘要、Tags 與 Links，不複製完整 Evidence。
+完整 Method / Evidence 留在 Experiment Record 與 Evidence Index，這裡只保存短摘要、Status、Tags 與 Links。
 
 ---
 
 ## 2026-09-13
+
+### C-DB-1 — Database-centric Supabase Custom API
+
+- Status: `Verified`
+- Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
+- Primary Intent: `Nook Technical Platform / Custom API Runtime Feasibility`
+- Tags: `nook-platform`, `custom-api`, `supabase`, `rpc`, `data-api`, `rls`, `cors`, `browser`, `netlify`
+
+**Why it existed**
+
+C-0 只證明 Edge Function 能部署，不代表它能承擔 Nook Works 真正的 Database-centric API。這次刻意讓一支 API 同時走過 JWT、RPC、RLS、Native Data API 與 application-side mapping。
+
+**What it unlocked**
+
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。Claire 得到 2 筆結果；TU01 / TU02 均得到 HTTP 200 + empty rows，支持 caller-scoped RLS behavior，也再次證明 row visibility 不等於完整 Business Authorization semantics。
+
+### C-NF-0 — Netlify Functions Deployment Lifecycle
+
+- Status: `Verified`
+- Record: [`../experiments/custom-api/netlify-functions-lifecycle.md`](../experiments/custom-api/netlify-functions-lifecycle.md)
+- Tags: `nook-platform`, `custom-api`, `deployment`, `netlify`, `ipad-first`
+
+Git source → Deploy Preview → invoke / logs → Production → source delete / function absent 已驗證。Netlify 保留為 credible secondary runtime candidate。
 
 ### Netlify Git Deployment Boundary
 
 - Status: `Verified`
 - Record: [`../experiments/netlify-deployment-boundary/README.md`](../experiments/netlify-deployment-boundary/README.md)
 - Related Evidence: [`../evidence/provider-boundary-pitfalls.md`](../evidence/provider-boundary-pitfalls.md)
-- Primary Intent: `Playground / Static Deployment Boundary`
-- Also Supports: `Nook Technical Platform / Deployment`
-- Tags: `nook-platform`, `ipad-first`, `deployment`, `netlify`, `browser`
+- Tags: `nook-platform`, `deployment`, `netlify`, `browser`
 
-**Why it existed**
-
-研究 Netlify Git deployment 時，Deploy file browser 顯示 Playground 的 Research Record、Knowledge、Evidence 與其他 Repository directories 一起進入 Site Deploy。問題因此從「Netlify 怎麼自動部署」收斂成「Repository 與 Public Artifact 的 Deployment Boundary 應該在哪裡」。
-
-**What it unlocked**
-
-建立 `public/` 作為 Static Public Artifact boundary，並把 Browser Artifact 與 `experiments/**/README.md` Experiment Record 分離。新的 Netlify Deploy 已直接驗證只包含 `public/` 內容。同時留下後續獨立問題：Publish Boundary 已完成，但 Trigger Boundary 仍需研究。
+建立 `public/` Static Public Artifact boundary；後續 Trigger Boundary 亦已驗證 relevant path deploy / docs-only skip。
 
 ---
 
@@ -37,133 +48,52 @@
 
 - Status: `Verified`
 - Record: [`../experiments/auth/README.md`](../experiments/auth/README.md)
-- Primary Intent: `Nook Technical Platform / Browser Authentication`
-- Also Supports: `ipad-first`
-- Tags: `nook-platform`, `ipad-first`, `authentication`, `session`, `supabase`, `netlify`, `browser`
+- Tags: `authentication`, `session`, `supabase`, `netlify`, `browser`
 
-**Why it existed**
-
-先確認最基本的 Browser Authentication Path：Netlify-hosted UI 是否能直接使用 Supabase Auth 建立 Session，而不需要為了「登入」先自行包一層 Custom API。
-
-**What it unlocked**
-
-建立 Browser → Supabase Auth baseline，讓後續 Data API / Application Access Experiment 可以使用真實 authenticated Session。
-
----
+Netlify Browser → Supabase Auth → Session 已驗證，基本登入不需要自行包 Custom Login API。
 
 ### Experiment B — Supabase Native Data API CRUD
 
 - Status: `Verified`
 - Record: [`../experiments/data-api/README.md`](../experiments/data-api/README.md)
-- Primary Intent: `Nook Technical Platform / Internal Data Access`
-- Also Supports: `ipad-first`
-- Tags: `nook-platform`, `ipad-first`, `data-api`, `authorization`, `rls`, `supabase`, `browser`, `postgresql`
+- Tags: `data-api`, `authorization`, `rls`, `supabase`, `browser`, `postgresql`
 
-**Why it existed**
-
-在 Auth baseline 成立後，驗證 Browser 能否直接使用 Supabase Native Data API 完成 CRUD，以及 Authentication Identity、`app_user` Application Identity、Grant、RLS 是否能形成真正的 Application Access Boundary。
-
-**What it unlocked**
-
-建立 Native Data API mechanism baseline，也暴露 `error = null` / row visibility / affected-row semantics 不等於 Business Operation semantics，讓後續 Custom API / RPC 比較有了真正的問題，而不是只比「能不能讀資料」。
-
----
+Browser Native CRUD 與 Application Access Boundary 已驗證，也建立 `technical success != business success` baseline。
 
 ### Experiment B-1 — Supabase Native Data API View Read / Security
 
 - Status: `Verified`
 - Record: [`../experiments/data-api-view/README.md`](../experiments/data-api-view/README.md)
-- Relationship: `extends` Experiment B
-- Primary Intent: `Nook Technical Platform / Read Model`
-- Also Supports: `ipad-first`
-- Tags: `nook-platform`, `ipad-first`, `data-api`, `read-model`, `rls`, `supabase`, `browser`, `postgresql`
+- Tags: `data-api`, `read-model`, `rls`, `supabase`, `postgresql`
 
-**Why it existed**
-
-Experiment B 證明 Native Table CRUD 可行後，進一步問：Browser Read Contract 是否一定要等於 Physical Table Schema？PostgreSQL View 能不能在保留 invoking identity security boundary 的情況下提供 join / alias Read Model？
-
-**What it unlocked**
-
-建立 `Table or security-reviewed View → Native Data API` 的 Read Model Candidate，避免未來只是為了資料 shaping 就條件反射地增加 Custom API。
-
----
+`security_invoker=true` View 可作為 Native Data API Read Model，保留 tested invoking identity security behavior。
 
 ### GitHub Actions Remote Execution Environment
 
 - Status: `Verified`
 - Record: [`../experiments/github-actions/README.md`](../experiments/github-actions/README.md)
-- Primary Intent at birth: `Supabase deployment prerequisite exploration`
-- Supports: `Nook Technical Platform / Deployment`
-- Supports: `ipad-first`
-- Supports: `ai-engineering`
-- Tags: `nook-platform`, `ipad-first`, `ai-engineering`, `remote-execution`, `deployment`, `github-actions`
+- Tags: `ipad-first`, `ai-engineering`, `remote-execution`, `github-actions`
 
-**Why it existed**
-
-原本為了回答後續 Supabase Edge Function deployment 是否會被 iPadOS 缺少 Local CLI 卡住，先確認 GitHub Actions 能不能真的借出一台 temporary Runner，讓 AI / Claire 把 execution 委派出去並讀回 runtime result。
-
-**What it unlocked**
-
-Experiment 結果超出原始 Intent：GitHub Actions 成為 Playground 可重用的 Remote Execution Environment，同時支援 iPad-first、AI autonomous experimentation、CLI / build / CI-CD 等未來問題。
-
----
+GitHub-hosted Runner 可補 iPadOS / AI 缺少 CLI / Linux runtime 的 execution gap。
 
 ### Experiment C-0 — Supabase Edge Function Deployment Lifecycle
 
 - Status: `Verified`
 - Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
-- `depends-on`: GitHub Actions Remote Execution Environment
-- Primary Intent: `Nook Technical Platform / Custom API Runtime / Deployment`
-- Also Supports: `ipad-first`
-- Tags: `nook-platform`, `ipad-first`, `custom-api`, `deployment`, `remote-execution`, `credential`, `supabase`, `github-actions`
+- Tags: `custom-api`, `deployment`, `supabase`, `github-actions`, `ipad-first`
 
-**Why it existed**
-
-Custom API 未來要比較 DB / Auth / Business Contract，但在那之前先隔離最原始的 dependency：API 到底能不能從 Claire 真實的 iPad-first workflow 被 deploy、invoke、inspect、delete。
-
-因此故意使用沒有 DB、Auth、Business Logic、CORS 的 Hello World。Hello World 本身不重要，重要的是它替 Deployment Lifecycle 當祭品，避免其他變因混進來。
-
-**What it unlocked**
-
-Supabase Edge Function Deployment Lifecycle 已有實作 Evidence；同時自然暴露 `Custom API Runtime` 的 sibling candidate：Netlify Functions。後續可以在同一 Architecture node 取得可比較 Evidence，而不是做兩家公司全面功能評測。
+Edge Function deployment lifecycle 已在 iPad-first workflow 驗證，並成為 C-DB-1 的 runtime baseline。
 
 ---
 
-## Current Candidate Experiments｜已辨識但尚未執行
+## Current Candidate Experiments
 
-這些不是 Completed Experiment，不應寫進 Evidence Index；但保留它們可以讓未來知道「這條 Branch 已經被看見，不是被否決」。
-
-### Netlify Functions — Minimal Deployment Lifecycle
-
-- Status: `Candidate`
-- Research Map: [`Nook Technical Platform`](maps/nook-technical-platform.md)
-- Relationship: `compares-with` C-0 at `Custom API Runtime / Deployment`
-- Tags: `nook-platform`, `ipad-first`, `custom-api`, `deployment`, `netlify`
-
-Purpose：用與 C-0 相近的最小 probe 驗證 source → deploy → HTTP invoke → inspect / cleanup，取得與 Supabase Edge Functions 可比較的 operational Evidence。
-
-### Custom API — Browser Invocation / CORS
-
-- Status: `Candidate`
-- Research Map: [`Nook Technical Platform`](maps/nook-technical-platform.md)
-- Tags: `nook-platform`, `custom-api`, `browser`, `cors`
-
-Purpose：C-0 的 Safari direct navigation 只證明 endpoint 可被 HTTP GET，不等於 Netlify Browser Application 的 cross-origin `fetch()` 已成立。
-
-### PostgreSQL RPC — Read Test Data
-
-- Status: `Candidate`
-- Research Map: [`Nook Technical Platform`](maps/nook-technical-platform.md)
-- Tags: `nook-platform`, `rpc`, `authorization`, `rls`, `postgresql`, `supabase`
-
-Purpose：建立 Native Data API / Custom API 之外的 mechanism Evidence，研究 RPC 在明確 operation contract、permission、RLS 與 Function Security Mode 下適合承擔什麼 Responsibility。
+- **External API Orchestration**：outbound API、secret、timeout / retry、normalize / aggregate。
+- **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、cost。
+- **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
 
 ---
 
-## Maintenance Rule｜維護規則
+## Maintenance Rule
 
-每次建立新 Experiment 時，先加入一筆簡短 Catalog entry；完成後更新 Status 與 `What it unlocked`。
-
-如果 Experiment 後來支援新的 Research Intent，只增加 Link / Tag，不複製 Experiment Record 或 Evidence。
-
-Catalog 要讓未來的人快速回答「為什麼做」，不是把所有實驗報告再抄一次。
+Catalog 維持短小，只回答「為什麼做、打開什麼下一步」。完整 Evidence 不在這裡再養一份分身。
