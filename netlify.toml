@@ -1,0 +1,13 @@
+# Netlify deployment configuration for AI Playground.
+#
+# Trigger Boundary principle:
+# only changes that can affect Netlify deployable output or runtime should wake
+# the Netlify build pipeline. Research records and other laboratory context stay
+# in the repository without causing a deployment by themselves.
+
+[build]
+  publish = "public"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF public netlify/functions netlify/edge-functions netlify.toml package.json package-lock.json yarn.lock pnpm-lock.yaml"
+
+[functions]
+  directory = "netlify/functions"
