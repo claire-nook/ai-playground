@@ -48,6 +48,22 @@ Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名�
 
 > **Casual Name ≠ Required Identifier. Semantic Intent first; canonical naming is a design responsibility.**
 
+### 2.2 Markdown / Diagram Expression
+
+Playground 的 Markdown 文件在需要表達 **流程、架構關係、呼叫順序、狀態轉換、Dependency、資料關係或其他圖形化後明顯更容易理解的內容** 時，應主動考慮使用 Mermaid，而不是預設全部用純文字 ASCII / arrow 排版。
+
+原則：
+
+- Mermaid 是 Markdown Record 內的 text source，可被 Git diff、AI 閱讀與 Browser Renderer 呈現；不需要另外維護 PNG / SVG / drawio 才能保存基本技術圖。
+- Flowchart、Sequence Diagram、State Diagram、ER Diagram、Mindmap 等可依語意選擇；圖型服務於理解，不為了展示 Renderer 能力而畫圖。
+- 簡單的一行關係，例如 `Catalog → Gallery → Reader`，純文字更清楚時就維持純文字；不要看到箭頭就召喚 Mermaid。
+- Diagram 不能取代 Evidence / Constraint / Conclusion 正文；圖是 Human View，不是新的 Source of Truth。
+- 若 target Markdown Renderer 不確定支援 Mermaid，先確認 rendering capability；不要默默產生只有 source code、Claire 卻看不到圖的文件。
+- Playground Human View Reader 已把 Mermaid 列為正式 rendering capability；未來撰寫 Experiment Record / Knowledge 文件時，可把 Mermaid 視為可用表達工具。
+- 不因 Mermaid 已支援就順便導入數學 rendering dependency；LaTeX / KaTeX / MathJax 只有出現真實需求時再研究。
+
+> **Diagram when it improves understanding; text when text is clearer. Mermaid is a documentation tool, not decoration.**
+
 ---
 
 ## 3. Handoff Model
@@ -84,15 +100,27 @@ Human / Provider Gate when required
 
 1. Primary + Claire 將 Research Question / Specification / Scope 討論到足以委派。
 2. Primary 建立 Work Order 並 commit 必要 Context。
-3. Primary 給 Claire Target Repository、Work Order path、短 Dispatch Prompt。
-4. Claire 開 Codex，確認 Product UI 選到預期 Repository / Workspace。
-5. Codex 做 context-oriented Preflight，不把 Git remote / local main / `gh auth` 當 repository identity 必要條件。
-6. Codex implementation / test / local commit。
-7. Claire 由 Codex Product UI Create PR。
-8. Primary 直接 Review GitHub-visible `head_sha` / Diff / Files / Report；需要時 `ACCEPTED` / `REWORK`。
-9. Merge 依適用 Human / Governance Gate 執行。
-10. 若 deployment 依賴 manual GitHub Action，Claire 再觸發 `workflow_dispatch`，Primary 直接檢查 GitHub Action / Provider Evidence。
-11. Runtime / Functional Evidence 需要人類環境時，由 Claire 執行；最後才依 Knowledge Capture Protocol 升格 Verified Judgment。
+3. Primary 交給 Claire 的 Dispatch Handoff **必須明確提供 Target Repository、Base Branch / expected starting branch、Work Order path，以及一段可直接複製貼給 Codex 的 Dispatch Prompt**。不要只說「工單開好了，去叫弟弟上班」，讓 Claire 再替 Agent 猜 repository / branch / 任務入口。
+4. Dispatch Prompt 應短而完整：要求 Codex 先讀 Work Order 與其中 Read First / Preflight，以 repository 現況施工、完成 test 與 local commit，最後依 Work Order Report contract 回報。若 Work Order 已經包含完整 requirement，不要在 Prompt 再複製一份規格造成雙重 Source of Truth。
+5. Claire 開 Codex，確認 Product UI 選到預期 Repository / Workspace；若 Primary 指定的是 default branch baseline，明確以該 branch 最新狀態建立新 task / workspace。
+6. Codex 做 context-oriented Preflight，不把 Git remote / local main / `gh auth` 當 repository identity 必要條件。
+7. Codex implementation / test / local commit。
+8. Claire 由 Codex Product UI Create PR。
+9. Primary 直接 Review GitHub-visible `head_sha` / Diff / Files / Report；需要時 `ACCEPTED` / `REWORK`。
+10. Merge 依適用 Human / Governance Gate 執行。
+11. 若 deployment 依賴 manual GitHub Action，Claire 再觸發 `workflow_dispatch`，Primary 直接檢查 GitHub Action / Provider Evidence。
+12. Runtime / Functional Evidence 需要人類環境時，由 Claire 執行；最後才依 Knowledge Capture Protocol 升格 Verified Judgment。
+
+Dispatch Handoff 建議固定呈現：
+
+```text
+Repository: owner/repo
+Base branch: main
+Work Order: agent-work/work-orders/<name>.md
+
+可複製給 Codex：
+請在 <owner/repo>，以 <branch> 最新狀態建立新的工作環境。先完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，依 Work Order 施工、測試並 local commit。不要自行擴張 Architecture / Scope；遇到缺少必要 context 或與 Work Order 衝突時停止並回報。完成後依 Work Order 的 Report contract 回報 changed files、tests、known limitations 與 local commit SHA，然後停止，等待 Claire 建立 PR。
+```
 
 如果 Primary 在 Codex Workspace 建立後才 commit 新必要 Context，不假設舊 Workspace 自動 refresh；目前保守做法是開新 task / workspace。
 
