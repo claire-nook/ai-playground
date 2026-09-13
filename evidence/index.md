@@ -142,7 +142,7 @@ Manual Mode 適合 Deployment / Migration 等希望保留 Human Approval Gate �
 - Status: Verified
 - Topics: Authentication, Session, Supabase Auth, Browser, Netlify, iPadOS
 - Record: `experiments/auth/README.md`
-- Artifact: `experiments/auth/index.html`
+- Artifact: `public/auth/index.html`
 
 ### Question
 
@@ -200,7 +200,7 @@ Netlify Browser UI → Supabase Auth → Authentication Success → `auth.users`
 - Status: Completed / Verified
 - Topics: Data API, CRUD, Browser, PostgreSQL Grant, RLS, Application Access, app_user, Supabase, iPadOS
 - Record: `experiments/data-api/README.md`
-- Artifact: `experiments/data-api/index.html`
+- Artifact: `public/data-api/index.html`
 
 ### Question
 
@@ -248,7 +248,7 @@ Experiment B 建立了 Native Data API 的 Internal Application Data Access base
 - Status: Completed / Verified
 - Topics: Data API, PostgreSQL View, Read Model, Join, Alias, security_invoker, RLS, PostgreSQL Grant, Application Access, Supabase, Browser, iPadOS
 - Record: `experiments/data-api-view/README.md`
-- Artifact: `experiments/data-api-view/index.html`
+- Artifact: `public/data-api-view/index.html`
 
 ### Question
 
