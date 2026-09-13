@@ -1,446 +1,581 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI Playground 公開實驗展示頁，整理目前可操作與已完成的技術實驗。">
-  <title>AI Playground · Experiment Gallery</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="AI Playground 公開實驗展示頁，整理目前可操作與已完成的技術實驗。"
+    />
+    <title>AI Playground · Experiment Gallery</title>
 
-  <style>
-    /*
-     * Public 首頁是一個 Human-facing Experiment Gallery。
-     * 它負責說明「做過什麼、證明什麼、Demo 是否仍可操作」，
-     * 不取代 GitHub 內的 Experiment Record / Evidence / Research Map。
-     */
-    :root {
-      --page-bg: #f4f6f8;
-      --surface: #ffffff;
-      --surface-muted: #f7f8fa;
-      --border: #d8dee4;
-      --text: #1f2328;
-      --text-muted: #59636e;
-      --link: #0969da;
-      --live-bg: #dafbe1;
-      --live-text: #116329;
-      --retired-bg: #fff8c5;
-      --retired-text: #7d4e00;
-      --verified-bg: #ddf4ff;
-      --verified-text: #0550ae;
-      --shadow: 0 14px 36px rgba(31, 35, 40, 0.08);
-    }
+    <style>
+      /* Theme tokens and document-wide defaults. */
+      :root {
+        --page-bg: #f4f6f8;
+        --surface: #ffffff;
+        --surface-muted: #f7f8fa;
+        --border: #d8dee4;
+        --text: #1f2328;
+        --text-muted: #59636e;
+        --link: #0969da;
+        --live-bg: #dafbe1;
+        --live-text: #116329;
+        --retired-bg: #fff8c5;
+        --retired-text: #7d4e00;
+        --verified-bg: #ddf4ff;
+        --verified-text: #0550ae;
+        --shadow: 0 14px 36px rgba(31, 35, 40, 0.08);
+      }
 
-    * {
-      box-sizing: border-box;
-    }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background: var(--page-bg);
+      }
+      a {
+        color: var(--link);
+        text-underline-offset: 0.16em;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        word-break: break-word;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.6;
-      color: var(--text);
-      background: var(--page-bg);
-    }
-
-    a {
-      color: var(--link);
-      text-decoration-thickness: 0.08em;
-      text-underline-offset: 0.16em;
-    }
-
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      word-break: break-word;
-    }
-
-    .page-shell {
-      width: min(1080px, calc(100% - 2rem));
-      margin: 0 auto;
-      padding: 3rem 0 4rem;
-    }
-
-    .hero {
-      padding: 2.25rem;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-    }
-
-    .eyebrow {
-      margin: 0 0 0.35rem;
-      font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    h1,
-    h2,
-    h3 {
-      line-height: 1.2;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(2rem, 6vw, 4rem);
-      letter-spacing: -0.04em;
-    }
-
-    .hero-copy {
-      max-width: 760px;
-      margin: 1rem 0 0;
-      font-size: 1.05rem;
-      color: var(--text-muted);
-    }
-
-    .hero-note {
-      margin: 1.25rem 0 0;
-      padding: 1rem 1.1rem;
-      border-left: 4px solid var(--border);
-      background: var(--surface-muted);
-      color: var(--text-muted);
-    }
-
-    .section {
-      margin-top: 2.25rem;
-    }
-
-    .section-heading {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .section-heading h2 {
-      margin: 0;
-      font-size: 1.55rem;
-    }
-
-    .section-heading p {
-      margin: 0;
-      color: var(--text-muted);
-    }
-
-    .experiment-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-    }
-
-    .experiment-card,
-    .runtime-card {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--surface);
-    }
-
-    .experiment-card {
-      display: flex;
-      flex-direction: column;
-      min-height: 100%;
-      padding: 1.35rem;
-    }
-
-    .experiment-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.65rem;
-    }
-
-    .experiment-id {
-      font-size: 0.83rem;
-      font-weight: 800;
-      color: var(--text-muted);
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 1.7rem;
-      padding: 0.18rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status-live {
-      background: var(--live-bg);
-      color: var(--live-text);
-    }
-
-    .status-verified {
-      background: var(--verified-bg);
-      color: var(--verified-text);
-    }
-
-    .status-retired {
-      background: var(--retired-bg);
-      color: var(--retired-text);
-    }
-
-    .experiment-card h3 {
-      margin: 0;
-      font-size: 1.18rem;
-    }
-
-    .experiment-card p {
-      margin: 0.7rem 0 0;
-      color: var(--text-muted);
-    }
-
-    .flow {
-      margin-top: 0.85rem;
-      padding: 0.75rem;
-      border-radius: 10px;
-      background: var(--surface-muted);
-      font-size: 0.84rem;
-    }
-
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.7rem;
-      margin-top: auto;
-      padding-top: 1.1rem;
-    }
-
-    .card-actions a {
-      font-weight: 750;
-    }
-
-    .gallery-note {
-      margin-top: 1rem;
-      padding: 1rem 1.1rem;
-      border: 1px dashed var(--border);
-      border-radius: 14px;
-      color: var(--text-muted);
-      background: var(--surface-muted);
-    }
-
-    .runtime-card {
-      padding: 1.25rem;
-    }
-
-    .runtime-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.8rem;
-      margin-top: 1rem;
-    }
-
-    .runtime-item {
-      padding: 0.9rem;
-      border-radius: 12px;
-      background: var(--surface-muted);
-    }
-
-    .runtime-label {
-      display: block;
-      margin-bottom: 0.3rem;
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    footer {
-      margin-top: 2rem;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      text-align: center;
-    }
-
-    @media (max-width: 760px) {
+      /* Page shell and explanatory hero. */
       .page-shell {
-        width: min(100% - 1rem, 1080px);
-        padding-top: 0.5rem;
+        width: min(1080px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 3rem 0 4rem;
       }
-
       .hero {
-        padding: 1.5rem;
-        border-radius: 16px;
+        padding: 2.25rem;
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+      .eyebrow {
+        margin: 0 0 0.35rem;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 4rem);
+        letter-spacing: -0.04em;
+      }
+      .hero-copy {
+        max-width: 760px;
+        margin: 1rem 0 0;
+        font-size: 1.05rem;
+        color: var(--text-muted);
+      }
+      .hero-note {
+        margin: 1.25rem 0 0;
+        padding: 1rem 1.1rem;
+        border-left: 4px solid var(--border);
+        background: var(--surface-muted);
+        color: var(--text-muted);
       }
 
-      .experiment-grid,
-      .runtime-grid {
-        grid-template-columns: 1fr;
+      /* Catalog heading and search/filter controls. */
+      .section {
+        margin-top: 2.25rem;
       }
-
       .section-heading {
-        align-items: flex-start;
-        flex-direction: column;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
       }
-    }
-  </style>
-</head>
-<body>
-  <main class="page-shell">
-    <header class="hero">
-      <p class="eyebrow">AI Playground · Experiment Gallery</p>
-      <h1>撞牆可以，牆上要留下牙印。</h1>
-      <p class="hero-copy">
-        這裡不是正式開發環境，也不是永久 Demo 站。它是一張公開的實驗桌：
-        用真實 Browser、API、Database、Provider Runtime 去回答技術問題，再把 Experience / Evidence 留下來。
-      </p>
-      <p class="hero-note">
-        <strong>Gallery 只負責展示。</strong>
-        Experiment 的完整條件、限制與結論保存在 GitHub 的 Experiment Record / Evidence。
-        某個 Demo 日後失效，不代表當年的 Evidence 跟著蒸發。人類很愛把「網站還活著」誤認成「知識還存在」，這裡先阻止這件事。
-      </p>
-    </header>
+      .section-heading h2 {
+        margin: 0;
+        font-size: 1.55rem;
+      }
+      .section-heading p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+      .catalog-controls {
+        display: grid;
+        grid-template-columns: 2fr repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+      }
+      .control {
+        display: grid;
+        gap: 0.25rem;
+      }
+      .control label {
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: var(--text-muted);
+      }
+      .control input,
+      .control select {
+        width: 100%;
+        min-height: 2.6rem;
+        padding: 0.45rem 0.65rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: white;
+        color: var(--text);
+      }
 
-    <section class="section" aria-labelledby="experiments-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Current Gallery</p>
-          <h2 id="experiments-title">Public Experiments</h2>
+      /* Catalog cards, status badges, tags, and action links. */
+      .experiment-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      .experiment-card,
+      .runtime-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+      }
+      .experiment-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        padding: 1.35rem;
+      }
+      .experiment-meta,
+      .badges,
+      .tags {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .experiment-meta {
+        justify-content: space-between;
+        margin-bottom: 0.65rem;
+      }
+      .experiment-id {
+        font-size: 0.83rem;
+        font-weight: 800;
+        color: var(--text-muted);
+      }
+      .status-badge,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 1.7rem;
+        padding: 0.18rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .status-live {
+        background: var(--live-bg);
+        color: var(--live-text);
+      }
+      .status-retired,
+      .status-none,
+      .status-candidate {
+        background: var(--retired-bg);
+        color: var(--retired-text);
+      }
+      .status-verified,
+      .status-partial {
+        background: var(--verified-bg);
+        color: var(--verified-text);
+      }
+      .tag {
+        background: var(--surface-muted);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+      .experiment-card h3 {
+        margin: 0;
+        font-size: 1.18rem;
+      }
+      .experiment-card p {
+        margin: 0.7rem 0 0;
+        color: var(--text-muted);
+      }
+      .tags {
+        margin-top: 0.85rem;
+      }
+      .flow {
+        margin-top: 0.85rem;
+        padding: 0.75rem;
+        border-radius: 10px;
+        background: var(--surface-muted);
+        font-size: 0.84rem;
+      }
+      .card-actions {
+        margin-top: auto;
+        padding-top: 1.1rem;
+      }
+      .card-actions a {
+        font-weight: 750;
+      }
+      .gallery-note,
+      .catalog-state {
+        margin-top: 1rem;
+        padding: 1rem 1.1rem;
+        border: 1px dashed var(--border);
+        border-radius: 14px;
+        color: var(--text-muted);
+        background: var(--surface-muted);
+      }
+      .catalog-state.error {
+        border-color: #cf222e;
+        color: #82071e;
+      }
+
+      /* Pagination stays quiet when the filtered result fits on one page. */
+      .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+      .pagination button {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        cursor: pointer;
+      }
+      .pagination button:disabled {
+        cursor: default;
+        opacity: 0.5;
+      }
+
+      /* Runtime diagnostics verify that the static page executed in a browser. */
+      .runtime-card {
+        padding: 1.25rem;
+      }
+      .runtime-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-top: 1rem;
+      }
+      .runtime-item {
+        padding: 0.9rem;
+        border-radius: 12px;
+        background: var(--surface-muted);
+      }
+      .runtime-label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      footer {
+        margin-top: 2rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      /* Responsive layout preserves usable controls and cards on iPad-sized screens. */
+      @media (max-width: 760px) {
+        .page-shell {
+          width: min(100% - 1rem, 1080px);
+          padding-top: 0.5rem;
+        }
+        .hero {
+          padding: 1.5rem;
+          border-radius: 16px;
+        }
+        .experiment-grid,
+        .runtime-grid,
+        .catalog-controls {
+          grid-template-columns: 1fr;
+        }
+        .section-heading {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">AI Playground · Experiment Gallery</p>
+        <h1>撞牆可以，牆上要留下牙印。</h1>
+        <p class="hero-copy">
+          這裡不是正式開發環境，也不是永久 Demo 站。它是一張公開的實驗桌：用真實
+          Browser、API、Database、Provider Runtime 去回答技術問題，再把
+          Experience / Evidence 留下來。
+        </p>
+        <p class="hero-note">
+          <strong>Gallery 只負責展示。</strong> Experiment
+          的完整條件、限制與結論保存在 GitHub 的 Experiment Record /
+          Evidence。某個 Demo 日後失效，不代表當年的 Evidence 跟著蒸發。
+        </p>
+      </header>
+
+      <section class="section" aria-labelledby="experiments-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Current Gallery</p>
+            <h2 id="experiments-title">Public Experiments</h2>
+          </div>
+          <p>Status 是 Demo 狀態，不是研究可信度分數。</p>
         </div>
-        <p>Status 是 Demo 狀態，不是研究可信度分數。</p>
-      </div>
-
-      <div class="experiment-grid">
-        <article class="experiment-card">
-          <div class="experiment-meta">
-            <span class="experiment-id">Experiment A</span>
-            <span class="status-badge status-live">Live Demo</span>
+        <div class="catalog-controls">
+          <div class="control">
+            <label for="search">Search</label
+            ><input
+              id="search"
+              type="search"
+              placeholder="ID、名稱、摘要或 Tag"
+            />
           </div>
-          <h3>Supabase Auth</h3>
-          <p>驗證 Browser 直接進行 Email / Password Sign-in、取得 Session，以及最小 Authentication flow。</p>
-          <div class="flow"><code>Browser → Supabase Auth → Session</code></div>
-          <div class="card-actions">
-            <a href="./auth/">開啟 Demo</a>
+          <div class="control">
+            <label for="tag-filter">Tag</label
+            ><select id="tag-filter">
+              <option value="">All tags</option>
+            </select>
           </div>
-        </article>
-
-        <article class="experiment-card">
-          <div class="experiment-meta">
-            <span class="experiment-id">Experiment B</span>
-            <span class="status-badge status-live">Live Demo</span>
+          <div class="control">
+            <label for="demo-filter">Demo status</label
+            ><select id="demo-filter">
+              <option value="">All demo statuses</option>
+              <option value="live">Live Demo</option>
+              <option value="retired">Demo Retired</option>
+              <option value="none">No Demo</option>
+            </select>
           </div>
-          <h3>Supabase Native Data API CRUD</h3>
-          <p>驗證 Browser 使用 caller session 存取 Native Data API，並由 PostgreSQL Grant / RLS 控制資料可見性與 CRUD。</p>
-          <div class="flow"><code>Browser → Data API → Grant / RLS → Table</code></div>
-          <div class="card-actions">
-            <a href="./data-api/">開啟 Demo</a>
-          </div>
-        </article>
-
-        <article class="experiment-card">
-          <div class="experiment-meta">
-            <span class="experiment-id">Experiment B-1</span>
-            <span class="status-badge status-live">Live Demo</span>
-          </div>
-          <h3>Supabase View Read</h3>
-          <p>驗證 <code>security_invoker=true</code> View 可作為 Read Model，同時保留 invoking user 的權限與 RLS 行為。</p>
-          <div class="flow"><code>Browser → View → Base Table RLS</code></div>
-          <div class="card-actions">
-            <a href="./data-api-view/">開啟 Demo</a>
-          </div>
-        </article>
-
-        <article class="experiment-card">
-          <div class="experiment-meta">
-            <span class="experiment-id">Experiment C-DB-1</span>
-            <span class="status-badge status-live">Live Demo</span>
-          </div>
-          <h3>Database-centric Custom API</h3>
-          <p>驗證 Supabase Edge Function 可用 caller-scoped context 編排 RPC / Native Data API，並保留 RLS boundary。</p>
-          <div class="flow"><code>Browser → JWT → Edge Function → RPC / Data API → RLS</code></div>
-          <div class="card-actions">
-            <a href="./custom-api/">開啟 Demo</a>
-          </div>
-        </article>
-
-        <article class="experiment-card">
-          <div class="experiment-meta">
-            <span class="experiment-id">Experiment C-EXT-1</span>
-            <span class="status-badge status-live">Live Demo</span>
-          </div>
-          <h3>Custom API Orchestration</h3>
-          <p>驗證 Custom API 可以組合另一支 caller-aware API，再呼叫外部 Open-Meteo，最後做 application-side normalization。</p>
-          <div class="flow"><code>Browser → Weather API → Valid Place API → RLS → Open-Meteo → Browser</code></div>
-          <div class="card-actions">
-            <a href="./custom-api-orchestration/">開啟 Demo</a>
-          </div>
-        </article>
-
-        <article class="experiment-card">
-          <div class="experiment-meta">
-            <span class="experiment-id">Experiment C-NF-0</span>
-            <span class="status-badge status-retired">Demo Retired</span>
-          </div>
-          <h3>Netlify Functions Lifecycle</h3>
-          <p>驗證 Git source 可建立 Deploy Preview Function、Browser invoke、Cloud logs、Production lifecycle，並在刪除 source 後由新 Deploy 移除 Function。</p>
-          <div class="flow"><code>Git Source → Netlify Deploy → Function → Logs → Source Delete → Function Absent</code></div>
-          <div class="card-actions">
-            <span class="status-badge status-verified">Runtime Verified</span>
-          </div>
-        </article>
-      </div>
-
-      <div class="gallery-note">
-        <strong>關於狀態：</strong>
-        <code>Live Demo</code> 表示目前仍保留可操作入口；
-        <code>Demo Retired</code> 表示實驗器材已撤除，但已留下的 Experiment Record / Evidence 仍有效於其原始測試條件。
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="runtime-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Deployment Surface</p>
-          <h2 id="runtime-title">Runtime Check</h2>
-        </div>
-        <p>只是確認這張 Gallery 本身有正常被 Netlify 送到 Browser，沒有玄學。</p>
-      </div>
-
-      <div class="runtime-card">
-        <div class="runtime-grid">
-          <div class="runtime-item">
-            <span class="runtime-label">JavaScript</span>
-            <code id="js-status">尚未執行</code>
-          </div>
-          <div class="runtime-item">
-            <span class="runtime-label">Current URL</span>
-            <code id="current-url">讀取中…</code>
-          </div>
-          <div class="runtime-item">
-            <span class="runtime-label">Browser Time</span>
-            <code id="browser-time">讀取中…</code>
+          <div class="control">
+            <label for="verification-filter">Verification</label
+            ><select id="verification-filter">
+              <option value="">All verification statuses</option>
+              <option value="verified">Verified</option>
+              <option value="partial">Partial</option>
+              <option value="candidate">Candidate</option>
+            </select>
           </div>
         </div>
-      </div>
-    </section>
+        <p
+          id="catalog-state"
+          class="catalog-state"
+          role="status"
+          aria-live="polite"
+        >
+          Catalog 載入中…
+        </p>
+        <div id="experiment-grid" class="experiment-grid" hidden></div>
+        <nav
+          id="pagination"
+          class="pagination"
+          aria-label="Catalog pages"
+          hidden
+        ></nav>
+        <div class="gallery-note">
+          <strong>關於狀態：</strong> Demo status 只描述目前入口；Verification
+          status 描述既有研究判定。Demo 退休不會讓 Experiment Record / Evidence
+          失效。
+        </div>
+      </section>
 
-    <footer>
-      AI Playground · Experiment Demo is disposable; Evidence should not be.
-    </footer>
-  </main>
+      <section class="section" aria-labelledby="runtime-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Deployment Surface</p>
+            <h2 id="runtime-title">Runtime Check</h2>
+          </div>
+          <p>
+            只是確認這張 Gallery 本身有正常被 Netlify 送到 Browser，沒有玄學。
+          </p>
+        </div>
+        <div class="runtime-card">
+          <div class="runtime-grid">
+            <div class="runtime-item">
+              <span class="runtime-label">JavaScript</span
+              ><code id="js-status">尚未執行</code>
+            </div>
+            <div class="runtime-item">
+              <span class="runtime-label">Current URL</span
+              ><code id="current-url">讀取中…</code>
+            </div>
+            <div class="runtime-item">
+              <span class="runtime-label">Browser Time</span
+              ><code id="browser-time">讀取中…</code>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer>
+        AI Playground · Experiment Demo is disposable; Evidence should not be.
+      </footer>
+    </main>
 
-  <script>
-    /**
-     * 執行最小 Runtime Check。
-     * 這不是實驗判定邏輯，只確認首頁在實際 Browser 中有成功執行 JavaScript。
-     */
-    function updateRuntimeCheck() {
-      const jsStatus = document.getElementById("js-status");
-      const currentUrl = document.getElementById("current-url");
-      const browserTime = document.getElementById("browser-time");
+    <script>
+      const pageSize = 12;
+      const labels = {
+        live: "Live Demo",
+        retired: "Demo Retired",
+        none: "No Demo",
+        verified: "Verified",
+        partial: "Partial",
+        candidate: "Candidate",
+      };
+      const state = { catalog: [], page: 1 };
+      const grid = document.getElementById("experiment-grid");
+      const catalogState = document.getElementById("catalog-state");
+      const pagination = document.getElementById("pagination");
+      const filters = [
+        "search",
+        "tag-filter",
+        "demo-filter",
+        "verification-filter",
+      ].map((id) => document.getElementById(id));
 
-      jsStatus.textContent = "執行成功";
-      currentUrl.textContent = window.location.href;
-      browserTime.textContent = new Date().toLocaleString();
-    }
+      function escapeHtml(value) {
+        const element = document.createElement("span");
+        element.textContent = value;
+        return element.innerHTML;
+      }
 
-    updateRuntimeCheck();
-  </script>
-</body>
+      // Filter/search: match the documented fields and reset pagination after input changes.
+      function filteredCatalog() {
+        const query = filters[0].value.trim().toLocaleLowerCase();
+        const tag = filters[1].value;
+        const demoStatus = filters[2].value;
+        const verificationStatus = filters[3].value;
+        return state.catalog.filter((entry) => {
+          const searchable = [
+            entry.id,
+            entry.title,
+            entry.summary,
+            ...entry.tags,
+          ]
+            .join(" ")
+            .toLocaleLowerCase();
+          return (
+            (!query || searchable.includes(query)) &&
+            (!tag || entry.tags.includes(tag)) &&
+            (!demoStatus || entry.demoStatus === demoStatus) &&
+            (!verificationStatus ||
+              entry.verificationStatus === verificationStatus)
+          );
+        });
+      }
+
+      // Render: translate catalog metadata into cards without making HTML a second source of truth.
+      function renderCard(entry) {
+        const flow = entry.flow
+          ? `<div class="flow"><code>${escapeHtml(entry.flow)}</code></div>`
+          : "";
+        const action =
+          entry.demoStatus === "live"
+            ? `<div class="card-actions"><a href="${escapeHtml(entry.demoPath)}">開啟 Demo</a></div>`
+            : "";
+        return `<article class="experiment-card"><div class="experiment-meta"><span class="experiment-id">Experiment ${escapeHtml(entry.id)}</span><span class="badges"><span class="status-badge status-${entry.demoStatus}">${labels[entry.demoStatus]}</span><span class="status-badge status-${entry.verificationStatus}">${labels[entry.verificationStatus]}</span></span></div><h3>${escapeHtml(entry.title)}</h3><p>${escapeHtml(entry.summary)}</p><div class="tags">${entry.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>${flow}${action}</article>`;
+      }
+
+      // Pagination: show one twelve-item slice and omit navigation when it adds no value.
+      function renderCatalog() {
+        const entries = filteredCatalog();
+        const pageCount = Math.max(1, Math.ceil(entries.length / pageSize));
+        state.page = Math.min(state.page, pageCount);
+        grid.innerHTML = entries
+          .slice((state.page - 1) * pageSize, state.page * pageSize)
+          .map(renderCard)
+          .join("");
+        grid.hidden = entries.length === 0;
+        catalogState.hidden = entries.length > 0;
+        catalogState.textContent = entries.length
+          ? ""
+          : "沒有符合條件的 Experiment。";
+        pagination.hidden = pageCount <= 1;
+        pagination.innerHTML = `<button type="button" data-page="previous" ${state.page === 1 ? "disabled" : ""}>上一頁</button><span>第 ${state.page} / ${pageCount} 頁</span><button type="button" data-page="next" ${state.page === pageCount ? "disabled" : ""}>下一頁</button>`;
+      }
+
+      // Catalog load and error handling: surface fetch/parse failures instead of rendering an empty gallery.
+      async function loadCatalog() {
+        try {
+          const response = await fetch("./experiment-catalog.json", {
+            headers: { Accept: "application/json" },
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const catalog = await response.json();
+          if (!Array.isArray(catalog))
+            throw new Error("Catalog payload is not an array");
+          state.catalog = catalog;
+          const tags = [
+            ...new Set(catalog.flatMap((entry) => entry.tags)),
+          ].sort((a, b) => a.localeCompare(b));
+          filters[1].insertAdjacentHTML(
+            "beforeend",
+            tags
+              .map(
+                (tag) =>
+                  `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`,
+              )
+              .join(""),
+          );
+          renderCatalog();
+        } catch (error) {
+          grid.hidden = true;
+          pagination.hidden = true;
+          catalogState.hidden = false;
+          catalogState.classList.add("error");
+          catalogState.textContent = `Catalog 載入失敗：${error.message}`;
+        }
+      }
+
+      filters.forEach((control) =>
+        control.addEventListener("input", () => {
+          state.page = 1;
+          renderCatalog();
+        }),
+      );
+      pagination.addEventListener("click", (event) => {
+        const direction = event.target.dataset.page;
+        if (!direction) return;
+        state.page += direction === "next" ? 1 : -1;
+        renderCatalog();
+      });
+
+      document.getElementById("js-status").textContent = "執行成功";
+      document.getElementById("current-url").textContent = window.location.href;
+      document.getElementById("browser-time").textContent =
+        new Date().toLocaleString();
+      loadCatalog();
+    </script>
+  </body>
 </html>

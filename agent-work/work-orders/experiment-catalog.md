@@ -397,28 +397,35 @@ Report 遵守 `agent-work/report-language-guideline.txt`。
 
 ### Result
 
-待執行。
+已完成。Gallery 改由 recursive experiment-owned metadata 產生 Catalog，Browser 保留原有視覺語言並提供 Search、Tag / dual-status filter、12-item pagination 與可理解的 load failure state。本次 Primary QC REWORK 另完成 HTML / CSS / JavaScript formatting 與功能區塊註解，未變更 schema、status semantics 或 Browser UX。
 
 ### Files Changed
 
-待執行。
+- 新增六份 `experiments/**/*.catalog.json` 與無 external dependency 的 `scripts/build-experiment-catalog.mjs`。
+- 更新 `public/index.html`、五個 Live Browser pages、`README.md`、`.gitignore` 與 `netlify.toml`。
+- `public/experiment-catalog.json` 是 build output，由 `.gitignore` 排除，不作為人工 Source of Truth。
 
 ### Build / Test
 
-待執行。
+- `node scripts/build-experiment-catalog.mjs`：成功，產生 6 entries。
+- `node --check scripts/build-experiment-catalog.mjs`：成功。
+- static catalog assertions：成功，確認 entry count 與 retired entry 不含 `demoPath`。
+- negative validation：暫時移除 live entry 的 `demoPath`，generator 如預期 non-zero exit；測試後已還原 source 並重跑 build。
+- `prettier --check public/index.html scripts/build-experiment-catalog.mjs experiments/**/*.catalog.json`：成功。
+- `git diff --check`：成功。
 
 ### Trigger Boundary Observation
 
-待執行。
+`netlify.toml` build command 只執行 Catalog generator。Trigger matcher 僅新增 `scripts/build-experiment-catalog.mjs` 與 `experiments/.+\.catalog\.json`；既有 `public/`、Netlify runtime、configuration 與 lockfile surfaces 保留。沒有把整個 `experiments/` 或 `scripts/` 納入，因此 README / Evidence-only change 仍維持 repository-only skip semantics。
 
 ### Migration / Convention Observation
 
-待執行。
+六個既有 Gallery experiments 皆完成 metadata migration；`custom-api` 的三個 probes 保持獨立 identity。Repository guidance 已記錄 Record / metadata 責任、Tag reuse、dual status 與 Browser home navigation convention。Generator 只讀 JSON，不解析 README。
 
 ### Failure / Unknown
 
-待執行。
+未在本地環境執行 Netlify remote deploy 或 iPad Safari human check；這些仍屬 GitHub-visible PR / deploy 後的 Human Gate。實作未觸碰 Supabase Function、Database、Auth 或 RLS runtime。
 
 ### Human Gate
 
-完成 local commit 後停止。由 Claire 使用 Codex Product UI **Create PR**，Primary Agent 再依 GitHub-visible PR / Diff / build evidence 做 Technical QC。不要把 local SHA 當最終 review identity。
+PR #18 為本次正式 implementation candidate；Primary Agent 直接依 GitHub-visible PR #18 最新 head / diff / Deploy Preview 做 Technical QC。PR #17 與後續誤建的平行 PR 不作為 merge candidate。
