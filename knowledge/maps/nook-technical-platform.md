@@ -25,22 +25,25 @@ Nook Technical Platform
 │  └─ Custom API Invocation
 │     ├─ Netlify Browser → Supabase Edge Function CORS  [Verified C-DB-1]
 │     ├─ Auth JWT propagation                           [Verified C-DB-1]
-│     └─ caller-scoped RLS behavior                     [Verified C-DB-1]
+│     └─ authenticated Weather Orchestration             [Verified C-EXT-1]
 │
 ├─ Custom API Runtime
 │  ├─ Supabase Edge Functions
 │  │  ├─ Deployment Lifecycle                           [Verified C-0]
-│  │  └─ Database-centric workload                      [Verified C-DB-1]
+│  │  ├─ Database-centric workload                      [Verified C-DB-1]
+│  │  └─ API composition / External API orchestration   [Verified C-EXT-1]
 │  └─ Netlify Functions Deployment Lifecycle            [Verified C-NF-0]
 │
 ├─ Application Operation Mechanism
 │  ├─ Native Data API                                   [Verified baseline B/B-1]
 │  ├─ Custom API → Native Data API SELECT               [Verified C-DB-1]
-│  └─ Custom API → RPC → PostgreSQL Function            [Verified C-DB-1]
+│  ├─ Custom API → RPC → PostgreSQL Function            [Verified C-DB-1]
+│  ├─ Custom API → Custom API                           [Verified C-EXT-1]
+│  └─ Custom API → External API                         [Verified C-EXT-1]
 │
 ├─ Custom API Workload Coverage
 │  ├─ Database-centric / application processing         [Verified C-DB-1]
-│  ├─ External API orchestration                        [Candidate]
+│  ├─ External API orchestration                        [Verified C-EXT-1]
 │  ├─ Pure Compute / longer-running                     [Candidate]
 │  └─ Explicit business authorization / error contract  [Candidate]
 │
@@ -52,29 +55,42 @@ Nook Technical Platform
 
 ## Current Judgment
 
-### Browser / Data baseline
+### Browser / Backend baseline
 
-Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model，以及 authenticated cross-origin Custom API invocation。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 現在已有一條實際跑通的 baseline，不只是 architecture sketch。
+Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation，以及 Custom API orchestration。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 現在已有多條實際跑通的 runtime chain。
 
-### Supabase Custom API
+### Supabase Custom API workload coverage
 
-C-DB-1 已驗證：
+C-DB-1 已驗證 Database-centric path：
 
 ```text
-Netlify Browser
-→ Supabase Auth JWT
-→ Supabase Edge Function
-→ RPC / PostgreSQL Function
-→ Native Data API SELECT
-→ application-side mapping
-→ Browser result
+Browser → JWT → Edge Function → RPC / PostgreSQL Function
+        → Native Data API SELECT → mapping → Browser
 ```
 
-Claire active Application Identity 得到 RPC 2 rows / Country 2 rows；TU01 / TU02 都得到 HTTP 200 + empty rows。這支持 caller identity / RLS 在 tested chain 中被保留。
+C-EXT-1 再驗證 orchestration path：
 
-因此 Supabase Edge Functions 作為 **Nook Works Primary Custom API Runtime Candidate** 的可信度已明顯提高。原因不是「Supabase 也有 Function」，而是 Auth、JWT、RPC、Native Data API、PostgreSQL、RLS 與 Custom API responsibility 能形成連續 backend boundary。
+```text
+Browser → JWT → Weather Edge Function
+        → same caller Authorization → Valid Place Edge Function
+        → PostgreSQL / RLS
+        → Open-Meteo
+        → normalization → Browser
+```
+
+具有效 Application Access 的 Claire 測試帳號取得 2 places / 2 provider success；TU01 / TU02 均 Authentication Success 但 0 visible places / 0 provider calls。這支持 caller identity / RLS visibility behavior 在 tested API composition 中仍被保留。
+
+因此 Supabase Edge Functions 作為 **Nook Works Primary Custom API Runtime Candidate** 的可信度再次提高。原因不是 provider feature checklist，而是 Auth、JWT、API composition、RPC、Native Data API、PostgreSQL/RLS 與 External API 能形成連續 backend responsibility boundary。
 
 這仍是 Research Judgment，不是 Production Architecture Decision。
+
+### Time semantics learned from real orchestration
+
+同一個 Weather orchestration request 中，Sapporo 與 Sydney 因各自 timezone 得到不同 calendar `weather_date`。未來 Nook Works 的 D-1 Daily Weather 應明確定義：
+
+> D-1 = each Place timezone based previous local calendar date.
+
+不要把「昨天」當成全球共享的自然常數。時區早就證明人類連現在幾點都無法取得共識。
 
 ### Netlify Functions placement
 
@@ -84,22 +100,16 @@ C-NF-0 已驗證 Netlify Functions 的 Git-native lifecycle、Deploy Preview、F
 
 RLS 可以是最後的 Data Security Boundary，但不是完整 Business Authorization Contract。
 
-C-DB-1 的 TU01 / TU02 都得到：
-
-```text
-HTTP 200 + rows=[]
-```
-
-因此 API 若需要區分 `No Data` 與 `No Application Access`，必須額外設計 explicit authorization / business semantics。這與 Experiment B 的 `technical success ≠ business success` Evidence 一致。
+C-DB-1 與 C-EXT-1 的 TU01 / TU02 都呈現 Authentication Success + HTTP 200 + empty data，因此 API 若需要區分 `No Data` 與 `No Application Access`，必須額外設計 explicit authorization / business semantics。
 
 ## Remaining Supabase-first Questions
 
-下一階段不需要重複證明「Edge Function 能讀 DB」。更有價值的是補不同 workload class：
+External API Orchestration 已從 Candidate 升為 Verified。下一階段更值得研究：
 
-1. **External API Orchestration**：outbound call、secret、timeout / retry、normalize / aggregate。
-2. **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、free-tier / cost。
-3. **Business Contract / Authorization**：需要時研究 explicit 403、validation、transaction / error propagation。
-4. **Observability / Operations**：在更接近真實 workload 時觀察 logs、failure diagnosis 與 deployment traceability。
+1. **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、free-tier / cost。
+2. **Business Contract / Authorization**：需要時研究 explicit 403、validation、transaction / error propagation。
+3. **Observability / Operations**：在更接近真實 workload 時觀察 logs、failure diagnosis 與 deployment traceability。
+4. **External Provider Secrets / Failure Policy**：只有當 API credential、retry / rate limit / timeout semantics 真正影響架構決策時再補 Probe。
 
 只有 Supabase 出現實質限制，或 workload 本身屬於獨立 project boundary，才需要拉 Netlify Functions 或其他 runtime 做進一步 placement comparison。
 
