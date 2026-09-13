@@ -13,6 +13,14 @@
 Responsibility → credible candidate → minimal experiment → evidence → later decision
 ```
 
+## Human View Evolution Trigger
+
+目前 Playground Human View 的 `Knowledge Map` Tab 直接讀取這一份 canonical map。這是因為 `knowledge/maps/` 現階段只有一份獨立 Map，因此刻意接受單一文件入口，而不是預先建立沒有實際需求的 selector / index。
+
+> **Evolution Trigger：當 `knowledge/maps/` 出現第二份獨立 Map 時，必須重新評估 Human View 的 Map discovery / selection 機制。不得只在 `public/index.html` 再 hardcode 第二個 Markdown path。**
+
+屆時應先依實際 Map 數量、metadata 與 navigation need 討論是否採用類似 Experiment Catalog 的 metadata-driven index、既有 Knowledge 結構可推導的 discovery，或其他更合適的 lightweight mechanism。不要在第二張 Map 尚未存在時，先替未出生的小孩買五年份的鞋。
+
 ## Current Research Graph
 
 ```text
