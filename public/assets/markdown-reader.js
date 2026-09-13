@@ -87,5 +87,13 @@
     }
   }
 
+  // Human View collaboration signature belongs to the Primary collaboration layer,
+  // not to generated Experiment metadata or an Implementation Agent identity.
+  const footer = document.querySelector("footer");
+  if (footer) {
+    footer.innerHTML =
+      "<strong>Claire &amp; 墨衡</strong><br>Human × AI Technical Research Collaboration<br><span>Experiment Demo is disposable; Evidence should not be.</span>";
+  }
+
   window.PlaygroundReader = { renderMarkdown, repository, branch };
 })();
