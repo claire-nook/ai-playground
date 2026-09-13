@@ -86,6 +86,7 @@ Tag 規則：
 - 新增 Tag 前先重用既有語義，不建立同義異名。
 - 大小寫、單複數、縮寫應固定，例如只保留一種 `Edge Function`，不要同時出現 `Edge Functions` / `edge-function` / `EdgeFunction`。
 - UI filtering 可以使用 normalized key，但 metadata 顯示值維持一致 canonical label。
+- `tags` 必須是至少包含一個項目的 array；每個項目必須是非空且已 trim（`tag === tag.trim()`）的 string。Generator 不得接受 scalar、空 array、空字串、只含 whitespace、含前後 whitespace 或 non-string 的 Tag。
 - Generator 至少應拒絕同一 Experiment 內 case-insensitive duplicate tags；語義重複由既有 vocabulary reuse rule 控制，不需要做 NLP 猜同義詞。
 - Tag vocabulary 可以隨真正的新技術概念成長，不做僵硬 enum；但新增前必須先檢查既有 Catalog tags 是否已有同義語義。
 
@@ -155,6 +156,7 @@ Rules：
 
 - `id` 必填且全 Catalog 唯一。
 - `title`、`summary`、`tags`、`demoStatus`、`verificationStatus` 必填。
+- `tags` 必須符合上述 non-empty string array 與 duplicate 規則；欄位存在但型別或內容不合法仍須 fail build。
 - `demoPath` 只在 `demoStatus = live` 時必填；`retired` / `none` 不得因缺少 Browser page 而讓 Experiment 從 Catalog 消失。
 - `flow` optional，但目前既有 Gallery 已有 flow 的 Experiment可保留。
 - 不新增 `category`。
@@ -236,7 +238,7 @@ Rules：
 14. 更新 Netlify trigger boundary，使 Catalog metadata、Catalog build script、既有 deploy surfaces 的變更能合理觸發 deploy。
 15. 不要把整個 `experiments/` 一律加入 trigger surface；Research README / Evidence-only 變更仍不應因為 Catalog build 而喚醒 Netlify。請使用足夠窄的 path/pattern。
 16. 執行 local build / generator / static verification，並保留 Report。
-17. 建立 local commit，之後由 Claire 使用 Codex Product UI Create PR。
+17. 建立 local commit，並更新既有 PR #18 供 Primary Agent 重新 review。
 
 ## Build / Netlify Constraint｜很重要，別順手把已驗證邊界踩爛
 
@@ -313,10 +315,13 @@ Codex Report 提供 observation；最終 ACCEPTED 由 Primary Agent Review GitHu
 - [ ] Generator recursive 掃描 metadata，不 hard-code 六個檔名或 Experiment IDs。
 - [ ] Duplicate `id` 會 fail build。
 - [ ] Invalid required fields / invalid status values 會 fail build。
+- [ ] `tags` 為 scalar、空 array、含空字串、whitespace-only string、前後帶 whitespace 的 string 或 non-string item 時會 fail build。
 - [ ] 同一 Experiment case-insensitive duplicate tags 會 fail build 或被明確拒絕，不可默默重複顯示。
 - [ ] `demoStatus = live` 且缺 `demoPath` 會 fail build。
 - [ ] Retired / no-demo Experiment 可以正常存在 Catalog，不需要假 path。
 - [ ] Generated output ordering deterministic，優先 natural sort by `id`。
+- [ ] Negative tests 至少涵蓋 duplicate `id`、缺少 required field、invalid status、上述 invalid `tags`、case-insensitive duplicate tags，以及 live demo 缺少 `demoPath`；每一 case 都必須驗證 generator 回傳 non-zero，不可只比對 error message。
+- [ ] Negative tests 使用 temporary fixture / isolated copy，不修改六個 canonical metadata；失敗 case 不得覆寫最後一次成功產生的 Catalog artifact，測試後須重跑正常 build 證明 valid input 仍成功。
 
 ### Gallery
 
@@ -365,7 +370,7 @@ Codex Report 提供 observation；最終 ACCEPTED 由 Primary Agent Review GitHu
 - 既有 repository guidance 的 Future Experiment Catalog Convention update
 - local build / verification result
 - local commit
-- Claire 透過 Codex Product UI Create PR
+- 更新既有 PR #18，供 Primary Agent 依 GitHub-visible head / diff / checks 重新 review
 
 ## Decision Boundary｜弟弟可以決定到哪裡
 
@@ -421,4 +426,4 @@ Report 遵守 `agent-work/report-language-guideline.txt`。
 
 ### Human Gate
 
-完成 local commit 後停止。由 Claire 使用 Codex Product UI **Create PR**，Primary Agent 再依 GitHub-visible PR / Diff / build evidence 做 Technical QC。不要把 local SHA 當最終 review identity。
+本 Work Order 已有既有 PR #18；不要再建立另一張 PR。完成 local commit 與指定 checks 後，將新 commit 更新到 **PR #18**。若此 execution surface 無法更新 GitHub-visible PR，由 Claire 在 Codex Product UI 完成既有 PR 的更新；Primary Agent 再依 PR #18 最新 head / diff / checks 做 Technical QC。不要把 local SHA 當最終 review identity，也不要宣稱 local commit 已完成 GitHub-visible 更新。
