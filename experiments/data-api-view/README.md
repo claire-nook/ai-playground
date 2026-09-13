@@ -87,7 +87,9 @@ Direct privileged database queries were not treated as Browser RLS proof.
 
 ## Browser Artifact
 
-Artifact: `experiments/data-api-view/index.html`
+Experiment Record: `experiments/data-api-view/README.md`
+
+Public Browser Artifact: `public/data-api-view/index.html`
 
 The page provides:
 
