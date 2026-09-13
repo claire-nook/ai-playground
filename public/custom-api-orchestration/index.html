@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Orchestration Probe</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 1rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; color: #17212b; background: #eef4f7; }
+    main { width: min(100%, 1040px); margin: 0 auto; }
+    section { margin-bottom: 1rem; padding: 1rem; border: 1px solid #c8d5dc; border-radius: 14px; background: #fff; }
+    h1, h2, h3 { margin-top: 0; }
+    .eyebrow, .muted { color: #52636d; }
+    .grid, .status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+    label { display: block; margin-bottom: .3rem; font-weight: 700; }
+    input, button { width: 100%; min-height: 44px; padding: .65rem .75rem; border: 1px solid #82949e; border-radius: 9px; background: #fff; font: inherit; }
+    button { width: auto; cursor: pointer; font-weight: 700; }
+    button.primary { color: #fff; border-color: #075e68; background: #075e68; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+    .status-item { padding: .75rem; border-radius: 9px; background: #f1f5f7; overflow-wrap: anywhere; }
+    .status-item strong { display: block; margin-bottom: .2rem; }
+    .message { min-height: 1.5rem; margin: .75rem 0 0; font-weight: 700; overflow-wrap: anywhere; }
+    .weather-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .8rem; margin-top: 1rem; }
+    .weather-card { padding: 1rem; border: 1px solid #cfdbe1; border-radius: 12px; }
+    .weather-card.failed { border-color: #c97070; background: #fff8f8; }
+    .weather-card h3 { margin-bottom: .15rem; }
+    .weather-meta { margin: 0 0 .75rem; color: #52636d; }
+    dl { display: grid; grid-template-columns: 1fr auto; gap: .35rem .75rem; margin: 0; }
+    dt { color: #52636d; }
+    dd { margin: 0; text-align: right; font-weight: 650; }
+    details { margin-top: .5rem; }
+    summary { cursor: pointer; font-weight: 700; }
+    pre { max-height: 420px; overflow: auto; padding: .85rem; border-radius: 9px; color: #e6edf3; background: #0d1117; white-space: pre-wrap; overflow-wrap: anywhere; }
+    [hidden] { display: none !important; }
+    @media (max-width: 680px) {
+      body { padding: .65rem; }
+      .grid, .status-grid { grid-template-columns: 1fr; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <p class="eyebrow">AI Playground · Custom API Orchestration</p>
+      <h1>D-1 地點天氣 Probe</h1>
+      <p>以目前 Supabase Auth identity 呼叫 Weather Orchestrator；API 會沿用同一 caller JWT 取得可見地點，再逐一向 Open-Meteo 取得並整理前一日天氣。</p>
+    </section>
+
+    <section aria-labelledby="identity-title">
+      <h2 id="identity-title">登入</h2>
+      <form id="login-form">
+        <div class="grid">
+          <div><label for="account">Account</label><input id="account" type="email" autocomplete="username" required></div>
+          <div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+        </div>
+        <div class="actions"><button id="login-button" class="primary" type="submit">登入</button></div>
+      </form>
+      <div id="session-panel" hidden>
+        <div class="status-grid">
+          <div class="status-item"><strong>Auth State</strong><span>authenticated</span></div>
+          <div class="status-item"><strong>Masked User</strong><span id="user-display">-</span></div>
+        </div>
+        <div class="actions"><button id="logout-button" type="button">登出</button></div>
+      </div>
+      <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="result-section" hidden aria-labelledby="result-title">
+      <h2 id="result-title">Normalized Weather</h2>
+      <p class="muted">每張卡片保留獨立 provider status；單一地點失敗不會隱藏其他成功結果。</p>
+      <div class="actions"><button id="load-button" class="primary" type="button">取得 D-1 天氣</button></div>
+      <p id="api-message" class="message" role="status" aria-live="polite"></p>
+      <div id="weather-results" class="weather-grid"></div>
+    </section>
+
+    <section aria-labelledby="debug-title">
+      <h2 id="debug-title">Evidence / Debug</h2>
+      <p class="muted">只顯示 endpoint、HTTP status 與 response；不顯示 JWT、Refresh Token 或完整 Session。</p>
+      <div class="status-grid">
+        <div class="status-item"><strong>HTTP Status</strong><span id="http-status">尚未呼叫</span></div>
+        <div class="status-item"><strong>Endpoint</strong><span id="endpoint-display"></span></div>
+      </div>
+      <details>
+        <summary>查看 Raw JSON</summary>
+        <div class="actions"><button id="copy-button" type="button">Copy Result</button></div>
+        <pre id="raw-result">尚未呼叫 Weather Orchestrator。</pre>
+      </details>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+
+    const SUPABASE_URL = "https://cctonymfrxneonxryqei.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MN0_kx6LzCPyNbtI4CWZ9w_y-5hew_g";
+    const API_URL = `${SUPABASE_URL}/functions/v1/test-weather-orchestrator`;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+
+    const loginForm = document.getElementById("login-form");
+    const sessionPanel = document.getElementById("session-panel");
+    const resultSection = document.getElementById("result-section");
+    const authMessage = document.getElementById("auth-message");
+    const apiMessage = document.getElementById("api-message");
+    const rawResult = document.getElementById("raw-result");
+    const httpStatus = document.getElementById("http-status");
+    const weatherResults = document.getElementById("weather-results");
+    let lastRawText = "";
+    document.getElementById("endpoint-display").textContent = API_URL;
+
+    function maskEmail(email) {
+      if (!email || !email.includes("@")) return "-";
+      const [local, domain] = email.split("@");
+      return `${local.slice(0, 2)}***@${domain}`;
+    }
+
+    function setSessionUi(session) {
+      const authenticated = Boolean(session);
+      loginForm.hidden = authenticated;
+      sessionPanel.hidden = !authenticated;
+      resultSection.hidden = !authenticated;
+      document.getElementById("user-display").textContent = authenticated ? maskEmail(session.user?.email) : "-";
+      if (!authenticated) {
+        weatherResults.textContent = "";
+        apiMessage.textContent = "";
+      }
+    }
+
+    function addMetric(list, label, value, suffix = "") {
+      const term = document.createElement("dt");
+      const detail = document.createElement("dd");
+      term.textContent = label;
+      detail.textContent = value == null ? "-" : `${value}${suffix}`;
+      list.append(term, detail);
+    }
+
+    function renderWeather(rows) {
+      weatherResults.textContent = "";
+      if (!Array.isArray(rows) || rows.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent = "沒有可見的有效地點，因此沒有發出 Open-Meteo request。";
+        weatherResults.appendChild(empty);
+        return;
+      }
+
+      for (const row of rows) {
+        const card = document.createElement("article");
+        card.className = `weather-card${row.ok ? "" : " failed"}`;
+        const title = document.createElement("h3");
+        title.textContent = row.place_name ?? row.place_code ?? "未命名地點";
+        const meta = document.createElement("p");
+        meta.className = "weather-meta";
+        const country = [row.country_name, row.country_name_en].filter(Boolean).join(" · ") || row.country_code || "-";
+        meta.textContent = `${country} · ${row.timezone ?? "timezone unknown"}`;
+        const list = document.createElement("dl");
+        addMetric(list, "Result", row.ok ? "OK" : "Failed");
+        addMetric(list, "Provider HTTP", row.provider_status);
+        if (row.ok) {
+          addMetric(list, "Weather Date", row.weather?.weather_date);
+          addMetric(list, "Min / Max", `${row.weather?.temperature_2m_min ?? "-"} / ${row.weather?.temperature_2m_max ?? "-"}`, " °C");
+          addMetric(list, "Precipitation", row.weather?.precipitation_sum, " mm");
+          addMetric(list, "Weather Code", row.weather?.weather_code);
+          addMetric(list, "Sunrise", row.weather?.sunrise);
+          addMetric(list, "Sunset", row.weather?.sunset);
+          addMetric(list, "Daylight", row.weather?.daylight_duration, " sec");
+        } else {
+          addMetric(list, "Error", row.error);
+          addMetric(list, "Diagnostic", row.message);
+        }
+        card.append(title, meta, list);
+        weatherResults.appendChild(card);
+      }
+    }
+
+    async function callOrchestrator() {
+      const loadButton = document.getElementById("load-button");
+      loadButton.disabled = true;
+      apiMessage.textContent = "Weather Orchestrator 呼叫中…";
+      const { data } = await supabase.auth.getSession();
+      const accessToken = data.session?.access_token;
+      if (!accessToken) {
+        loadButton.disabled = false;
+        authMessage.textContent = "目前沒有有效 Session，請重新登入。";
+        setSessionUi(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, { headers: { Authorization: `Bearer ${accessToken}` } });
+        const text = await response.text();
+        lastRawText = text;
+        rawResult.textContent = text || "(empty response)";
+        httpStatus.textContent = `${response.status} ${response.statusText}`;
+        let body = null;
+        try { body = text ? JSON.parse(text) : null; } catch { body = null; }
+        renderWeather(body?.rows ?? []);
+        apiMessage.textContent = response.ok
+          ? `完成：${body?.place_count ?? 0} 個地點，${body?.weather_success_count ?? 0} 成功，${body?.weather_failure_count ?? 0} 失敗。`
+          : `Weather Orchestrator 失敗：HTTP ${response.status}`;
+      } catch (error) {
+        lastRawText = String(error);
+        rawResult.textContent = lastRawText;
+        httpStatus.textContent = "Browser request failed";
+        renderWeather([]);
+        apiMessage.textContent = "Browser 無法完成 request，請查看 Evidence / Debug。";
+      } finally {
+        loadButton.disabled = false;
+      }
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("login-button");
+      button.disabled = true;
+      authMessage.textContent = "登入驗證中…";
+      const email = document.getElementById("account").value.trim();
+      const password = document.getElementById("password").value;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      document.getElementById("password").value = "";
+      button.disabled = false;
+      if (error || !data.session) {
+        authMessage.textContent = "登入失敗，請確認帳號與密碼。";
+        return;
+      }
+      setSessionUi(data.session);
+      authMessage.textContent = "Authentication Success。可以呼叫 Weather Orchestrator。";
+    });
+
+    document.getElementById("logout-button").addEventListener("click", async () => {
+      await supabase.auth.signOut({ scope: "local" });
+      setSessionUi(null);
+      authMessage.textContent = "已登出。";
+    });
+    document.getElementById("load-button").addEventListener("click", callOrchestrator);
+    document.getElementById("copy-button").addEventListener("click", async () => {
+      if (!lastRawText) return;
+      await navigator.clipboard.writeText(lastRawText);
+      document.getElementById("copy-button").textContent = "Copied";
+      setTimeout(() => { document.getElementById("copy-button").textContent = "Copy Result"; }, 1200);
+    });
+
+    const { data: initialSession } = await supabase.auth.getSession();
+    setSessionUi(initialSession.session);
+  </script>
+</body>
+</html>

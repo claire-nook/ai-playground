@@ -1,0 +1,38 @@
+name: Deploy Test Weather Orchestrator
+
+# Human gate: Claire explicitly starts this experiment deployment.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-test-weather-orchestrator:
+    runs-on: ubuntu-latest
+    env:
+      # Project Ref is public metadata; the access token remains a repository secret.
+      SUPABASE_PROJECT_REF: cctonymfrxneonxryqei
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Show Supabase CLI version
+        run: supabase --version
+
+      # JWT verification stays enabled by using the CLI's secure default.
+      - name: Deploy test-weather-orchestrator
+        run: |
+          supabase functions deploy test-weather-orchestrator \
+            --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Show deployed endpoint
+        run: |
+          echo "Endpoint: https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/test-weather-orchestrator"
