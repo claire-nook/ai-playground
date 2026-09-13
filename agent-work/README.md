@@ -25,34 +25,27 @@ Primary Agent 負責 Research Question、Architecture、Experiment Design、Tech
 ## 2. Role Separation
 
 ### Claire
-
 Business Intent / Functional Requirement / Functional Acceptance，以及目前產品架構必要的 Human Relay / Dispatch Gate。Human Relay 不等於 Requirement Translator。
 
 ### Primary Agent / Architecture & Technical QC
-
 Research Question、Architecture / Responsibility Boundary、Technical Pattern、Security / Data Ownership、Work Order Scope、Evidence Review、Technical QC、Deployment Judgment。
 
 ### Implementation Agent / PG Pool
-
 依 Work Order 執行 implementation / experiment，使用自己的 Workspace / Runtime / Tooling，保留 Diff、Test、Logs、Artifacts、Failure / Unknown，commit 可審查成果。Implementation authority 不等於 Architecture Decision authority。
 
 ### 2.1 Naming / Semantic Intent
-
 Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名或技術詞彙，預設視為**語意指稱**，不是正式 Identifier Contract。Primary Agent 應先理解「這個東西代表什麼」，再依 Domain、Platform、Language、Repository convention、grammar 與未來維護性決定正式命名。
 
 例如 Claire 說「加一個 `completeDate`」，預設意思是「需要一個表示 Experiment 完成日期的欄位」，不是要求正式欄位一定叫 `completeDate`。正式名稱可由 Primary 依語境決定，例如 `completedDate`、`completedAt` 或其他更合適的 Identifier。
 
 只有 Claire 明確表示「這是正式名稱」、「名稱不要改」、「欄位就叫 X」或既有 Domain Specification 已定義 canonical term 時，才把字面名稱視為 Requirement。既有 Domain Term 不應因 Agent 覺得另一個英文比較順眼就私自改名。
 
-如果 Claire 提出的 **Domain Name 本身語意含糊、容易誤導、與既有 Domain vocabulary 衝突，或真的取得有點蠢而可能留下長期技術債**，Primary 不應默默照抄，也不應擅自改掉；先指出問題與替代方案，跟 Claire 討論後再定正式名稱。Typo、漏字母與口語簡寫則應優先依上下文修正，不把打字失誤升格成 Architecture Decision。
+如果 Claire 提出的 Domain Name 本身語意含糊、容易誤導、與既有 Domain vocabulary 衝突，或真的取得有點蠢而可能留下長期技術債，Primary 不應默默照抄，也不應擅自改掉；先指出問題與替代方案，跟 Claire 討論後再定正式名稱。Typo、漏字母與口語簡寫則應優先依上下文修正，不把打字失誤升格成 Architecture Decision。
 
 > **Casual Name ≠ Required Identifier. Semantic Intent first; canonical naming is a design responsibility.**
 
 ### 2.2 Markdown / Diagram Expression
-
-Playground 的 Markdown 文件在需要表達 **流程、架構關係、呼叫順序、狀態轉換、Dependency、資料關係或其他圖形化後明顯更容易理解的內容** 時，應主動考慮使用 Mermaid，而不是預設全部用純文字 ASCII / arrow 排版。
-
-原則：
+Playground 的 Markdown 文件在需要表達流程、架構關係、呼叫順序、狀態轉換、Dependency、資料關係或其他圖形化後明顯更容易理解的內容時，應主動考慮使用 Mermaid，而不是預設全部用純文字 ASCII / arrow 排版。
 
 - Mermaid 是 Markdown Record 內的 text source，可被 Git diff、AI 閱讀與 Browser Renderer 呈現；不需要另外維護 PNG / SVG / drawio 才能保存基本技術圖。
 - Flowchart、Sequence Diagram、State Diagram、ER Diagram、Mindmap 等可依語意選擇；圖型服務於理解，不為了展示 Renderer 能力而畫圖。
@@ -95,44 +88,46 @@ Human / Provider Gate when required
 > **Provider Credential ≠ GitHub Execution Credential.**
 
 ### 3.1 Current Codex Dispatch Procedure
-
 截至 2026-09-14，一般 ChatGPT Project Primary Agent 沒有直接 Dispatch Codex 的工具，Claire 是 Human Relay / Dispatch Gate。
 
 1. Primary + Claire 將 Research Question / Specification / Scope 討論到足以委派。
 2. Primary 建立 Work Order 並 commit 必要 Context。
-3. Primary 交給 Claire 的 Dispatch Handoff **必須明確提供 Target Repository、Base Branch / expected starting branch、Work Order path，以及一段可直接複製貼給 Codex 的 Dispatch Prompt**。不要只說「工單開好了，去叫弟弟上班」，讓 Claire 再替 Agent 猜 repository / branch / 任務入口。
-4. Dispatch Prompt 應短而完整：要求 Codex 先讀 Work Order 與其中 Read First / Preflight，以 repository 現況施工、完成 test 與 local commit，最後依 Work Order Report contract 回報。若 Work Order 已經包含完整 requirement，不要在 Prompt 再複製一份規格造成雙重 Source of Truth。
-5. Claire 開 Codex，確認 Product UI 選到預期 Repository / Workspace；若 Primary 指定的是 default branch baseline，明確以該 branch 最新狀態建立新 task / workspace。
-6. Codex 做 context-oriented Preflight，不把 Git remote / local main / `gh auth` 當 repository identity 必要條件。
-7. Codex implementation / test / local commit。
-8. Claire 由 Codex Product UI Create PR。
-9. Primary 直接 Review GitHub-visible `head_sha` / Diff / Files / Report；需要時 `ACCEPTED` / `REWORK`。
-10. Merge 依適用 Human / Governance Gate 執行。
-11. 若 deployment 依賴 manual GitHub Action，Claire 再觸發 `workflow_dispatch`，Primary 直接檢查 GitHub Action / Provider Evidence。
-12. Runtime / Functional Evidence 需要人類環境時，由 Claire 執行；最後才依 Knowledge Capture Protocol 升格 Verified Judgment。
+3. Primary 交給 Claire 的 Dispatch Handoff必須明確提供 Target Repository、**Source baseline**（通常是 default branch `main` 的當時最新狀態）、Work Order path，以及一段可直接複製貼給 Codex 的 Dispatch Prompt。不要只說「工單開好了，去叫弟弟上班」。
+4. `Source baseline: main` 描述 Claire 建立新 task / workspace 時應從哪個 GitHub branch 狀態取得 snapshot，**不是要求 Codex Workspace 內必須存在一條名為 `main` 的 local branch**。Workspace 內部可映射成 `work` 或其他 snapshot branch。
+5. Dispatch Prompt 應短而完整：要求 Codex 先讀 Work Order 與其中 Read First / Preflight，以 workspace snapshot 現況施工、完成 test 與 local commit，最後依 Work Order Report contract 回報。若 Work Order 已包含完整 requirement，不在 Prompt 再複製第二份規格。
+6. Claire 開 Codex，確認 Product UI 選到預期 Repository / Workspace，並以指定 Source baseline 建立新 task / workspace。
+7. Codex 做 **snapshot-oriented Preflight**：驗證 Work Order、required files、reference assets、target implementation baseline、working tree 等實際 context。對新的 baseline implementation，Git remote、local `main`、remote-tracking `main`、`origin`、`gh auth` 或 `fetch` capability 都不是必要條件。
+8. Codex implementation / test / local commit。
+9. Claire 由 Codex Product UI Create PR。
+10. Primary 直接 Review GitHub-visible `head_sha` / Diff / Files / Report；需要時 `ACCEPTED` / `REWORK`。
+11. Merge 依適用 Human / Governance Gate 執行。
+12. 若 deployment 依賴 manual GitHub Action，Claire 再觸發 `workflow_dispatch`，Primary 直接檢查 GitHub Action / Provider Evidence。
+13. Runtime / Functional Evidence 需要人類環境時，由 Claire 執行；最後才依 Knowledge Capture Protocol 升格 Verified Judgment。
 
 Dispatch Handoff 建議固定呈現：
 
 ```text
 Repository: owner/repo
-Base branch: main
+Source baseline: main (latest when creating the Codex task)
 Work Order: agent-work/work-orders/<name>.md
 
 可複製給 Codex：
-請在 <owner/repo>，以 <branch> 最新狀態建立新的工作環境。先完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，依 Work Order 施工、測試並 local commit。不要自行擴張 Architecture / Scope；遇到缺少必要 context 或與 Work Order 衝突時停止並回報。完成後依 Work Order 的 Report contract 回報 changed files、tests、known limitations 與 local commit SHA，然後停止，等待 Claire 建立 PR。
+請在 <owner/repo>，以 GitHub default branch <branch> 的最新狀態建立新的工作環境。Workspace 內部 branch 名稱不必是 <branch>，也不要求 Git remote；請以 required files / Work Order / implementation artifacts 驗證 snapshot baseline。先完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，依 Work Order 施工、測試並 local commit。不要自行擴張 Architecture / Scope；只有 snapshot 實際缺少本任務必要 context、內容衝突，或 continuation task 缺少指定 implementation state 時才停止並回報。完成後依 Work Order Report contract 回報 changed files、tests、known limitations 與 local commit SHA，然後停止，等待 Claire 建立 PR。
 ```
 
 如果 Primary 在 Codex Workspace 建立後才 commit 新必要 Context，不假設舊 Workspace 自動 refresh；目前保守做法是開新 task / workspace。
 
-**Rework 例外：**新 Workspace 也不保證能接續既有 PR implementation branch。2026-09-14 Experiment Catalog REWORK 實際觀察到新 Workspace 只有 snapshot branch `work`、沒有 Git remote、沒有 PR #18 branch/ref，甚至缺少該 PR 才新增的 implementation files，因此無法在「不重做平行 implementation」的前提下修改既有 PR。遇到這種情況，Codex 應停止並回報，不要自行建立新的平行 PR。Primary 若具有 GitHub branch write capability，可直接對既有 PR head branch 做小型、低風險修正；否則應重新建立可取得正確 implementation context 的 execution surface。
+**New implementation 與 PR continuation 必須分開判斷：**
+
+- **New implementation from default-branch baseline**：驗 snapshot content 是否具備 required baseline；branch 叫 `work`、沒有 remote 不構成 blocker。
+- **Existing PR REWORK / continuation**：必須驗證待修 PR 的 implementation files / state 實際存在於 execution surface。只有 baseline snapshot 而沒有該 PR implementation 時，應停止，不得平行重建。
+
+Primary 若具有 GitHub branch write capability，可對既有 PR head branch 做小型、低風險修正；需要 interactive build/debug loop 時仍應取得包含正確 implementation state 的 execution surface。
 
 ### 3.2 Deployment-specific limitation learned from C-EXT-1
-
 C-EXT-1 / PR #16 實證：Codex 可新增 deployment workflow，但該 Workspace 沒有 `gh` authentication，因此不能自行觸發 GitHub `workflow_dispatch`。
 
 而且新 manual workflow 尚只存在 PR branch 時，Claire 在正常 Actions UI 看不到可執行入口。經 Primary QC 後先 merge 到 default branch，才由 Claire Run workflow，GitHub Actions 再用 repository secret 部署 Supabase。
-
-因此目前已驗證的 deployment handoff 是：
 
 ```text
 Codex writes code + workflow
@@ -145,20 +140,20 @@ Codex writes code + workflow
 → Primary verifies provider evidence
 ```
 
-不要在 Work Order 裡假設「Codex 有 Supabase deployment credential」或「Codex 能 Create PR」就等於它能操作 GitHub Actions。Credential / Publication / Execution 是不同 boundary。
+Credential / Publication / Execution 是不同 boundary。
 
 ---
 
 ## 4. Work Order Minimum Contract
-
 至少說清楚：Objective、Read First / Context、必要 Preflight、Scope / Out of Scope、Constraints、Required Evidence / Acceptance、Deliverables、Decision Boundary。
 
-正式 Implementation 優先引用正式 Repository 的 Specification / Pattern，不複製第二份 Source of Truth。穩定規則應逐步沉澱成 Pattern，讓後續 Work Order 收斂成 Requirement + Exceptions + Acceptance，而不是每次重寫整個宇宙。
+正式 Implementation 優先引用正式 Repository 的 Specification / Pattern，不複製第二份 Source of Truth。**Project-level instructions / files 與 Repository files 必須明確區分。** 如果某份 context 只存在 ChatGPT Project 而不在 target Repository，不得把它列成 Codex Workspace 的 required repository file；需要讓 Implementation Agent 遵守的穩定規則，應沉澱到可由該 Agent 實際讀取的 repository guidance / Work Order。
+
+穩定規則應逐步沉澱成 Pattern，讓後續 Work Order 收斂成 Requirement + Exceptions + Acceptance，而不是每次重寫整個宇宙。
 
 ---
 
 ## 5. Evidence Rule｜不要讓弟弟自己簽聯絡簿
-
 Implementation Agent Report 只能證明「它這樣回報」。Primary 依風險檢查 Source / Diff、Test Result、Runtime Output、Provider Result、Log / Artifact、Claire Environment Evidence 或可重現步驟。
 
 Codex Create PR 後，以 GitHub-visible PR state 為 QC identity，不以 local SHA 為準。目前 Codex Create PR 與 Primary GitHub Connector 使用 Claire 同一 GitHub identity，native `APPROVE` 可能被視為 self-approval；可用 COMMENT Review 記錄 `ACCEPTED` / `REWORK`。
@@ -168,13 +163,11 @@ Evidence 只支持部分結論時保持 Partial / Candidate / Open。Failure 也
 ---
 
 ## 6. Repository Boundary
-
 Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Implementation Source of Truth 留在正式 Repository。只有真的出現大量 cross-repo dispatch need，才評估獨立 Agent Workbench。不要因為今天有一個 Codex 就先蓋 Codex 王國，Provider 會換，家訓最好別跟著搬家。
 
 ---
 
 ## 7. Current Judgment
-
 截至 2026-09-14，已實際跑過 Documentation Audit/Fix、C-EXT-1 multi-artifact implementation + deployment handoff，以及 Experiment Catalog 的多輪 PR / REWORK handoff。目前可成立：
 
 - Work Order as Handoff Contract：有效。
@@ -182,12 +175,14 @@ Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Imp
 - Codex as independent Implementation Agent：有效。
 - GitHub PR as Observable Handoff Surface：有效。
 - Primary Agent independent Technical QC：有效。
-- Context-oriented Preflight：必要；traditional local-Git assumptions 不適用。
+- Context-oriented / snapshot-oriented Preflight：必要；traditional local-Git assumptions 不適用。
+- **Workspace branch name ≠ Repository baseline identity**：new implementation 應驗 required snapshot content，不以 local `main` / remote presence 判斷 baseline。
+- **Project-level context ≠ Repository file**：不可把只有 ChatGPT Project 可見的文件列為 Codex required repository context。
 - Codex local SHA：不可當 GitHub Review identity。
 - Codex direct GitHub Actions trigger：本次 execution surface 不可用。
 - Human-gated `workflow_dispatch` → GitHub Actions → provider deployment：已實際跑通。
-- **New Codex Workspace ≠ existing PR branch continuation**：已實際觀察；沒有 PR branch/ref/remote 時，REWORK 應停止，不得假裝能接續或自行重建平行 implementation。
-- **Primary direct GitHub patch 可作為小型 REWORK fallback**：當既有 PR branch 可由 Primary GitHub connector 寫入，且修正範圍小、Architecture 已定、風險可直接 QC 時成立；不要把它擴張成取代 Codex interactive implementation loop 的常態。
-- Work Order 會迫使 Primary 將隱性 Architecture / Security / Acceptance Rule 顯性化，這是 delegation 的附帶價值；成熟 Pattern 應讓未來 Work Order 更短，而不是越寫越胖。
+- **New Codex Workspace ≠ existing PR branch continuation**：沒有 PR implementation state 時，REWORK 應停止，不得自行重建平行 implementation。
+- **Primary direct GitHub patch 可作為小型 REWORK fallback**：Architecture 已定且風險可直接 QC 時成立，不擴張成取代 Codex interactive implementation loop 的常態。
+- Work Order 會迫使 Primary 將隱性 Architecture / Security / Acceptance Rule 顯性化；成熟 Pattern 應讓未來 Work Order 更短，而不是越寫越胖。
 
 完整 Evidence / Unknown / Product-behavior boundary 見 [`experience/codex-cloud-workspace.md`](experience/codex-cloud-workspace.md)。
