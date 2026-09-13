@@ -19,14 +19,14 @@ GitHub source → GitHub Actions → Supabase CLI → Edge Function，以及 Git
 
 ### Verified chain
 
-```text
-Netlify Browser
-→ Supabase Auth JWT
-→ test-place-country Edge Function
-→ RPC / PostgreSQL Function
-→ Native Data API SELECT
-→ application-side mapping
-→ Browser result
+```mermaid
+flowchart LR
+    Browser[Netlify Browser] --> Auth[Supabase Auth JWT]
+    Auth --> Edge[test-place-country Edge Function]
+    Edge --> RPC[RPC / PostgreSQL Function]
+    RPC --> DataAPI[Native Data API SELECT]
+    DataAPI --> Mapping[Application-side mapping]
+    Mapping --> Result[Browser result]
 ```
 
 具有效 Application Access 的 Claire 測試帳號得到 HTTP 200、2 個 Place；TU01 / TU02 均 Authentication Success，但因 tested RLS / Application Access behavior 得到 HTTP 200 + `rows=[]`。這支持 caller-scoped RLS boundary 在 tested chain 中被保留。
@@ -51,17 +51,16 @@ Supabase Edge Function 是否能承擔 Nook Works 常見的 orchestration worklo
 
 ### Probe design
 
-```text
-Netlify Browser
-→ Supabase Auth JWT
-→ test-weather-orchestrator
-→ forward same Authorization header
-→ test-place-country
-→ PostgreSQL / RLS valid places
-→ Weather Orchestrator
-→ Open-Meteo per Place
-→ application-side normalization
-→ Browser
+```mermaid
+flowchart LR
+    Browser[Netlify Browser] --> Auth[Supabase Auth JWT]
+    Auth --> Weather[test-weather-orchestrator]
+    Weather -->|Forward same Authorization header| PlaceAPI[test-place-country]
+    PlaceAPI --> DB[PostgreSQL / RLS valid places]
+    DB --> Weather
+    Weather --> OpenMeteo[Open-Meteo per Place]
+    OpenMeteo --> Normalize[Application-side normalization]
+    Normalize --> Browser
 ```
 
 Weather Orchestrator 刻意不直接碰 DB / RPC。`test-place-country` 負責「caller 可見的有效 Place」，Weather API 負責「取得這些 Place 的外部天氣並 normalize」。本 Probe 不寫 DB、不測 CUD、不加 scheduler / queue / retry framework，也不做 Open-Meteo Multiple Locations optimization。
@@ -109,9 +108,15 @@ weather_failure_count = 0
 
 因此下列完整 runtime chain 已實際成立：
 
-```text
-Browser → Custom API A → Custom API B → RLS-filtered data
-        → Custom API A → External API → normalization → Browser
+```mermaid
+flowchart LR
+    Browser[Browser] --> APIA[Custom API A]
+    APIA --> APIB[Custom API B]
+    APIB --> RLS[RLS-filtered data]
+    RLS --> APIA
+    APIA --> External[External API]
+    External --> Normalize[Normalization]
+    Normalize --> Browser
 ```
 
 #### 3. TU01 / TU02
