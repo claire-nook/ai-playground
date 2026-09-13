@@ -1,0 +1,14 @@
+{
+  "id": "C-NF-0",
+  "title": "Netlify Functions Lifecycle",
+  "summary": "驗證 Git source、Deploy Preview Function、Browser invoke、Cloud logs、Production 與 source deletion 的完整 lifecycle。",
+  "tags": [
+    "Netlify",
+    "Functions",
+    "Deployment",
+    "Lifecycle"
+  ],
+  "demoStatus": "retired",
+  "verificationStatus": "verified",
+  "flow": "Git Source → Netlify Deploy → Function → Logs → Source Delete → Function Absent"
+}

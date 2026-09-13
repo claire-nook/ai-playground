@@ -397,27 +397,34 @@ Report 遵守 `agent-work/report-language-guideline.txt`。
 
 ### Result
 
-待執行。
+Implementation 完成。Gallery 放由 recursive `experiments/**/*.catalog.json` metadata 驅動；Browser 提供 Search、單一 Tag、Demo / Verification status filters 與每頁 12 筆 pagination，並保留 Demo / Evidence 的責任說明。
 
 ### Files Changed
 
-待執行。
+- 新增六份既有 Gallery Experiment metadata，`custom-api` 的三個 Probe 維持各自 identity。
+- 新增無 external dependency 的 `scripts/build-experiment-catalog.mjs`，generated `public/experiment-catalog.json` 由 `.gitignore` 排除。
+- 更新 `public/index.html` 與五個 Live Browser pages 的 home navigation。
+- 更新 `README.md` Future Experiment Catalog Convention 與 `netlify.toml` build / trigger surface。
 
 ### Build / Test
 
-待執行。
+- `node scripts/build-experiment-catalog.mjs`：成功產生 6 entries。
+- `node --check scripts/build-experiment-catalog.mjs`：通過。
+- Node assertion：確認 6 entries，且 C-NF-0 Retired + Verified、不含假 `demoPath`。
+- Temporary fixtures：duplicate ID、case-insensitive duplicate tags，以及 live demo 缺 `demoPath` 均被 generator 拒絕。
+- Python static assertion：首頁使用 generated Catalog / page size 12、不再包含手寫 cards，五個 Live pages 均包含指向 `/` 的 `← AI Playground`。
 
 ### Trigger Boundary Observation
 
-待執行。
+`netlify.toml` 保留既有 `public/`、Netlify runtime、config 與 package manifest semantics，窄幅新增 `scripts/build-experiment-catalog.mjs` 及 `experiments/.+\.catalog\.json`。沒有 whitelist 整個 `experiments/` 或 `scripts/`，因此 README-only path 不會命中；metadata 與 generator path 會命中。Build command 直接執行 generator，validation error 會以 non-zero status fail deploy。
 
 ### Migration / Convention Observation
 
-待執行。
+六筆 metadata 可追溯至既有 Gallery 與相應 Record，未觀察到名稱、Demo path 或雙 status 矛盾。C-NF-0 保留 `demoStatus: retired` 與 `verificationStatus: verified`。Root guidance 已明訂 Record / metadata 責任、Tag reuse、雙 status、同目錄多 Probe、no-demo inclusion、home navigation 與未來不再手寫 Gallery Card。
 
 ### Failure / Unknown
 
-待執行。
+本 Workspace 沒有可用 Chromium / WebKit executable，因此未產生實際 iPad-width screenshot；responsive behavior 僅以 CSS breakpoint 與 static inspection 檢查。未執行 Provider deploy，Netlify runtime trigger 結果仍待 GitHub-visible PR / Deploy Preview 觀察。
 
 ### Human Gate
 

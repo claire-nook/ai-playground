@@ -1,0 +1,16 @@
+{
+  "id": "C-DB-1",
+  "title": "Database-centric Custom API",
+  "summary": "驗證 Supabase Edge Function 可用 caller-scoped context 編排 RPC / Native Data API，並保留 RLS boundary。",
+  "tags": [
+    "Supabase",
+    "Custom API",
+    "Edge Function",
+    "RPC",
+    "RLS"
+  ],
+  "demoStatus": "live",
+  "demoPath": "/custom-api/",
+  "verificationStatus": "verified",
+  "flow": "Browser → JWT → Edge Function → RPC / Data API → RLS"
+}

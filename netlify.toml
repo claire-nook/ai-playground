@@ -6,6 +6,7 @@
 # in the repository without causing a deployment by themselves.
 
 [build]
+  command = "node scripts/build-experiment-catalog.mjs"
   publish = "public"
   ignore = '''
 sh -c '
@@ -16,7 +17,7 @@ printf "CACHED_COMMIT_REF=%s\n" "${CACHED_COMMIT_REF:-UNSET}"
 printf "REVIEW_ID=%s\n" "${REVIEW_ID:-UNSET}"
 
 deploy_from_changed_paths() {
-  if printf "%s\n" "$1" | grep -Eq "^(public/|netlify/functions/|netlify/edge-functions/|netlify\\.toml$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)"; then
+  if printf "%s\n" "$1" | grep -Eq "^(public/|netlify/functions/|netlify/edge-functions/|netlify\\.toml$|scripts/build-experiment-catalog\\.mjs$|experiments/.+\\.catalog\\.json$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)"; then
     echo "TRIGGER_DECISION=DEPLOY reason=deploy_surface_changed"
     echo "NETLIFY_TRIGGER_DECISION_END"
     exit 1

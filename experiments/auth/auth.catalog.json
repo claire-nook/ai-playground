@@ -1,0 +1,13 @@
+{
+  "id": "A",
+  "title": "Supabase Auth",
+  "summary": "驗證 Browser 直接進行 Email / Password Sign-in、取得 Session，以及最小 Authentication flow。",
+  "tags": [
+    "Supabase",
+    "Auth"
+  ],
+  "demoStatus": "live",
+  "demoPath": "/auth/",
+  "verificationStatus": "verified",
+  "flow": "Browser → Supabase Auth → Session"
+}

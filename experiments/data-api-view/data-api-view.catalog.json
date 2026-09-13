@@ -1,0 +1,15 @@
+{
+  "id": "B-1",
+  "title": "Supabase View Read",
+  "summary": "驗證 security_invoker=true View 可作為 Read Model，同時保留 invoking user 的權限與 RLS 行為。",
+  "tags": [
+    "Supabase",
+    "Data API",
+    "View",
+    "RLS"
+  ],
+  "demoStatus": "live",
+  "demoPath": "/data-api-view/",
+  "verificationStatus": "verified",
+  "flow": "Browser → View → Base Table RLS"
+}

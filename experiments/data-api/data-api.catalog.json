@@ -1,0 +1,15 @@
+{
+  "id": "B",
+  "title": "Supabase Native Data API CRUD",
+  "summary": "驗證 Browser 使用 caller session 存取 Native Data API，並由 PostgreSQL Grant / RLS 控制資料可見性與 CRUD。",
+  "tags": [
+    "Supabase",
+    "Data API",
+    "RLS",
+    "CRUD"
+  ],
+  "demoStatus": "live",
+  "demoPath": "/data-api/",
+  "verificationStatus": "verified",
+  "flow": "Browser → Data API → Grant / RLS → Table"
+}

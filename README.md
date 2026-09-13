@@ -170,6 +170,16 @@ supabase/functions/       = Supabase CLI-deployable Experiment Source, when used
 
 Browser Experiment HTML lives under `public/<experiment>/`. Provider-compatible function source lives under the layout expected by that provider / CLI so the real deployment path can be exercised. Both are disposable experiment artifacts; Result / Evidence remains under `experiments/<experiment>/README.md` and the Knowledge / Evidence layers.
 
+### Experiment Catalog Convention
+
+需要在 Gallery 中被獨立找到的 Experiment / Probe，應在相關研究目錄建立或更新 `*.catalog.json`。Experiment Record 保存 Research Question、Process、Evidence、Failure / Unknown 與 Conclusion；Catalog metadata 只保存 Gallery 索引。不要把完整研究內容複製到 JSON，generator 也不解析 README 來猜 metadata。一個研究目錄可以有多個 Probe / Catalog entries；資料夾不是 taxonomy，Gallery 不建立 Category Tree。
+
+- metadata 必須包含唯一 `id`、`title`、`summary`、`tags`、`demoStatus` 與 `verificationStatus`。新增或修改 metadata 會觸發 Gallery build，未來不需手動修改首頁 Card；Research README / Evidence-only change 仍應維持 repository-only skip。
+- Tag 是多維 capability / concern。新增 Tag 前先掃描既有 `*.catalog.json` vocabulary，語義相同時重用既有 canonical label，只有真正的新概念才新增；Status 不當作 Tag。
+- Experiment 不需要 Browser Demo 才能進 Catalog：沒有 Demo 用 `demoStatus: "none"`；拆除 Demo 改為 `"retired"`，不要刪除 entry 或歷史 Evidence。有 Browser page 時使用 `"live"`、提供以 `/` 開頭的 `demoPath`，並在頁面提供指向 `/` 的 `← AI Playground`。
+- `verificationStatus` 使用 `candidate`、`partial` 或 `verified`。只有 Primary / Evidence judgment 才能升格，Implementation Agent 不因 source 或 test 自行改寫研究結論。
+- Work Order 新增可獨立 Catalog 的 Experiment / Browser page 時，Acceptance 應同時包含 metadata 與 home navigation，而不是要求另一份手寫 Gallery Card。
+
 `Publish Boundary`、`Provider Source Boundary` 與 `Trigger Boundary` 是不同 concerns。相關 Evidence 請從 [`knowledge/experiments.md`](knowledge/experiments.md) 路由到對應 Experiment Record，不在 root README 重養完整實驗報告。
 
 ## Autonomy
