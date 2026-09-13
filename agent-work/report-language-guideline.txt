@@ -1,1 +1,9 @@
-Agent reports should use Traditional Chinese for explanations while preserving English technical terms, code, paths, commands, fields, log markers, and raw provider output.
+Agent Report 語言規則
+
+1. 說明、分析、原因、風險、Evidence 解讀、Conclusion 與 Follow-up 預設使用繁體中文。
+2. Technical terms、architecture terms、code、path、command、field、environment variable、log marker、raw provider output 保留英文，不做硬翻譯。
+3. 標題可以中英混合，例如：Provider Result｜Production 驗證結果。
+4. 原始 log / command output 保持原文；其前後的解讀使用繁體中文。
+5. 除非 Work Order 明確要求純英文交付，否則不要把整份 Report 寫成全英文。
+
+目的：讓 Report 同時保留技術精確度與人類可讀性。Claire 應能直接閱讀 Agent 之間的工程紀錄，不需要再做第二次翻譯。
