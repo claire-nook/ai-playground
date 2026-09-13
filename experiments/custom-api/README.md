@@ -4,337 +4,216 @@
 
 - Date: 2026-09-12
 - Status: Completed / Verified
-- Primary question: can an iPad-first Nook Works development workflow deploy, invoke, inspect, and remove a Supabase Edge Function without requiring a local Desktop / Mac development machine?
-- Secondary question: how do GitHub Actions + Supabase CLI and the ChatGPT Supabase Connector differ as deployment mechanisms?
+- Question: iPad-first workflow 能否在沒有 Local Desktop / Mac CLI 的情況下部署、呼叫、檢查與移除 Supabase Edge Function？
 
-## Why C-0 exists
+### Result
 
-Experiment C will eventually compare a self-written Custom API against Native Data API / View / RPC approaches. Before adding Database semantics, C-0 first tested the more primitive dependency: **can the API actually be shipped and managed from Claire's real iPad-first workflow?**
+C-0 已驗證兩條可行 deployment path：
 
-This is intentionally a deployment experiment, not an API architecture experiment. Database, Supabase Auth, application authorization, business rules, transactions, and CORS are excluded from C-0.
+```text
+GitHub source → GitHub Actions → Supabase CLI → Edge Function
+GitHub source → ChatGPT Supabase Connector → Edge Function
+```
 
-The experiment artifact is deliberately tiny. A magnificent API that cannot be deployed is merely an unusually expensive text file.
+GitHub Actions + CLI 完成 deploy / invoke / delete；Connector 完成 deploy / inspect，Connector-deployed function 亦可由 Actions delete。Claire 以 iPad Safari 實際取得 `hello-action` 預期 JSON。
 
-## Artifact
+因此在已測條件下，Supabase Edge Function lifecycle 不要求 Claire 擁有 Local Desktop / Mac。正式 Production deployment mechanism 尚未決定。
 
-Function source:
+### Credential observation
 
-`supabase/functions/hello-action/index.ts`
+GitHub Actions route 在當時需要 Supabase PAT；Claire 可用的是 temporary Classic PAT，權限範圍偏大。Connector deployment 不需要 Claire 另外建立並注入 user-managed PAT，但當時 Connector 沒有 Edge Function delete action。這是 deployment governance / credential trade-off，不是 provider winner 結論。
 
-Response:
+### C-0 scope boundary
+
+C-0 刻意使用無 DB、Auth、RLS、CORS、Business Logic 的 Hello World，只回答 deployment lifecycle。後續 Database-centric probe 已補上這些 Application Integration Evidence。
+
+---
+
+## C-DB-1 — Database-centric Custom API
+
+- Date: 2026-09-13
+- Status: Completed / Verified
+- Runtime: Supabase Edge Functions
+- Browser Host: Netlify
+- API source: `supabase/functions/test-place-country/index.ts`
+- Browser artifact: `public/custom-api/index.html`
+- PostgreSQL Function: `public.test_get_valid_places()`
+
+### Question
+
+Supabase Edge Function 作為 Nook Works Custom API runtime 時，是否能在 authenticated Browser request 中：
+
+1. 接受 Supabase Auth JWT；
+2. 透過 RPC 呼叫 PostgreSQL Function；
+3. 再由 Custom API 使用 Supabase Native Data API 讀取 Table；
+4. 在 Application Layer 做 mapping / response shaping；
+5. 保留 caller-scoped RLS / Application Access behavior？
+
+### Probe design
+
+這是一個刻意有點繞路的最小 Probe。Database 本來可以直接 join country，但本次故意拆開責任，讓一支 API 同時實際走過 RPC 與 Native Data API：
+
+```text
+Netlify Browser
+→ Supabase Auth Session / JWT
+→ Supabase Edge Function: test-place-country
+→ RPC: test_get_valid_places()
+→ place + country_code
+→ Native Data API: country SELECT
+→ Edge Function mapping
+→ JSON response
+→ Browser human-readable cards + Evidence / Debug
+```
+
+Edge Function 使用 Publishable/Anon runtime credential 加上 caller `Authorization` header，而不是 `service_role`，目的就是讓 RPC 與 Data API 在 caller identity 下執行並觀察既有 RLS / Application Access Boundary。
+
+### Browser / CORS
+
+Netlify 與 Supabase Edge Function 是不同 Origin。帶 `Authorization` header 的 Browser request 會觸發 CORS preflight，因此 API 明確處理 `OPTIONS`，並回傳允許 `authorization`, `x-client-info`, `apikey`, `content-type` 的 CORS headers。
+
+這次實測證明：
+
+```text
+Netlify-hosted Browser → cross-origin Supabase Edge Function
+```
+
+在 authenticated request 下可成功完成，不再只是 C-0 的 Safari direct navigation。
+
+### Verified capability results
+
+#### 1. Custom API 建立與 authenticated Browser invocation
+
+**VERIFIED**
+
+Supabase Edge Function `test-place-country` 已部署並由 Netlify-hosted Browser 以 Supabase Auth Session 成功呼叫。正常 request 回傳 HTTP `200`。
+
+#### 2. Custom API → RPC → PostgreSQL Function
+
+**VERIFIED**
+
+Edge Function 使用：
+
+```text
+rpc("test_get_valid_places")
+```
+
+成功取得 active place rows。Claire 的有效 Application Identity 實測 `rpc_row_count = 2`。
+
+#### 3. Custom API → Supabase Native Data API
+
+**VERIFIED for SELECT**
+
+Edge Function 取得 RPC 回傳的 distinct country codes 後，以一次 batched `IN` query 讀取 `country`，沒有做 N+1 request。Claire 的有效 Identity 實測 `country_row_count = 2`。
+
+本次 Custom API probe 只驗證 Native Data API `SELECT`。INSERT / UPDATE / DELETE 的 Native CRUD capability 已由 Experiment B 在 Browser → Native Data API path 驗證，但不應偷渡成「Custom API 內 CRUD 四項都已測」。
+
+#### 4. Application-side mapping / response shaping
+
+**VERIFIED**
+
+Edge Function 將 RPC place rows 與 Native Data API country rows mapping 後回傳 application result。實測 response：
 
 ```json
 {
-  "message": "Hello from GitHub Actions",
-  "runtime": "Supabase Edge Function",
-  "experiment": "C-0"
+  "experiment": "database-centric-custom-api",
+  "rpc_row_count": 2,
+  "country_row_count": 2,
+  "rows": [
+    {
+      "oid": 1,
+      "place_code": "sapporo",
+      "place_name": "札幌",
+      "country_code": "JP",
+      "country_name": "日本",
+      "country_name_en": "Japan"
+    },
+    {
+      "oid": 2,
+      "place_code": "sydney",
+      "place_name": "雪梨",
+      "country_code": "AU",
+      "country_name": "澳洲",
+      "country_name_en": "Australia"
+    }
+  ]
 }
 ```
 
-The same source and the same function name were used for both deployment mechanisms. The first deployment was deleted and independently verified absent before the Connector deployment began, so the second result is not an accidental observation of the first deployment.
+Browser UI 亦將結果顯示為正常人類可讀的地點卡片，Raw JSON / HTTP Status 則保留在 Evidence / Debug 區，不把 SA 永久關在 `<pre>` 裡。
 
-`verify_jwt = false` was intentional for C-0 because the endpoint contains no Database, Auth, private data, or business capability and needed to be directly invoked from Safari. This setting is experimental evidence only and is not a default security recommendation for real APIs.
+### Identity / RLS evidence
 
----
+三種 authenticated Identity 均由同一 Netlify Browser Artifact 實測：
 
-## C-0A — GitHub Actions + Supabase CLI
-
-### Path
-
-```text
-GitHub Repository
-→ Claire manually runs workflow_dispatch from iPad Safari
-→ temporary GitHub-hosted Linux Runner
-→ Supabase CLI
-→ Nook Core
-→ deploy hello-action
-→ public HTTP GET
-→ GitHub Actions Delete workflow
-→ Supabase confirms function absent
-```
-
-Deployment workflow:
-
-`.github/workflows/deploy-hello-action.yml`
-
-Deletion workflow:
-
-`.github/workflows/delete-hello-action.yml`
-
-### Deployment Evidence
-
-Claire manually started `Deploy Hello Action` from GitHub Actions.
-
-Verified GitHub runtime evidence:
-
-- Workflow: `Deploy Hello Action`
-- Run ID: `34700593732`
-- Event: `workflow_dispatch`
-- Result: `success`
-- Head SHA: `7896cd39000fd92398ddab7c6adabdf4ab2dd1d7`
-- Job ID: `103571539133`
-- Runner: Linux X64 / Ubuntu 24.04.5 LTS
-- Supabase CLI: `2.117.0`
-- Edge Runtime image observed in deployment log: `ghcr.io/supabase/edge-runtime:v1.74.3`
-- Function script size reported by CLI: `794 B`
-
-CLI deployment result:
-
-```text
-Deploying Function: hello-action (script size: 794 B)
-Deployed Functions on project cctonymfrxneonxryqei: hello-action
-```
-
-Claire then opened the public function URL in iPad Safari and observed the expected JSON response. Supabase Dashboard also showed `hello-action` in Nook Core with successful requests and no observed 5xx responses during the experiment.
-
-This Browser evidence matters because an AI-side web fetch limitation is not evidence that a real Browser invocation failed.
-
-### First Deletion Evidence
-
-Claire manually started `Delete Hello Action`.
-
-- Run ID: `34701381528`
-- Run number: `1`
-- Event: `workflow_dispatch`
-- Result: `success`
-- Head SHA: `fabfce70d8085066a1c72da930661169df07163b`
-- Job ID: `103573649723`
-- Supabase CLI: `2.117.0`
-
-CLI result:
-
-```text
-Deleted Function hello-action from project cctonymfrxneonxryqei.
-```
-
-After deletion, the Supabase Connector independently returned an empty Edge Function list for Nook Core.
-
-Therefore C-0A proved a complete lifecycle rather than deployment alone:
-
-```text
-Deploy
-→ Verify
-→ Delete
-→ Verify absent
-```
-
----
-
-## C-0B — ChatGPT Supabase Connector Deployment
-
-### Path
-
-After C-0A deletion was independently verified, AI read the existing `supabase/functions/hello-action/index.ts` source from GitHub and deployed that same source directly through the connected Supabase deployment action.
-
-```text
-GitHub source
-→ ChatGPT Supabase Connector
-→ Nook Core
-→ deploy hello-action
-→ Connector confirms ACTIVE
-→ Safari GET returns expected JSON
-```
-
-No GitHub Actions Runner was started for this deployment. Claire did not create, paste, or provide another Supabase PAT for the Connector deployment. The Connector used the already-established platform-managed authorization context; this means credential handling is abstracted by the connected platform, not that authentication or credentials do not exist.
-
-### Connector Evidence
-
-Connector deployment result:
-
-- Function: `hello-action`
-- Status: `ACTIVE`
-- Version: `1`
-- `verify_jwt`: `false`
-- Function ID: `8d51fd9a-45a0-4919-b98e-30946e356f5f`
-
-A separate Connector list operation immediately confirmed `hello-action` existed and was `ACTIVE` in Nook Core.
-
-Claire then confirmed in Supabase Dashboard that the function appeared, copied its URL, opened it in Safari, and received the expected JSON.
-
-Therefore Connector deployment is not merely provider-documentation capability; it was actually exercised against Nook Core on 2026-09-12.
-
----
-
-## Cross-mechanism Lifecycle Evidence
-
-The Connector available during this experiment could deploy, list, and retrieve Edge Functions, but did not expose an Edge Function delete action. C-0 therefore deliberately tested whether an Edge Function created through one deployment mechanism could be removed through another.
-
-Claire ran the existing GitHub Actions `Delete Hello Action` workflow against the Connector-deployed function.
-
-Second deletion:
-
-- Run ID: `34701914597`
-- Run number: `2`
-- Event: `workflow_dispatch`
-- Result: `success`
-- Head SHA: `fabfce70d8085066a1c72da930661169df07163b`
-- Job ID: `103575072707`
-- Supabase CLI: `2.117.0`
-
-CLI result was identical to the first deletion:
-
-```text
-Deleted Function hello-action from project cctonymfrxneonxryqei.
-```
-
-The two deletion runs used the same workflow, same source commit, same CLI version, same successful step structure, and the same Supabase CLI success message. They ran on different ephemeral GitHub-hosted machines / Azure regions, as expected for GitHub-hosted Runners.
-
-After the second deletion, the Supabase Connector again returned:
-
-```json
-{
-  "functions": []
-}
-```
-
-### Observation
-
-Within the tested conditions, Supabase project state did not require the deletion mechanism to match the original deployment mechanism.
-
-```text
-GitHub Actions Deploy → GitHub Actions Delete     ✅
-Connector Deploy      → GitHub Actions Delete     ✅
-```
-
-This supports treating deployment transport and deployed Edge Function state as separable concerns. It does not prove that every future deployment mechanism will always be interoperable; provider behavior should be revalidated when capabilities change.
-
----
-
-## Credential / Security Findings
-
-### GitHub Actions route
-
-C-0A required a Supabase Personal Access Token (PAT) so the GitHub-hosted Runner could use Supabase CLI against Nook Core.
-
-At experiment time, Claire's Supabase account UI did not expose the documented Scoped PAT capability. The available normal token creation path produced a Classic PAT with broad account-level authority. For the experiment, Claire therefore created a temporary Classic PAT named `github-actions-c0-temp` with a 1-hour expiry and stored it only as the GitHub Actions repository Secret `SUPABASE_ACCESS_TOKEN`. The token value was never shared with AI or committed to GitHub.
-
-GitHub Actions logs showed:
-
-```text
-Secret source: Actions
-SUPABASE_ACCESS_TOKEN: ***
-```
-
-This confirms Secret injection and log masking worked in the observed runs. However, masking does not reduce the underlying credential's authority.
-
-The important risk is **credential blast radius**: a broad Classic PAT is disproportionately powerful for the narrow job of deploying or deleting one Edge Function. Repository privacy, GitHub Secret encryption, short expiration, workflow permissions, and manual `workflow_dispatch` all reduce exposure probability, but they do not make a broad credential narrow if it is obtained or misused.
-
-For a formal private development repository, private visibility is an important additional control and materially reduces casual repository / workflow exposure. It should still not be confused with least-privilege credential design.
-
-Other GitHub Actions considerations include workflow modification risk, third-party Action supply-chain risk, Secret lifecycle, collaborator permissions, and accidental credential output. None of these make GitHub Actions inherently unsafe; they mean the deployment credential must be treated as part of the architecture rather than as plumbing nobody talks about until Friday night.
-
-### Connector route
-
-The Connector deployment did not require Claire to create or inject a separate PAT into GitHub Actions. This removes an entire user-managed credential path:
-
-```text
-Classic PAT
-→ GitHub Secret
-→ Workflow
-→ Runner
-→ Supabase
-```
-
-For the tested operation, the Connector instead used an already-established platform-managed authorization context. AI did not receive the raw credential value.
-
-This is a meaningful credential-management advantage under the current condition where the available GitHub Actions PAT is broad. It is **not sufficient evidence to claim that Connector deployment is universally more secure**. Connector authorization scope, platform controls, auditability, available actions, and future capability changes remain relevant.
-
-### Current comparison
-
-| Area | GitHub Actions + CLI | Supabase Connector |
+| Identity | Authentication | Observable API result |
 | --- | --- | --- |
-| Deploy | Verified | Verified |
-| Inspect / list | Via CLI / Dashboard | Verified |
-| Delete | Verified | Not exposed by Connector at experiment time |
-| Claire-managed PAT | Required for tested CLI route | Not required for tested Connector route |
-| Broad Classic PAT risk | Present under current Supabase account capability | Not part of tested Connector path |
-| Source / commit / run traceability | Strong | Source can remain in GitHub, but deployment audit path differs |
-| Human approval | Strong via `workflow_dispatch` | Conversation authorization / Connector permission model |
-| Complete tested lifecycle | Yes | No, required Actions for deletion |
+| Claire / active Application User | Success | HTTP 200, RPC 2 rows, Country 2 rows, final 2 rows |
+| TU01 / inactive Application User | Success | HTTP 200, RPC 0 rows, Country 0 rows, `rows=[]` |
+| TU02 / no effective Application User mapping | Success | HTTP 200, RPC 0 rows, Country 0 rows, `rows=[]` |
 
-The result is not a winner-takes-all decision. GitHub Actions currently has stronger explicit lifecycle / CI-CD governance; Connector currently has cleaner user-managed credential handling for deployment.
+這支持 caller JWT / RLS boundary 在本次 Edge Function → RPC / Data API path 中被保留。Custom API 沒有因 server-side execution 自動取得所有資料。
 
----
+### Important semantic observation
 
-## iPad-first Development Finding
-
-This is the highest-level finding of C-0.
-
-Before the experiment, a plausible dependency chain was:
+TU01 / TU02 的 observable result 是：
 
 ```text
-iPadOS lacks a conventional local Desktop CLI environment
-→ Supabase CLI deployment may be blocked
-→ Edge Functions may require a Mac / PC development machine
+HTTP 200
+rpc_row_count = 0
+country_row_count = 0
+rows = []
 ```
 
-C-0 disproved that dependency for the tested Supabase Edge Function deployment lifecycle.
-
-Observed working paths:
+因此 RLS 可以作為 Data Security Boundary，但 `rows=[]` 本身不能區分：
 
 ```text
-iPad
-→ GitHub / repository
-→ GitHub Actions temporary Linux Runner
-→ Supabase CLI
-→ Edge Function deploy / delete
+真的沒有資料
+vs
+目前 Identity 沒有 Application Access
 ```
 
-and:
+這與 Experiment B 的 Native Data API Evidence 一致：technical request success / row visibility 不等於完整 Business Authorization semantics。
+
+若未來 API Contract 需要明確 `403 No Application Access` 與 `200 No Data`，Custom API 必須額外建立 Application Authorization / Business Semantics，而不能只期待 RLS 自動翻譯。
+
+### PostgreSQL Function DDL preservation
+
+本次 PostgreSQL Function 是 `public.test_get_valid_places()`，使用 `SECURITY INVOKER`，讓 query 以 caller context 執行。
+
+**限制揭露：** 本次建立 Function 時的 exact DDL 沒有先寫入 Git source；之後嘗試透過 Supabase Connector 讀回 `pg_get_functiondef()` / function body 被工具安全檢查阻擋。因此目前不能誠實地在 Experiment Record 偽造一份「看起來差不多」的 DDL。
+
+Exact DDL 尚待從 Supabase Dashboard / SQL Editor 或可讀取 function definition 的 execution surface 補回本 Record。這不影響已完成的 runtime Evidence，但 DDL preservation 這個文件要求目前仍是 **Pending**。
+
+### Initial capability conclusion
+
+截至本次 Probe，可以先形成以下 Supabase Custom API capability baseline：
 
 ```text
-iPad + ChatGPT
-→ Supabase Connector
-→ Edge Function deploy
+Supabase Custom API / Edge Function                       VERIFIED
+Netlify Browser → authenticated Custom API + CORS         VERIFIED
+Custom API → RPC → PostgreSQL Function                    VERIFIED
+Custom API → Native Data API SELECT                       VERIFIED
+Custom API application-side mapping / response shaping    VERIFIED
+Caller-scoped RLS behavior through tested chain           VERIFIED
+Explicit Business Authorization semantics                NOT YET
+Custom API Native INSERT / UPDATE / DELETE                NOT TESTED IN THIS PROBE
 ```
 
-### Evidence-supported conclusion
+### Architecture implication, not Production Decision
 
-**As of 2026-09-12, Supabase Edge Function source management, deployment, invocation verification, and deletion do not require Claire to own a local Desktop / Mac development machine. The existing iPad-first workflow can delegate missing CLI / Linux execution capability to GitHub-hosted Runners and can also use the Supabase Connector for direct deployment.**
-
-This does **not** mean Claire will never have another reason to buy a Mac mini. It means "Supabase Edge Function deployment requires a Mac mini" is no longer a valid technical purchasing assumption based on current evidence.
-
-That distinction matters. Hardware purchases deserve better justification than one command-line tool holding the architecture hostage.
-
----
-
-## Decision Triggers for Future Re-evaluation
-
-C-0 is Evidence, not a permanent Platform Rule. Future Technical Decision work should re-evaluate the deployment preference when any of these conditions change:
-
-1. **Scoped PAT becomes available to Claire.** If Supabase allows a credential limited to Nook Core and Edge Functions deployment / deletion, the largest current GitHub Actions security concern becomes substantially smaller.
-2. **Connector lifecycle expands.** If the Supabase Connector gains Edge Function deletion, stronger deployment history, approval controls, or clearer fine-grained authorization, Connector may become a stronger primary deployment candidate.
-3. **Provider / GitHub Actions behavior changes.** Revalidate stale evidence before high-impact deployment decisions.
-4. **Formal production governance requirements become concrete.** Audit trail, environment separation, approvals, rollback, deployment promotion, and ownership may outweigh Playground convenience.
-
-Do not turn the 2026-09-12 result into ancestral law. Preserve the evidence and rerun the judgment when the conditions change.
-
----
-
-## What C-0 Does Not Prove
-
-C-0 does not yet verify:
-
-- Browser application `fetch()` to the Edge Function across origins / CORS.
-- Supabase Auth JWT propagation into a Custom API.
-- Application authorization inside an Edge Function.
-- Database access from the Edge Function.
-- Caller-scoped RLS behavior from a Custom API.
-- Business validation / transactions / error contracts.
-- Production deployment architecture.
-- Whether GitHub Actions or Connector should be the single formal deployment mechanism.
-
-Those belong to later Experiment C phases.
-
-## Final C-0 Result
+本次 Evidence 支持一個目前很自然的 Nook Works platform direction：
 
 ```text
-GitHub Actions + Supabase CLI deployment lifecycle     VERIFIED
-Supabase Connector direct deployment                  VERIFIED
-Cross-mechanism Connector Deploy → Actions Delete     VERIFIED
-iPad Safari real HTTP JSON invocation                 VERIFIED
-Local Desktop / Mac required for this lifecycle       NO, under tested conditions
-Formal Production deployment mechanism selected       NOT YET
+Netlify
+→ Web / UI delivery
+
+Supabase
+→ Auth
+→ Custom API / Edge Functions
+→ Native Data API / RPC
+→ PostgreSQL / RLS
 ```
 
-C-0 therefore graduates the question from "can Claire deploy Supabase Edge Functions without a Desktop?" to the much more useful next question: "which deployment mechanism should own which responsibility under formal Nook Works security and governance requirements?"
+這表示 Supabase 已具備 Database-centric Custom API 所需的基本 integration path，並強化其作為 Nook Works Primary Custom API Runtime Candidate 的可信度。
+
+這仍不是 Production Architecture Decision。External API orchestration、Pure Compute / longer-running workload、runtime limits、observability、secrets、cost 與更明確的 Business Contract 還需要後續 Evidence。
