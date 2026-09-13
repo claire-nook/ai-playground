@@ -4,6 +4,56 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Supabase Custom API Composition / External API Orchestration
+
+- Experiment: C-EXT-1
+- Date: 2026-09-13
+- Status: Completed / Runtime Verified
+- Record: `experiments/custom-api/README.md`
+- Weather API: `supabase/functions/test-weather-orchestrator/index.ts`
+- Internal API: `supabase/functions/test-place-country/index.ts`
+- Browser Artifact: `public/custom-api-orchestration/index.html`
+- Deployment Workflow: `.github/workflows/deploy-test-weather-orchestrator.yml`
+- Topics: Supabase Edge Functions, API Composition, JWT Forwarding, RLS, Open-Meteo, Netlify Browser, GitHub Actions
+
+### Result
+
+**YES.** 已實測完整鏈：
+
+```text
+Netlify Browser
+→ Supabase Auth JWT
+→ Weather Custom API
+→ same caller Authorization
+→ Valid Place Custom API
+→ PostgreSQL / RLS
+→ Weather Custom API
+→ Open-Meteo
+→ normalization
+→ Browser
+```
+
+具有效 Application Access 的 Claire 測試帳號：HTTP 200、Valid Place API 200、2 places、2 weather success、0 failure；兩個 Open-Meteo calls 均 provider HTTP 200。
+
+TU01 / TU02：Authentication Success，但 0 visible places、0 weather calls、HTTP 200 + `rows=[]`。直接開 endpoint 不帶 Authorization 則得到 `UNAUTHORIZED_NO_AUTH_HEADER`。
+
+### Reusable Evidence
+
+- Edge Function → Edge Function server-side HTTP composition：Verified。
+- Same caller Authorization forwarding through tested internal API chain：Verified。
+- Caller-scoped RLS visibility behavior through composition：Verified。
+- Edge Function outbound HTTP → Open-Meteo：Verified。
+- Per-Place external response normalization：Verified。
+- Zero-visible-place short-circuit before provider calls：Verified。
+- GitHub Actions `workflow_dispatch` → Supabase CLI deployment：Verified。
+- D-1 在本 workload 應以 each Place local timezone 的 previous local calendar date 定義。
+
+### Scope limit
+
+這不驗證 explicit 403 Business Authorization、external provider credential management、retry / queue / scheduling、long-running limits 或 DB writes。Open-Meteo 本 Probe 不需要 API key。
+
+---
+
 ## Supabase Database-centric Custom API Integration
 
 - Experiment: C-DB-1
@@ -12,39 +62,8 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 - Record: `experiments/custom-api/README.md`
 - API Source: `supabase/functions/test-place-country/index.ts`
 - Browser Artifact: `public/custom-api/index.html`
-- Topics: Supabase Edge Functions, Custom API, JWT, CORS, RPC, PostgreSQL Function, Native Data API, RLS, Netlify Browser
 
-### Result
-
-**YES.** 已實測：
-
-```text
-Netlify Browser
-→ Supabase Auth JWT
-→ Supabase Edge Function
-→ RPC / PostgreSQL Function
-→ Native Data API SELECT
-→ application-side mapping
-→ Browser result
-```
-
-Claire active Application Identity：HTTP 200，RPC 2 rows，Country 2 rows，final 2 rows（札幌 / 日本 / Japan；雪梨 / 澳洲 / Australia）。
-
-TU01 與 TU02 均 Authentication Success，但 API 回 HTTP 200、RPC 0 rows、Country 0 rows、`rows=[]`。
-
-### Reusable Evidence
-
-- Netlify-hosted Browser → Supabase Edge Function authenticated cross-origin call / CORS：Verified。
-- Supabase Auth JWT 可作為 Custom API caller identity：Verified。
-- Edge Function → RPC → PostgreSQL Function：Verified。
-- Edge Function → Native Data API `SELECT`：Verified。
-- Edge Function application-side mapping / response shaping：Verified。
-- Caller-scoped RLS / Application Access behavior 在 tested chain 中被保留：Verified。
-- RLS empty rows 不等於 explicit Business Authorization semantics；`No Data` 與 `No Application Access` 仍可能需要 API layer 額外區分。
-
-### Scope limit
-
-本 Probe 沒有驗證 Custom API 內的 Native INSERT / UPDATE / DELETE；那些 CRUD operations 只在 Experiment B 的 Browser → Native Data API path 驗證過。External API orchestration、long-running compute、runtime limits、cost 與 explicit business error contract 仍未完成。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → application-side mapping → Browser result` 已實測。具有效 Application Access 的 Claire 測試帳號取得 2 rows；TU01 / TU02 均 Authentication Success 但 HTTP 200 + empty rows。RLS row visibility 不等於 explicit Business Authorization semantics。
 
 ---
 
@@ -55,7 +74,7 @@ TU01 與 TU02 均 Authentication Success，但 API 回 HTTP 200、RPC 0 rows、C
 - Status: Completed / Verified
 - Record: `experiments/custom-api/README.md`
 
-GitHub Actions + Supabase CLI 已完成 deploy / invoke / delete；Supabase Connector 已完成 direct deployment，Connector-deployed function 亦由 Actions 成功 delete。iPad-first lifecycle 不要求本地 Desktop / Mac。當時 Actions route 使用 temporary Classic PAT，權限 blast radius 是重要 credential trade-off。
+GitHub Actions + Supabase CLI 已完成 deploy / invoke / delete；Supabase Connector 已完成 direct deployment，Connector-deployed function 亦由 Actions 成功 delete。iPad-first lifecycle 不要求本地 Desktop / Mac。
 
 ---
 
@@ -66,7 +85,7 @@ GitHub Actions + Supabase CLI 已完成 deploy / invoke / delete；Supabase Conn
 - Status: Completed / Verified
 - Record: `experiments/custom-api/netlify-functions-lifecycle.md`
 
-Git source → Deploy Preview → HTTP invoke / logs → Production → source delete / Production function absent 已驗證。Netlify Functions 因此是 credible secondary Custom API runtime candidate，但尚未取代 Supabase-first direction。
+Git source → Deploy Preview → HTTP invoke / logs → Production → source delete / Production function absent 已驗證。Netlify Functions 因此是 credible secondary Custom API runtime candidate。
 
 ---
 
@@ -86,7 +105,7 @@ Netlify Browser → Supabase Auth → Session 已由 iPad Safari 驗證。Authen
 - Status: Completed / Verified
 - Record: `experiments/data-api/README.md`
 
-Active Application User 可由 Browser 完成 SELECT / INSERT / UPDATE / DELETE。TU01 / TU02 證明 Authentication Success 不會自動取得 Application Data Access。`error=null` / empty rows / affected-row semantics 不等於 Business Operation Success。
+具有效 Application Access 的 User 可由 Browser 完成 SELECT / INSERT / UPDATE / DELETE。TU01 / TU02 證明 Authentication Success 不會自動取得 Application Data Access。`error=null` / empty rows / affected-row semantics 不等於 Business Operation Success。
 
 ---
 
