@@ -75,8 +75,7 @@ Knowledge Map 回答「Experiment / Evidence 累積後，我們目前怎麼理�
 優先使用 canonical Markdown + Reader。若現有 source structure 不足以可靠產生真正 mind map，不要解析自然語言硬猜 taxonomy；先讓 tab 呈現 canonical Knowledge Map document，Report 說明後續若要 visual map 還缺什麼 source structure。不要建立 duplicated Knowledge JSON / DB / CMS。
 
 ## Context / Read First｜施工前閱讀
-至少閱讀：
-- `playground.md`
+至少閱讀 repository 中實際存在的：
 - `README.md`
 - `agent-work/README.md`
 - `agent-work/report-language-guideline.txt`
@@ -91,16 +90,22 @@ Knowledge Map 回答「Experiment / Evidence 累積後，我們目前怎麼理�
 - `knowledge/README.md`
 - 兩份 Claire reference assets
 
+注意：ChatGPT Project 使用的 `playground.md` 是 Project-level context，不是此 Repository 的 required file；Codex Workspace 不需要也不應要求它存在。Repository 施工規則以本 Work Order、root `README.md`、`agent-work/README.md` 與上述實際 files 為準。
+
 並掃描 `public/` 現況，避免破壞既有 Browser Experiment pages。
 
 ## Execution Context Preflight
-1. 確認 target repository。
+Preflight 的目標是確認目前 Workspace snapshot 具有本次施工所需 baseline，不是要求 Codex Cloud Workspace 模仿傳統 local Git clone。
+
+1. 確認 Work Order 宣告的 target repository identity 為 `claire-nook/ai-playground`，並以 workspace 中的 repository content / expected paths 做 context validation。
 2. 確認 Work Order 與兩份 reference assets 都存在；若缺少，停止並回報，不要憑描述重建 theme。
-3. 確認首頁已是 metadata-driven Gallery。
-4. 確認 Catalog generator 現有 validation contract。
-5. 確認 `netlify.toml` trigger boundary；Experiment README、Short Term、Knowledge Markdown 不應因 Reader 而加入 deploy trigger。
-6. 確認 Custom API README 已含 Mermaid fixture。
-7. working tree 若有無關未提交修改，停止並回報。
+3. 確認首頁已是 metadata-driven Gallery、Catalog generator 與既有 metadata 都存在，足以證明本次 implementation baseline。
+4. 確認 `netlify.toml` trigger boundary；Experiment README、Short Term、Knowledge Markdown 不應因 Reader 而加入 deploy trigger。
+5. 確認 Custom API README 已含 Mermaid fixture。
+6. working tree 若有與本任務無關的未提交修改，停止並回報。
+7. **不要把 local branch 名稱必須是 `main`、存在 local/remote-tracking `main`、存在 Git remote / `origin` 或能 `fetch` 當成本次新 implementation 的必要條件。** Codex Cloud Workspace 已觀察過以 local `work` snapshot 執行、無 remote 但具有正確 repository baseline 的情況。
+8. Claire 建立此 task 時的 intended source baseline 是 GitHub default branch `main` 的當時最新狀態；Workspace 內部可以映射成 `work` 等 snapshot branch。若 required files / Work Order / reference assets / current Gallery baseline 都一致存在，即可施工。
+9. 只有在 snapshot **實際缺少本 Work Order 所需 implementation/context**、內容互相矛盾、或任務要求接續特定尚未 merge PR 而該 PR implementation 不存在時，才因 context 不足停止。
 
 ## Scope
 可以做：Catalog completion date / record path、六筆 metadata migration、newest-first Gallery、Result navigation、reusable Browser Markdown Reader、Short Term tab、Knowledge Map tab、Mermaid、Reader theme、必要 frontend assets、必要 guidance 與 deployable-source trigger adjustment。
