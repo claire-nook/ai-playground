@@ -9,79 +9,84 @@
   publish = "public"
   ignore = '''
 sh -c '
-echo "NETLIFY_TRIGGER_FRESH_BASE_FETCH_PROBE_BEGIN"
+echo "NETLIFY_TRIGGER_DECISION_BEGIN"
 printf "CONTEXT=%s\n" "${CONTEXT:-UNSET}"
-printf "HEAD=%s\n" "${HEAD:-UNSET}"
 printf "COMMIT_REF=%s\n" "${COMMIT_REF:-UNSET}"
 printf "REVIEW_ID=%s\n" "${REVIEW_ID:-UNSET}"
 
+# Production push boundary is not verified yet. Fail safe toward deploy.
 if [ "${CONTEXT:-}" != "deploy-preview" ]; then
-  echo "PROBE_SKIPPED_CONTEXT_NOT_DEPLOY_PREVIEW"
-elif [ -z "${COMMIT_REF:-}" ]; then
-  echo "PROBE_FAILED_COMMIT_REF_MISSING"
-elif ! probe_commit=$(git rev-parse --verify "${COMMIT_REF}^{commit}" 2>/dev/null); then
-  echo "PROBE_FAILED_COMMIT_REF_UNRESOLVED"
-else
-  echo "COMMIT_REF_RESOLVED_SHA=$probe_commit"
-  probe_base_ref="refs/netlify-probe/base"
-
-  echo "FRESH_FETCH_BEGIN"
-  echo "FRESH_FETCH_ATTEMPT_DEPTH=64"
-  if git fetch --no-tags --depth=64 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then
-    echo "FRESH_FETCH_SUCCESS"
-    if probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then
-      echo "FRESH_FETCHED_BASE_SHA=$probe_base"
-      if merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then
-        echo "MERGE_BASE_SUCCESS_SHA=$merge_base"
-      else
-        echo "MERGE_BASE_FAILED_INITIAL_HISTORY"
-        echo "SHALLOW_HISTORY_RETRY_BEGIN"
-        echo "SHALLOW_HISTORY_RETRY_REASON=MERGE_BASE_UNAVAILABLE"
-        echo "SHALLOW_HISTORY_RETRY_DEPTH=256"
-        if git fetch --no-tags --depth=256 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then
-          echo "SHALLOW_HISTORY_RETRY_FETCH_SUCCESS"
-          if probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then
-            echo "FRESH_FETCHED_BASE_SHA_AFTER_RETRY=$probe_base"
-            if merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then
-              echo "SHALLOW_HISTORY_RETRY_OUTCOME=MERGE_BASE_SUCCESS"
-              echo "MERGE_BASE_SUCCESS_SHA=$merge_base"
-            else
-              merge_base=""
-              echo "SHALLOW_HISTORY_RETRY_OUTCOME=MERGE_BASE_FAILED"
-              echo "MERGE_BASE_FAILED_AFTER_RETRY"
-            fi
-          else
-            merge_base=""
-            echo "SHALLOW_HISTORY_RETRY_OUTCOME=BASE_REF_UNRESOLVED"
-          fi
-        else
-          merge_base=""
-          echo "SHALLOW_HISTORY_RETRY_FETCH_FAILED"
-          echo "SHALLOW_HISTORY_RETRY_OUTCOME=FETCH_FAILED"
-        fi
-        echo "SHALLOW_HISTORY_RETRY_END"
-      fi
-
-      if [ -n "${merge_base:-}" ]; then
-        echo "CHANGED_PATHS_BEGIN"
-        if ! git diff --name-only "$merge_base" "$probe_commit"; then
-          echo "CHANGED_PATHS_FAILED"
-        fi
-        echo "CHANGED_PATHS_END"
-      else
-        echo "CHANGED_PATHS_SKIPPED_MERGE_BASE_UNAVAILABLE"
-      fi
-    else
-      echo "FRESH_FETCHED_BASE_RESOLVE_FAILED"
-    fi
-  else
-    echo "FRESH_FETCH_FAILURE"
-  fi
-  echo "FRESH_FETCH_END"
+  echo "TRIGGER_DECISION=DEPLOY reason=unsupported_context"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
 fi
 
-echo "NETLIFY_TRIGGER_FRESH_BASE_FETCH_PROBE_END"
-exit 1
+if [ -z "${COMMIT_REF:-}" ]; then
+  echo "TRIGGER_DECISION=DEPLOY reason=commit_ref_missing"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
+fi
+
+if ! probe_commit=$(git rev-parse --verify "${COMMIT_REF}^{commit}" 2>/dev/null); then
+  echo "TRIGGER_DECISION=DEPLOY reason=commit_ref_unresolved"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
+fi
+
+probe_base_ref="refs/netlify-trigger/base"
+merge_base=""
+
+# Refresh the current main tip into an isolated ref. Never trust cached origin/main.
+if ! git fetch --no-tags --depth=64 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then
+  echo "TRIGGER_DECISION=DEPLOY reason=fresh_fetch_failed"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
+fi
+
+if ! probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then
+  echo "TRIGGER_DECISION=DEPLOY reason=fresh_base_unresolved"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
+fi
+
+if ! merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then
+  echo "MERGE_BASE_RETRY=depth_256"
+  if ! git fetch --no-tags --depth=256 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then
+    echo "TRIGGER_DECISION=DEPLOY reason=history_retry_fetch_failed"
+    echo "NETLIFY_TRIGGER_DECISION_END"
+    exit 1
+  fi
+  if ! probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then
+    echo "TRIGGER_DECISION=DEPLOY reason=fresh_base_retry_unresolved"
+    echo "NETLIFY_TRIGGER_DECISION_END"
+    exit 1
+  fi
+  if ! merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then
+    echo "TRIGGER_DECISION=DEPLOY reason=merge_base_unavailable"
+    echo "NETLIFY_TRIGGER_DECISION_END"
+    exit 1
+  fi
+fi
+
+changed_paths=$(git diff --name-only "$merge_base" "$probe_commit") || {
+  echo "TRIGGER_DECISION=DEPLOY reason=diff_failed"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
+}
+
+echo "CHANGED_PATHS_BEGIN"
+printf "%s\n" "$changed_paths"
+echo "CHANGED_PATHS_END"
+
+if printf "%s\n" "$changed_paths" | grep -Eq "^(public/|netlify/functions/|netlify/edge-functions/|netlify\\.toml$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)"; then
+  echo "TRIGGER_DECISION=DEPLOY reason=deploy_surface_changed"
+  echo "NETLIFY_TRIGGER_DECISION_END"
+  exit 1
+fi
+
+echo "TRIGGER_DECISION=SKIP reason=repository_only_change"
+echo "NETLIFY_TRIGGER_DECISION_END"
+exit 0
 '
 '''
 
