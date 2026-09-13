@@ -4,7 +4,21 @@
 // service_role so the experiment can observe existing RLS/Application Access behavior.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const CORS_HEADERS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
+};
+
 Deno.serve(async (request: Request) => {
+  // Browser requests with Authorization trigger a CORS preflight before the real call.
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: CORS_HEADERS,
+    });
+  }
+
   const authorization = request.headers.get("Authorization");
 
   if (!authorization) {
@@ -128,6 +142,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
+      ...CORS_HEADERS,
       "content-type": "application/json; charset=utf-8",
     },
   });
