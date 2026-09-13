@@ -44,10 +44,27 @@ Knowledge entry point：[`knowledge/README.md`](knowledge/README.md)
 - `experiments/**/README.md`：Experiment Record，保存實際做法與驗證過程。
 - `evidence/index.md`：集中檢索已形成的 Evidence。
 - `notes/short-term-work.md`：只負責近期工作狀態，不承擔長期知識保存。
+- `agent-work/`：需要交給其他 Engineering Agent 執行的 Work Order Protocol / Template；Experiment Ownership 與 Experiment Execution 可以分離。
 
 同一個 Experiment / Evidence 可以透過 Links / Tags 支援多張 Research Map，不需要複製內容。新的 AI 在開始相關 Experiment 前，應先閱讀 `knowledge/README.md`、相關 Research Map、Evidence Index 與既有 Experiment Record。
 
 Language convention：Research reasoning / explanation 以繁體中文為主；Standard IT terminology 保留英文。對陌生 Concept 用中文解釋，不為了 Localization 硬造中文術語。`clone` 就是 `clone`，不需要讓 Git 突然變成碑帖拓印課。
+
+## Agent Handoff
+
+Primary Agent 不必親自執行每一個 Experiment 或大量 Implementation。
+
+當工作需要大量 Interactive Workspace、Shell、Runtime、Build / Test Loop，而現有 Execution Surface 成本不合理時，可以建立 Work Order，把已界定的工程工作委派給 Codex 或其他 Implementation Agent，再透過 Git Commit、Diff、Test Result、Log、Artifact 與 Report 做獨立 Technical QC。
+
+入口：[`agent-work/README.md`](agent-work/README.md)
+
+核心原則：
+
+- **Experiment Ownership ≠ Experiment Execution.**
+- **Agent Report ≠ Verified Evidence.**
+- Implementation Agent 可以施工與提出 Candidate Conclusion，但不因施工角色自動取得 Architecture / Platform Decision Authority。
+- Git Repository 是 Agent 之間的 observable handoff surface；盡量交付可重新檢查的狀態，不靠「我測過了」四個字建立信仰。
+- 這套 Handoff Model 本身目前仍是 Candidate。先用真實 Work Order 撞幾次，再依 Evidence 調整規則，不預先養出 Agent PMO。
 
 ## Playground capabilities
 
@@ -129,6 +146,8 @@ A useful disagreement is more valuable than polite consensus.
 New experiments should read relevant existing notes and evidence before repeating old work.
 
 For execution or provider capability questions, check `knowledge/README.md`, the relevant Research Map, `evidence/index.md`, and the relevant Experiment Record before returning to provider documentation or rebuilding a proof from zero. Existing Evidence means "verified under these conditions at this time", not "true forever".
+
+If the work is better delegated to another Engineering Agent, also read `agent-work/README.md` and create a lightweight Work Order rather than silently transferring an underspecified prompt.
 
 Existing conclusions are not sacred. Re-run, contradict, or replace them when better evidence appears. When new Evidence changes an old Judgment, preserve the historical condition and relationship rather than silently pretending the old conclusion never existed.
 
