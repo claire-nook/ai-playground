@@ -4,13 +4,13 @@
 - Status: Observed / Verified within current product behavior
 - Context: `claire-nook/ai-playground` real Codex Work Orders, PR handoff, deployment-gated experiment
 - Related: `agent-work/README.md`
-- Related PRs: `#1`, `#2`, `#16`
+- Related PRs: `#1`, `#2`, `#16`, `#17`, `#18`, `#19`
 
 ## Purpose
 
 這份紀錄保存把 Codex 當成 Implementation Agent 加入 Playground 後，實際觀察到的 Workspace model、Git / GitHub handoff behavior、deployment boundary、Human Relay friction 與可重用操作原則。
 
-它不是 Codex 產品文件，也不宣稱描述永久不變的產品實作。以下內容只代表 2026-09-13 在本次 `ai-playground` 協作中真正觀察到的行為。
+它不是 Codex 產品文件，也不宣稱描述永久不變的產品實作。以下內容只代表 2026-09-13 至 2026-09-14 在本次 `ai-playground` 協作中真正觀察到的行為。
 
 核心提醒：
 
@@ -138,6 +138,49 @@ Preflight 真正目的：在修改前取得足夠 Evidence，確認 Codex 正在
 
 Failure Is Deliverable：Codex 曾因 Preflight mismatch 停止、保持 working tree clean，直接暴露 Primary Agent 對 Workspace model 的錯誤假設。這種失敗比硬做一份錯誤成果更有價值。
 
+### 8.1 Experiment Catalog REWORK：新 Workspace 無法接續既有 PR branch
+
+2026-09-14 Experiment Catalog 第一次把「Implementation 已在 GitHub PR，Primary 要求 REWORK」交給新的 Codex Workspace 接續。Primary 原先假設：開一個新 Workspace，指定 PR #18 implementation branch，就能在原 branch 上補修。
+
+實際 Preflight 否定了這個假設。該 Workspace 回報：
+
+```text
+local branch: work
+HEAD: 8d1a904...
+Git remote: none
+remote-tracking refs: none
+PR #18 branch/ref: none
+PR #18 implementation commit: unreachable / unavailable
+scripts/build-experiment-catalog.mjs: not present in snapshot
+working tree: clean
+```
+
+Codex 因此**停止**，沒有重做 implementation、沒有修改 Work Order、沒有建立 local commit，也沒有再製造新的平行 PR。這個停止行為是正確的。
+
+先前另一個 REWORK Workspace 已經暴露相反的失敗模式：它拿不到 PR #18 implementation context，卻把「修 generator」誤執行成「把修 generator 的要求寫進 Work Order」，最後建立只改文件的 PR #19。這表示：
+
+> **New Workspace ≠ Existing PR continuation context.**
+
+> **能看到 Repository baseline，不代表能看到某張尚未 merge 的 PR implementation。**
+
+### Operational Rule
+
+PR REWORK 前先確認 execution surface 是否真的包含待修 PR 的 implementation state。至少確認：
+
+- target implementation files 存在；
+- baseline 與 GitHub-visible PR head 相符或有可證明的等價 context；
+- 若要求「更新既有 PR」，必須有實際可達的 branch/ref/publication mechanism，而不是只靠 prompt 宣稱。
+
+如果沒有正確 PR context：
+
+1. **停止，不猜、不重建平行 implementation。**
+2. 明確回報缺少的 branch/ref/files/remote/publication capability。
+3. 不要建立 `#19/#20/...` 來假裝完成「更新既有 PR」。
+4. 若 Primary 的 GitHub execution surface 可直接寫入既有 PR head branch，且剩餘修正小、Architecture 已定、風險可直接 QC，可由 Primary 做 narrowly-scoped patch。
+5. 若修正仍需要 interactive build/debug loop，應重新取得包含正確 implementation state 的 Workspace，而不是把 Primary direct patch 當一般替代方案。
+
+本次 PR #18 的最後修正由 Primary GitHub connector 直接寫入既有 head branch，補上 empty `tags` validation 與 Human Gate 文件修正；Netlify Deploy Preview 對新 head 成功後完成 QC，再 merge。這證明 **Primary direct GitHub patch 是小型 REWORK 的可用 fallback**，但不應因此抹掉 Codex 在多檔 implementation / test loop 的優勢。
+
 ---
 
 ## 9. Work Order 會反過來改善 Primary Agent 的 Specification
@@ -180,7 +223,7 @@ Codex Create PR 與 Primary Agent GitHub Connector 最終都使用 Claire 的 Gi
 
 ## 12. Current Dispatch / Deployment Model
 
-截至 2026-09-13，目前最符合實證的完整模型：
+截至 2026-09-14，目前最符合實證的完整模型：
 
 ```text
 Claire + Primary Agent
@@ -203,6 +246,12 @@ Primary Agent reviews Diff / Report / Evidence
         ↓
 ACCEPTED / REWORK
         ↓
+If REWORK:
+verify execution surface actually has PR implementation context
+        ↓
+Codex continues only when context is available
+or Primary applies narrow GitHub patch when appropriate
+        ↓
 Merge when applicable
         ↓
 If deployment needs manual workflow:
@@ -224,6 +273,7 @@ Human Relay 理想工作量仍應很小：選對 Workspace、貼短 Dispatch Pro
 - Codex Cloud Workspace 內部如何建立 Repository snapshot。
 - Create PR 時 local commit 為什麼可能變成不同 GitHub commit SHA。
 - 是否存在可靠 Workspace refresh / sync mechanism。
+- 是否存在可在新 Workspace 中指定 / attach 到既有 GitHub PR branch 的產品能力；本次 execution surface 未提供可觀察方法。
 - 不同 Repository / account / permission 是否都有相同 no-remote / no-`gh auth` behavior。
 - Codex 未來是否能直接取得 GitHub Actions trigger authority。
 - Primary Agent 未來是否能直接 Dispatch Codex，而不經 Claire Human Relay。
@@ -244,9 +294,11 @@ Human Relay 理想工作量仍應很小：選對 Workspace、貼短 Dispatch Pro
 - **Codex direct GitHub Actions trigger**：本次 execution surface 不可用，不應寫進派工假設。
 - **Traditional local-Git preflight assumptions**：不適用。
 - **Codex local SHA as review identity**：不可靠，以 GitHub-visible PR state 為準。
+- **New Codex Workspace as arbitrary existing PR continuation**：本次已證明不可假設；沒有 branch/ref/implementation files 時必須停止。
+- **Primary direct GitHub patch for narrow REWORK**：本次已實際成立；適合小型、已定義、可直接 QC 的修正，不取代 Codex interactive implementation loop。
 
 最值得保留的經驗仍是：
 
-> **Agent 有自己的 Workspace、Credential 與 Publication Boundary。Handoff Rule 必須依可觀察 State 設計，而不是假設所有 Agent 活在同一台電腦、同一個 Git context、同一組權限裡。**
+> **Agent 有自己的 Workspace、Credential、Snapshot 與 Publication Boundary。Handoff Rule 必須依可觀察 State 設計，而不是假設所有 Agent 活在同一台電腦、同一個 Git context、同一組權限裡。**
 
 這個家現在確實有三個工作個體。一個人類，兩個不是人；GitHub 暫時兼任餐桌、聯絡簿與家庭會議紀錄。
