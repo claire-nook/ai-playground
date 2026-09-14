@@ -1,19 +1,19 @@
 {
   "id": "D-BATCH-1",
   "title": "Supabase Batch Runtime / Scheduling",
-  "completedDate": "2026-09-14",
   "recordPath": "experiments/batch-scheduling/README.md",
-  "summary": "Phase 1 complete: Cron → Database Function, Cron → Edge Function, and Edge Function → Native Data API SELECT/UPDATE on the authorized synthetic table are verified. Formal place read exposed a separate Backend Service Access question. D-BATCH-1 now only needs direct runtime evidence for Cron-scheduled Edge Function → external API → synthetic update.",
+  "summary": "Supabase Cron 已驗證 Database Function scheduling，以及 Cron → pg_net → Edge Function → Native Data API → external API → synthetic update 的 scheduled runtime chain。正式結案前仍需補 parameterized invocation：Cron 對 Edge Function 傳入固定參數與 execution-time 動態參數。複雜參數準備若需要查 DB 或 business rules，應由 launcher / preparation API 處理，不把 orchestration logic 塞進 Cron。",
   "tags": [
     "Supabase",
     "Cron / Scheduling",
     "Edge Function",
     "Native Data API",
     "Batch",
+    "Parameterized Invocation",
     "Observability"
   ],
   "demoStatus": "live",
   "demoPath": "/cron-edge-observer/",
   "verificationStatus": "partial",
-  "flow": "Phase 1: Cron A → Database Function → test row creation verified; Cron B → Edge Function → synthetic Data API Read/Update verified. Remaining: Cron-scheduled Edge Function → external API → synthetic update. Backend Service Access is tracked separately."
+  "flow": "Verified: Cron → Database Function; Cron → Edge Function → synthetic Data API Read/Update → Open-Meteo → synthetic SUCCESS update. Remaining Cron gate: fixed + dynamic runtime parameters in scheduled HTTP invocation. Backend Service DB Access is tracked separately as C-BSA-1."
 }
