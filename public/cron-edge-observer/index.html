@@ -3,11 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Supabase Cron Edge Observer</title>
+    <title>D-BATCH-1 Observer</title>
     <style>
+      /* Shared D-BATCH-1 observer shell. Keep the page framework-free and iPad friendly. */
       * {
         box-sizing: border-box;
       }
+
       body {
         margin: 0;
         padding: clamp(0.75rem, 3vw, 2rem);
@@ -17,10 +19,12 @@
         color: #172033;
         background: #f4f7fb;
       }
+
       main {
         width: min(100%, 1280px);
         margin: auto;
       }
+
       .panel {
         margin-top: 1rem;
         padding: clamp(1rem, 3vw, 1.5rem);
@@ -28,18 +32,22 @@
         border-radius: 14px;
         background: white;
       }
+
       h1,
       h2 {
         margin-top: 0;
       }
+
       form {
         display: grid;
         gap: 0.8rem;
         max-width: 480px;
       }
+
       label {
         font-weight: 700;
       }
+
       input,
       button {
         min-height: 46px;
@@ -48,19 +56,25 @@
         border-radius: 8px;
         font: inherit;
       }
+
       button {
         background: #173b73;
         color: white;
         cursor: pointer;
       }
-      button.secondary {
+
+      button.secondary,
+      .tab-button {
         background: white;
         color: #172033;
       }
+
       button:disabled {
         opacity: 0.6;
         cursor: wait;
       }
+
+      .tabs,
       .actions,
       .counts {
         display: flex;
@@ -68,6 +82,17 @@
         gap: 0.7rem;
         align-items: center;
       }
+
+      .tabs {
+        margin-top: 1rem;
+      }
+
+      .tab-button[aria-selected="true"] {
+        background: #173b73;
+        color: white;
+        border-color: #173b73;
+      }
+
       .count {
         min-width: 120px;
         padding: 0.7rem;
@@ -75,22 +100,34 @@
         background: #eef3f9;
         font-weight: 700;
       }
+
       .message {
         min-height: 1.5rem;
         font-weight: 600;
       }
+
       .muted {
         color: #596579;
       }
+
       .table-wrap {
         overflow-x: auto;
         margin-top: 1rem;
       }
+
       table {
         width: 100%;
-        min-width: 1260px;
         border-collapse: collapse;
       }
+
+      #runtime-table {
+        min-width: 1260px;
+      }
+
+      #parameter-table {
+        min-width: 940px;
+      }
+
       th,
       td {
         padding: 0.7rem;
@@ -98,31 +135,40 @@
         text-align: left;
         vertical-align: top;
       }
+
       th {
         background: #eef3f9;
       }
+
       .status {
         font-weight: 800;
       }
+
       .memo {
         min-width: 280px;
         white-space: normal;
         overflow-wrap: anywhere;
       }
+
       .SUCCESS {
         color: #08783e;
       }
+
       .FAILED {
         color: #b42318;
       }
+
       .PENDING {
         color: #946200;
       }
+
       [hidden] {
         display: none !important;
       }
+
       @media (max-width: 600px) {
-        .actions button {
+        .actions button,
+        .tab-button {
           flex: 1 1 100%;
         }
       }
@@ -131,33 +177,50 @@
   <body>
     <main>
       <a href="/">← AI Playground</a>
+
       <section class="panel">
-        <p class="muted">Batch Runtime / Scheduling Playground</p>
-        <h1>Supabase Cron Edge Observer</h1>
+        <p class="muted">Experiment D-BATCH-1 · Supabase Batch Runtime / Scheduling</p>
+        <h1>D-BATCH-1 Observer</h1>
         <p>
-          登入後，以 Supabase Native Data API 唯讀觀察 Cron A 建立、Edge worker
-          處理的 synthetic rows。
+          同一個 Experiment 的觀察結果集中在這裡。登入一次後，可用頁籤切換不同 Probe，避免 Gallery
+          每新增一個觀察面向就開始搶唯一的 Demo 入口。
         </p>
+        <div class="tabs" role="tablist" aria-label="D-BATCH-1 probes">
+          <button
+            id="runtime-tab"
+            class="tab-button"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="runtime-panel"
+            data-tab="runtime"
+          >
+            Cron Runtime
+          </button>
+          <button
+            id="parameter-tab"
+            class="tab-button"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="parameter-panel"
+            data-tab="parameter"
+          >
+            Parameter Invocation
+          </button>
+        </div>
       </section>
 
       <section id="login-panel" class="panel">
         <h2>Supabase Auth Login</h2>
         <form id="login-form">
           <div>
-            <label for="account">Account</label><br /><input
-              id="account"
-              type="email"
-              autocomplete="username"
-              required
-            />
+            <label for="account">Account</label><br />
+            <input id="account" type="email" autocomplete="username" required />
           </div>
           <div>
-            <label for="password">Password</label><br /><input
-              id="password"
-              type="password"
-              autocomplete="current-password"
-              required
-            />
+            <label for="password">Password</label><br />
+            <input id="password" type="password" autocomplete="current-password" required />
           </div>
           <button id="login-button" type="submit">登入並讀取</button>
         </form>
@@ -166,56 +229,88 @@
         </p>
       </section>
 
-      <section id="observer-panel" class="panel" hidden>
-        <div class="actions">
-          <button id="refresh-button" type="button">Refresh</button>
-          <button id="logout-button" class="secondary" type="button">
-            登出
-          </button>
-          <span id="refresh-state" class="muted">Auto Refresh：30 秒</span>
-        </div>
-        <p
-          id="data-message"
-          class="message"
-          role="status"
-          aria-live="polite"
-        ></p>
-        <div class="counts">
-          <div class="count">PENDING <span id="pending-count">0</span></div>
-          <div class="count">SUCCESS <span id="success-count">0</span></div>
-          <div class="count">FAILED <span id="failed-count">0</span></div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>OID</th>
-                <th>Place</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Status</th>
-                <th>Memo</th>
-                <th>Temperature</th>
-                <th>Created By</th>
-                <th>Created At</th>
-                <th>Updated By</th>
-                <th>Updated At</th>
-              </tr>
-            </thead>
-            <tbody id="rows">
-              <tr>
-                <td colspan="11">尚未讀取。</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <section id="observer-shell" hidden>
+        <section class="panel">
+          <div class="actions">
+            <button id="refresh-button" type="button">Refresh</button>
+            <button id="logout-button" class="secondary" type="button">登出</button>
+            <span class="muted">Auto Refresh：30 秒 · 只刷新目前頁籤</span>
+          </div>
+        </section>
+
+        <section id="runtime-panel" class="panel" role="tabpanel" aria-labelledby="runtime-tab">
+          <p class="muted">Cron → Edge Function → Native Data API → Open-Meteo</p>
+          <h2>Cron Runtime</h2>
+          <p>觀察 Cron 建立、Edge worker 處理的 synthetic rows，以及最後的執行狀態與溫度。</p>
+          <p id="runtime-message" class="message" role="status" aria-live="polite"></p>
+          <div class="counts">
+            <div class="count">PENDING <span id="pending-count">0</span></div>
+            <div class="count">SUCCESS <span id="success-count">0</span></div>
+            <div class="count">FAILED <span id="failed-count">0</span></div>
+          </div>
+          <div class="table-wrap">
+            <table id="runtime-table">
+              <thead>
+                <tr>
+                  <th>OID</th>
+                  <th>Place</th>
+                  <th>Latitude</th>
+                  <th>Longitude</th>
+                  <th>Status</th>
+                  <th>Memo</th>
+                  <th>Temperature</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                  <th>Updated By</th>
+                  <th>Updated At</th>
+                </tr>
+              </thead>
+              <tbody id="runtime-rows">
+                <tr><td colspan="11">尚未讀取。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section
+          id="parameter-panel"
+          class="panel"
+          role="tabpanel"
+          aria-labelledby="parameter-tab"
+          hidden
+        >
+          <p class="muted">Cron → HTTP POST parameters → Edge Function → Native Data API INSERT</p>
+          <h2>Parameter Invocation</h2>
+          <p>
+            唯讀顯示 Cron request 實際傳入並由 Edge Function 持久化的 fixed value、runtime date 與 runtime
+            time。這個 Probe 目前仍在驗證中，所以空表不是宇宙終結，只代表資料還沒成功進來。
+          </p>
+          <p id="parameter-message" class="message" role="status" aria-live="polite"></p>
+          <div class="table-wrap">
+            <table id="parameter-table">
+              <thead>
+                <tr>
+                  <th>OID</th>
+                  <th>Fixed Value</th>
+                  <th>Runtime Date</th>
+                  <th>Runtime Time</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody id="parameter-rows">
+                <tr><td colspan="6">尚未讀取。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </section>
     </main>
 
     <script type="module">
       import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
-      // Browser-safe public configuration only; server-side credentials never belong here.
+      // Browser-safe public configuration only; privileged server credentials never belong here.
       const SUPABASE_URL = "https://cctonymfrxneonxryqei.supabase.co";
       const SUPABASE_PUBLISHABLE_KEY =
         "sb_publishable_MN0_kx6LzCPyNbtI4CWZ9w_y-5hew_g";
@@ -229,10 +324,11 @@
       });
 
       const loginPanel = document.getElementById("login-panel");
-      const observerPanel = document.getElementById("observer-panel");
+      const observerShell = document.getElementById("observer-shell");
       const authMessage = document.getElementById("auth-message");
-      const dataMessage = document.getElementById("data-message");
-      const rowsElement = document.getElementById("rows");
+      const runtimeRowsElement = document.getElementById("runtime-rows");
+      const parameterRowsElement = document.getElementById("parameter-rows");
+      let activeTab = "runtime";
       let refreshTimer = null;
 
       function formatDate(value) {
@@ -244,21 +340,28 @@
           : "—";
       }
 
-      function setCount(status, rows) {
-        document.getElementById(`${status.toLowerCase()}-count`).textContent =
-          String(rows.filter((row) => row.t03 === status).length);
+      // Preserve runtime_time exactly as stored so timezone offset remains observable evidence.
+      function formatParameterTime(value) {
+        return value ?? "—";
       }
 
-      function renderRows(rows, placeByOid) {
-        rowsElement.textContent = "";
+      function setCount(status, rows) {
+        document.getElementById(`${status.toLowerCase()}-count`).textContent = String(
+          rows.filter((row) => row.t03 === status).length,
+        );
+      }
+
+      function renderRuntimeRows(rows, placeByOid) {
+        runtimeRowsElement.textContent = "";
         if (!rows.length) {
-          const row = rowsElement.insertRow();
+          const row = runtimeRowsElement.insertRow();
           const cell = row.insertCell();
           cell.colSpan = 11;
           cell.textContent = "目前沒有可見資料。";
         }
+
         for (const item of rows) {
-          const row = rowsElement.insertRow();
+          const row = runtimeRowsElement.insertRow();
           const values = [
             item.t01,
             placeByOid.get(item.t02) ?? `OID ${item.t02}`,
@@ -272,6 +375,7 @@
             item.t08 ?? "—",
             formatDate(item.t07),
           ];
+
           values.forEach((value, index) => {
             const cell = row.insertCell();
             cell.textContent = String(value ?? "—");
@@ -279,104 +383,178 @@
             if (index === 5) cell.classList.add("memo");
           });
         }
-        ["PENDING", "SUCCESS", "FAILED"].forEach((status) =>
-          setCount(status, rows),
-        );
+
+        ["PENDING", "SUCCESS", "FAILED"].forEach((status) => setCount(status, rows));
       }
 
-      async function loadRows() {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
-          stopObserver();
-          authMessage.textContent =
-            "Session 不存在；未送出 table SELECT。請重新登入。";
+      function renderParameterRows(rows) {
+        parameterRowsElement.textContent = "";
+        if (!rows.length) {
+          const row = parameterRowsElement.insertRow();
+          const cell = row.insertCell();
+          cell.colSpan = 6;
+          cell.textContent = "目前沒有可見資料。";
           return;
         }
 
-        dataMessage.textContent = "Native Data API 讀取中…";
+        for (const item of rows) {
+          const row = parameterRowsElement.insertRow();
+          [
+            item.oid,
+            item.fixed_value,
+            item.runtime_date,
+            formatParameterTime(item.runtime_time),
+            item.created_by,
+            formatDate(item.created_at),
+          ].forEach((value) => {
+            const cell = row.insertCell();
+            cell.textContent = String(value ?? "—");
+          });
+        }
+      }
+
+      async function hasSession() {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        return Boolean(session);
+      }
+
+      async function loadRuntimeRows() {
+        const message = document.getElementById("runtime-message");
+        message.textContent = "Native Data API 讀取中…";
+
         const result = await supabase
           .from("test_b8c3q1")
           .select("t01,t02,t03,t04,t05,t06,t07,t08,t09,latitude,longitude")
           .order("t01", { ascending: false });
+
         if (result.error) {
-          dataMessage.textContent = `Test row SELECT 失敗：${result.error.message}`;
+          message.textContent = `Test row SELECT 失敗：${result.error.message}`;
           return;
         }
 
         const placeOids = [
-          ...new Set(
-            (result.data ?? [])
-              .map((row) => row.t02)
-              .filter((oid) => oid != null),
-          ),
+          ...new Set((result.data ?? []).map((row) => row.t02).filter((oid) => oid != null)),
         ];
         let placeByOid = new Map();
+
         if (placeOids.length) {
-          const places = await supabase
-            .from("place")
-            .select("oid,place_name")
-            .in("oid", placeOids);
+          const places = await supabase.from("place").select("oid,place_name").in("oid", placeOids);
           if (places.error) {
-            dataMessage.textContent = `Rows 已讀取；Place mapping 失敗：${places.error.message}`;
+            message.textContent = `Rows 已讀取；Place mapping 失敗：${places.error.message}`;
           } else {
-            placeByOid = new Map(
-              (places.data ?? []).map((place) => [place.oid, place.place_name]),
-            );
+            placeByOid = new Map((places.data ?? []).map((place) => [place.oid, place.place_name]));
           }
         }
-        renderRows(result.data ?? [], placeByOid);
-        dataMessage.textContent = `讀取完成：${result.data?.length ?? 0} rows；${new Date().toLocaleTimeString("zh-Hant")}。`;
+
+        renderRuntimeRows(result.data ?? [], placeByOid);
+        message.textContent = `讀取完成：${result.data?.length ?? 0} rows；${new Date().toLocaleTimeString("zh-Hant")}。`;
+      }
+
+      async function loadParameterRows() {
+        const message = document.getElementById("parameter-message");
+        message.textContent = "Native Data API 讀取中…";
+
+        const result = await supabase
+          .from("test_p7k2m4")
+          .select("oid,fixed_value,runtime_date,runtime_time,created_by,created_at")
+          .order("oid", { ascending: false });
+
+        if (result.error) {
+          message.textContent = `SELECT 失敗：${result.error.message}`;
+          return;
+        }
+
+        renderParameterRows(result.data ?? []);
+        message.textContent = `讀取完成：${result.data?.length ?? 0} rows；${new Date().toLocaleTimeString("zh-Hant")}。`;
+      }
+
+      async function loadActiveTab() {
+        if (!(await hasSession())) {
+          stopObserver();
+          authMessage.textContent = "Session 不存在；未送出 table SELECT。請重新登入。";
+          return;
+        }
+
+        if (activeTab === "parameter") {
+          await loadParameterRows();
+        } else {
+          await loadRuntimeRows();
+        }
+      }
+
+      function selectTab(tabName, updateHash = true) {
+        activeTab = tabName === "parameter" ? "parameter" : "runtime";
+
+        for (const button of document.querySelectorAll(".tab-button")) {
+          const isActive = button.dataset.tab === activeTab;
+          button.setAttribute("aria-selected", String(isActive));
+        }
+
+        document.getElementById("runtime-panel").hidden = activeTab !== "runtime";
+        document.getElementById("parameter-panel").hidden = activeTab !== "parameter";
+
+        if (updateHash) {
+          history.replaceState(null, "", activeTab === "parameter" ? "#parameter" : "#runtime");
+        }
+
+        if (!observerShell.hidden) {
+          loadActiveTab();
+        }
       }
 
       function startObserver() {
         loginPanel.hidden = true;
-        observerPanel.hidden = false;
+        observerShell.hidden = false;
         if (refreshTimer) clearInterval(refreshTimer);
-        refreshTimer = setInterval(loadRows, REFRESH_INTERVAL_MS);
-        loadRows();
+        refreshTimer = setInterval(loadActiveTab, REFRESH_INTERVAL_MS);
+        loadActiveTab();
       }
 
       function stopObserver() {
         if (refreshTimer) clearInterval(refreshTimer);
         refreshTimer = null;
         loginPanel.hidden = false;
-        observerPanel.hidden = true;
+        observerShell.hidden = true;
       }
 
-      document
-        .getElementById("login-form")
-        .addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const button = document.getElementById("login-button");
-          button.disabled = true;
-          authMessage.textContent = "登入中…";
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: document.getElementById("account").value.trim(),
-            password: document.getElementById("password").value,
-          });
-          document.getElementById("password").value = "";
-          button.disabled = false;
-          if (error || !data.session) {
-            authMessage.textContent = "登入失敗，未讀取 table。";
-            return;
-          }
-          authMessage.textContent = "Authentication Success。";
-          startObserver();
+      // Tabs are presentation state only; authentication is shared across all probes on this page.
+      for (const button of document.querySelectorAll(".tab-button")) {
+        button.addEventListener("click", () => selectTab(button.dataset.tab));
+      }
+
+      document.getElementById("login-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = document.getElementById("login-button");
+        button.disabled = true;
+        authMessage.textContent = "登入中…";
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: document.getElementById("account").value.trim(),
+          password: document.getElementById("password").value,
         });
 
-      document
-        .getElementById("refresh-button")
-        .addEventListener("click", loadRows);
-      document
-        .getElementById("logout-button")
-        .addEventListener("click", async () => {
-          await supabase.auth.signOut({ scope: "local" });
-          stopObserver();
-          authMessage.textContent =
-            "已登出；Observer 不會在未登入狀態讀取 table。";
-        });
+        document.getElementById("password").value = "";
+        button.disabled = false;
+
+        if (error || !data.session) {
+          authMessage.textContent = "登入失敗，未讀取 table。";
+          return;
+        }
+
+        authMessage.textContent = "Authentication Success。";
+        startObserver();
+      });
+
+      document.getElementById("refresh-button").addEventListener("click", loadActiveTab);
+      document.getElementById("logout-button").addEventListener("click", async () => {
+        await supabase.auth.signOut({ scope: "local" });
+        stopObserver();
+        authMessage.textContent = "已登出；Observer 不會在未登入狀態讀取 table。";
+      });
+
+      selectTab(location.hash === "#parameter" ? "parameter" : "runtime", false);
 
       const {
         data: { session },
