@@ -9,7 +9,7 @@ type PendingRow = { t01: number; t02: number };
 type RowResult = { oid: number; status: "SUCCESS" | "FAILED"; reason?: string };
 
 Deno.serve(
-  withSupabase({ auth: "secret" })(async (request, { supabase }) => {
+  withSupabase({ auth: "secret" })(async (request, { supabaseAdmin }) => {
     if (request.method !== "POST") {
       return jsonResponse(
         { error: "method_not_allowed", allowed: "POST" },
@@ -18,9 +18,9 @@ Deno.serve(
       );
     }
 
-    // The SDK-provided privileged client uses the Supabase Native Data API. This
-    // worker intentionally avoids direct SQL, RPC, and database functions.
-    const { data, error } = await supabase
+    // Secret-auth service calls must use the SDK-provided privileged client.
+    // supabaseAdmin uses the project secret key and bypasses RLS by design.
+    const { data, error } = await supabaseAdmin
       .from("test_b8c3q1")
       .select("t01,t02")
       .eq("t03", "PENDING")
@@ -35,7 +35,7 @@ Deno.serve(
 
     const results: RowResult[] = [];
     for (const row of (data ?? []) as PendingRow[]) {
-      results.push(await processRow(supabase, row));
+      results.push(await processRow(supabaseAdmin, row));
     }
 
     return jsonResponse({
