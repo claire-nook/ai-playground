@@ -1,0 +1,40 @@
+name: Deploy Test Cron Edge Worker
+
+# Human gate: deployment follows Primary Agent QC and requires SB_SECRET_KEY to
+# have been configured directly as a Supabase Edge Function secret.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-test-cron-edge-worker:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_PROJECT_REF: cctonymfrxneonxryqei
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Show Supabase CLI version
+        run: supabase --version
+
+      # Secret Keys are opaque server credentials rather than JWTs. The worker
+      # therefore enforces its own apikey boundary instead of gateway JWT checks.
+      - name: Deploy test-cron-edge-worker
+        run: |
+          supabase functions deploy test-cron-edge-worker \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --no-verify-jwt
+
+      - name: Show deployed endpoint
+        run: |
+          echo "Endpoint: https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/test-cron-edge-worker"
