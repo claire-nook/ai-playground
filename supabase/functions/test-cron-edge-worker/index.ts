@@ -4,6 +4,7 @@ import { withSupabase } from "npm:@supabase/server";
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 const WORKER_ID = "test-cron-edge-worker";
+const PENDING_ROW_LIMIT = 3;
 
 type PendingRow = { t01: number; t02: number };
 type RowResult = { oid: number; status: "SUCCESS" | "FAILED"; reason?: string };
@@ -20,11 +21,13 @@ Deno.serve(
 
     // Secret-auth service calls must use the SDK-provided privileged client.
     // supabaseAdmin uses the project secret key and bypasses RLS by design.
+    // This diagnostic cap isolates whether backlog size is causing the timeout.
     const { data, error } = await supabaseAdmin
       .from("test_b8c3q1")
       .select("t01,t02")
       .eq("t03", "PENDING")
-      .order("t01", { ascending: true });
+      .order("t01", { ascending: true })
+      .limit(PENDING_ROW_LIMIT);
 
     if (error) {
       return jsonResponse(
@@ -41,6 +44,7 @@ Deno.serve(
     return jsonResponse({
       worker: WORKER_ID,
       pending_count: data?.length ?? 0,
+      pending_row_limit: PENDING_ROW_LIMIT,
       success_count: results.filter((result) => result.status === "SUCCESS")
         .length,
       failed_count: results.filter((result) => result.status === "FAILED").length,
