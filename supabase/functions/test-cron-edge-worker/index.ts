@@ -93,6 +93,7 @@ async function processRow(
         t04: temperature,
         t07: new Date().toISOString(),
         t08: WORKER_ID,
+        t09: null,
       })
       .eq("t01", row.t01)
       .eq("t03", "PENDING");
@@ -111,9 +112,15 @@ async function markFailed(
   oid: number,
   reason: string,
 ): Promise<RowResult> {
+  // Persist the row-level failure reason for direct observation in the test UI.
   const { error } = await supabase
     .from("test_b8c3q1")
-    .update({ t03: "FAILED", t07: new Date().toISOString(), t08: WORKER_ID })
+    .update({
+      t03: "FAILED",
+      t07: new Date().toISOString(),
+      t08: WORKER_ID,
+      t09: reason,
+    })
     .eq("t01", oid)
     .eq("t03", "PENDING");
 
