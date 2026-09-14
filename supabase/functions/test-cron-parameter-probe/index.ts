@@ -12,56 +12,60 @@ type ProbeInput = {
 };
 
 Deno.serve(
-  withSupabase({ auth: "secret" })(async (request, { supabaseAdmin }) => {
-    if (request.method !== "POST") {
-      return jsonResponse(
-        { error: "method_not_allowed", allowed: "POST" },
-        405,
-        { allow: "POST" },
-      );
-    }
+  // The existing Cron caller uses the named Playground secret key. Pin the
+  // auth contract to that key instead of relying on package-version fallback behavior.
+  withSupabase({ auth: "secret:playground_cron_edge_worker" })(
+    async (request, { supabaseAdmin }) => {
+      if (request.method !== "POST") {
+        return jsonResponse(
+          { error: "method_not_allowed", allowed: "POST" },
+          405,
+          { allow: "POST" },
+        );
+      }
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonResponse({ error: "invalid_json" }, 400);
-    }
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid_json" }, 400);
+      }
 
-    const validation = validateInput(body);
-    if (!validation.ok) {
-      return jsonResponse(
-        { error: "invalid_parameters", details: validation.errors },
-        400,
-      );
-    }
+      const validation = validateInput(body);
+      if (!validation.ok) {
+        return jsonResponse(
+          { error: "invalid_parameters", details: validation.errors },
+          400,
+        );
+      }
 
-    const input = validation.input;
+      const input = validation.input;
 
-    // Critical experiment boundary: runtime_date/runtime_time are persisted exactly
-    // as received. This function must not calculate replacement runtime values.
-    const { error } = await supabaseAdmin.from("test_p7k2m4").insert({
-      created_by: "-1",
-      fixed_value: input.fixed_value,
-      runtime_date: input.runtime_date,
-      runtime_time: input.runtime_time,
-    });
+      // Critical experiment boundary: runtime_date/runtime_time are persisted exactly
+      // as received. This function must not calculate replacement runtime values.
+      const { error } = await supabaseAdmin.from("test_p7k2m4").insert({
+        created_by: "-1",
+        fixed_value: input.fixed_value,
+        runtime_date: input.runtime_date,
+        runtime_time: input.runtime_time,
+      });
 
-    if (error) {
-      return jsonResponse(
-        { error: "insert_failed", detail: error.message },
-        500,
-      );
-    }
+      if (error) {
+        return jsonResponse(
+          { error: "insert_failed", detail: error.message },
+          500,
+        );
+      }
 
-    // service_role intentionally has INSERT-only access on this probe table.
-    // Echo the accepted payload instead of adding SELECT privilege merely to decorate a response.
-    return jsonResponse({
-      probe: PROBE_ID,
-      inserted: true,
-      received: input,
-    });
-  }),
+      // service_role intentionally has INSERT-only access on this probe table.
+      // Echo the accepted payload instead of adding SELECT privilege merely to decorate a response.
+      return jsonResponse({
+        probe: PROBE_ID,
+        inserted: true,
+        received: input,
+      });
+    },
+  ),
 );
 
 function validateInput(
