@@ -14,7 +14,7 @@
     "Observability"
   ],
   "demoStatus": "live",
-  "demoPath": "/cron-parameter-observer/",
+  "demoPath": "/cron-edge-observer/",
   "verificationStatus": "partial",
   "flow": "Verified: Cron → Database Function; Cron → Edge Function → synthetic Data API Read/Update → Open-Meteo → synthetic SUCCESS update. Remaining Cron gate: fixed + dynamic runtime parameters in scheduled HTTP invocation. Backend Service DB Access is tracked separately as C-BSA-1."
 }
