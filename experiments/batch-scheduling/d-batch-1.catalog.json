@@ -1,0 +1,19 @@
+{
+  "id": "D-BATCH-1",
+  "title": "Supabase Batch Runtime / Scheduling",
+  "completedDate": "2026-09-14",
+  "recordPath": "experiments/batch-scheduling/README.md",
+  "summary": "Cron → Database Function producer path 已驗證；scheduled Edge Function → Native Data API → external provider consumer path仍等待完整 runtime evidence。",
+  "tags": [
+    "Supabase",
+    "Cron / Scheduling",
+    "Edge Function",
+    "Native Data API",
+    "Batch",
+    "Observability"
+  ],
+  "demoStatus": "live",
+  "demoPath": "/cron-edge-observer/",
+  "verificationStatus": "partial",
+  "flow": "Cron A → Database Function → PENDING; Cron B → Edge Function → Data API → Open-Meteo → SUCCESS / FAILED"
+}
