@@ -10,19 +10,36 @@
 
 ### D-BATCH-1 — Supabase Batch Runtime / Scheduling
 
-- Status: `Partial`（Cron A tested path `Verified`; Cron B end-to-end pending）
+- Status: `Partial`（Phase 1 completed; Phase 2 planned）
 - Record: [`../experiments/batch-scheduling/README.md`](../experiments/batch-scheduling/README.md)
+- Phase Evidence: [`../evidence/d-batch-1-phase-1.md`](../evidence/d-batch-1-phase-1.md)
 - Live Demo: [`/cron-edge-observer/`](/cron-edge-observer/)
 - Primary Intent: `Nook Technical Platform / Batch Runtime / Scheduling Feasibility`
-- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `observability`
+- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `observability`, `authorization`
 
 **Why it existed**
 
-Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此先以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility，而不是先把 workload 拆到另一個 Provider。
+Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility，而不是先把 workload 拆到另一個 Provider。
 
-**What it unlocked**
+**What Phase 1 unlocked**
 
-Cron A 的 `Cron → Database Function → PENDING test row` tested path 已 runtime verified。Cron B worker、server-side auth contract、Native Data API processing source 與 authenticated Browser Observer 已存在，但 `Cron B → scheduled Edge Function → Native Data API / Open-Meteo → state transition` 尚待 runtime observation；整體仍為 `Partial`。
+以下受測 path 已 runtime verified：
+
+```text
+Cron → PostgreSQL Database Function → synthetic PENDING row
+Cron → pg_net → Edge Function
+Edge Function → Native Data API SELECT / UPDATE on authorized synthetic table
+```
+
+Worker 對 formal `place` 的 SELECT 失敗已確認為 current `service_role` 缺少 table SELECT privilege，不是 Cron limitation，也不是 Native Data API capability failure。因 coordinates 未取得，D-BATCH-1 的 Cron-scheduled Open-Meteo path 尚未進入。
+
+Row-level Memo (`t09`) 與 authenticated Observer 已驗證能直接呈現 failure reason。
+
+**Phase 2**
+
+1. Backend Service Access：研究正常採 privilege + RLS 的 table，如何讓 server-side Custom API 以明確、least-privilege 的方式讀取；不直接放寬 formal `place` 當實驗捷徑。
+2. Cron-scheduled External API：以 synthetic coordinates 移除 `place` dependency，驗證 Cron 啟動的 Edge Function outbound HTTP → Open-Meteo。
+3. 兩項各自通過後，只做一次最小 integration confirmation：`Cron → Edge → authorized Data API read → external API → synthetic update`。
 
 ## 2026-09-13
 
@@ -121,6 +138,8 @@ Edge Function deployment lifecycle 已在 iPad-first workflow 驗證，並成為
 
 ## Current Candidate Experiments
 
+- **D-BATCH-1 Phase 2 / Backend Service Access**：formal-style table privilege + RLS 與 background service identity 的責任分工。
+- **D-BATCH-1 Phase 2 / Scheduled External HTTP**：Cron-scheduled Edge Function outbound provider call。
 - **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
 - **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補，不為了把 checklist 填滿硬測。
