@@ -1,0 +1,39 @@
+name: Deploy Test Cron Parameter Probe
+
+# Human gate: this Playground deployment is started explicitly with workflow_dispatch.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-test-cron-parameter-probe:
+    runs-on: ubuntu-latest
+    env:
+      # Project Ref is public metadata; the Supabase access token remains a GitHub secret.
+      SUPABASE_PROJECT_REF: cctonymfrxneonxryqei
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Show Supabase CLI version
+        run: supabase --version
+
+      # Secret Keys are not user JWTs; the Edge Function server helper validates the apikey header.
+      - name: Deploy test-cron-parameter-probe
+        run: |
+          supabase functions deploy test-cron-parameter-probe \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --no-verify-jwt
+
+      - name: Show deployed endpoint
+        run: |
+          echo "Endpoint: https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/test-cron-parameter-probe"
