@@ -15,8 +15,8 @@ Deno.serve(async (request: Request) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !serviceRoleKey) {
+  const secretKey = Deno.env.get("SB_SECRET_KEY");
+  if (!supabaseUrl || !secretKey) {
     return jsonResponse(
       {
         error: "runtime_configuration_error",
@@ -26,21 +26,21 @@ Deno.serve(async (request: Request) => {
     );
   }
 
-  const authorization = request.headers.get("Authorization");
-  if (!authorization) {
+  const apiKey = request.headers.get("apikey");
+  if (!apiKey) {
     return jsonResponse(
       {
-        error: "missing_authorization",
-        message: "Authorization header is required.",
+        error: "missing_api_key",
+        message: "apikey header is required.",
       },
       401,
     );
   }
 
-  // JWT verification alone would also admit ordinary authenticated-user tokens.
-  // This privileged batch route is restricted to the existing server credential
-  // that Cron B will retrieve and send without exposing it to the browser.
-  if (authorization !== `Bearer ${serviceRoleKey}`) {
+  // Gateway JWT verification is disabled for this function because Supabase Secret
+  // Keys are not JWTs. This check is therefore the worker's authorization boundary
+  // and must remain before createClient() and every Native Data API operation.
+  if (apiKey !== secretKey) {
     return jsonResponse(
       {
         error: "forbidden",
@@ -52,7 +52,7 @@ Deno.serve(async (request: Request) => {
 
   // createClient.from() uses the Supabase Native Data API. This worker intentionally
   // does not use direct SQL, RPC, or a database function for either table.
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  const supabase = createClient(supabaseUrl, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data, error } = await supabase
