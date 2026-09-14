@@ -1,9 +1,10 @@
-# D-BATCH-1 Phase 1 Evidence / Phase 2 Plan
+# D-BATCH-1 Phase 1 Evidence / Remaining Cron Gate
 
 - Date: 2026-09-14
 - Experiment: `D-BATCH-1`
-- Status: `Phase 1 completed; Phase 2 planned`
+- Status: `Phase 1 completed; scheduled external HTTP confirmation pending`
 - Record: `experiments/batch-scheduling/README.md`
+- Reusable Implementation Guide: `knowledge/implementation/supabase-cron.md`
 
 ## Phase 1 — Confirmed Evidence
 
@@ -56,13 +57,15 @@ place_select_failed: permission denied for table place
 
 相同 Custom API 即使改由人工 POST，只要仍以相同 service identity SELECT `place`，結果也會相同。
 
+這項 Evidence 已足以建立一個獨立的 Backend Service Access research question，但它不再是 D-BATCH-1 completion gate。
+
 ### Scheduled external API path
 
 Not reached。
 
 Worker 必須先取得 coordinates 才會呼叫 Open-Meteo；此次在 `place` SELECT 已停止，所以不能記成 Open-Meteo failure。
 
-C-EXT-1 已獨立驗證一般 Edge Function outbound HTTP → Open-Meteo；D-BATCH-1 尚未驗證 Cron-scheduled worker 的 external API path。
+C-EXT-1 已獨立驗證一般 Edge Function outbound HTTP → Open-Meteo；D-BATCH-1 尚未直接驗證 Cron-scheduled worker 的 external API path。
 
 ### Memo observability
 
@@ -91,38 +94,38 @@ Scheduler History
 - Batch/System Failure：整批無法開始。
 - Item Failure：單筆失敗，留下 `FAILED + Memo`，其他 item 可繼續；invocation 仍可能 HTTP 200。
 
-## Phase 2 — Planned Evidence
+可重用的 Cron implementation details 已移到 `knowledge/implementation/supabase-cron.md`，避免 Evidence 同時扮演操作手冊。
 
-### P2-A — Backend Service Access
+## Remaining D-BATCH-1 Evidence Gate
 
-研究正常採 PostgreSQL privilege + RLS / application access boundary 的 table，如何讓 server-side Custom API 以明確、least-privilege 的方式讀取。
-
-原則：不直接為了實驗把 formal `place` 放寬。優先用 synthetic / formal-equivalent object 驗證 authorization pattern，再決定是否值得形成正式 migration / architecture rule。
-
-### P2-B — Cron-scheduled Custom API → External API
-
-移除 formal `place` dependency，直接使用 synthetic coordinates：
+只補 scheduled outbound HTTP：
 
 ```text
-Cron → Edge Function → synthetic coordinates → Open-Meteo → synthetic result
-```
+Cron A
+→ Database Function
+→ INSERT PENDING + synthetic latitude / longitude
 
-目標只驗 scheduled runtime outbound HTTP path。
-
-### P2-C — Minimal integration confirmation
-
-P2-A、P2-B 分別通過後，再確認：
-
-```text
-Cron
+Cron B
 → Edge Function
-→ authorized Data API read
-→ external API
+→ synthetic coordinates
+→ Open-Meteo
 → synthetic Data API update
 ```
 
-這不是第三個大型實驗，而是避免把兩個單點成功自動腦補成完整鏈成功。
+這一步刻意移除 formal `place` dependency，只回答：
+
+> Cron scheduled invoke 的 Edge Function 是否能完成 outbound HTTP processing 並寫回結果？
+
+若這條 runtime chain 有直接 evidence，D-BATCH-1 第一輪 feasibility research 即可結案。
+
+## Separate Research Question — Backend Service Access
+
+Formal `place` permission failure 應另行研究：
+
+> server-side Custom API 要如何對正常 secured application table 取得明確、least-privilege access？
+
+不要為了完成 Cron Experiment 而直接放寬 `place`。未來若正式 workload 需要，再用 synthetic / formal-equivalent object 驗證 authorization pattern。
 
 ## Current Judgment
 
-Phase 1 已足以確認 Supabase Cron 是 Nook Works system scheduler 的 credible candidate；D-BATCH-1 整體仍維持 `Partial`，直到 Backend Service Access 與 Cron-scheduled external HTTP 兩個剩餘問題完成最小驗證。
+Phase 1 已足以確認 Supabase Cron 是 Nook Works system scheduler 的 credible candidate，且實作 recipe 已可重用。D-BATCH-1 整體仍維持 `Partial`，只因 scheduled outbound external HTTP 尚缺直接 runtime confirmation。
