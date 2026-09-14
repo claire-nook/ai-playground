@@ -1,13 +1,21 @@
-// Playground batch/scheduling probe: process synthetic PENDING rows through
-// Supabase Native Data API calls and one minimal Open-Meteo request per row.
+// Playground batch/scheduling probe: process synthetic PENDING rows and call Open-Meteo.
 import { withSupabase } from "npm:@supabase/server";
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 const WORKER_ID = "test-cron-edge-worker";
 const PENDING_ROW_LIMIT = 3;
 
-type PendingRow = { t01: number; t02: number };
-type RowResult = { oid: number; status: "SUCCESS" | "FAILED"; reason?: string };
+type PendingRow = {
+  t01: number;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+type RowResult = {
+  oid: number;
+  status: "SUCCESS" | "FAILED";
+  reason?: string;
+};
 
 Deno.serve(
   withSupabase({ auth: "secret" })(async (request, { supabaseAdmin }) => {
@@ -19,12 +27,10 @@ Deno.serve(
       );
     }
 
-    // Secret-auth service calls must use the SDK-provided privileged client.
-    // supabaseAdmin uses the project secret key and bypasses RLS by design.
-    // This diagnostic cap isolates whether backlog size is causing the timeout.
+    // Read only the synthetic inputs needed by this scheduling probe.
     const { data, error } = await supabaseAdmin
       .from("test_b8c3q1")
-      .select("t01,t02")
+      .select("t01,latitude,longitude")
       .eq("t03", "PENDING")
       .order("t01", { ascending: true })
       .limit(PENDING_ROW_LIMIT);
@@ -58,21 +64,16 @@ async function processRow(
   row: PendingRow,
 ): Promise<RowResult> {
   try {
-    const { data: place, error } = await supabase
-      .from("place")
-      .select("oid,latitude,longitude")
-      .eq("oid", row.t02)
-      .maybeSingle();
-
-    if (error) throw new Error(`place_select_failed: ${error.message}`);
-    if (place?.latitude == null || place?.longitude == null) {
+    // Formal place lookup is intentionally deferred; synthetic coordinates
+    // isolate the scheduled outbound HTTP path for this experiment.
+    if (row.latitude == null || row.longitude == null) {
       return await markFailed(supabase, row.t01, "coordinates_unavailable");
     }
 
     const weatherUrl = new URL("https://api.open-meteo.com/v1/forecast");
     weatherUrl.search = new URLSearchParams({
-      latitude: String(place.latitude),
-      longitude: String(place.longitude),
+      latitude: String(row.latitude),
+      longitude: String(row.longitude),
       current: "temperature_2m",
       forecast_days: "1",
     }).toString();
@@ -98,8 +99,10 @@ async function processRow(
       .eq("t01", row.t01)
       .eq("t03", "PENDING");
 
-    if (updateError)
+    if (updateError) {
       throw new Error(`success_update_failed: ${updateError.message}`);
+    }
+
     return { oid: row.t01, status: "SUCCESS" };
   } catch (error) {
     const reason = error instanceof Error ? error.message : "unknown_row_error";
@@ -112,7 +115,7 @@ async function markFailed(
   oid: number,
   reason: string,
 ): Promise<RowResult> {
-  // Persist the row-level failure reason for direct observation in the test UI.
+  // Persist row-level failure reason for direct observation in the test UI.
   const { error } = await supabase
     .from("test_b8c3q1")
     .update({
