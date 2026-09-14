@@ -15,5 +15,5 @@
   "demoStatus": "live",
   "demoPath": "/cron-edge-observer/",
   "verificationStatus": "partial",
-  "flow": "Phase 1: Cron A → Database Function → PENDING; Cron B → Edge Function → Data API synthetic SELECT/UPDATE verified. Remaining: Cron-scheduled Edge Function → external API → synthetic update. Backend Service Access is tracked separately."
+  "flow": "Phase 1: Cron A → Database Function → test row creation verified; Cron B → Edge Function → synthetic Data API Read/Update verified. Remaining: Cron-scheduled Edge Function → external API → synthetic update. Backend Service Access is tracked separately."
 }
