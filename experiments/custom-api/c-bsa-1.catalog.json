@@ -1,6 +1,7 @@
 {
   "id": "C-BSA-1",
   "title": "Custom API / Backend Service Database Access",
+  "completedDate": "2026-09-14",
   "recordPath": "experiments/custom-api/README.md",
   "summary": "研究 Supabase Edge Function 作為 backend service 存取正式 PostgreSQL objects 時的 identity、table privilege、RLS、Native Data API CRUD、RPC / PostgreSQL Function 與 transaction boundary。此題由 D-BATCH-1 的 formal place permission failure 暴露，但屬 Custom API / Backend Service Access，不屬 Cron capability。",
   "tags": [
@@ -14,6 +15,6 @@
     "Transaction"
   ],
   "demoStatus": "none",
-  "verificationStatus": "planned",
+  "verificationStatus": "candidate",
   "flow": "Edge Function → service identity → Native Data API CRUD / RPC → formal-style secured PostgreSQL objects. Research includes least-privilege access, RLS vs table privilege, function execution/security context, and transaction semantics required by representative Nook Works workloads."
 }
