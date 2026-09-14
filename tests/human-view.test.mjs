@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
@@ -10,6 +10,10 @@ test("catalog carries validated Reader metadata and newest-first order", async (
   for (const entry of catalog) {
     assert.match(entry.completedDate, /^\d{4}-\d{2}-\d{2}$/);
     assert.match(entry.recordPath, /^experiments\/.+\.md$/);
+    assert.ok(
+      (await stat(new URL(`../${entry.recordPath}`, import.meta.url))).isFile(),
+      `${entry.id} recordPath must resolve to a canonical Markdown file`,
+    );
   }
   const expected = [...catalog].sort(
     (left, right) =>
