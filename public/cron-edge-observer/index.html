@@ -18,7 +18,7 @@
         background: #f4f7fb;
       }
       main {
-        width: min(100%, 1180px);
+        width: min(100%, 1280px);
         margin: auto;
       }
       .panel {
@@ -88,7 +88,7 @@
       }
       table {
         width: 100%;
-        min-width: 1080px;
+        min-width: 1260px;
         border-collapse: collapse;
       }
       th,
@@ -191,6 +191,8 @@
               <tr>
                 <th>OID</th>
                 <th>Place</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
                 <th>Status</th>
                 <th>Memo</th>
                 <th>Temperature</th>
@@ -202,7 +204,7 @@
             </thead>
             <tbody id="rows">
               <tr>
-                <td colspan="9">尚未讀取。</td>
+                <td colspan="11">尚未讀取。</td>
               </tr>
             </tbody>
           </table>
@@ -252,7 +254,7 @@
         if (!rows.length) {
           const row = rowsElement.insertRow();
           const cell = row.insertCell();
-          cell.colSpan = 9;
+          cell.colSpan = 11;
           cell.textContent = "目前沒有可見資料。";
         }
         for (const item of rows) {
@@ -260,6 +262,8 @@
           const values = [
             item.t01,
             placeByOid.get(item.t02) ?? `OID ${item.t02}`,
+            item.latitude ?? "—",
+            item.longitude ?? "—",
             item.t03,
             item.t09 ?? "—",
             item.t04 == null ? "—" : item.t04,
@@ -271,8 +275,8 @@
           values.forEach((value, index) => {
             const cell = row.insertCell();
             cell.textContent = String(value ?? "—");
-            if (index === 2) cell.className = `status ${item.t03}`;
-            if (index === 3) cell.classList.add("memo");
+            if (index === 4) cell.className = `status ${item.t03}`;
+            if (index === 5) cell.classList.add("memo");
           });
         }
         ["PENDING", "SUCCESS", "FAILED"].forEach((status) =>
@@ -294,7 +298,7 @@
         dataMessage.textContent = "Native Data API 讀取中…";
         const result = await supabase
           .from("test_b8c3q1")
-          .select("t01,t02,t03,t04,t05,t06,t07,t08,t09")
+          .select("t01,t02,t03,t04,t05,t06,t07,t08,t09,latitude,longitude")
           .order("t01", { ascending: false });
         if (result.error) {
           dataMessage.textContent = `Test row SELECT 失敗：${result.error.message}`;
