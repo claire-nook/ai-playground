@@ -41,9 +41,9 @@ Nook Technical Platform
 │  ├─ Custom API → Custom API                           [Verified C-EXT-1]
 │  └─ Custom API → External API                         [Verified C-EXT-1]
 │
-├─ Backend Service Access
+├─ Backend Service Access                               [Separate research question]
 │  ├─ service identity → synthetic table Read/Update    [Verified D-BATCH-1 P1]
-│  └─ service identity → normal secured table           [Phase 2-A]
+│  └─ service identity → normal secured table           [Candidate]
 │
 ├─ Remote Execution / Toolchain
 │  └─ GitHub Actions                                    [Verified]
@@ -52,9 +52,7 @@ Nook Technical Platform
    ├─ Cron → Database Function → synthetic INSERT       [Verified]
    ├─ Cron → pg_net → Edge Function                     [Verified]
    ├─ Edge → Data API synthetic SELECT / UPDATE         [Verified]
-   ├─ Edge → formal place                               [Blocked: table privilege]
-   ├─ Cron-scheduled Edge → External API                [Phase 2-B]
-   └─ minimal full-chain confirmation                   [Phase 2-C]
+   └─ Cron-scheduled Edge → External API                [Remaining evidence gate]
 ```
 
 ## Current Judgment
@@ -77,35 +75,53 @@ Cron → pg_net → Edge Function                                  Verified
 Edge Function → Native Data API Read/Update synthetic table     Verified
 ```
 
-Worker 對 formal `place` 的 SELECT 失敗已確認為 current service identity 缺少 table SELECT privilege。這不是 Cron limitation，也不是 Native Data API SELECT capability failure。
+可重用的實作方式與注意事項已獨立整理於：
 
-因 coordinates 未取得，D-BATCH-1 尚未進入 Cron-scheduled Open-Meteo call。C-EXT-1 只能證明一般 Edge Function outbound HTTP 可行，不能替 scheduled path 背書。
+`knowledge/implementation/supabase-cron.md`
 
-Row-level Memo 已在 Browser Observer 驗證，能直接顯示 item failure reason。
+因此未來正式開發不需要重新從「Cron 怎麼叫 Database Function / Edge Function、server-side auth 怎麼做、如何判讀 Scheduler / Invocation / Data State」開始考古。
 
-### Batch Phase 2
+目前 Batch track 尚缺最後一張直接 runtime Evidence：
 
-Phase 2 只補三個 evidence gate：
+```text
+Cron → Edge Function → outbound External API → synthetic update
+```
 
-1. **Backend Service Access**：正常 privilege + RLS table，Custom API 如何取得明確、least-privilege read access。優先用 synthetic / formal-equivalent object，不直接放寬 formal `place`。
-2. **Scheduled External HTTP**：以 synthetic coordinates 驗證 `Cron → Edge Function → Open-Meteo → synthetic result`。
-3. **Minimal Integration Confirmation**：前兩項分別通過後，確認 `Cron → Edge → authorized Data API read → external API → synthetic update` 能完整串接。
+C-EXT-1 已證明一般 Edge Function outbound HTTP 可行，但不能替 scheduled invocation path 自動背書。D-BATCH-1 下一步只需用 synthetic coordinates 隔離驗證這一段，不再把 formal `place` authorization 混進 Cron capability test。
 
-完成後即可關閉 D-BATCH-1 第一輪 feasibility research。Retry、locking、concurrency / idempotency、quota / cost、正式 batch log 與 scheduler source-of-truth policy，只有在它們開始影響真正架構決策時才另開代表性 Probe。
+### Backend Service Access — separate from Cron
 
-## Important Authorization Note
+D-BATCH-1 中 worker SELECT formal `place` 失敗，root cause 已確認為 current service identity 缺少 table SELECT privilege。這暴露出一個獨立而重要的架構問題：
 
-Frontend User Access 與 Backend Service Access 是不同責任：
+> 正式 backend service 應如何取得 application table 的明確、least-privilege access？
+
+這不是 Cron limitation，也不是完成 D-BATCH-1 的 prerequisite。它應作為 Backend Service Access 研究題另行處理，而不是讓 Cron Experiment 無限增生。
+
+Frontend User Access 與 Backend Service Access 應分開描述：
 
 - Browser / user path 可採 `authenticated + RLS / application access`。
-- Background worker 使用 service identity，不應假裝成某個 user，也不能假設 bypass RLS 等於自動擁有所有 table privileges。
+- Background worker 使用 service identity，不應假裝成 user，也不能假設 bypass RLS 等於自動擁有所有 table privileges。
 
-D-BATCH-1 的 `place` 失敗正好證明 PostgreSQL table privilege 與 RLS 是不同層。
+### Remaining Batch Evidence Gate
+
+D-BATCH-1 接下來只需補：
+
+```text
+Cron
+→ Edge Function
+→ synthetic latitude / longitude
+→ Open-Meteo
+→ synthetic Data API update
+```
+
+這是 Cron-scheduled runtime capability confirmation，不是新的 Batch architecture design。完成後即可關閉 D-BATCH-1 第一輪 feasibility research。
+
+Retry、locking、concurrency / idempotency、quota / cost、正式 batch log 與 scheduler source-of-truth policy，只有在它們開始影響真正架構決策時才另開代表性 Probe。
 
 ## Remaining Supabase-first Questions
 
-1. Backend Service Access pattern。
-2. Cron-scheduled outbound external HTTP。
+1. Backend Service Access pattern：獨立 research question，不阻擋 Cron 結案。
+2. Cron-scheduled outbound external HTTP：D-BATCH-1 remaining evidence gate。
 3. Explicit Business Authorization / Error Contract，在真實 API 需要區分 No Data / No Access / Validation / Conflict 等 semantics 時再研究。
 4. Pure Compute / Longer-running：保持 Deferred，直到有 representative workload。
 
