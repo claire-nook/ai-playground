@@ -1,87 +1,53 @@
 // Playground batch/scheduling probe: process synthetic PENDING rows through
 // Supabase Native Data API calls and one minimal Open-Meteo request per row.
-import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
+import { withSupabase } from "npm:@supabase/server";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 const WORKER_ID = "test-cron-edge-worker";
 
 type PendingRow = { t01: number; t02: number };
 type RowResult = { oid: number; status: "SUCCESS" | "FAILED"; reason?: string };
 
-Deno.serve(async (request: Request) => {
-  if (request.method !== "POST") {
-    return jsonResponse({ error: "method_not_allowed", allowed: "POST" }, 405, {
-      allow: "POST",
+Deno.serve(
+  withSupabase({ auth: "secret" })(async (request, { supabase }) => {
+    if (request.method !== "POST") {
+      return jsonResponse(
+        { error: "method_not_allowed", allowed: "POST" },
+        405,
+        { allow: "POST" },
+      );
+    }
+
+    // The SDK-provided privileged client uses the Supabase Native Data API. This
+    // worker intentionally avoids direct SQL, RPC, and database functions.
+    const { data, error } = await supabase
+      .from("test_b8c3q1")
+      .select("t01,t02")
+      .eq("t03", "PENDING")
+      .order("t01", { ascending: true });
+
+    if (error) {
+      return jsonResponse(
+        { error: "pending_select_failed", detail: error.message },
+        500,
+      );
+    }
+
+    const results: RowResult[] = [];
+    for (const row of (data ?? []) as PendingRow[]) {
+      results.push(await processRow(supabase, row));
+    }
+
+    return jsonResponse({
+      worker: WORKER_ID,
+      pending_count: data?.length ?? 0,
+      success_count: results.filter((result) => result.status === "SUCCESS")
+        .length,
+      failed_count: results.filter((result) => result.status === "FAILED").length,
+      results,
     });
-  }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const secretKey = Deno.env.get("PLAYGROUND_CRON_EDGE_WORKER_KEY");
-  if (!supabaseUrl || !secretKey) {
-    return jsonResponse(
-      {
-        error: "runtime_configuration_error",
-        message: "Required managed Supabase configuration is unavailable.",
-      },
-      500,
-    );
-  }
-
-  const apiKey = request.headers.get("apikey");
-  if (!apiKey) {
-    return jsonResponse(
-      {
-        error: "missing_api_key",
-        message: "apikey header is required.",
-      },
-      401,
-    );
-  }
-
-  // Gateway JWT verification is disabled for this function because Supabase Secret
-  // Keys are not JWTs. This check is therefore the worker's authorization boundary
-  // and must remain before createClient() and every Native Data API operation.
-  if (apiKey !== secretKey) {
-    return jsonResponse(
-      {
-        error: "forbidden",
-        message: "Server-side worker authorization is required.",
-      },
-      403,
-    );
-  }
-
-  // createClient.from() uses the Supabase Native Data API. This worker intentionally
-  // does not use direct SQL, RPC, or a database function for either table.
-  const supabase = createClient(supabaseUrl, secretKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data, error } = await supabase
-    .from("test_b8c3q1")
-    .select("t01,t02")
-    .eq("t03", "PENDING")
-    .order("t01", { ascending: true });
-
-  if (error) {
-    return jsonResponse(
-      { error: "pending_select_failed", detail: error.message },
-      500,
-    );
-  }
-
-  const results: RowResult[] = [];
-  for (const row of (data ?? []) as PendingRow[]) {
-    results.push(await processRow(supabase, row));
-  }
-
-  return jsonResponse({
-    worker: WORKER_ID,
-    pending_count: data?.length ?? 0,
-    success_count: results.filter((result) => result.status === "SUCCESS")
-      .length,
-    failed_count: results.filter((result) => result.status === "FAILED").length,
-    results,
-  });
-});
+  }),
+);
 
 async function processRow(
   supabase: SupabaseClient,
