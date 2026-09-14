@@ -26,6 +26,30 @@ Deno.serve(async (request: Request) => {
     );
   }
 
+  const authorization = request.headers.get("Authorization");
+  if (!authorization) {
+    return jsonResponse(
+      {
+        error: "missing_authorization",
+        message: "Authorization header is required.",
+      },
+      401,
+    );
+  }
+
+  // JWT verification alone would also admit ordinary authenticated-user tokens.
+  // This privileged batch route is restricted to the existing server credential
+  // that Cron B will retrieve and send without exposing it to the browser.
+  if (authorization !== `Bearer ${serviceRoleKey}`) {
+    return jsonResponse(
+      {
+        error: "forbidden",
+        message: "Server-side worker authorization is required.",
+      },
+      403,
+    );
+  }
+
   // createClient.from() uses the Supabase Native Data API. This worker intentionally
   // does not use direct SQL, RPC, or a database function for either table.
   const supabase = createClient(supabaseUrl, serviceRoleKey, {

@@ -8,10 +8,13 @@
 
 ## Invocation contract
 
-Send `POST` with a valid `Authorization: Bearer <JWT>` accepted by the deployed
-Supabase Edge Function. Keep the Supabase CLI default JWT verification enabled.
+Send `POST` with `Authorization: Bearer <server-role JWT>`. The function compares
+the bearer value with its Supabase-managed `SUPABASE_SERVICE_ROLE_KEY` before any
+database access, so an ordinary authenticated-user JWT cannot invoke this
+privileged batch worker. Keep the Supabase CLI default JWT verification enabled.
 The future Cron B caller and its token storage/configuration are intentionally not
-implemented here.
+implemented here; never place this server credential in the Observer or another
+browser artifact.
 
 The worker reads its project URL and server credential from Supabase-managed
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables. It uses
