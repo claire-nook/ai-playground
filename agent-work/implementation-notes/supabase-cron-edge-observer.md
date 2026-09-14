@@ -9,7 +9,7 @@
 ## Invocation contract
 
 Send `POST` with `apikey: <server-side Supabase Secret Key>`. The function compares
-the header value with the Edge Function runtime secret `SB_SECRET_KEY` before it
+the header value with the Edge Function runtime secret `PLAYGROUND_CRON_EDGE_WORKER_KEY` before it
 creates a Supabase client or performs any database access. An ordinary
 authenticated-user JWT is not an authorization substitute for this privileged
 batch worker. The future Cron B caller and its token storage/configuration are
@@ -17,8 +17,8 @@ intentionally not implemented here; never place the Secret Key in the Observer,
 another browser artifact, logs, responses, or repository content.
 
 The worker reads its project URL from the managed `SUPABASE_URL` environment
-variable and its Secret Key exclusively from `SB_SECRET_KEY`. Configure
-`SB_SECRET_KEY` as an Edge Function runtime secret before deployment; creating or
+variable and its Secret Key exclusively from `PLAYGROUND_CRON_EDGE_WORKER_KEY`. Configure
+`PLAYGROUND_CRON_EDGE_WORKER_KEY` as an Edge Function runtime secret before deployment; creating or
 transferring the Secret Key is outside this work order. It uses
 `supabase-js` `.from(...)` calls for every `test_b8c3q1` and `place` SELECT/UPDATE;
 it contains no SQL connection, `.rpc(...)`, or database function call.

@@ -1,7 +1,7 @@
 name: Deploy Test Cron Edge Worker
 
 # Human gate: Claire explicitly starts this experiment deployment after the
-# SB_SECRET_KEY runtime secret has been configured on the Supabase project.
+# PLAYGROUND_CRON_EDGE_WORKER_KEY runtime secret has been configured on the Supabase project.
 on:
   workflow_dispatch:
 
