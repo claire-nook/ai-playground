@@ -7,19 +7,11 @@
 
 ## Research Intent
 
-沿著 Nook Works 真正需要的 Platform Responsibility 取得實作 Evidence，而不是做 Supabase / Netlify 功能清單競賽。
+沿著 Nook Works 真正需要的 Platform Responsibility 取得實作 Evidence，而不是做 Provider 功能清單競賽。
 
 ```text
 Responsibility → credible candidate → minimal experiment → evidence → later decision
 ```
-
-## Human View Evolution Trigger
-
-目前 Playground Human View 的 `Knowledge Map` Tab 直接讀取這一份 canonical map。這是因為 `knowledge/maps/` 現階段只有一份獨立 Map，因此刻意接受單一文件入口，而不是預先建立沒有實際需求的 selector / index。
-
-> **Evolution Trigger：當 `knowledge/maps/` 出現第二份獨立 Map 時，必須重新評估 Human View 的 Map discovery / selection 機制。不得只在 `public/index.html` 再 hardcode 第二個 Markdown path。**
-
-屆時應先依實際 Map 數量、metadata 與 navigation need 討論是否採用類似 Experiment Catalog 的 metadata-driven index、既有 Knowledge 結構可推導的 discovery，或其他更合適的 lightweight mechanism。不要在第二張 Map 尚未存在時，先替未出生的小孩買五年份的鞋。
 
 ## Current Research Graph
 
@@ -31,7 +23,7 @@ Nook Technical Platform
 │  ├─ Native Table CRUD                                 [Verified B]
 │  ├─ Native View Read Model                            [Verified B-1]
 │  └─ Custom API Invocation
-│     ├─ Netlify Browser → Supabase Edge Function CORS  [Verified C-DB-1]
+│     ├─ Browser → Edge Function / CORS                  [Verified C-DB-1]
 │     ├─ Auth JWT propagation                           [Verified C-DB-1]
 │     └─ authenticated Weather Orchestration             [Verified C-EXT-1]
 │
@@ -40,115 +32,83 @@ Nook Technical Platform
 │  │  ├─ Deployment Lifecycle                           [Verified C-0]
 │  │  ├─ Database-centric workload                      [Verified C-DB-1]
 │  │  └─ API composition / External API orchestration   [Verified C-EXT-1]
-│  └─ Netlify Functions Deployment Lifecycle            [Verified C-NF-0]
+│  └─ Netlify Functions                                 [Verified lifecycle C-NF-0]
 │
 ├─ Application Operation Mechanism
-│  ├─ Native Data API                                   [Verified baseline B/B-1]
+│  ├─ Native Data API                                   [Verified B/B-1]
 │  ├─ Custom API → Native Data API SELECT               [Verified C-DB-1]
 │  ├─ Custom API → RPC → PostgreSQL Function            [Verified C-DB-1]
 │  ├─ Custom API → Custom API                           [Verified C-EXT-1]
 │  └─ Custom API → External API                         [Verified C-EXT-1]
 │
-├─ Custom API Workload Coverage
-│  ├─ Database-centric / application processing         [Verified C-DB-1]
-│  ├─ External API orchestration                        [Verified C-EXT-1]
-│  ├─ Pure Compute / longer-running                     [Deferred]
-│  └─ Explicit business authorization / error contract  [Candidate]
+├─ Backend Service Access
+│  ├─ service identity → synthetic table Read/Update    [Verified D-BATCH-1 P1]
+│  └─ service identity → normal secured table           [Phase 2-A]
 │
 ├─ Remote Execution / Toolchain
 │  └─ GitHub Actions                                    [Verified]
 │
 └─ Batch Runtime / Scheduling                           [Partial D-BATCH-1]
-   ├─ Cron → Database Function → test-table INSERT      [Verified tested path]
-   └─ Cron → Edge Function → Data API / provider        [Partial; runtime pending]
+   ├─ Cron → Database Function → synthetic INSERT       [Verified]
+   ├─ Cron → pg_net → Edge Function                     [Verified]
+   ├─ Edge → Data API synthetic SELECT / UPDATE         [Verified]
+   ├─ Edge → formal place                               [Blocked: table privilege]
+   ├─ Cron-scheduled Edge → External API                [Phase 2-B]
+   └─ minimal full-chain confirmation                   [Phase 2-C]
 ```
 
 ## Current Judgment
 
 ### Browser / Backend baseline
 
-Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation，以及 Custom API orchestration。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 現在已有多條實際跑通的 runtime chain。
+Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation，以及 Custom API orchestration。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 已有多條 runtime chain 支持。
 
 ### Supabase Custom API workload coverage
 
-C-DB-1 已驗證 Database-centric path：
+C-DB-1 已驗證 Database-centric path；C-EXT-1 已驗證 API composition 與 Edge Function outbound HTTP → Open-Meteo。Supabase Edge Functions 因此仍是 Nook Works Primary Custom API Runtime Candidate。這是 Research Judgment，不是 Production Architecture Decision。
+
+### Batch Runtime / Scheduling — Phase 1 complete
+
+D-BATCH-1 Phase 1 已確認：
 
 ```text
-Browser → JWT → Edge Function → RPC / PostgreSQL Function
-        → Native Data API SELECT → mapping → Browser
+Cron → PostgreSQL Database Function → synthetic PENDING row     Verified
+Cron → pg_net → Edge Function                                  Verified
+Edge Function → Native Data API Read/Update synthetic table     Verified
 ```
 
-C-EXT-1 再驗證 orchestration path：
+Worker 對 formal `place` 的 SELECT 失敗已確認為 current service identity 缺少 table SELECT privilege。這不是 Cron limitation，也不是 Native Data API SELECT capability failure。
 
-```text
-Browser → JWT → Weather Edge Function
-        → same caller Authorization → Valid Place Edge Function
-        → PostgreSQL / RLS
-        → Open-Meteo
-        → normalization → Browser
-```
+因 coordinates 未取得，D-BATCH-1 尚未進入 Cron-scheduled Open-Meteo call。C-EXT-1 只能證明一般 Edge Function outbound HTTP 可行，不能替 scheduled path 背書。
 
-具有效 Application Access 的 Claire 測試帳號取得 2 places / 2 provider success；TU01 / TU02 均 Authentication Success 但 0 visible places / 0 provider calls。這支持 caller identity / RLS visibility behavior 在 tested API composition 中仍被保留。
+Row-level Memo 已在 Browser Observer 驗證，能直接顯示 item failure reason。
 
-因此 Supabase Edge Functions 作為 **Nook Works Primary Custom API Runtime Candidate** 的可信度再次提高。原因不是 provider feature checklist，而是 Auth、JWT、API composition、RPC、Native Data API、PostgreSQL/RLS 與 External API 能形成連續 backend responsibility boundary。
+### Batch Phase 2
 
-這仍是 Research Judgment，不是 Production Architecture Decision。
+Phase 2 只補三個 evidence gate：
 
-### Time semantics learned from real orchestration
+1. **Backend Service Access**：正常 privilege + RLS table，Custom API 如何取得明確、least-privilege read access。優先用 synthetic / formal-equivalent object，不直接放寬 formal `place`。
+2. **Scheduled External HTTP**：以 synthetic coordinates 驗證 `Cron → Edge Function → Open-Meteo → synthetic result`。
+3. **Minimal Integration Confirmation**：前兩項分別通過後，確認 `Cron → Edge → authorized Data API read → external API → synthetic update` 能完整串接。
 
-同一個 Weather orchestration request 中，Sapporo 與 Sydney 因各自 timezone 得到不同 calendar `weather_date`。未來 Nook Works 的 D-1 Daily Weather 應明確定義：
+完成後即可關閉 D-BATCH-1 第一輪 feasibility research。Retry、locking、concurrency / idempotency、quota / cost、正式 batch log 與 scheduler source-of-truth policy，只有在它們開始影響真正架構決策時才另開代表性 Probe。
 
-> D-1 = each Place timezone based previous local calendar date.
+## Important Authorization Note
 
-不要把「昨天」當成全球共享的自然常數。時區早就證明人類連現在幾點都無法取得共識。
+Frontend User Access 與 Backend Service Access 是不同責任：
 
-### Netlify Functions placement
+- Browser / user path 可採 `authenticated + RLS / application access`。
+- Background worker 使用 service identity，不應假裝成某個 user，也不能假設 bypass RLS 等於自動擁有所有 table privileges。
 
-C-NF-0 已驗證 Netlify Functions 的 Git-native lifecycle、Deploy Preview、Function logs 與 source delete → function absent。它仍是 credible runtime，但目前較自然的候選 placement 是 standalone repo、小工具或 frontend-adjacent responsibility；不需要為了 provider 對稱而把 Nook Core API 任意分散成雙 runtime。
-
-### Batch Runtime / Scheduling
-
-D-BATCH-1 已驗證 Cron A 的受測 producer path：
-
-```text
-Supabase Cron → PostgreSQL Database Function → PENDING synthetic row
-```
-
-Consumer 端已有 `test-cron-edge-worker`、server-side authorization contract、Native Data API processing source，以及 authenticated read-only Browser Observer。這些 artifacts 使下一次 runtime observation 有明確路徑，但不等於完整 Cron B chain 已跑通。
-
-```text
-Cron B → scheduled Edge Function → Native Data API / Open-Meteo
-       → SUCCESS / FAILED state transition              [runtime pending]
-```
-
-因此 Batch track 目前為 `Partial`，只有 Cron A tested path 可標示 `Verified`。尚待觀察 Cron B scheduled invocation 與結果 row transition，並研究 retry、concurrency / idempotency、quota / cost、log correlation，以及 Dashboard-vs-Git configuration source-of-truth policy。
-
-## Important Behavior / Design Note
-
-RLS 可以是最後的 Data Security Boundary，但不是完整 Business Authorization Contract。
-
-C-DB-1 與 C-EXT-1 的 TU01 / TU02 都呈現 Authentication Success + HTTP 200 + empty data，因此 API 若需要區分 `No Data` 與 `No Application Access`，必須額外設計 explicit authorization / business semantics。
+D-BATCH-1 的 `place` 失敗正好證明 PostgreSQL table privilege 與 RLS 是不同層。
 
 ## Remaining Supabase-first Questions
 
-External API Orchestration 已從 Candidate 升為 Verified；Batch / Scheduling 已形成 Partial Evidence。目前仍值得保持 active 的問題：
-
-1. **Business Contract / Authorization**：需要時研究 explicit 403、validation、transaction / error propagation。
-2. **Observability / Operations**：在更接近真實 workload 時觀察 logs、failure diagnosis 與 deployment traceability。
-3. **External Provider Secrets / Failure Policy**：只有當 API credential、retry / rate limit / timeout semantics 真正影響架構決策時再補 Probe。
-4. **Batch Runtime Confirmation**：觀察 Cron B scheduled Edge Function invocation 與 test-row state transition，再評估 retry、concurrency、quota / cost 與 configuration source of truth。
-
-### Deferred — Pure Compute / Longer-running
-
-Pure Compute / Longer-running 目前不是下一階段 priority。尚未出現足以代表 Nook Works 的 longer-running / compute-heavy workload；若只為測 provider limit 而刻意製造 sleep / compute Probe，所得 Evidence 對實際 Architecture placement 幫助有限，因此本題明確維持 `Deferred`。
-
-**Evolution Trigger：**只有在以下任一條件成立時，才把此題重新拉回 active research 並設計 representative Probe：
-
-1. Nook Works 出現實際、具代表性的 longer-running / compute-heavy use case；或
-2. Provider runtime limits 開始影響真實設計。
-
-只有 Supabase 出現實質限制，或 workload 本身屬於獨立 project boundary，才需要拉 Netlify Functions 或其他 runtime 做進一步 placement comparison。
+1. Backend Service Access pattern。
+2. Cron-scheduled outbound external HTTP。
+3. Explicit Business Authorization / Error Contract，在真實 API 需要區分 No Data / No Access / Validation / Conflict 等 semantics 時再研究。
+4. Pure Compute / Longer-running：保持 Deferred，直到有 representative workload。
 
 ## Decision Boundary
 
-`Verified` 表示「真的做過且留下 Evidence」，不是「後世不得質疑」。正式 Technical Decision 仍應回到 Nook Works formal repository，結合 Specification、Security、Operations、Provider capability、Cost 與 Playground Evidence 再形成 Platform Rule。
+`Verified` 表示「真的做過且留下 Evidence」，不是 Production Architecture Rule。正式 Technical Decision 仍應回到 Nook Works formal repository，結合 Specification、Security、Operations、Provider capability、Cost 與 Playground Evidence 再形成。
