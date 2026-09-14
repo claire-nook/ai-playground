@@ -34,117 +34,121 @@ Short-term 只保存「現在正在做什麼」；Research Context 與 Evidence 
 - GitHub Actions Remote Execution Environment：`Verified`
 - Experiment C-0 — Supabase Edge Function Deployment Lifecycle：`Verified`
 - Experiment C-NF-0 — Netlify Functions Deployment Lifecycle：`Verified`
+- Experiment C-DB-1 — Database-centric Custom API：`Verified`
+- Experiment C-EXT-1 — External API Orchestration：`Verified`
 - Netlify Git Deployment Boundary：`Verified`
 - Netlify Git Trigger Boundary：`Verified`
 
-Netlify Publish Boundary 已於 2026-09-13 驗證：`public/` 是 Static Public Artifact boundary，Browser Artifact 已與 `experiments/**/README.md` Experiment Record 分離。完整記錄：`experiments/netlify-deployment-boundary/README.md`。
+Netlify Publish Boundary 已驗證：`public/` 是 Static Public Artifact boundary，Browser Artifact 已與 `experiments/**/README.md` Experiment Record 分離。完整記錄：`experiments/netlify-deployment-boundary/README.md`。
 
 跨 Provider 的 Boundary Pitfall 已另外整理於：`evidence/provider-boundary-pitfalls.md`。
 
 這些 Completed items 的完整脈絡、Evidence、Constraint 與 Current Judgment 請回到 Knowledge Base / Experiment Record 閱讀，不在 Short-term 重複維護。
 
-## Current — Custom API Runtime Feasibility｜Supabase-first
+## Current Judgment — Custom API Runtime Feasibility｜Supabase-first 已具可信度
 
-### Current Architectural Intent
+### Claire-readable summary
 
-目前的初步意向不是把 Nook Works 的 Custom API 依單支 workload 分散到不同 Provider，也不是繼續做 Supabase Edge Functions 與 Netlify Functions 的逐項效能競賽。
+> **目前 Nook Works 可合理預期的普通 Custom API workload，Supabase Edge Functions 已經具備足夠高的可信度作為 Primary Custom API Runtime Candidate。現階段沒有必要為了把研究清單全部打勾，刻意製造一支不存在真實需求的「長工作 API」。**
 
-Nook Works 應優先維持清楚的 API ownership boundary，避免同一主系統在沒有充分理由時形成大量 API 分散於 Supabase / Netlify 的雙 runtime 結構。
+目前已實際驗證：
 
-基於目前已知 dependency：Database、Supabase Auth、PostgreSQL Function / RPC、Application Access Boundary 多數集中於 Supabase，因此 **Supabase Edge Functions 是目前 Nook Works Primary Custom API Runtime Candidate**。
+- Database-centric / Application-side Processing：`Verified C-DB-1`
+- PostgreSQL Function / RPC orchestration path：`Verified C-DB-1`
+- Browser → JWT → Custom API → DB / RLS：`Verified C-DB-1`
+- Custom API → Custom API composition：`Verified C-EXT-1`
+- External API Orchestration / normalization：`Verified C-EXT-1`
 
-這仍是 Research Intent，不是 Production Architecture Decision。
+基於目前已知 dependency：Database、Supabase Auth、PostgreSQL Function / RPC、Application Access Boundary 多數集中於 Supabase，因此 **Supabase Edge Functions 仍是目前 Nook Works Primary Custom API Runtime Candidate**。
 
-Netlify Functions 保留為 credible secondary candidate，較可能適用於 standalone repo、獨立小工具、frontend-adjacent API，或 Supabase runtime 被實驗證明存在實質限制的 workload。
+這是 Research Judgment，不是 Production Architecture Decision。Netlify Functions 仍保留為 credible secondary candidate，較可能適用於 standalone repo、獨立小工具、frontend-adjacent API，或 Supabase runtime 被實驗證明存在實質限制的 workload。
+
+### Deferred — Pure Compute / Longer-running Processing
+
+較耗運算或執行時間較長的 API workload 尚未驗證，可能涉及 duration、CPU / memory、timeout、concurrency、free-tier / cost model 等限制。
+
+目前暫緩原因不是「不重要」，而是 **尚未出現足夠真實的 Nook Works workload 可以代表這類 responsibility**。若只為測試而刻意製造長時間 sleep / compute Probe，得到的 Evidence 對實際 Architecture placement 幫助有限。
+
+Evolution Trigger：當 Nook Works 出現實際的 longer-running / compute-heavy use case，或 provider runtime limit 開始影響真實設計時，再把此題拉回 Current 並設計 representative Probe。
+
+## Current — Batch Runtime / Scheduling｜先研究 Supabase 排程能力
+
+### Claire-readable summary
+
+> **下一個研究問題改成：既然目前 Nook Works 的 API / Database / Auth responsibility 都高度集中在 Supabase，那麼定時批次工作能不能也先由 Supabase 提供的 scheduling mechanism 承擔？如果實驗結果不理想，再研究 Netlify 或其他 runtime。**
+
+這一階段先做 **Provider capability research → 選擇最符合 Nook Works 使用方式的最小實驗**，不是把所有排程機制一個個測完。
 
 ### Current Research Question
 
-> **Claire-readable summary：我們現在要確認的是，未來 Nook Works 常見的 Custom API 工作，是否大多可以安心交給 Supabase Edge Functions；如果 Supabase 確實遇到限制，再研究哪些工作需要改放其他 Runtime。**
+> Nook Works 常見的 scheduled / batch responsibility，是否可以用 Supabase-managed scheduling path，以 iPad-first、Git-traceable、可觀察且維護成本合理的方式實作？
 
-精確 Research Question：
+優先研究 Supabase 的原因：
 
-> Nook Works 可合理預期會出現的 Custom API workload，是否都能在 Supabase Edge Functions 上以可接受的 runtime、integration、operability 與 free-tier / cost constraint 實作？
+- Custom API Primary Candidate 已偏向 Supabase Edge Functions。
+- Database / Auth / RPC / RLS 等 backend gravity 已在 Supabase。
+- 如果 Batch 只是定時觸發既有 Edge Function / Database operation，優先保持 responsibility boundary 集中，比無理由拆到另一個 Provider 更自然。
 
-研究重點因此由「兩個平台哪一個跑得比較好」調整為：
+### Research Scope
 
-> **先驗證 Supabase 是否足以承擔 Nook Works 的主要 Custom API responsibility；只有遇到具體限制時，才需要進一步評估其他 runtime placement。**
+先確認 Supabase 目前提供哪些與 scheduling / batch 相關的 mechanism，以及它們各自的適用 boundary，例如：
 
-### Representative API Workloads to Probe
+- 定時觸發 Edge Function
+- Database-side scheduling / cron 類能力
+- Scheduled task 的 source / configuration 是否可被 Git / migration / repository 管理
+- Secret / Auth / permission handling
+- Retry / failure behavior
+- Logs / observability
+- Free-tier / quota / cost boundary
+- iPad-first 情境下是否能部署、修改、停用與檢查
 
-後續 Experiment 應挑選能代表真實 Nook Works responsibility 的最小 Probe，而不是繼續增加 Hello World：
+研究目的不是先選「功能最多」的方式，而是找出 **Nook Works 實際可維護的 default batch pattern**。
 
-1. **Database-centric / Application-side Processing｜需要讀資料庫並在 API 端繼續加工資料**
-   - API 需要讀取 Database。
-   - 資料無法只靠 View 或 Stored Procedure 完成最終結果。
-   - API 需要進一步做較複雜的 application-side aggregation / transformation / calculation。
+### Secondary Candidates
 
-2. **Stored Procedure / RPC Orchestration｜API 呼叫資料庫程序後，再繼續執行後續邏輯**
-   - API 呼叫 PostgreSQL Function / RPC / Stored Procedure 執行資料處理。
-   - Procedure 回傳結果後，API 繼續執行後續 application logic。
-   - 應觀察 DB boundary、error propagation、transaction boundary 與後續處理責任。
-
-3. **External API Orchestration｜API 整合外部服務並整理結果**
-   - API 呼叫一個或多個 external API。
-   - 可能包含 normalize、aggregate、timeout、retry、secret management 或 response shaping。
-   - 用來驗證 Supabase Edge Functions 是否適合作為 Nook Works 對外服務整合 runtime。
-
-4. **Pure Compute / Longer-running Processing｜測試較耗運算或執行時間較長的 API 工作**
-   - 不依賴 Database，主要是 application code 運算。
-   - 逐步增加 execution duration / workload，觀察 runtime duration、CPU / memory、timeout 與 free-tier / cost model 是否形成限制。
-
-必要時可以設計組合型 Probe，例如：
-
-`API → RPC / Stored Procedure → API processing → external API → final response`
-
-但每個 Experiment 必須仍能回答明確問題，避免把所有 failure surface 塞進一隻 API 後再集體猜兇手。
-
-### Evaluation Focus
-
-這一階段主要收集：
-
-- Database / RPC integration practicality
-- Supabase Auth / JWT / Application Authorization integration
-- external outbound API capability
-- execution duration / timeout
-- CPU / memory / concurrency constraints
-- secret management
-- error / failure propagation
-- logs / observability
-- deployment / source traceability
-- free-tier 與後續 cost constraint
-
-不要求每個 Probe 都與 Netlify 做 sibling benchmark。只有當 Supabase 在某一 responsibility 出現可疑或不可接受限制，或 workload 本身屬於另一個 standalone project boundary，才需要拉 Netlify Functions 或其他 runtime 進場比較。
-
-## Candidate — Custom API Application Integration｜讓 Nook Works Browser 正式接上 Custom API
-
-C-0 與 C-NF-0 已驗證 Deployment Lifecycle，但尚未代表 Nook Works Browser Application 已完成正式 Custom API integration。
-
-後續可依實際 Probe 需要逐步納入：
-
-- Browser → Custom API `fetch()` / cross-origin / CORS
-- Supabase Auth JWT propagation
-- Application Authorization
-- Database access / caller-scoped security semantics
-- Business validation / transaction / error contract
-
-這些 responsibility 不需要一次全部綁在第一隻 API 上。Research Question 要能活著走出 Experiment，比展示一隻什麼都會的怪獸 API 重要。
-
-## Candidate — PostgreSQL RPC｜研究哪些 Application Operation 適合由資料庫 Function 提供明確 Contract
-
-Experiment D 的原始目的仍成立：驗證 PostgreSQL Function + RPC 是否能在某些 Application Operation responsibility 下提供比 Native CRUD 更明確的 contract，並與 Custom API / Native Data API 形成 mechanism comparison Evidence。
-
-RPC 同時也是後續 `Stored Procedure / RPC Orchestration` Custom API Probe 的重要 dependency baseline。
-
-Status：`Candidate`。尚未開始 Experiment。
-
-## Open — Batch Runtime / Scheduling｜未來批次工作應該在哪裡執行與排程
-
-Batch Runtime 已被辨識為未來 Nook Technical Platform 的 Responsibility，但目前不急著宣布 Provider winner。
-
-Research Map 暫列：
+只有當 Supabase-managed path 出現具體限制、維護成本不合理，或某個 batch responsibility 本身屬於不同 project boundary，再研究：
 
 - GitHub Actions Schedule
-- Supabase-managed path
-- Netlify-managed path
+- Netlify-managed scheduling / runtime
+- 其他適合的 Provider path
 
-等 Batch Platform Question 真正進入研究前緣，再設計最小 Experiment Scope。
+Netlify 近期也持續擴張 backend capability；可保留為後備研究方向，但現階段不因 Provider 新功能就主動把 Nook Works backend responsibility 拆散。免費仔可以有逃生門，不必把家蓋成迷宮。
+
+## Next Major Track — Application UI Maintenance Pattern｜單檔 / 主從 / 多檔維護介面一致性
+
+Batch / Scheduling 完成第一輪研究後，下一條值得進入 Playground 的 major track 是 Nook Works 的 Application UI Pattern。
+
+這不是單純做畫面美化，而是建立一致的 maintenance interaction contract，避免未來出現：A 功能的新增在左邊、B 功能在右邊；這裡叫「取消」、那裡叫「放棄」；同一件事有時叫「存檔」、有時叫「儲存」這類長期維護污染。
+
+預期研究方向包含：
+
+- 單檔維護畫面
+- 主從雙檔 / 多檔維護畫面
+- 新增 / 編輯 / 刪除 / 儲存 / 取消的 naming 與 placement
+- Search / List / Detail / Edit state transition
+- Validation / error presentation
+- Toolbar / action hierarchy
+- iPad-first 操作與 responsive behavior
+
+UI Pattern 預期需要多個 Prototype / Browser Artifact 做比較，不急著在 Batch 研究尚未展開時同時開工。先讓一條研究線活著走完，人類已經很會同時開十個分頁，不需要 Repository 也學。
+
+## Candidate — Explicit Business Contract / Authorization
+
+C-DB-1 與 C-EXT-1 已驗證 caller identity / RLS visibility，但 TU01 / TU02 仍可出現 Authentication Success + HTTP 200 + empty data。
+
+若未來 API 需要明確區分：
+
+- No Data
+- No Application Access
+- Validation Error
+- Conflict
+- Not Found
+- Transaction / downstream failure
+
+再設計 explicit Business Authorization / Error Contract Probe。這題目前保留 Candidate，不阻擋 Batch / Scheduling 研究。
+
+## Candidate — PostgreSQL RPC｜Application Operation Contract
+
+PostgreSQL Function + RPC 已在 C-DB-1 中成為可用 mechanism，但「哪些 Application Operation 應優先由 Database Function 提供明確 Contract」仍是另一層 Pattern 問題。
+
+等正式 Nook Works operation 出現足夠代表性的 use case，再比較 Native CRUD、RPC 與 Custom API 的責任分工；目前不為了完成舊清單另開抽象 Experiment。
