@@ -10,36 +10,56 @@
 
 ### D-BATCH-1 — Supabase Batch Runtime / Scheduling
 
-- Status: `Partial`（Phase 1 completed; Phase 2 planned）
+- Status: `Partial`（scheduled runtime chain verified; parameterized invocation remains）
 - Record: [`../experiments/batch-scheduling/README.md`](../experiments/batch-scheduling/README.md)
 - Phase Evidence: [`../evidence/d-batch-1-phase-1.md`](../evidence/d-batch-1-phase-1.md)
 - Live Demo: [`/cron-edge-observer/`](/cron-edge-observer/)
 - Primary Intent: `Nook Technical Platform / Batch Runtime / Scheduling Feasibility`
-- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `observability`, `authorization`
+- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `external-api`, `parameterized-invocation`, `observability`
 
 **Why it existed**
 
-Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility，而不是先把 workload 拆到另一個 Provider。
+Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility。
 
-**What Phase 1 unlocked**
-
-以下受測 path 已 runtime verified：
+**What is verified**
 
 ```text
-Cron → PostgreSQL Database Function → synthetic PENDING row
+Cron → PostgreSQL Database Function → synthetic row
 Cron → pg_net → Edge Function
 Edge Function → Native Data API SELECT / UPDATE on authorized synthetic table
+Cron-scheduled Edge Function → Open-Meteo → synthetic SUCCESS + temperature
 ```
 
-Worker 對 formal `place` 的 SELECT 失敗已確認為 current `service_role` 缺少 table SELECT privilege，不是 Cron limitation，也不是 Native Data API capability failure。因 coordinates 未取得，D-BATCH-1 的 Cron-scheduled Open-Meteo path 尚未進入。
+Formal `place` SELECT 曾因 current `service_role` 缺少 table SELECT privilege 而失敗。這不是 Cron limitation；該問題已抽離為 C-BSA-1。
 
-Row-level Memo (`t09`) 與 authenticated Observer 已驗證能直接呈現 failure reason。
+**Remaining gate**
 
-**Phase 2**
+由 Nook Works Daily Weather Batch Specification 暴露出的最後 Cron capability：parameterized invocation。
 
-1. Backend Service Access：研究正常採 privilege + RLS 的 table，如何讓 server-side Custom API 以明確、least-privilege 的方式讀取；不直接放寬 formal `place` 當實驗捷徑。
-2. Cron-scheduled External API：以 synthetic coordinates 移除 `place` dependency，驗證 Cron 啟動的 Edge Function outbound HTTP → Open-Meteo。
-3. 兩項各自通過後，只做一次最小 integration confirmation：`Cron → Edge → authorized Data API read → external API → synthetic update`。
+需驗證固定參數與 execution-time 動態參數，例如 `executor_oid = -1`、固定 `process_mode`、`query_date = current_date - 1` 能在 Cron 執行時正確組入 Edge Function request body，並由 runtime evidence 證明接收值正確。
+
+複雜參數若需要 DB query / business rules / orchestration，預期由 Launcher / Preparation API 準備後再呼叫 Main Batch API，不把複雜 business logic 放進 Cron。
+
+### C-BSA-1 — Custom API / Backend Service Database Access
+
+- Status: `Planned`
+- Card: [`../experiments/custom-api/c-bsa-1.catalog.json`](../experiments/custom-api/c-bsa-1.catalog.json)
+- Record family: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
+- Primary Intent: `Nook Technical Platform / Backend Service Access / Database Authorization & Transaction`
+- Tags: `nook-platform`, `custom-api`, `backend-service`, `data-api`, `rpc`, `postgresql`, `authorization`, `transaction`
+
+**Why it exists**
+
+D-BATCH-1 已證明 service-authenticated Edge Function 可讀寫有權限的 synthetic table，但 formal `place` read 暴露了 service identity、table privilege 與 RLS 是不同層次。下一步需要獨立回答「Custom API 作為 backend service，如何正確存取正式 DB objects」，而不是繼續讓 Cron Experiment 背這個問題。
+
+**Planned scope**
+
+- Native Data API CRUD on formal-style secured table。
+- service identity / table privilege / RLS boundary。
+- RPC / PostgreSQL Function `EXECUTE` 與 security context。
+- representative atomic operation / transaction boundary。
+
+Nook Works Daily Weather Batch 的 `Delete + Insert same transaction / failure rollback` 提供了真實 transaction use case，因此此題有正式需求來源，不是為了把 PostgreSQL 功能表全部點亮。
 
 ## 2026-09-13
 
@@ -50,13 +70,7 @@ Row-level Memo (`t09`) 與 authenticated Observer 已驗證能直接呈現 failu
 - Primary Intent: `Nook Technical Platform / External API Orchestration Feasibility`
 - Tags: `nook-platform`, `custom-api`, `supabase`, `api-composition`, `external-api`, `open-meteo`, `jwt`, `rls`, `netlify`, `github-actions`
 
-**Why it existed**
-
-C-DB-1 已證明 Database-centric API，但 Nook Works 也常見「Custom API call Custom API，再接 External API」的 orchestration。這次刻意讓 Weather API 不直接碰 DB，而是沿用 Valid Place API 的 responsibility boundary。
-
-**What it unlocked**
-
-`Netlify Browser → Weather Edge Function → same caller JWT → Valid Place Edge Function → RLS-filtered places → Open-Meteo → normalization → Browser` 已 runtime verified。有效 Application Access identity 得到 2 places / 2 weather success；TU01 / TU02 均得到 0 places / 0 provider calls。另觀察到 D-1 必須以各 Place local timezone 定義。
+`Netlify Browser → Weather Edge Function → same caller JWT → Valid Place Edge Function → RLS-filtered places → Open-Meteo → normalization → Browser` 已 runtime verified。
 
 ### C-DB-1 — Database-centric Supabase Custom API
 
@@ -65,13 +79,7 @@ C-DB-1 已證明 Database-centric API，但 Nook Works 也常見「Custom API ca
 - Primary Intent: `Nook Technical Platform / Custom API Runtime Feasibility`
 - Tags: `nook-platform`, `custom-api`, `supabase`, `rpc`, `data-api`, `rls`, `cors`, `browser`, `netlify`
 
-**Why it existed**
-
-C-0 只證明 Edge Function 能部署，不代表它能承擔 Nook Works 真正的 Database-centric API。這次刻意讓一支 API 同時走過 JWT、RPC、RLS、Native Data API 與 application-side mapping。
-
-**What it unlocked**
-
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。具有效 Application Access 的 Claire 測試帳號得到 2 筆結果；TU01 / TU02 均得到 HTTP 200 + empty rows，支持 caller-scoped RLS behavior，也再次證明 row visibility 不等於完整 Business Authorization semantics。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。此 Probe 驗證 caller-scoped user path，不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者由 C-BSA-1 接手。
 
 ### C-NF-0 — Netlify Functions Deployment Lifecycle
 
@@ -95,54 +103,34 @@ Git source → Deploy Preview → invoke / logs → Production → source delete
 ## 2026-09-12
 
 ### Experiment A — Supabase Auth
-
 - Status: `Verified`
 - Record: [`../experiments/auth/README.md`](../experiments/auth/README.md)
-- Tags: `authentication`, `session`, `supabase`, `netlify`, `browser`
-
-Netlify Browser → Supabase Auth → Session 已驗證，基本登入不需要自行包 Custom Login API。
 
 ### Experiment B — Supabase Native Data API CRUD
-
 - Status: `Verified`
 - Record: [`../experiments/data-api/README.md`](../experiments/data-api/README.md)
-- Tags: `data-api`, `authorization`, `rls`, `supabase`, `browser`, `postgresql`
-
-Browser Native CRUD 與 Application Access Boundary 已驗證，也建立 `technical success != business success` baseline。
 
 ### Experiment B-1 — Supabase Native Data API View Read / Security
-
 - Status: `Verified`
 - Record: [`../experiments/data-api-view/README.md`](../experiments/data-api-view/README.md)
-- Tags: `data-api`, `read-model`, `rls`, `supabase`, `postgresql`
-
-`security_invoker=true` View 可作為 Native Data API Read Model，保留 tested invoking identity security behavior。
 
 ### GitHub Actions Remote Execution Environment
-
 - Status: `Verified`
 - Record: [`../experiments/github-actions/README.md`](../experiments/github-actions/README.md)
-- Tags: `ipad-first`, `ai-engineering`, `remote-execution`, `github-actions`
-
-GitHub-hosted Runner 可補 iPadOS / AI 缺少 CLI / Linux runtime 的 execution gap。
 
 ### Experiment C-0 — Supabase Edge Function Deployment Lifecycle
-
 - Status: `Verified`
 - Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
-- Tags: `custom-api`, `deployment`, `supabase`, `github-actions`, `ipad-first`
-
-Edge Function deployment lifecycle 已在 iPad-first workflow 驗證，並成為後續 Custom API probes 的 runtime baseline。
 
 ---
 
 ## Current Candidate Experiments
 
-- **D-BATCH-1 Phase 2 / Backend Service Access**：formal-style table privilege + RLS 與 background service identity 的責任分工。
-- **D-BATCH-1 Phase 2 / Scheduled External HTTP**：Cron-scheduled Edge Function outbound provider call。
+- **D-BATCH-1 / Parameterized Invocation**：固定 + execution-time dynamic request parameters。
+- **C-BSA-1 / Backend Service Database Access**：formal-style CRUD、RPC / Function access、authorization 與 transaction boundary。
 - **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
-- **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補，不為了把 checklist 填滿硬測。
+- **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
 
 ---
 
