@@ -15,7 +15,7 @@ Deno.serve(async (request: Request) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const secretKey = Deno.env.get("SB_SECRET_KEY");
+  const secretKey = Deno.env.get("PLAYGROUND_CRON_EDGE_WORKER_KEY");
   if (!supabaseUrl || !secretKey) {
     return jsonResponse(
       {
