@@ -3,168 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cron Parameter Observer</title>
-    <style>
-      /* Keep the probe readable on iPad-sized screens without adding framework dependencies. */
-      * { box-sizing: border-box; }
-      body { margin: 0; padding: clamp(0.75rem, 3vw, 2rem); font: 16px/1.5 system-ui, sans-serif; color: #172033; background: #f4f7fb; }
-      main { width: min(100%, 1100px); margin: auto; }
-      .panel { margin-top: 1rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid #ccd5e2; border-radius: 14px; background: white; }
-      h1, h2 { margin-top: 0; }
-      form { display: grid; gap: 0.8rem; max-width: 480px; }
-      label { font-weight: 700; }
-      input, button { min-height: 46px; padding: 0.65rem 0.8rem; border: 1px solid #8490a3; border-radius: 8px; font: inherit; }
-      button { background: #173b73; color: white; cursor: pointer; }
-      button.secondary { background: white; color: #172033; }
-      button:disabled { opacity: 0.6; cursor: wait; }
-      .actions { display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: center; }
-      .message { min-height: 1.5rem; font-weight: 600; }
-      .muted { color: #596579; }
-      .table-wrap { overflow-x: auto; margin-top: 1rem; }
-      table { width: 100%; min-width: 940px; border-collapse: collapse; }
-      th, td { padding: 0.7rem; border-bottom: 1px solid #d8dee8; text-align: left; vertical-align: top; }
-      th { background: #eef3f9; }
-      [hidden] { display: none !important; }
-      @media (max-width: 600px) { .actions button { flex: 1 1 100%; } }
-    </style>
+    <meta http-equiv="refresh" content="0; url=/cron-edge-observer/#parameter" />
+    <title>D-BATCH-1 Parameter Invocation</title>
+    <script>
+      // Keep the old public route working while the canonical D-BATCH-1 demo moves to one tabbed page.
+      location.replace("/cron-edge-observer/#parameter");
+    </script>
   </head>
   <body>
-    <main>
-      <a href="/">← AI Playground</a>
-      <section class="panel">
-        <p class="muted">D-BATCH-1 · Parameterized Invocation</p>
-        <h1>Cron Parameter Observer</h1>
-        <p>登入後唯讀顯示 Cron request 實際傳入並由 Edge Function 持久化的 synthetic values。</p>
-      </section>
-
-      <section id="login-panel" class="panel">
-        <h2>Supabase Auth Login</h2>
-        <form id="login-form">
-          <div><label for="account">Account</label><br /><input id="account" type="email" autocomplete="username" required /></div>
-          <div><label for="password">Password</label><br /><input id="password" type="password" autocomplete="current-password" required /></div>
-          <button id="login-button" type="submit">登入並讀取</button>
-        </form>
-        <p id="auth-message" class="message" role="status" aria-live="polite">未登入時 Observer 不會送出 table SELECT。</p>
-      </section>
-
-      <section id="observer-panel" class="panel" hidden>
-        <div class="actions">
-          <button id="refresh-button" type="button">Refresh</button>
-          <button id="logout-button" class="secondary" type="button">登出</button>
-          <span class="muted">Auto Refresh：30 秒</span>
-        </div>
-        <p id="data-message" class="message" role="status" aria-live="polite"></p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>OID</th><th>Fixed Value</th><th>Runtime Date</th><th>Runtime Time</th><th>Created By</th><th>Created At</th></tr></thead>
-            <tbody id="rows"><tr><td colspan="6">尚未讀取。</td></tr></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-
-    <script type="module">
-      import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
-
-      // Browser-safe public configuration only. Server credentials never belong in this artifact.
-      const SUPABASE_URL = "https://cctonymfrxneonxryqei.supabase.co";
-      const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MN0_kx6LzCPyNbtI4CWZ9w_y-5hew_g";
-      const REFRESH_INTERVAL_MS = 30_000;
-      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-      });
-
-      const loginPanel = document.getElementById("login-panel");
-      const observerPanel = document.getElementById("observer-panel");
-      const authMessage = document.getElementById("auth-message");
-      const dataMessage = document.getElementById("data-message");
-      const rowsElement = document.getElementById("rows");
-      let refreshTimer = null;
-
-      function formatCreatedAt(value) {
-        return value ? new Intl.DateTimeFormat("zh-Hant", { dateStyle: "medium", timeStyle: "medium", timeZoneName: "short" }).format(new Date(value)) : "—";
-      }
-
-      // Keep runtime_time as the database string so its original UTC offset remains observable evidence.
-      function renderRows(rows) {
-        rowsElement.textContent = "";
-        if (!rows.length) {
-          const row = rowsElement.insertRow();
-          const cell = row.insertCell();
-          cell.colSpan = 6;
-          cell.textContent = "目前沒有可見資料。";
-          return;
-        }
-        for (const item of rows) {
-          const row = rowsElement.insertRow();
-          [item.oid, item.fixed_value, item.runtime_date, item.runtime_time, item.created_by, formatCreatedAt(item.created_at)].forEach((value) => {
-            const cell = row.insertCell();
-            cell.textContent = String(value ?? "—");
-          });
-        }
-      }
-
-      async function loadRows() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          stopObserver();
-          authMessage.textContent = "Session 不存在；未送出 table SELECT。請重新登入。";
-          return;
-        }
-
-        dataMessage.textContent = "Native Data API 讀取中…";
-        const result = await supabase.from("test_p7k2m4").select("oid,fixed_value,runtime_date,runtime_time,created_by,created_at").order("oid", { ascending: false });
-        if (result.error) {
-          dataMessage.textContent = `SELECT 失敗：${result.error.message}`;
-          return;
-        }
-        renderRows(result.data ?? []);
-        dataMessage.textContent = `讀取完成：${result.data?.length ?? 0} rows；${new Date().toLocaleTimeString("zh-Hant")}。`;
-      }
-
-      function startObserver() {
-        loginPanel.hidden = true;
-        observerPanel.hidden = false;
-        if (refreshTimer) clearInterval(refreshTimer);
-        refreshTimer = setInterval(loadRows, REFRESH_INTERVAL_MS);
-        loadRows();
-      }
-
-      function stopObserver() {
-        if (refreshTimer) clearInterval(refreshTimer);
-        refreshTimer = null;
-        loginPanel.hidden = false;
-        observerPanel.hidden = true;
-      }
-
-      document.getElementById("login-form").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const button = document.getElementById("login-button");
-        button.disabled = true;
-        authMessage.textContent = "登入中…";
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: document.getElementById("account").value.trim(),
-          password: document.getElementById("password").value,
-        });
-        document.getElementById("password").value = "";
-        button.disabled = false;
-        if (error || !data.session) {
-          authMessage.textContent = "登入失敗，未讀取 table。";
-          return;
-        }
-        authMessage.textContent = "Authentication Success。";
-        startObserver();
-      });
-
-      document.getElementById("refresh-button").addEventListener("click", loadRows);
-      document.getElementById("logout-button").addEventListener("click", async () => {
-        await supabase.auth.signOut({ scope: "local" });
-        stopObserver();
-        authMessage.textContent = "已登出；Observer 不會在未登入狀態讀取 table。";
-      });
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) startObserver();
-    </script>
+    <p>
+      Parameter Invocation 已併入 D-BATCH-1 Observer。
+      <a href="/cron-edge-observer/#parameter">前往新的頁籤</a>
+    </p>
   </body>
 </html>
