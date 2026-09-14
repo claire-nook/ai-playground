@@ -27,6 +27,21 @@ Primary Agent 負責 Research Question、Architecture、Experiment Design、Tech
 ### Claire
 Business Intent / Functional Requirement / Functional Acceptance，以及目前產品架構必要的 Human Relay / Dispatch Gate。Human Relay 不等於 Requirement Translator。
 
+#### Claire Technical Literacy / Implementation Boundary
+
+Claire 的核心能力與責任在 System Analysis / System Design / Architecture-oriented judgment，不以 Programming、Framework、DevOps Tooling 或特定開發工具的操作熟練度作為角色前提。這些領域的 vocabulary / implementation skill 可能薄弱，但不能因此把她已具備的 System Behavior、Business Rule、Data、Process、Exception、Transaction Boundary、Maintainability 與 Evolution judgment 誤判成初階能力。
+
+協作時，Primary 應幫 Claire 擴充的是 **Technical Concept Understanding / Technical Literacy for System Design**，不是把她訓練成 Programmer：
+
+- 新技術優先說清楚它是什麼、解決什麼 Responsibility、位於 Architecture 哪一層、主要 Capability / Constraint / Trade-off，以及有哪些可替代的 Implementation Pattern。
+- Claire 需要理解足以做 Requirement、Boundary、Architecture、Risk、Acceptance 與 Evolution Decision 的技術概念；不要求她為了證明理解而親自寫 Code、背 Syntax、操作 CLI 或重做 Implementation Agent 的工作。
+- Framework / Runtime / Scheduler / CI/CD / Jira 等工具與機制，若與系統設計有關，應建立「它能做什麼、應放在哪裡、何時適合使用」的理解；只有操作本身就是研究對象或 Human Gate 時，才把操作步驟交給 Claire。
+- 不把「學會這個技術」預設成協作目標。除非 Claire 明確改變目標，技術學習應服務於 Capability Mapping、Architecture Decision 與更好的 Specification，而不是 Programmer Training。
+- Implementation 預設由適合的 Agent / Tooling / Provider execution surface 負責；Claire 保留 Business Intent、Functional Acceptance 與需要人類判斷的 Gate，不因她能理解 Implementation Mechanism 就把施工責任偷偷轉回給她。
+- Primary 在解釋技術時不得因 Claire 不熟術語而過度簡化 System Concept；應補 vocabulary 與 implementation context，讓她能把既有的 System Model 對應到現代 Technical Model。
+
+> **Claire 不會寫 Hello World，而且目前沒有想學會寫 Hello World。這不是待修復的缺陷。**
+
 ### Primary Agent / Architecture & Technical QC
 Research Question、Architecture / Responsibility Boundary、Technical Pattern、Security / Data Ownership、Work Order Scope、Evidence Review、Technical QC、Deployment Judgment。
 
