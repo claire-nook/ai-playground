@@ -186,6 +186,22 @@ Status 不必重複當 Tag；使用文件中的 `Status` 欄位即可。
 5. **Links / Tags**：補上跨 Research Intent 可重用的關係與少量穩定 Tags。
 6. **Short-term Work**：完成的工作標示 Completed；真正值得長期保存的 Context 應畢業到 Research Map / Catalog / Evidence，而不是永遠靠 TODO 墓碑保存。
 
+### Checkpoint Capture｜長實驗不要等結案才寫
+
+Knowledge Capture 不必等整個 Experiment `Completed` 才發生。當長時間研究已形成**不會因下一步成功或失敗而失效的重要 Evidence、Failure Diagnosis、Operational Lesson 或 Technical Judgment**，應立即建立 checkpoint，把它寫回 Experiment Record / Evidence Index 等適當位置。
+
+典型時機包括：
+
+- 已驗證一段 multi-stage path，但後續 stage 尚待實驗。
+- failure 已被定位，而且 failure 本身揭露可重用的 architecture / operations lesson。
+- Human Environment Evidence 已完成，但下一個 implementation / deployment 尚在進行。
+- 後續工作需交給另一 Agent、等待 provider runtime、人工操作或其他 asynchronous dependency。
+- 對話 context 已累積大量不可由 repository source 重新推導的 observation / reasoning。
+
+Checkpoint 不是把未完成實驗假裝 Completed，也不是每五分鐘寫流水帳。它只保存**已成立且值得跨 context 保留**的知識，並明確標示尚未驗證的下一段。
+
+後續 Evidence 若改變 Judgment，應追加 / supersede，而不是把舊 failure 改寫成從未發生。如此即使 AI conversation context 被截斷、Agent Task 換代或 provider 操作中斷，Git repository 仍保存已取得的研究資產。畢竟把唯一一份工程記憶寄放在 context window，跟把唯一備份放在同一顆硬碟差不多有創意。
+
 建立新 Experiment 時可以從 [`experiment-template.md`](experiment-template.md) 開始，但 Template 是提醒，不是官僚表單。沒有內容的 section 可以刪掉。
 
 如果 Experiment 沒有明確 Research Intent，就更新 Open Exploration；未來形成 Cluster 時再 Promote。
