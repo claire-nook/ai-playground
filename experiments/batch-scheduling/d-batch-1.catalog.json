@@ -3,18 +3,17 @@
   "title": "Supabase Batch Runtime / Scheduling",
   "completedDate": "2026-09-14",
   "recordPath": "experiments/batch-scheduling/README.md",
-  "summary": "Phase 1 complete: Cron → Database Function and Cron → Edge Function are verified; Edge Function → Native Data API SELECT/UPDATE on the authorized synthetic table is verified. Formal place read is blocked by service_role table privilege, so the scheduled external API path has not yet been reached. Phase 2 will verify backend service access and Cron-scheduled outbound HTTP, then run one minimal integrated chain.",
+  "summary": "Phase 1 complete: Cron → Database Function, Cron → Edge Function, and Edge Function → Native Data API SELECT/UPDATE on the authorized synthetic table are verified. Formal place read exposed a separate Backend Service Access question. D-BATCH-1 now only needs direct runtime evidence for Cron-scheduled Edge Function → external API → synthetic update.",
   "tags": [
     "Supabase",
     "Cron / Scheduling",
     "Edge Function",
     "Native Data API",
     "Batch",
-    "Observability",
-    "Authorization"
+    "Observability"
   ],
   "demoStatus": "live",
   "demoPath": "/cron-edge-observer/",
   "verificationStatus": "partial",
-  "flow": "Phase 1: Cron A → Database Function → PENDING; Cron B → Edge Function → Data API synthetic SELECT/UPDATE verified, formal place read blocked by privilege. Phase 2: backend service access + scheduled external API + minimal integration confirmation."
+  "flow": "Phase 1: Cron A → Database Function → PENDING; Cron B → Edge Function → Data API synthetic SELECT/UPDATE verified. Remaining: Cron-scheduled Edge Function → external API → synthetic update. Backend Service Access is tracked separately."
 }
