@@ -1,71 +1,66 @@
-// D-BATCH-1 parameterized invocation probe: persist only values supplied by the caller.
+// D-BATCH-1 staged parameter probe: verify one fixed Cron body parameter first.
 import { withSupabase } from "npm:@supabase/server";
 
 const PROBE_ID = "test-cron-parameter-probe";
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_PATTERN = /^\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}(?::?\d{2})?)$/;
 
 type ProbeInput = {
   fixed_value: string;
-  runtime_date: string;
-  runtime_time: string;
 };
 
 Deno.serve(
-  // The existing Cron caller uses the named Playground secret key. Pin the
-  // auth contract to that key instead of relying on package-version fallback behavior.
-  withSupabase({ auth: "secret:playground_cron_edge_worker" })(
-    async (request, { supabaseAdmin }) => {
-      if (request.method !== "POST") {
-        return jsonResponse(
-          { error: "method_not_allowed", allowed: "POST" },
-          405,
-          { allow: "POST" },
-        );
-      }
+  // Match the already-working Cron Edge worker auth mode exactly.
+  withSupabase({ auth: "secret" })(async (request, { supabaseAdmin }) => {
+    if (request.method !== "POST") {
+      return jsonResponse(
+        { error: "method_not_allowed", allowed: "POST" },
+        405,
+        { allow: "POST" },
+      );
+    }
 
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return jsonResponse({ error: "invalid_json" }, 400);
-      }
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return jsonResponse({ error: "invalid_json" }, 400);
+    }
 
-      const validation = validateInput(body);
-      if (!validation.ok) {
-        return jsonResponse(
-          { error: "invalid_parameters", details: validation.errors },
-          400,
-        );
-      }
+    const validation = validateInput(body);
+    if (!validation.ok) {
+      return jsonResponse(
+        { error: "invalid_parameters", details: validation.errors },
+        400,
+      );
+    }
 
-      const input = validation.input;
+    const now = new Date();
+    const runtimeDate = new Date(now.getTime() - 86_400_000)
+      .toISOString()
+      .slice(0, 10);
 
-      // Critical experiment boundary: runtime_date/runtime_time are persisted exactly
-      // as received. This function must not calculate replacement runtime values.
-      const { error } = await supabaseAdmin.from("test_p7k2m4").insert({
-        created_by: "-1",
-        fixed_value: input.fixed_value,
-        runtime_date: input.runtime_date,
-        runtime_time: input.runtime_time,
-      });
+    // This stage persists the caller-supplied fixed value only.
+    // Date/time remain synthetic server-side controls until later probe stages.
+    const { error } = await supabaseAdmin.from("test_p7k2m4").insert({
+      created_by: "-1",
+      fixed_value: validation.input.fixed_value,
+      runtime_date: runtimeDate,
+      runtime_time: now.toISOString().slice(11),
+    });
 
-      if (error) {
-        return jsonResponse(
-          { error: "insert_failed", detail: error.message },
-          500,
-        );
-      }
+    if (error) {
+      return jsonResponse(
+        { error: "insert_failed", detail: error.message },
+        500,
+      );
+    }
 
-      // service_role intentionally has INSERT-only access on this probe table.
-      // Echo the accepted payload instead of adding SELECT privilege merely to decorate a response.
-      return jsonResponse({
-        probe: PROBE_ID,
-        inserted: true,
-        received: input,
-      });
-    },
-  ),
+    return jsonResponse({
+      probe: PROBE_ID,
+      mode: "fixed-value-only",
+      inserted: true,
+      received: validation.input,
+    });
+  }),
 );
 
 function validateInput(
@@ -76,34 +71,15 @@ function validateInput(
   }
 
   const body = value as Record<string, unknown>;
-  const errors: string[] = [];
   const fixedValue = body.fixed_value;
-  const runtimeDate = body.runtime_date;
-  const runtimeTime = body.runtime_time;
 
   if (typeof fixedValue !== "string" || fixedValue.trim() === "") {
-    errors.push("fixed_value_required");
+    return { ok: false, errors: ["fixed_value_required"] };
   }
-  if (
-    typeof runtimeDate !== "string" ||
-    !DATE_PATTERN.test(runtimeDate) ||
-    Number.isNaN(Date.parse(`${runtimeDate}T00:00:00Z`))
-  ) {
-    errors.push("runtime_date_invalid");
-  }
-  if (typeof runtimeTime !== "string" || !TIME_PATTERN.test(runtimeTime)) {
-    errors.push("runtime_time_invalid");
-  }
-
-  if (errors.length) return { ok: false, errors };
 
   return {
     ok: true,
-    input: {
-      fixed_value: fixedValue as string,
-      runtime_date: runtimeDate as string,
-      runtime_time: runtimeTime as string,
-    },
+    input: { fixed_value: fixedValue },
   };
 }
 
