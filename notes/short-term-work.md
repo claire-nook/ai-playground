@@ -71,13 +71,20 @@ Netlify Publish Boundary 已驗證：`public/` 是 Static Public Artifact bounda
 
 Evolution Trigger：當 Nook Works 出現實際的 longer-running / compute-heavy use case，或 provider runtime limit 開始影響真實設計時，再把此題拉回 Current 並設計 representative Probe。
 
-## Current — Batch Runtime / Scheduling｜先研究 Supabase 排程能力
+## Current — Batch Runtime / Scheduling｜等待 Cron B runtime evidence
 
 ### Claire-readable summary
 
-> **下一個研究問題改成：既然目前 Nook Works 的 API / Database / Auth responsibility 都高度集中在 Supabase，那麼定時批次工作能不能也先由 Supabase 提供的 scheduling mechanism 承擔？如果實驗結果不理想，再研究 Netlify 或其他 runtime。**
+> **Supabase Cron → Database Function 已在 synthetic table producer path 驗證成功；目前不是重新設計 Batch，而是等待並記錄 Cron B 是否真的 scheduled invoke Edge Function，經 Native Data API / external provider 後讓同一批 test rows 轉成 `SUCCESS` 或 `FAILED`。**
 
-這一階段先做 **Provider capability research → 選擇最符合 Nook Works 使用方式的最小實驗**，不是把所有排程機制一個個測完。
+完整 Experiment Record：`experiments/batch-scheduling/README.md`。Authenticated Human Evidence Surface：`/cron-edge-observer/`。
+
+### Already Known
+
+- Cron A 的 `Supabase Cron → PostgreSQL Database Function → PENDING test row` tested path：`Verified`。
+- Cron B consumer 所需的 Edge worker source、server-side auth contract、manual deployment workflow 與 read-only Browser Observer 已存在。
+- Worker 寫入限於 synthetic test table，formal Place data 僅 read。
+- Artifact existence 不等於 scheduled runtime success；整體 Batch experiment 仍為 `Partial`。
 
 ### Current Research Question
 
@@ -89,20 +96,12 @@ Evolution Trigger：當 Nook Works 出現實際的 longer-running / compute-heav
 - Database / Auth / RPC / RLS 等 backend gravity 已在 Supabase。
 - 如果 Batch 只是定時觸發既有 Edge Function / Database operation，優先保持 responsibility boundary 集中，比無理由拆到另一個 Provider 更自然。
 
-### Research Scope
+### Evidence Still Awaited
 
-先確認 Supabase 目前提供哪些與 scheduling / batch 相關的 mechanism，以及它們各自的適用 boundary，例如：
-
-- 定時觸發 Edge Function
-- Database-side scheduling / cron 類能力
-- Scheduled task 的 source / configuration 是否可被 Git / migration / repository 管理
-- Secret / Auth / permission handling
-- Retry / failure behavior
-- Logs / observability
-- Free-tier / quota / cost boundary
-- iPad-first 情境下是否能部署、修改、停用與檢查
-
-研究目的不是先選「功能最多」的方式，而是找出 **Nook Works 實際可維護的 default batch pattern**。
+- Cron B 的 scheduled invocation 確實到達 `test-cron-edge-worker`。
+- 對應的 `PENDING` row 經 Native Data API / Open-Meteo processing 後轉成 `SUCCESS` 或合理的 `FAILED`。
+- Cron execution、worker invocation、provider result 與 row mutation 是否能由 logs / Observer 建立足夠清楚的 correlation。
+- Retry / failure、concurrency / idempotency、quota / cost，以及 Dashboard-vs-Git scheduler configuration policy仍是 known unknowns；不要在尚未觀察前寫成已知 behavior。
 
 ### Secondary Candidates
 

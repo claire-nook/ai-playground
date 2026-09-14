@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-09-14
+
+### D-BATCH-1 — Supabase Batch Runtime / Scheduling
+
+- Status: `Partial`（Cron A tested path `Verified`; Cron B end-to-end pending）
+- Record: [`../experiments/batch-scheduling/README.md`](../experiments/batch-scheduling/README.md)
+- Live Demo: [`/cron-edge-observer/`](/cron-edge-observer/)
+- Primary Intent: `Nook Technical Platform / Batch Runtime / Scheduling Feasibility`
+- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `observability`
+
+**Why it existed**
+
+Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此先以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility，而不是先把 workload 拆到另一個 Provider。
+
+**What it unlocked**
+
+Cron A 的 `Cron → Database Function → PENDING test row` tested path 已 runtime verified。Cron B worker、server-side auth contract、Native Data API processing source 與 authenticated Browser Observer 已存在，但 `Cron B → scheduled Edge Function → Native Data API / Open-Meteo → state transition` 尚待 runtime observation；整體仍為 `Partial`。
+
 ## 2026-09-13
 
 ### C-EXT-1 — Custom API Orchestration / External API

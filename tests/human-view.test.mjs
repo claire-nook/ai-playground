@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("catalog carries validated Reader metadata and newest-first order", async () => {
   const catalog = JSON.parse(await read("public/experiment-catalog.json"));
-  assert.equal(catalog.length, 6);
+  assert.equal(catalog.length, 7);
   for (const entry of catalog) {
     assert.match(entry.completedDate, /^\d{4}-\d{2}-\d{2}$/);
     assert.match(entry.recordPath, /^experiments\/.+\.md$/);
@@ -20,6 +20,21 @@ test("catalog carries validated Reader metadata and newest-first order", async (
     catalog.map(({ id }) => id),
     expected.map(({ id }) => id),
   );
+});
+
+test("Batch scheduling metadata resolves its canonical record and live demo", async () => {
+  const catalog = JSON.parse(await read("public/experiment-catalog.json"));
+  const entries = catalog.filter(({ id }) => id === "D-BATCH-1");
+  assert.equal(entries.length, 1);
+
+  const [entry] = entries;
+  assert.equal(entry.verificationStatus, "partial");
+  assert.equal(entry.demoStatus, "live");
+  assert.equal(entry.demoPath, "/cron-edge-observer/");
+  await Promise.all([
+    access(new URL(`../${entry.recordPath}`, import.meta.url)),
+    access(new URL(`../public${entry.demoPath}index.html`, import.meta.url)),
+  ]);
 });
 
 test("Human View routes canonical Markdown without copying articles", async () => {

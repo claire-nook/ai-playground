@@ -4,6 +4,47 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Supabase Batch Runtime / Scheduling
+
+- Experiment: D-BATCH-1
+- Date: 2026-09-14
+- Status: Partial（Cron A tested path Verified; Cron B runtime confirmation pending）
+- Record: `experiments/batch-scheduling/README.md`
+- Worker: `supabase/functions/test-cron-edge-worker/index.ts`
+- Browser Artifact: `public/cron-edge-observer/index.html`
+- Deployment Workflow: `.github/workflows/deploy-test-cron-edge-worker.yml`
+- Topics: Supabase Cron, PostgreSQL Function, Edge Function, Native Data API, Open-Meteo, Observability
+
+### Direct Evidence
+
+**Cron A Verified for the tested path.** Primary runtime observation 已確認：
+
+```text
+Supabase Cron → PostgreSQL Database Function → synthetic test-table INSERT PENDING
+```
+
+這項結論只涵蓋受測 producer path。
+
+### Partial / Not Yet Observed
+
+Repository 已包含 consumer worker、manual deployment workflow 與 authenticated read-only Observer；source inspection 支援 worker 預期使用 Native Data API 讀寫 synthetic test rows、唯讀 formal Place data，再呼叫 external weather provider。
+
+目前尚未留下足以驗證以下完整 scheduled chain 的 runtime Evidence：
+
+```text
+Cron B → Edge Function → Native Data API → external provider
+       → test row becomes SUCCESS or FAILED
+```
+
+因此 Cron B 與整體 Experiment 維持 `Partial`。Observer 可用來收集未來 Human Evidence，但 artifact existence 不等於已觀察到 Cron B result。
+
+### Reusable Boundary
+
+- Experiment 寫入限於 synthetic `test_b8c3q1`；formal `place` data 僅 read。
+- Server-side invocation credential 不進入 Browser / repository；deployment credential 與 runtime authorization credential是不同角色。
+- Retry、concurrency / idempotency、quota / cost、logs correlation 與 Dashboard-vs-Git configuration policy尚未驗證。
+- Playground Evidence is not a Production Architecture Decision。
+
 ## Supabase Custom API Composition / External API Orchestration
 
 - Experiment: C-EXT-1

@@ -58,7 +58,9 @@ Nook Technical Platform
 ├─ Remote Execution / Toolchain
 │  └─ GitHub Actions                                    [Verified]
 │
-└─ Batch Runtime / Scheduling                           [Open]
+└─ Batch Runtime / Scheduling                           [Partial D-BATCH-1]
+   ├─ Cron → Database Function → test-table INSERT      [Verified tested path]
+   └─ Cron → Edge Function → Data API / provider        [Partial; runtime pending]
 ```
 
 ## Current Judgment
@@ -104,6 +106,23 @@ Browser → JWT → Weather Edge Function
 
 C-NF-0 已驗證 Netlify Functions 的 Git-native lifecycle、Deploy Preview、Function logs 與 source delete → function absent。它仍是 credible runtime，但目前較自然的候選 placement 是 standalone repo、小工具或 frontend-adjacent responsibility；不需要為了 provider 對稱而把 Nook Core API 任意分散成雙 runtime。
 
+### Batch Runtime / Scheduling
+
+D-BATCH-1 已驗證 Cron A 的受測 producer path：
+
+```text
+Supabase Cron → PostgreSQL Database Function → PENDING synthetic row
+```
+
+Consumer 端已有 `test-cron-edge-worker`、server-side authorization contract、Native Data API processing source，以及 authenticated read-only Browser Observer。這些 artifacts 使下一次 runtime observation 有明確路徑，但不等於完整 Cron B chain 已跑通。
+
+```text
+Cron B → scheduled Edge Function → Native Data API / Open-Meteo
+       → SUCCESS / FAILED state transition              [runtime pending]
+```
+
+因此 Batch track 目前為 `Partial`，只有 Cron A tested path 可標示 `Verified`。尚待觀察 Cron B scheduled invocation 與結果 row transition，並研究 retry、concurrency / idempotency、quota / cost、log correlation，以及 Dashboard-vs-Git configuration source-of-truth policy。
+
 ## Important Behavior / Design Note
 
 RLS 可以是最後的 Data Security Boundary，但不是完整 Business Authorization Contract。
@@ -112,12 +131,13 @@ C-DB-1 與 C-EXT-1 的 TU01 / TU02 都呈現 Authentication Success + HTTP 200 +
 
 ## Remaining Supabase-first Questions
 
-External API Orchestration 已從 Candidate 升為 Verified。下一階段更值得研究：
+External API Orchestration 已從 Candidate 升為 Verified；Batch / Scheduling 已形成 Partial Evidence。下一階段更值得研究：
 
 1. **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、free-tier / cost。
 2. **Business Contract / Authorization**：需要時研究 explicit 403、validation、transaction / error propagation。
 3. **Observability / Operations**：在更接近真實 workload 時觀察 logs、failure diagnosis 與 deployment traceability。
 4. **External Provider Secrets / Failure Policy**：只有當 API credential、retry / rate limit / timeout semantics 真正影響架構決策時再補 Probe。
+5. **Batch Runtime Confirmation**：觀察 Cron B scheduled Edge Function invocation 與 test-row state transition，再評估 retry、concurrency、quota / cost 與 configuration source of truth。
 
 只有 Supabase 出現實質限制，或 workload 本身屬於獨立 project boundary，才需要拉 Netlify Functions 或其他 runtime 做進一步 placement comparison。
 
