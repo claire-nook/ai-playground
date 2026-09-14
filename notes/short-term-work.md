@@ -3,13 +3,13 @@
 > 無交期。依 Claire 有空研究的時間逐項進行。
 > 這不是正式開發排程，也不是 Nook Works Specification；只記錄 Playground **目前仍值得放在手邊的近期研究工作**。
 >
-> **Human-facing Research Navigation：** `short-term-work.md` 的主要用途之一，是讓 Claire 在長對話或跨對話後，不必重新翻閱多個 Repository 目錄，就能直接理解「現在研究到哪裡、接下來要研究什麼、為什麼值得研究」。因此 Current / Next / Candidate 等仍在手邊的研究主題與目的，必須使用 Claire 可直接理解的描述；Technical Term 可以保留英文作為精確術語，但不得只用 Agent / Engineer shorthand 當作研究主題。中文本身不等於可讀，應優先表達實際問題與研究目的。
+> **Human-facing Research Navigation：** 讓 Claire 在長對話或跨對話後，可以直接理解「現在研究到哪裡、接下來要研究什麼、為什麼值得研究」。Technical Term 可以保留，但不得只用 Agent / Engineer shorthand 當研究主題。
 >
 > Completed work 的長期意義應畢業到 `knowledge/`、`evidence/` 與 Experiment Record，不讓 Short-term 變成一整排 Completed 墓碑。
 
 ## Knowledge Base Bootstrap — Completed
 
-2026-09-13 已把 2026-09-12 的第一批 Playground Experiments 整理成可持續生長的 Knowledge Architecture。
+2026-09-13 已建立可持續生長的 Knowledge Architecture：
 
 - Knowledge Model / Capture Protocol：`knowledge/README.md`
 - Experiment Catalog：`knowledge/experiments.md`
@@ -18,9 +18,7 @@
 - Open Exploration / Potential Clusters：`knowledge/open-exploration.md`
 - Evidence Index：`evidence/index.md`
 
-後續每次 Experiment 形成有效 Evidence 時，應順手更新 Experiment Record、Experiment Catalog、Evidence Index、相關 Research Map 或 Open Exploration，以及必要的 Links / Tags。
-
-Short-term 只保存「現在正在做什麼」；Research Context 與 Evidence 不再依賴這份檔案長期存活。
+後續 Experiment 形成有效 Evidence 時，應更新 Experiment Record、Catalog、Evidence Index、相關 Research Map，以及必要的 Implementation Guide。
 
 ## Current Research Front｜目前研究前緣
 
@@ -36,118 +34,108 @@ Short-term 只保存「現在正在做什麼」；Research Context 與 Evidence 
 - Experiment C-NF-0 — Netlify Functions Deployment Lifecycle：`Verified`
 - Experiment C-DB-1 — Database-centric Custom API：`Verified`
 - Experiment C-EXT-1 — External API Orchestration：`Verified`
-- Netlify Git Deployment Boundary：`Verified`
-- Netlify Git Trigger Boundary：`Verified`
+- Netlify Git Deployment / Trigger Boundary：`Verified`
 
-Netlify Publish Boundary 已驗證：`public/` 是 Static Public Artifact boundary，Browser Artifact 已與 `experiments/**/README.md` Experiment Record 分離。完整記錄：`experiments/netlify-deployment-boundary/README.md`。
+Supabase Edge Functions 仍是目前 Nook Works Primary Custom API Runtime Candidate；Netlify Functions 保留為 credible secondary candidate。這是 Research Judgment，不是 Production Architecture Decision。
 
-跨 Provider 的 Boundary Pitfall 已另外整理於：`evidence/provider-boundary-pitfalls.md`。
-
-這些 Completed items 的完整脈絡、Evidence、Constraint 與 Current Judgment 請回到 Knowledge Base / Experiment Record 閱讀，不在 Short-term 重複維護。
-
-## Current Judgment — Custom API Runtime Feasibility｜Supabase-first 已具可信度
+## Current — D-BATCH-1｜Supabase Cron / Scheduling 最後能力缺口
 
 ### Claire-readable summary
 
-> **目前 Nook Works 可合理預期的普通 Custom API workload，Supabase Edge Functions 已經具備足夠高的可信度作為 Primary Custom API Runtime Candidate。現階段沒有必要為了把研究清單全部打勾，刻意製造一支不存在真實需求的「長工作 API」。**
-
-目前已實際驗證：
-
-- Database-centric / Application-side Processing：`Verified C-DB-1`
-- PostgreSQL Function / RPC orchestration path：`Verified C-DB-1`
-- Browser → JWT → Custom API → DB / RLS：`Verified C-DB-1`
-- Custom API → Custom API composition：`Verified C-EXT-1`
-- External API Orchestration / normalization：`Verified C-EXT-1`
-
-基於目前已知 dependency：Database、Supabase Auth、PostgreSQL Function / RPC、Application Access Boundary 多數集中於 Supabase，因此 **Supabase Edge Functions 仍是目前 Nook Works Primary Custom API Runtime Candidate**。
-
-這是 Research Judgment，不是 Production Architecture Decision。Netlify Functions 仍保留為 credible secondary candidate，較可能適用於 standalone repo、獨立小工具、frontend-adjacent API，或 Supabase runtime 被實驗證明存在實質限制的 workload。
-
-### Deferred — Pure Compute / Longer-running Processing
-
-較耗運算或執行時間較長的 API workload 尚未驗證，可能涉及 duration、CPU / memory、timeout、concurrency、free-tier / cost model 等限制。
-
-目前暫緩原因不是「不重要」，而是 **尚未出現足夠真實的 Nook Works workload 可以代表這類 responsibility**。若只為測試而刻意製造長時間 sleep / compute Probe，得到的 Evidence 對實際 Architecture placement 幫助有限。
-
-Evolution Trigger：當 Nook Works 出現實際的 longer-running / compute-heavy use case，或 provider runtime limit 開始影響真實設計時，再把此題拉回 Current 並設計 representative Probe。
-
-## Current — Batch Runtime / Scheduling｜等待 Cron B runtime evidence
-
-### Claire-readable summary
-
-> **Supabase Cron → Database Function 已在 synthetic table producer path 驗證成功；目前不是重新設計 Batch，而是等待並記錄 Cron B 是否真的 scheduled invoke Edge Function，經 Native Data API / external provider 後讓同一批 test rows 轉成 `SUCCESS` 或 `FAILED`。**
+> **Supabase Cron 的主要 runtime chain 已經驗證：可排程 Database Function，也可排程呼叫 Edge Function；scheduled Edge Function 已實際完成 Native Data API read/update、Open-Meteo outbound HTTP 與 synthetic SUCCESS 寫回。現在 Cron 只剩「排程啟動時如何傳入參數」尚未直接驗證。**
 
 完整 Experiment Record：`experiments/batch-scheduling/README.md`。Authenticated Human Evidence Surface：`/cron-edge-observer/`。
 
-### Already Known
+### Runtime evidence already verified
 
-- Cron A 的 `Supabase Cron → PostgreSQL Database Function → PENDING test row` tested path：`Verified`。
-- Cron B consumer 所需的 Edge worker source、server-side auth contract、manual deployment workflow 與 read-only Browser Observer 已存在。
-- Worker 寫入限於 synthetic test table，formal Place data 僅 read。
-- Artifact existence 不等於 scheduled runtime success；整體 Batch experiment 仍為 `Partial`。
+```text
+Cron → PostgreSQL Database Function → synthetic row
+Cron → pg_net → Edge Function
+Edge Function → Native Data API synthetic SELECT / UPDATE
+Edge Function → Open-Meteo → synthetic SUCCESS + temperature
+```
 
-### Current Research Question
+OID 115 → 116/117 的 runtime boundary 已證明新 worker 不再依賴 formal `place` read，而是直接使用 synthetic row coordinates，並由 scheduled invocation 實際取得 external weather result。
 
-> Nook Works 常見的 scheduled / batch responsibility，是否可以用 Supabase-managed scheduling path，以 iPad-first、Git-traceable、可觀察且維護成本合理的方式實作？
+### Remaining Cron Research Question — Parameterized Invocation
 
-優先研究 Supabase 的原因：
+Nook Works `docs/business/specifications/batch/daily-weather.md` 的排程情境需要代表性 input：
 
-- Custom API Primary Candidate 已偏向 Supabase Edge Functions。
-- Database / Auth / RPC / RLS 等 backend gravity 已在 Supabase。
-- 如果 Batch 只是定時觸發既有 Edge Function / Database operation，優先保持 responsibility boundary 集中，比無理由拆到另一個 Provider 更自然。
+```text
+executor_oid = -1
+query_date   = execution date - 1
+process_mode = scheduled mode
+```
 
-### Evidence Still Awaited
+因此 D-BATCH-1 結案前需直接驗證：
 
-- Cron B 的 scheduled invocation 確實到達 `test-cron-edge-worker`。
-- 對應的 `PENDING` row 經 Native Data API / Open-Meteo processing 後轉成 `SUCCESS` 或合理的 `FAILED`。
-- Cron execution、worker invocation、provider result 與 row mutation 是否能由 logs / Observer 建立足夠清楚的 correlation。
-- Retry / failure、concurrency / idempotency、quota / cost，以及 Dashboard-vs-Git scheduler configuration policy仍是 known unknowns；不要在尚未觀察前寫成已知 behavior。
+- **簡單固定參數**：Cron HTTP request body 能正確傳入固定值，例如 `executor_oid = -1`、固定 `process_mode`。
+- **簡單動態參數**：Cron job 執行當下能計算 runtime value，例如 `current_date - 1`，並正確組入 request body。
+- Edge Function 能收到與辨識實際傳入值，並留下可觀察 Evidence。
 
-### Secondary Candidates
+### Parameter responsibility boundary
 
-只有當 Supabase-managed path 出現具體限制、維護成本不合理，或某個 batch responsibility 本身屬於不同 project boundary，再研究：
+如果參數只是固定值或簡單 execution-time expression，允許由 Cron 直接準備：
 
-- GitHub Actions Schedule
-- Netlify-managed scheduling / runtime
-- 其他適合的 Provider path
+```text
+Cron → Main Batch API
+```
 
-Netlify 近期也持續擴張 backend capability；可保留為後備研究方向，但現階段不因 Provider 新功能就主動把 Nook Works backend responsibility 拆散。免費仔可以有逃生門，不必把家蓋成迷宮。
+如果參數準備需要查 DB、套 business rule、組多段資料或其他 orchestration，不把這些責任塞進 Cron：
 
-## Next Major Track — Application UI Maintenance Pattern｜單檔 / 主從 / 多檔維護介面一致性
+```text
+Cron → Launcher / Preparation API → Main Batch API
+```
 
-Batch / Scheduling 完成第一輪研究後，下一條值得進入 Playground 的 major track 是 Nook Works 的 Application UI Pattern。
+Main Batch API 應接受完整 input，不因 caller 是 Cron / Manual / Retry 而內建多套啟動人格。Cron research 到「能可靠啟動帶參數 endpoint」為止；Launcher 的複雜參數準備屬 Custom API orchestration。
 
-這不是單純做畫面美化，而是建立一致的 maintenance interaction contract，避免未來出現：A 功能的新增在左邊、B 功能在右邊；這裡叫「取消」、那裡叫「放棄」；同一件事有時叫「存檔」、有時叫「儲存」這類長期維護污染。
+## Next — C-BSA-1｜Custom API / Backend Service Database Access
 
-預期研究方向包含：
+### Claire-readable summary
+
+> **D-BATCH-1 的 `place` permission failure 已經把真正問題照得很亮：不是 Cron 能不能碰 DB，而是 Supabase Edge Function 作為 backend service 時，對正式 PostgreSQL objects 應如何取得明確且最小權限的存取能力。這題獨立成 C-BSA-1，不再掛在 Cron 名下。**
+
+Experiment Card：`experiments/custom-api/c-bsa-1.catalog.json`。
+
+### Research scope
+
+C-BSA-1 應使用 synthetic / formal-style secured objects 驗證，不為實驗直接放寬正式 `place`：
+
+- Native Data API `SELECT / INSERT / UPDATE / DELETE`。
+- service identity 的 table privilege 與 RLS boundary。
+- RPC / PostgreSQL Function 的 `EXECUTE` privilege、`SECURITY INVOKER` / `SECURITY DEFINER` 等 security context。
+- Function 內部再存取 table 時，權限與 transaction 行為如何落地。
+- Frontend User Access (`authenticated + RLS`) 與 Backend Service Access 的責任分離。
+
+### Why transaction is now in scope
+
+這不再是「PostgreSQL 有 Transaction，所以順便測一下」的功能表打勾。Nook Works Daily Weather Batch Specification 已明確要求：
+
+```text
+Delete existing row
+→ Insert replacement row
+→ same Transaction
+→ Insert failure must rollback Delete
+```
+
+因此需要驗證 Custom API 面對這種正式 workload 時，應直接使用多次 Native Data API request，還是由 RPC / PostgreSQL Function 提供 atomic operation contract。這會直接影響 Batch implementation placement。
+
+## Next Major Track — Application UI Maintenance Pattern
+
+Batch / Backend Service Access 第一輪研究完成後，下一條 major track 是 Nook Works Application UI Pattern：
 
 - 單檔維護畫面
 - 主從雙檔 / 多檔維護畫面
-- 新增 / 編輯 / 刪除 / 儲存 / 取消的 naming 與 placement
+- 新增 / 編輯 / 刪除 / 儲存 / 取消 naming 與 placement
 - Search / List / Detail / Edit state transition
 - Validation / error presentation
 - Toolbar / action hierarchy
-- iPad-first 操作與 responsive behavior
+- iPad-first responsive behavior
 
-UI Pattern 預期需要多個 Prototype / Browser Artifact 做比較，不急著在 Batch 研究尚未展開時同時開工。先讓一條研究線活著走完，人類已經很會同時開十個分頁，不需要 Repository 也學。
+UI Pattern 預期需要多個 Prototype / Browser Artifact 做比較。目前不跟 Batch / Backend Access 同時亂開十條線，Repository 不需要模仿瀏覽器分頁災難現場。
 
-## Candidate — Explicit Business Contract / Authorization
+## Deferred / Candidate
 
-C-DB-1 與 C-EXT-1 已驗證 caller identity / RLS visibility，但 TU01 / TU02 仍可出現 Authentication Success + HTTP 200 + empty data。
-
-若未來 API 需要明確區分：
-
-- No Data
-- No Application Access
-- Validation Error
-- Conflict
-- Not Found
-- Transaction / downstream failure
-
-再設計 explicit Business Authorization / Error Contract Probe。這題目前保留 Candidate，不阻擋 Batch / Scheduling 研究。
-
-## Candidate — PostgreSQL RPC｜Application Operation Contract
-
-PostgreSQL Function + RPC 已在 C-DB-1 中成為可用 mechanism，但「哪些 Application Operation 應優先由 Database Function 提供明確 Contract」仍是另一層 Pattern 問題。
-
-等正式 Nook Works operation 出現足夠代表性的 use case，再比較 Native CRUD、RPC 與 Custom API 的責任分工；目前不為了完成舊清單另開抽象 Experiment。
+- **Pure Compute / Longer-running Processing**：等出現 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
+- **Explicit Business Authorization / Error Contract**：當 API 真正需要區分 No Data / No Application Access / Validation / Conflict / Not Found 等 semantics 時再研究。
+- **PostgreSQL RPC / Application Operation Contract**：mechanism 已在 C-DB-1 驗證；哪些正式 operation 應優先由 DB Function 提供 contract，與 C-BSA-1 的 representative workload 一起判斷，不另外為 checklist 製造抽象實驗。
