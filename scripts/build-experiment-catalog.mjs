@@ -1,4 +1,4 @@
-import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
+import { readdir, readFile, mkdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -116,6 +116,18 @@ const catalog = await Promise.all(
       throw new Error(`${relativePath}: invalid JSON (${error.message})`);
     }
     validateCatalogEntry(entry, relativePath);
+
+    // A valid-looking route is still unusable when its canonical Record was
+    // renamed or removed. Keep that broken navigation out of the generated UI.
+    const recordFile = path.join(root, entry.recordPath);
+    try {
+      const recordStats = await stat(recordFile);
+      if (!recordStats.isFile()) throw new Error("path is not a file");
+    } catch (error) {
+      throw new Error(
+        `${relativePath}: recordPath does not reference a readable file (${entry.recordPath}: ${error.message})`,
+      );
+    }
     return entry;
   }),
 );
