@@ -8,25 +8,25 @@
 
 ## Invocation contract
 
-Send `POST` with `apikey: <server-side Supabase Secret Key>`. The function compares
-the header value with the Edge Function runtime secret `PLAYGROUND_CRON_EDGE_WORKER_KEY` before it
-creates a Supabase client or performs any database access. An ordinary
+Send `POST` with `apikey: <server-side Supabase Secret Key>`. The function uses
+`@supabase/server` with generic server-key validation before its handler can
+perform any database access. Valid authentication supplies the SDK-managed
+privileged Supabase client. An ordinary
 authenticated-user JWT is not an authorization substitute for this privileged
 batch worker. The future Cron B caller and its token storage/configuration are
 intentionally not implemented here; never place the Secret Key in the Observer,
 another browser artifact, logs, responses, or repository content.
 
-The worker reads its project URL from the managed `SUPABASE_URL` environment
-variable and its Secret Key exclusively from `PLAYGROUND_CRON_EDGE_WORKER_KEY`. Configure
-`PLAYGROUND_CRON_EDGE_WORKER_KEY` as an Edge Function runtime secret before deployment; creating or
-transferring the Secret Key is outside this work order. It uses
-`supabase-js` `.from(...)` calls for every `test_b8c3q1` and `place` SELECT/UPDATE;
+The worker uses the Supabase server helper's generic `auth: "secret"` mode because
+repository-safe evidence does not identify a dedicated named server key. It uses
+the helper-provided client and `.from(...)` calls for every `test_b8c3q1` and
+`place` SELECT/UPDATE;
 it contains no SQL connection, `.rpc(...)`, or database function call.
 
 Deploy with the manual **Deploy Test Cron Edge Worker** workflow. Its CLI command
 uses `--no-verify-jwt` because the Secret Key is not a JWT. With gateway JWT
-verification disabled, the worker's `apikey` comparison is the authorization
-boundary; do not deploy this function without that application-level check.
+verification disabled, the server helper's Secret Key validation is the
+authorization boundary.
 
 ## Manual verification after deployment
 

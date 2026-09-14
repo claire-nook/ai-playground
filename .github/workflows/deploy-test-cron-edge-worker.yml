@@ -1,7 +1,6 @@
 name: Deploy Test Cron Edge Worker
 
-# Human gate: Claire explicitly starts this experiment deployment after the
-# PLAYGROUND_CRON_EDGE_WORKER_KEY runtime secret has been configured on the Supabase project.
+# Human gate: Claire explicitly starts this experiment deployment.
 on:
   workflow_dispatch:
 
@@ -28,7 +27,7 @@ jobs:
       - name: Show Supabase CLI version
         run: supabase --version
 
-      # Secret Keys are not JWTs. The function validates the apikey header itself.
+      # Secret Keys are not JWTs. The Supabase server helper validates the apikey header.
       - name: Deploy test-cron-edge-worker
         run: |
           supabase functions deploy test-cron-edge-worker \
