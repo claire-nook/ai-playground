@@ -30,7 +30,7 @@ test("Batch scheduling metadata resolves its canonical record and live demo", as
   const [entry] = entries;
   assert.equal(entry.verificationStatus, "partial");
   assert.equal(entry.demoStatus, "live");
-  assert.equal(entry.demoPath, "/cron-parameter-observer/");
+  assert.equal(entry.demoPath, "/cron-edge-observer/");
   await Promise.all([
     access(new URL(`../${entry.recordPath}`, import.meta.url)),
     access(new URL(`../public${entry.demoPath}index.html`, import.meta.url)),
