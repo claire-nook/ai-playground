@@ -1,7 +1,7 @@
 # D-BATCH-1 — Supabase Batch Runtime / Scheduling
 
 - Date: 2026-09-14
-- Status: `Partial`（Phase 1 completed; Phase 2 planned）
+- Status: `Partial`（Phase 1 completed; one remaining scheduled external HTTP confirmation）
 - Primary Intent: `Nook Technical Platform / Batch Runtime / Scheduling Feasibility`
 - Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `observability`
 
@@ -9,7 +9,11 @@
 
 Nook Works 常見的 scheduled / batch responsibility，能否由 Supabase-managed scheduling 在 iPad-first 環境中，以合理的管理成本與 observability 承擔？
 
-這不是 Production Architecture Decision。Playground 先拆開驗證 scheduler、database function、custom API、Native Data API、backend service authorization 與 external API 等責任，再決定哪些能力足以進入正式架構討論。
+這不是 Production Architecture Decision。Playground 只驗證 scheduler / runtime mechanism 與必要 evidence，不把所有 downstream application design 都塞進 Cron Experiment。
+
+可重用的 Supabase Cron 實作方式、認證、部署與 observability 注意事項已獨立整理：
+
+- [`../../knowledge/implementation/supabase-cron.md`](../../knowledge/implementation/supabase-cron.md)
 
 ---
 
@@ -67,7 +71,7 @@ Worker 以 `supabaseAdmin` 對 `public.test_b8c3q1` 執行：
 - SELECT `PENDING` rows：Verified
 - UPDATE row status / metadata：Verified
 
-因此目前實際驗證的是 Native Data API 的 **Read + Update**，不是完整 Create / Read / Update / Delete 全集合。不要把平台理論能力偷渡成實驗證據。
+因此目前實際驗證的是 Native Data API 的 **Read + Update**，不是完整 Create / Read / Update / Delete 全集合。
 
 ### 5. Formal `place` read failed because of table privilege — Root Cause Confirmed
 
@@ -85,8 +89,6 @@ DB inspection 已確認：
 
 因此這次失敗發生在 PostgreSQL table privilege 層，並不是 Cron-specific limitation，也不是 Native Data API SELECT capability failure。
 
-正確解讀是：
-
 ```text
 Cron → Edge Function                         ✅
 Edge Function → authorized synthetic table  ✅
@@ -95,9 +97,11 @@ Edge Function → formal place                ❌ service_role table privilege
 
 無論這支 Custom API 是由 Cron、人工 POST 或其他 caller 喚醒，只要仍以相同 service identity SELECT `place`，都會得到相同結果。Cron 不改變 Custom API 執行後的 database authorization identity。
 
-### 6. Open-Meteo was not reached in D-BATCH-1 Phase 1
+這個 failure 暴露的是 **Backend Service Access** 架構問題。它值得另外研究，但不再視為 D-BATCH-1 / Cron feasibility 的 prerequisite。
 
-Worker 必須先取得 `place.latitude / longitude` 才會呼叫 Open-Meteo。此次在 `place` SELECT 已失敗，因此 scheduled batch chain **沒有進入 external provider call**。
+### 6. Open-Meteo was not reached in Phase 1
+
+Worker 必須先取得 `place.latitude / longitude` 才會呼叫 Open-Meteo。此次在 `place` SELECT 已失敗，因此 scheduled batch chain沒有進入 external provider call。
 
 應記為：
 
@@ -105,7 +109,7 @@ Worker 必須先取得 `place.latitude / longitude` 才會呼叫 Open-Meteo。�
 
 不能記為 Open-Meteo failure。
 
-注意：C-EXT-1 已獨立驗證一般 Supabase Edge Function outbound HTTP → Open-Meteo 可行；尚未驗證的是「由 Cron scheduled invoke 的 worker」完整走到 external provider 的 path。
+C-EXT-1 已獨立驗證一般 Supabase Edge Function outbound HTTP → Open-Meteo 可行；尚未直接驗證的是「由 Cron scheduled invoke 的 worker」走到 external provider 的 path。
 
 ### 7. Row-level Memo observability — Verified
 
@@ -158,71 +162,65 @@ Scheduler History
 
 ### Item Failure
 
-例如某一筆 `place` read、coordinates、external provider 或 row processing 失敗，該 row 記 `FAILED + Memo`，worker 繼續處理其他 items；整個 invocation 仍可能回 HTTP 200。
+例如單筆 downstream processing 失敗，該 row 記 `FAILED + Memo`，worker 繼續處理其他 items；整個 invocation 仍可能回 HTTP 200。
 
 此 distinction 對未來正式 Batch Monitoring / Operations 有重用價值，但 Playground 不在此階段提早建 `batch_log`、retry framework 或完整 job-management subsystem。
 
 ---
 
-# Phase 2 — Planned Experiments
+# Remaining D-BATCH-1 Evidence Gate
 
-Phase 2 只補目前阻擋技術判斷的兩個洞，再做一次最小 integration confirmation。不要順手把 Playground 養成 ERP。
+D-BATCH-1 接下來只補一個與 Cron runtime 直接相關的問題：
 
-## P2-A — Backend Service Access to a normally secured table
+> 由 Supabase Cron scheduled invoke 的 Edge Function，是否能執行 outbound HTTP call 到 external provider，並將結果寫回 synthetic table？
 
-### Question
+## Minimal adjustment
 
-正常採用 PostgreSQL privilege + RLS / application access boundary 的 table，應如何讓 server-side Custom API 以明確、可維護、least-privilege 的方式讀取？
-
-### What must be learned
-
-- `service_role / supabaseAdmin` 與 table privilege / RLS 的實際責任邊界。
-- Custom API 是否應直接取得 specific table privilege，或採用更窄的 backend access contract。
-- 如何避免為了 Batch 測試而無限制放寬正式 `place`。
-- Frontend User Access 與 Backend Service Access 應分開描述，不把 `authenticated + RLS` 模型誤套到 background worker。
-
-### Safety boundary
-
-Phase 2 不應直接把 formal `place` 權限放寬當成實驗捷徑。優先以 synthetic / formal-equivalent object 驗證 authorization pattern；只有 pattern 被理解並明確批准後，才討論正式 table migration。
-
-## P2-B — Cron-scheduled Custom API → External API
-
-### Question
-
-由 Supabase Cron scheduled invoke 的 Edge Function，是否能實際執行 outbound HTTP call 到 external provider，並留下可觀察結果？
-
-### Minimal shape
-
-移除 formal `place` privilege 這個無關 dependency。可直接使用 synthetic coordinates 或 synthetic test data：
+不再讀 formal `place`。直接讓 synthetic test row 帶測試用 latitude / longitude：
 
 ```text
-Cron → Edge Function
-     → synthetic coordinates
-     → Open-Meteo
-     → synthetic result / Memo
-```
+Cron A
+→ Database Function
+→ INSERT PENDING + latitude + longitude
 
-這次要驗的是 scheduled runtime 的 outbound HTTP path，不是再測一次 Place authorization。
-
-## P2-C — Integration confirmation, not a new large experiment
-
-P2-A 與 P2-B 分別通過後，再做一次最小完整鏈確認：
-
-```text
-Cron
+Cron B
 → Edge Function
-→ authorized Data API read
-→ external API
-→ synthetic Data API update
+→ SELECT synthetic row + coordinates
+→ Open-Meteo
+→ UPDATE synthetic result
 ```
 
-這個 checkpoint 的目的只是避免「A 單獨成功 + B 單獨成功」被自動腦補成 A→B 串起來必定成功。若完整鏈跑通，即可關閉 D-BATCH-1 第一輪 feasibility research；retry、locking、concurrency、quota / cost 等留給真正出現架構決策需求時再研究。
+這樣只新增一個變因：scheduled worker outbound HTTP。
+
+Formal `place` lookup 會從 active probe path 移除；Git history 與 Phase 1 Evidence 保留原本 permission failure。Source 可留下簡短註解指出 formal Place lookup intentionally deferred to Backend Service Access research，不需要把舊程式整段註解保存成 active source 木乃伊。
+
+成功條件：
+
+```text
+Cron → Edge Function → Open-Meteo → synthetic Data API update
+```
+
+有直接 runtime evidence 即可。
+
+這一段本質上是一般 Custom API processing 的最後一張 scheduled-runtime confirmation，不代表要繼續擴張 Batch architecture scope。
+
+---
+
+# Separate Related Research — Backend Service Access
+
+`place` failure 已經提出另一個值得保留的問題：
+
+> 正常採 PostgreSQL privilege + RLS / application access boundary 的 table，server-side Custom API 應如何取得明確、least-privilege 的 backend access？
+
+這題不再屬於 D-BATCH-1 的 completion gate，也不應為了讓 Cron Experiment 變綠而直接放寬 formal `place`。
+
+未來若正式 workload 需要，可另以 synthetic / formal-equivalent object 驗證 authorization pattern，再形成 production migration / architecture decision。
 
 ---
 
 # Current Judgment
 
-**D-BATCH-1 remains `Partial`, but Phase 1 is complete.**
+**D-BATCH-1 remains `Partial`, but Phase 1 is complete and Cron mechanism is already reusable.**
 
 目前可可靠主張：
 
@@ -232,16 +230,18 @@ Cron → pg_net → Edge Function                    Verified
 Edge Function → Native Data API SELECT/UPDATE
   on authorized synthetic table                 Verified
 Formal place read by current service identity   Blocked by table privilege
-Cron-scheduled Edge → external provider          Not yet reached / not yet verified
+Cron-scheduled Edge → external provider          Not yet reached / final evidence gate
 ```
 
-這已足以支持 Supabase Cron 作為 Nook Works system scheduler 的 credible candidate。Phase 2 將回答 Backend Service Access 與 scheduled external HTTP 兩個剩餘問題，再以最小 integration chain 收尾。
+這已足以支持 Supabase Cron 作為 Nook Works system scheduler 的 credible candidate，並已產生獨立 Implementation Guide。剩餘 probe 只確認 scheduled outbound HTTP；Backend Service Access 另題處理。
 
 > Playground Evidence is not a Production Architecture Decision.
 
 ## Related Records
 
+- Supabase Cron Implementation Guide: [`../../knowledge/implementation/supabase-cron.md`](../../knowledge/implementation/supabase-cron.md)
 - Research Map: [`../../knowledge/maps/nook-technical-platform.md`](../../knowledge/maps/nook-technical-platform.md)
+- Phase 1 Evidence: [`../../evidence/d-batch-1-phase-1.md`](../../evidence/d-batch-1-phase-1.md)
 - Evidence Index: [`../../evidence/index.md`](../../evidence/index.md)
 - Worker implementation note: [`../../agent-work/implementation-notes/supabase-cron-edge-observer.md`](../../agent-work/implementation-notes/supabase-cron-edge-observer.md)
 - Supabase Custom API / External API baseline: [`../custom-api/README.md`](../custom-api/README.md)
