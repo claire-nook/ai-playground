@@ -88,7 +88,7 @@
       }
       table {
         width: 100%;
-        min-width: 940px;
+        min-width: 1080px;
         border-collapse: collapse;
       }
       th,
@@ -103,6 +103,11 @@
       }
       .status {
         font-weight: 800;
+      }
+      .memo {
+        min-width: 280px;
+        white-space: normal;
+        overflow-wrap: anywhere;
       }
       .SUCCESS {
         color: #08783e;
@@ -187,6 +192,7 @@
                 <th>OID</th>
                 <th>Place</th>
                 <th>Status</th>
+                <th>Memo</th>
                 <th>Temperature</th>
                 <th>Created By</th>
                 <th>Created At</th>
@@ -196,7 +202,7 @@
             </thead>
             <tbody id="rows">
               <tr>
-                <td colspan="8">尚未讀取。</td>
+                <td colspan="9">尚未讀取。</td>
               </tr>
             </tbody>
           </table>
@@ -246,7 +252,7 @@
         if (!rows.length) {
           const row = rowsElement.insertRow();
           const cell = row.insertCell();
-          cell.colSpan = 8;
+          cell.colSpan = 9;
           cell.textContent = "目前沒有可見資料。";
         }
         for (const item of rows) {
@@ -255,6 +261,7 @@
             item.t01,
             placeByOid.get(item.t02) ?? `OID ${item.t02}`,
             item.t03,
+            item.t09 ?? "—",
             item.t04 == null ? "—" : item.t04,
             item.t06,
             formatDate(item.t05),
@@ -265,6 +272,7 @@
             const cell = row.insertCell();
             cell.textContent = String(value ?? "—");
             if (index === 2) cell.className = `status ${item.t03}`;
+            if (index === 3) cell.classList.add("memo");
           });
         }
         ["PENDING", "SUCCESS", "FAILED"].forEach((status) =>
@@ -286,7 +294,7 @@
         dataMessage.textContent = "Native Data API 讀取中…";
         const result = await supabase
           .from("test_b8c3q1")
-          .select("t01,t02,t03,t04,t05,t06,t07,t08")
+          .select("t01,t02,t03,t04,t05,t06,t07,t08,t09")
           .order("t01", { ascending: false });
         if (result.error) {
           dataMessage.textContent = `Test row SELECT 失敗：${result.error.message}`;
