@@ -1,10 +1,12 @@
-// D-BATCH-1 staged parameter probe: verify one fixed Cron body parameter first.
+// D-BATCH-1 staged parameter probe: verify fixed + runtime_date Cron body parameters.
 import { withSupabase } from "npm:@supabase/server";
 
 const PROBE_ID = "test-cron-parameter-probe";
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 type ProbeInput = {
   fixed_value: string;
+  runtime_date: string;
 };
 
 Deno.serve(
@@ -34,16 +36,13 @@ Deno.serve(
     }
 
     const now = new Date();
-    const runtimeDate = new Date(now.getTime() - 86_400_000)
-      .toISOString()
-      .slice(0, 10);
 
-    // This stage persists the caller-supplied fixed value only.
-    // Date/time remain synthetic server-side controls until later probe stages.
+    // This stage persists fixed_value and runtime_date exactly as supplied by Cron.
+    // runtime_time remains a server-side control until the final probe stage.
     const { error } = await supabaseAdmin.from("test_p7k2m4").insert({
       created_by: "-1",
       fixed_value: validation.input.fixed_value,
-      runtime_date: runtimeDate,
+      runtime_date: validation.input.runtime_date,
       runtime_time: now.toISOString().slice(11),
     });
 
@@ -56,7 +55,7 @@ Deno.serve(
 
     return jsonResponse({
       probe: PROBE_ID,
-      mode: "fixed-value-only",
+      mode: "fixed-value-plus-runtime-date",
       inserted: true,
       received: validation.input,
     });
@@ -72,14 +71,31 @@ function validateInput(
 
   const body = value as Record<string, unknown>;
   const fixedValue = body.fixed_value;
+  const runtimeDate = body.runtime_date;
+  const errors: string[] = [];
 
   if (typeof fixedValue !== "string" || fixedValue.trim() === "") {
-    return { ok: false, errors: ["fixed_value_required"] };
+    errors.push("fixed_value_required");
+  }
+
+  if (
+    typeof runtimeDate !== "string" ||
+    !DATE_PATTERN.test(runtimeDate) ||
+    Number.isNaN(Date.parse(`${runtimeDate}T00:00:00Z`))
+  ) {
+    errors.push("runtime_date_invalid");
+  }
+
+  if (errors.length) {
+    return { ok: false, errors };
   }
 
   return {
     ok: true,
-    input: { fixed_value: fixedValue },
+    input: {
+      fixed_value: fixedValue as string,
+      runtime_date: runtimeDate as string,
+    },
   };
 }
 
