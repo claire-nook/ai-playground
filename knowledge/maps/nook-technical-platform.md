@@ -52,7 +52,7 @@ Nook Technical Platform
 ├─ Custom API Workload Coverage
 │  ├─ Database-centric / application processing         [Verified C-DB-1]
 │  ├─ External API orchestration                        [Verified C-EXT-1]
-│  ├─ Pure Compute / longer-running                     [Candidate]
+│  ├─ Pure Compute / longer-running                     [Deferred]
 │  └─ Explicit business authorization / error contract  [Candidate]
 │
 ├─ Remote Execution / Toolchain
@@ -131,13 +131,21 @@ C-DB-1 與 C-EXT-1 的 TU01 / TU02 都呈現 Authentication Success + HTTP 200 +
 
 ## Remaining Supabase-first Questions
 
-External API Orchestration 已從 Candidate 升為 Verified；Batch / Scheduling 已形成 Partial Evidence。下一階段更值得研究：
+External API Orchestration 已從 Candidate 升為 Verified；Batch / Scheduling 已形成 Partial Evidence。目前仍值得保持 active 的問題：
 
-1. **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、free-tier / cost。
-2. **Business Contract / Authorization**：需要時研究 explicit 403、validation、transaction / error propagation。
-3. **Observability / Operations**：在更接近真實 workload 時觀察 logs、failure diagnosis 與 deployment traceability。
-4. **External Provider Secrets / Failure Policy**：只有當 API credential、retry / rate limit / timeout semantics 真正影響架構決策時再補 Probe。
-5. **Batch Runtime Confirmation**：觀察 Cron B scheduled Edge Function invocation 與 test-row state transition，再評估 retry、concurrency、quota / cost 與 configuration source of truth。
+1. **Business Contract / Authorization**：需要時研究 explicit 403、validation、transaction / error propagation。
+2. **Observability / Operations**：在更接近真實 workload 時觀察 logs、failure diagnosis 與 deployment traceability。
+3. **External Provider Secrets / Failure Policy**：只有當 API credential、retry / rate limit / timeout semantics 真正影響架構決策時再補 Probe。
+4. **Batch Runtime Confirmation**：觀察 Cron B scheduled Edge Function invocation 與 test-row state transition，再評估 retry、concurrency、quota / cost 與 configuration source of truth。
+
+### Deferred — Pure Compute / Longer-running
+
+Pure Compute / Longer-running 目前不是下一階段 priority。尚未出現足以代表 Nook Works 的 longer-running / compute-heavy workload；若只為測 provider limit 而刻意製造 sleep / compute Probe，所得 Evidence 對實際 Architecture placement 幫助有限，因此本題明確維持 `Deferred`。
+
+**Evolution Trigger：**只有在以下任一條件成立時，才把此題重新拉回 active research 並設計 representative Probe：
+
+1. Nook Works 出現實際、具代表性的 longer-running / compute-heavy use case；或
+2. Provider runtime limits 開始影響真實設計。
 
 只有 Supabase 出現實質限制，或 workload 本身屬於獨立 project boundary，才需要拉 Netlify Functions 或其他 runtime 做進一步 placement comparison。
 
