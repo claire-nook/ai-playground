@@ -41,9 +41,11 @@ Nook Technical Platform
 │  ├─ Custom API → Custom API                           [Verified C-EXT-1]
 │  └─ Custom API → External API                         [Verified C-EXT-1]
 │
-├─ Backend Service Access                               [Separate research question]
-│  ├─ service identity → synthetic table Read/Update    [Verified D-BATCH-1 P1]
-│  └─ service identity → normal secured table           [Candidate]
+├─ Backend Service Access                               [Planned C-BSA-1]
+│  ├─ service identity → synthetic table Read/Update    [Verified D-BATCH-1]
+│  ├─ service identity → formal-style secured table CRUD [Planned]
+│  ├─ service identity → RPC / PostgreSQL Function      [Planned]
+│  └─ transaction boundary / atomic DB operation        [Planned]
 │
 ├─ Remote Execution / Toolchain
 │  └─ GitHub Actions                                    [Verified]
@@ -52,7 +54,10 @@ Nook Technical Platform
    ├─ Cron → Database Function → synthetic INSERT       [Verified]
    ├─ Cron → pg_net → Edge Function                     [Verified]
    ├─ Edge → Data API synthetic SELECT / UPDATE         [Verified]
-   └─ Cron-scheduled Edge → External API                [Remaining evidence gate]
+   ├─ Cron-scheduled Edge → External API → update       [Verified]
+   └─ Cron → parameterized Edge invocation              [Remaining]
+      ├─ fixed parameters                               [Remaining]
+      └─ execution-time dynamic parameters              [Remaining]
 ```
 
 ## Current Judgment
@@ -65,63 +70,61 @@ Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model�
 
 C-DB-1 已驗證 Database-centric path；C-EXT-1 已驗證 API composition 與 Edge Function outbound HTTP → Open-Meteo。Supabase Edge Functions 因此仍是 Nook Works Primary Custom API Runtime Candidate。這是 Research Judgment，不是 Production Architecture Decision。
 
-### Batch Runtime / Scheduling — Phase 1 complete
+### Batch Runtime / Scheduling — scheduled runtime chain verified, parameter gate remains
 
-D-BATCH-1 Phase 1 已確認：
-
-```text
-Cron → PostgreSQL Database Function → synthetic PENDING row     Verified
-Cron → pg_net → Edge Function                                  Verified
-Edge Function → Native Data API Read/Update synthetic table     Verified
-```
-
-可重用的實作方式與注意事項已獨立整理於：
-
-`knowledge/implementation/supabase-cron.md`
-
-因此未來正式開發不需要重新從「Cron 怎麼叫 Database Function / Edge Function、server-side auth 怎麼做、如何判讀 Scheduler / Invocation / Data State」開始考古。
-
-目前 Batch track 尚缺最後一張直接 runtime Evidence：
+D-BATCH-1 已直接確認：
 
 ```text
-Cron → Edge Function → outbound External API → synthetic update
+Cron → PostgreSQL Database Function → synthetic row                     Verified
+Cron → pg_net → Edge Function                                          Verified
+Edge Function → Native Data API Read/Update synthetic table             Verified
+Cron → Edge Function → Open-Meteo → synthetic SUCCESS + temperature     Verified
 ```
 
-C-EXT-1 已證明一般 Edge Function outbound HTTP 可行，但不能替 scheduled invocation path 自動背書。D-BATCH-1 下一步只需用 synthetic coordinates 隔離驗證這一段，不再把 formal `place` authorization 混進 Cron capability test。
+可重用的實作方式與注意事項已整理於：`knowledge/implementation/supabase-cron.md`。
 
-### Backend Service Access — separate from Cron
+因此 Supabase Cron 已具備作為 Nook Works platform scheduler candidate 的主要 runtime evidence。正式關閉第一輪 Cron research 前，仍需補一個由 Nook Works `daily-weather` Batch Specification 暴露出的能力缺口：**parameterized invocation**。
 
-D-BATCH-1 中 worker SELECT formal `place` 失敗，root cause 已確認為 current service identity 缺少 table SELECT privilege。這暴露出一個獨立而重要的架構問題：
-
-> 正式 backend service 應如何取得 application table 的明確、least-privilege access？
-
-這不是 Cron limitation，也不是完成 D-BATCH-1 的 prerequisite。它應作為 Backend Service Access 研究題另行處理，而不是讓 Cron Experiment 無限增生。
-
-Frontend User Access 與 Backend Service Access 應分開描述：
-
-- Browser / user path 可採 `authenticated + RLS / application access`。
-- Background worker 使用 service identity，不應假裝成 user，也不能假設 bypass RLS 等於自動擁有所有 table privileges。
-
-### Remaining Batch Evidence Gate
-
-D-BATCH-1 接下來只需補：
+代表性 scheduled input：
 
 ```text
-Cron
-→ Edge Function
-→ synthetic latitude / longitude
-→ Open-Meteo
-→ synthetic Data API update
+executor_oid = -1
+query_date   = execution date - 1
+process_mode = scheduled mode
 ```
 
-這是 Cron-scheduled runtime capability confirmation，不是新的 Batch architecture design。完成後即可關閉 D-BATCH-1 第一輪 feasibility research。
+研究需區分：
 
-Retry、locking、concurrency / idempotency、quota / cost、正式 batch log 與 scheduler source-of-truth policy，只有在它們開始影響真正架構決策時才另開代表性 Probe。
+- Fixed parameter：Cron request body 能帶固定值。
+- Execution-time dynamic parameter：Cron job 執行當下能以 SQL / PostgreSQL expression 計算值並組入 HTTP body，例如 `current_date - 1`。
+
+若參數準備需要查詢 DB、套用 business rules、建立多段日期範圍或其他 orchestration，責任不應繼續膨脹到 Cron。預期 pattern 為：
+
+```text
+Simple schedule:  Cron → Main Batch API
+Complex schedule: Cron → Launcher / Preparation API → Main Batch API
+Manual:           UI / Admin → Main Batch API
+```
+
+Cron research 的邊界停在「可靠啟動帶參數的 endpoint」；Launcher 內部參數準備屬 Custom API orchestration。
+
+### Backend Service Access — C-BSA-1
+
+D-BATCH-1 曾因 worker SELECT formal `place` 得到 `permission denied for table place`。Root cause 已確認：current service identity 缺少 table SELECT privilege；bypass RLS 不等於自動取得 table privilege。
+
+這不是 Cron limitation。新的 C-BSA-1 將獨立研究 Supabase Edge Function 作為 backend service 時，如何以明確、least-privilege 的方式存取正式 PostgreSQL objects，包含：
+
+- Native Data API `SELECT / INSERT / UPDATE / DELETE` 的 table privilege 與 RLS boundary。
+- RPC / PostgreSQL Function 的 `EXECUTE` privilege 與 function security context。
+- 需要 atomicity 的多步驟 DB operation 應如何形成 transaction boundary。
+- Frontend User Access (`authenticated + RLS`) 與 Backend Service Access 的責任分離。
+
+Nook Works `daily-weather` Batch Specification 已提供真實代表性需求，例如 `Delete + Insert` 必須同一 Transaction、失敗時 rollback，因此 transaction 不再只是抽象 checklist，而是 C-BSA-1 應驗證的實際 capability。
 
 ## Remaining Supabase-first Questions
 
-1. Backend Service Access pattern：獨立 research question，不阻擋 Cron 結案。
-2. Cron-scheduled outbound external HTTP：D-BATCH-1 remaining evidence gate。
+1. D-BATCH-1：Cron fixed + execution-time dynamic parameter invocation。
+2. C-BSA-1：Backend Service Access，包括 formal-style table CRUD、RPC / Function access 與 transaction boundary。
 3. Explicit Business Authorization / Error Contract，在真實 API 需要區分 No Data / No Access / Validation / Conflict 等 semantics 時再研究。
 4. Pure Compute / Longer-running：保持 Deferred，直到有 representative workload。
 
