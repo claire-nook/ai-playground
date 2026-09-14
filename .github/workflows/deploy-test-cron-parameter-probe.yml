@@ -1,14 +1,8 @@
 name: Deploy Test Cron Parameter Probe
 
-# Temporary push trigger exists only to obtain one CLI deployment as runtime evidence;
-# final workflow returns to workflow_dispatch-only after this probe.
+# Human gate: this Playground deployment is started explicitly with workflow_dispatch.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "supabase/functions/test-cron-parameter-probe/**"
-      - ".github/workflows/deploy-test-cron-parameter-probe.yml"
 
 permissions:
   contents: read
@@ -17,6 +11,7 @@ jobs:
   deploy-test-cron-parameter-probe:
     runs-on: ubuntu-latest
     env:
+      # Project Ref is public metadata; the Supabase access token remains a GitHub secret.
       SUPABASE_PROJECT_REF: cctonymfrxneonxryqei
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
@@ -32,6 +27,7 @@ jobs:
       - name: Show Supabase CLI version
         run: supabase --version
 
+      # Secret Keys are not user JWTs; the Edge Function server helper validates the apikey header.
       - name: Deploy test-cron-parameter-probe
         run: |
           supabase functions deploy test-cron-parameter-probe \
