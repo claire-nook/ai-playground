@@ -71,11 +71,26 @@
     return safeRepositoryPath(path) && path.endsWith(".md") ? path : null;
   }
 
+  function updateMapNavigation(container, recordPath) {
+    if (container.id !== "view-knowledge-map") return;
+    const toolbar = container.querySelector(".reader-toolbar");
+    let indexLink = toolbar.querySelector(".map-index-link");
+    if (!indexLink) {
+      indexLink = document.createElement("a");
+      indexLink.className = "map-index-link";
+      indexLink.href = "#";
+      indexLink.textContent = "回到 Map Index";
+      toolbar.insertBefore(indexLink, toolbar.querySelector(".github-record"));
+    }
+    indexLink.hidden = recordPath === mapIndexPath;
+  }
+
   async function renderMarkdown({ path, container, fallback }) {
     const recordPath = canonicalDocumentPath(path);
     if (!safeRepositoryPath(recordPath))
       throw new Error("Invalid repository document path");
     fallback.href = `${githubRoot}${recordPath}`;
+    updateMapNavigation(container, recordPath);
     const state = container.querySelector(".reader-state");
     const article = container.querySelector(".markdown-body");
     state.hidden = false;
@@ -108,10 +123,13 @@
   // user to raw.githubusercontent.com. The canonical Markdown files remain the
   // source of truth; this is only a Human View navigation layer.
   document.addEventListener("click", async (event) => {
-    const link = event.target.closest("#view-knowledge-map .markdown-body a[href]");
-    if (!link) return;
-    const path = repositoryPathFromRawUrl(link.href);
+    const indexLink = event.target.closest("#view-knowledge-map .map-index-link");
+    const mapLink = event.target.closest("#view-knowledge-map .markdown-body a[href]");
+    if (!indexLink && !mapLink) return;
+
+    const path = indexLink ? mapIndexPath : repositoryPathFromRawUrl(mapLink.href);
     if (!path || !path.startsWith("knowledge/maps/")) return;
+
     event.preventDefault();
     const container = document.getElementById("view-knowledge-map");
     await renderMarkdown({
