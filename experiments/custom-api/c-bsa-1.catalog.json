@@ -1,9 +1,8 @@
 {
   "id": "C-BSA-1",
   "title": "Custom API / Backend Service Database Access",
-  "completedDate": "2026-09-15",
-  "recordPath": "experiments/custom-api/README.md",
-  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Research Model 分為 Access Model、Operation Model、Transaction Model：先區分 service identity、object privilege 與 RLS，再比較 Native Data API CRUD 與 RPC / PostgreSQL Function 的 operation-level security，最後以 Daily Weather 類型的 Delete + Insert representative workload 驗證 atomic rollback。Optional Phase D 才研究 caller-owned composed transaction。",
+  "recordPath": "experiments/custom-api/c-bsa-1.md",
+  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Phase A Access Model 已完成 runtime verification：service identity、PostgreSQL object privilege 與 RLS 可被獨立觀察，且 SELECT / INSERT / UPDATE / DELETE least-privilege boundary 已驗證。Phase B Operation Model 與 Phase C Transaction Model 尚待驗證。",
   "tags": [
     "Supabase",
     "Custom API",
@@ -16,5 +15,5 @@
   ],
   "demoStatus": "none",
   "verificationStatus": "candidate",
-  "flow": "Phase A: Edge Function → backend service identity → table privilege / RLS → Native Data API CRUD. Phase B: Edge Function → RPC → SECURITY INVOKER / DEFINER + EXECUTE boundary. Phase C: compare separate Data API DELETE + INSERT with one atomic RPC operation under forced INSERT failure. Phase D caller-owned composed transaction is optional/deferred."
+  "flow": "Phase A VERIFIED: backend service identity → PostgreSQL object privilege / RLS → Native Data API CRUD. Phase B PLANNED: Edge Function → RPC → SECURITY INVOKER / DEFINER + EXECUTE boundary. Phase C PLANNED: compare separate Data API DELETE + INSERT with one atomic RPC operation under forced INSERT failure. Phase D optional/deferred."
 }
