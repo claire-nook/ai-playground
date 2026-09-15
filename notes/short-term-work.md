@@ -30,54 +30,35 @@
 - Experiment C-NF-0 — Netlify Functions Deployment Lifecycle：`Verified`
 - Experiment C-DB-1 — Database-centric Custom API：`Verified`
 - Experiment C-EXT-1 — External API Orchestration：`Verified`
+- C-BSA-1 — Backend Service Database Access / Transaction Ownership：`Verified / Completed`
 - Netlify Git Deployment / Trigger Boundary：`Verified`
 - D-BATCH-1 — Supabase Cron / Scheduling：`Verified / Completed`
 - P-CODEX-PHONE — ChatGPT → Codex Autonomous Dispatch Reconnaissance：`Verified Provider Gap / Deferred`
 
 Supabase Edge Functions 仍是目前 Nook Works Primary Custom API Runtime Candidate；Netlify Functions 保留為 credible secondary candidate。這是 Research Judgment，不是 Production Architecture Decision。
 
-## D-BATCH-1 Graduation Summary
+2026-09-15 Primary review 與 independent Codex Blind Spot Review 均判斷：Backend / Data / Integration core feasibility 已足以開始形成 Platform Architecture draft，目前沒有新的 technical Blocking Gap。近期研究因此不再以 broad backend capability probing 為主。
 
-D-BATCH-1 已完成，不再佔用近期施工前緣。
+## Graduated — D-BATCH-1 / C-BSA-1
 
-已驗證：
+D-BATCH-1 與 C-BSA-1 已完成，不再佔用近期施工前緣。
 
-```text
-Cron → PostgreSQL Database Function
-Cron → pg_net → Edge Function
-Cron-scheduled Edge → Native Data API / External API
-Cron HTTP body ← static literal
-Cron HTTP body ← execution-time SQL expression
-Cron HTTP body ← PostgreSQL Function return value
-```
-
-Cron lifecycle 亦已實測：
-
-```text
-Create  → cron.schedule(...)
-Read    → cron.job
-Update  → cron.alter_job(...)
-Delete  → cron.unschedule(...)
-```
-
-Durable records：
+D-BATCH-1 durable records：
 
 - `experiments/batch-scheduling/README.md`
 - `knowledge/implementation/supabase-cron.md`
 - `evidence/d-batch-1-phase-1.md`
 - `evidence/d-batch-1-parameter-invocation.md`
 
-Parameter preparation 的 platform-design ladder：
+C-BSA-1 durable records：
 
-```text
-Static Literal
-→ SQL Runtime Expression
-→ DB Helper Function
-→ Launcher / Preparation API
-→ Orchestrator
-```
-
-前三層直接 Verified；Launcher path 的 building blocks 已由既有 Custom API composition evidence 支持，不另做重複 probe。
+- `experiments/custom-api/c-bsa-1.md`
+- `experiments/custom-api/c-bsa-1.catalog.json`
+- `evidence/c-bsa-1-phase-a.md`
+- `evidence/c-bsa-1-phase-b.md`
+- `evidence/c-bsa-1-phase-c.md`
+- `evidence/c-bsa-1-phase-d.md`
+- `evidence/c-bsa-1-consolidated-findings.md`
 
 重要治理原則：
 
@@ -87,52 +68,78 @@ Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
 
 平台初期可以只納入少量標準 Pattern，其他已知能力保留為 Deferred / Future Expansion Candidate，待需求與平台成熟度成長時再 Promote。
 
-## Current — C-BSA-1｜Custom API / Backend Service Database Access
-
-### Claire-readable summary
-
-> **D-BATCH-1 的 `place` permission failure 已經把真正問題照得很亮：不是 Cron 能不能碰 DB，而是 Supabase Edge Function 作為 backend service 時，對正式 PostgreSQL objects 應如何取得明確且最小權限的存取能力。這題獨立成 C-BSA-1。**
-
-Experiment Card：`experiments/custom-api/c-bsa-1.catalog.json`。
-
-### Research scope
-
-C-BSA-1 應使用 synthetic / formal-style secured objects 驗證，不為實驗直接放寬正式 `place`：
-
-- Native Data API `SELECT / INSERT / UPDATE / DELETE`。
-- service identity 的 table privilege 與 RLS boundary。
-- RPC / PostgreSQL Function 的 `EXECUTE` privilege、`SECURITY INVOKER` / `SECURITY DEFINER` 等 security context。
-- Function 內部再存取 table 時，權限與 transaction 行為如何落地。
-- Frontend User Access (`authenticated + RLS`) 與 Backend Service Access 的責任分離。
-
-### Why transaction is now in scope
-
-Nook Works Daily Weather Batch Specification 已明確要求：
+C-BSA-1 的 Evidence-backed Current Judgment：
 
 ```text
-Delete existing row
-→ Insert replacement row
-→ same Transaction
-→ Insert failure must rollback Delete
+Transaction owner = layer owning complete Business Operation.
 ```
 
-因此需要驗證 Custom API 面對這種正式 workload 時，應直接使用多次 Native Data API request，還是由 RPC / PostgreSQL Function 提供 atomic operation contract。
+它是未來 Platform Architecture 的 input，不是已自動生效的 Production Rule。
 
-## Next Major Track — Application UI Maintenance Pattern
+## Next Major Track A — Application Shell
 
-Batch / Backend Service Access 第一輪研究完成後，下一條 major track 是 Nook Works Application UI Pattern：
+Application Shell 從一般 UI Pattern 拆出，視為 browser-side composition layer。Menu 有畫面，但它承擔的是 system shell responsibility，不應只因「看得到」就跟 Form / Table aesthetics 塞進同一桶。
 
-- 單檔維護畫面
-- 主從雙檔 / 多檔維護畫面
-- 新增 / 編輯 / 刪除 / 儲存 / 取消 naming 與 placement
-- Search / List / Detail / Edit state transition
-- Validation / error presentation
-- Toolbar / action hierarchy
-- iPad-first responsive behavior
+近期 focused research scope：
+
+- Application bootstrap。
+- Auth session restore / invalidation / sign-out lifecycle。
+- Application user eligibility context。
+- Navigation / Menu。
+- Route / Page lifecycle 與 deep link。
+- Permission-aware feature entry。
+- Global loading / unexpected error boundary 的 ownership。
+- Browser-safe configuration boundary。
+
+### Minimal experiment intent
+
+不研究 Menu 長得漂不漂亮，而是驗證 lifecycle：
+
+```text
+cold start / deep link
+→ session restore / invalid session
+→ application user eligibility
+→ route resolution
+→ menu / feature visibility
+→ direct route / backend authorization
+→ sign-out / state invalidation
+```
+
+Stop condition：上述 state transition 可 deterministic 重現、沒有 redirect loop / stale privileged state，並證明 hidden menu / route guard 不是 backend authorization 的替代品。
+
+Application Shell 可以與後續 UI exploration 共用 browser artifact，但 Evidence 與 acceptance criteria 應分開。
+
+## Next Major Track B — Application UI Maintenance Pattern
+
+Shell boundary 之外，再研究 Nook Works Feature UI Pattern：
+
+- 單檔維護畫面。
+- 主從雙檔 / 多檔維護畫面。
+- 新增 / 編輯 / 刪除 / 儲存 / 取消 naming 與 placement。
+- Search / List / Detail / Edit state transition。
+- Validation / error presentation。
+- Toolbar / action hierarchy。
+- iPad-first responsive behavior。
+- Form / Table / Dialog 等 visual / interaction pattern。
+
+Shell 解決「Application 怎麼活著、怎麼進入 Feature」；Feature UI 解決「進去以後人類怎麼操作」。人類很喜歡把兩件事都叫畫面，然後 architecture 就開始受苦，所以這裡正式拆開。
+
+## Platform Rule / Design Queue｜不是立即 Experiment
+
+Independent Blind Spot Review 提醒的幾項工作應進 Architecture / Rule design，而不是看到名詞就再養一批實驗：
+
+- **Transaction Pattern Selection**：依 Business Operation owner / atomicity 選 Native Data API、Database-owned RPC 或 Backend-owned Transaction。
+- **Authorization / Error Contract**：區分 provider security semantics 與 Business Operation result semantics。
+- **Batch Execution Contract**：logical run ID、business date、idempotency、retry ownership、failure persistence、manual rerun / reconciliation。
+- **Production Identity / Secret / Connection Governance**：restricted DB role、least privilege、secret custody / rotation、Transaction Pooler / connection lifecycle。
+- **Observability Contract**：operation / run correlation、layered status、durable outcome、redaction / retention / alert ownership。
+- **Requirement-to-platform traceability**：Platform Architecture 定稿前，抽樣 Nook Works representative Specifications，確認 requirement responsibility 都有 architecture 落點。
 
 ## Deferred / Candidate
 
 - **P-CODEX-PHONE / Autonomous ChatGPT → Codex Dispatch**：WAIT / Deferred by Provider Gap。
 - **Pure Compute / Longer-running Processing**：等 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
-- **Explicit Business Authorization / Error Contract**：當 API 真正需要區分 No Data / No Application Access / Validation / Conflict / Not Found 等 semantics 時再研究。
-- **PostgreSQL RPC / Application Operation Contract**：mechanism 已在 C-DB-1 驗證；哪些正式 operation 應優先由 DB Function 提供 contract，與 C-BSA-1 的 representative workload 一起判斷。
+- **Concurrency / Isolation / Deadlock / Load**：等 formal correctness requirement、concurrent writer 或 quantified workload 出現。
+- **Distributed Transaction / Compensation**：等 Business Operation 真正要求 external side effect 與 DB state 跨系統一致。
+- **Advanced Workflow Orchestration**：等 durable waits、branching、human approval、跨日 resume 等 requirement 出現。
+- **Batch Retry / Idempotency Experiment**：先完成 formal contract；只有 chosen execution model 真的允許 duplicate / retry / concurrent invocation 時再 focused verify。
