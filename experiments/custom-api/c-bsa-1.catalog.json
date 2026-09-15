@@ -2,7 +2,7 @@
   "id": "C-BSA-1",
   "title": "Custom API / Backend Service Database Access",
   "recordPath": "experiments/custom-api/c-bsa-1.md",
-  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Phase A Access Model 與 Phase B Operation Model 已完成 runtime verification：PostgreSQL object privilege、RLS 與 RPC Function EXECUTE 可形成可分離的 authorization boundaries；Backend Service 可在沒有 direct table UPDATE privilege 時透過 approved SECURITY DEFINER operation 完成指定修改。Phase C Transaction Model 尚待驗證。",
+  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Phase A Access、Phase B Operation、Phase C Transaction 已完成 runtime verification：object privilege / RLS、Function EXECUTE 與 atomic RPC transaction 可形成不同層級的治理邊界；separate Data API requests 無法 rollback 已完成的前一個 request，而 one RPC operation 可在 DB failure 或 Business Logic abort 時完整 rollback。Phase D 將驗證 Backend Service caller-owned transaction feasibility。",
   "tags": [
     "Supabase",
     "Custom API",
@@ -15,5 +15,5 @@
   ],
   "demoStatus": "none",
   "verificationStatus": "candidate",
-  "flow": "Phase A VERIFIED: backend service identity → PostgreSQL object privilege / RLS → Native Data API CRUD. Phase B VERIFIED: SECURITY INVOKER / DEFINER + Function EXECUTE establish an operation-level authorization boundary; approved RPC can write while direct table UPDATE remains denied. Phase C PLANNED: compare separate Data API DELETE + INSERT with one atomic RPC operation under forced INSERT failure. Phase D optional/deferred."
+  "flow": "Phase A VERIFIED: access boundary via PostgreSQL object privilege / RLS. Phase B VERIFIED: approved Function EXECUTE can be separated from direct table UPDATE. Phase C VERIFIED: separate Data API requests leave partial state on later failure; one RPC operation commits or rolls back the complete database operation, including explicit Business Logic exception. Phase D PLANNED: test whether Edge Function can own a direct PostgreSQL session transaction and evaluate its operational/security cost."
 }
