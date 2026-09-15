@@ -4,6 +4,58 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## ChatGPT → Codex Autonomous Dispatch / Agent Collaboration
+
+- Experiment: P-CODEX-PHONE
+- Date: 2026-09-15
+- Status: Verified Provider Gap / Deferred
+- Record: `experiments/codex-dispatch/README.md`
+- Research Map: `knowledge/maps/ai-agent-collaboration.md`
+- Topics: Codex, Agent Collaboration, GitHub, Remote Execution, Authentication, Credential, GitHub Actions, iPad-first
+
+### Result
+
+**Autonomous dispatch is not recommended under the current project constraints.**
+
+Research across Primary + Codex established that the blocker is not model capability, GitHub durable state, or `codex exec` non-interactive execution. The blocking gap is the absence of a supported, subscription-entitled, unattended workload identity / stable Cloud Task invocation boundary that can be used from an ephemeral managed runner without copying Claire's personal refreshable ChatGPT credential or switching to separately billed API-key usage.
+
+### Reusable Evidence
+
+- GitHub can serve as durable shared state across independent Agent sessions through Work Order / Report / commit / PR / Evidence artifacts.
+- Codex Cloud Task and `codex exec` are different execution models. Cloud Task behaves operationally as a selected repository/source snapshot plus provider publication flow; `codex exec` is a process whose filesystem/repository authority comes from the runner.
+- Workspace read access, Git fetch/push authority, PR publication authority and merge/deploy authority are separate boundaries.
+- `codex exec` exposes non-interactive execution and CLI filesystem roots; multi-repo capability therefore depends on runner filesystem/network/credentials, not on a magical cross-repo Codex entitlement.
+- ChatGPT sign-in and API-key sign-in are distinct billing/auth modes. API-key automation is technically credible but violates this experiment's no-additional-API-cost requirement.
+- Device authorization solves remote-machine browser absence, not unattended identity: a fresh runner still requires human authorization unless auth state is persisted.
+- Persisting/restoring a personal Codex/ChatGPT auth store into CI is not accepted as a project pattern because it converts Claire's refreshable personal account identity into a long-lived automation secret with an unnecessarily large blast radius.
+- A persistent authenticated runner is technically plausible but rejected architecturally because it introduces a credential-bearing host, maintenance, security, availability and re-auth responsibilities disproportionate to the single manual dispatch action it removes.
+- `codex cloud exec` remains a useful clue and future re-test target, but observed runtime still labels the surface Experimental and it does not solve caller authentication.
+
+### Current Supported Collaboration Shape
+
+```text
+Primary prepares bounded Work Order
+→ Claire performs one Codex dispatch action
+→ Codex Cloud Task executes under provider-managed ChatGPT session / allowance
+→ GitHub PR / Report / Evidence
+→ Primary independent Technical QC
+```
+
+### Not Verified / Deferred
+
+- Stable public external Codex Cloud Task API/tool with ChatGPT subscription billing.
+- Supported GitHub/OIDC or workload-identity exchange into ChatGPT/Codex entitlement.
+- Official short-lived CI credential helper for personal/subscription Codex usage.
+- Provider-supported unattended use of personal ChatGPT OAuth in CI.
+- Cross-repo Cloud Task behavior beyond the selected workspace/publication contract.
+- Bidirectional Primary↔Codex escalation/resume protocol.
+
+### Re-open Triggers
+
+Re-run this research if OpenAI exposes a stable Cloud Task API/tool, subscription workload identity, GitHub OIDC federation, short-lived CI credential helper, direct ChatGPT→Codex task tool, or equivalent GitHub integration that avoids exporting user session credentials.
+
+---
+
 ## Supabase Batch Runtime / Scheduling
 
 - Experiment: D-BATCH-1
@@ -183,7 +235,7 @@ Netlify Browser → Supabase Auth → Session 已由 iPad Safari 驗證。Authen
 - Status: Completed / Verified
 - Record: `experiments/github-actions/README.md`
 
-GitHub-hosted Runner 已驗證可作為 iPad-first / AI Playground 的 remote execution surface；Manual Approval 與 controlled push-triggered autonomous mode 均有 runtime Evidence。
+GitHub-hosted Runner 已驗證可作為 iPad-first / AI Playground 的 remote execution surface；Manual Approval 與 controlled push-triggered autonomous mode均有 runtime Evidence。
 
 ---
 
