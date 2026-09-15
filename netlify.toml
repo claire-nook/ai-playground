@@ -1,9 +1,5 @@
 # Netlify deployment configuration for AI Playground.
-#
-# Trigger Boundary principle:
-# only changes that can affect Netlify deployable output or runtime should wake
-# the Netlify build pipeline. Research records and other laboratory context stay
-# in the repository without causing a deployment by themselves.
+# Trigger Boundary principle: deployable UI/catalog metadata wakes Netlify; repository-only research prose does not unless catalogued output metadata changes.
 
 [build]
   command = "node scripts/build-experiment-catalog.mjs"
@@ -17,7 +13,7 @@ printf "CACHED_COMMIT_REF=%s\n" "${CACHED_COMMIT_REF:-UNSET}"
 printf "REVIEW_ID=%s\n" "${REVIEW_ID:-UNSET}"
 
 deploy_from_changed_paths() {
-  if printf "%s\n" "$1" | grep -Eq "^(public/|netlify/functions/|netlify/edge-functions/|scripts/build-experiment-catalog\\.mjs$|experiments/.+\\.catalog\\.json$|netlify\\.toml$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)"; then
+  if printf "%s\n" "$1" | grep -Eq "^(public/|netlify/functions/|netlify/edge-functions/|scripts/build-experiment-catalog\\.mjs$|experiments/.+\\.catalog\\.json$|knowledge/wall/.+\\.catalog\\.json$|netlify\\.toml$|package\\.json$|package-lock\\.json$|yarn\\.lock$|pnpm-lock\\.yaml$)"; then
     echo "TRIGGER_DECISION=DEPLOY reason=deploy_surface_changed"
     echo "NETLIFY_TRIGGER_DECISION_END"
     exit 1
@@ -27,101 +23,33 @@ deploy_from_changed_paths() {
   exit 0
 }
 
-if [ -z "${COMMIT_REF:-}" ]; then
-  echo "TRIGGER_DECISION=DEPLOY reason=commit_ref_missing"
-  echo "NETLIFY_TRIGGER_DECISION_END"
-  exit 1
-fi
-
-if ! probe_commit=$(git rev-parse --verify "${COMMIT_REF}^{commit}" 2>/dev/null); then
-  echo "TRIGGER_DECISION=DEPLOY reason=commit_ref_unresolved"
-  echo "NETLIFY_TRIGGER_DECISION_END"
-  exit 1
-fi
+if [ -z "${COMMIT_REF:-}" ]; then echo "TRIGGER_DECISION=DEPLOY reason=commit_ref_missing"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+if ! probe_commit=$(git rev-parse --verify "${COMMIT_REF}^{commit}" 2>/dev/null); then echo "TRIGGER_DECISION=DEPLOY reason=commit_ref_unresolved"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
 
 if [ "${CONTEXT:-}" = "deploy-preview" ]; then
   probe_base_ref="refs/netlify-trigger/base"
   merge_base=""
-
-  if ! git fetch --no-tags --depth=64 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then
-    echo "TRIGGER_DECISION=DEPLOY reason=fresh_fetch_failed"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  fi
-
-  if ! probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then
-    echo "TRIGGER_DECISION=DEPLOY reason=fresh_base_unresolved"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  fi
-
+  if ! git fetch --no-tags --depth=64 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then echo "TRIGGER_DECISION=DEPLOY reason=fresh_fetch_failed"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+  if ! probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then echo "TRIGGER_DECISION=DEPLOY reason=fresh_base_unresolved"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
   if ! merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then
     echo "MERGE_BASE_RETRY=depth_256"
-    if ! git fetch --no-tags --depth=256 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then
-      echo "TRIGGER_DECISION=DEPLOY reason=history_retry_fetch_failed"
-      echo "NETLIFY_TRIGGER_DECISION_END"
-      exit 1
-    fi
-    if ! probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then
-      echo "TRIGGER_DECISION=DEPLOY reason=fresh_base_retry_unresolved"
-      echo "NETLIFY_TRIGGER_DECISION_END"
-      exit 1
-    fi
-    if ! merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then
-      echo "TRIGGER_DECISION=DEPLOY reason=merge_base_unavailable"
-      echo "NETLIFY_TRIGGER_DECISION_END"
-      exit 1
-    fi
+    if ! git fetch --no-tags --depth=256 origin "+main:${probe_base_ref}" >/dev/null 2>&1; then echo "TRIGGER_DECISION=DEPLOY reason=history_retry_fetch_failed"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+    if ! probe_base=$(git rev-parse --verify "${probe_base_ref}^{commit}" 2>/dev/null); then echo "TRIGGER_DECISION=DEPLOY reason=fresh_base_retry_unresolved"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+    if ! merge_base=$(git merge-base "$probe_base" "$probe_commit" 2>/dev/null); then echo "TRIGGER_DECISION=DEPLOY reason=merge_base_unavailable"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
   fi
-
-  changed_paths=$(git diff --name-only "$merge_base" "$probe_commit") || {
-    echo "TRIGGER_DECISION=DEPLOY reason=diff_failed"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  }
-
-  echo "CHANGE_BOUNDARY=deploy_preview_fresh_base"
-  echo "CHANGED_PATHS_BEGIN"
-  printf "%s\n" "$changed_paths"
-  echo "CHANGED_PATHS_END"
-  deploy_from_changed_paths "$changed_paths"
+  changed_paths=$(git diff --name-only "$merge_base" "$probe_commit") || { echo "TRIGGER_DECISION=DEPLOY reason=diff_failed"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; }
+  echo "CHANGE_BOUNDARY=deploy_preview_fresh_base"; echo "CHANGED_PATHS_BEGIN"; printf "%s\n" "$changed_paths"; echo "CHANGED_PATHS_END"; deploy_from_changed_paths "$changed_paths"
 fi
 
 if [ "${CONTEXT:-}" = "production" ]; then
-  if [ -z "${CACHED_COMMIT_REF:-}" ]; then
-    echo "TRIGGER_DECISION=DEPLOY reason=cached_commit_ref_missing"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  fi
-
-  if [ "${CACHED_COMMIT_REF}" = "${COMMIT_REF}" ]; then
-    echo "TRIGGER_DECISION=DEPLOY reason=cached_equals_commit"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  fi
-
-  if ! cached_commit=$(git rev-parse --verify "${CACHED_COMMIT_REF}^{commit}" 2>/dev/null); then
-    echo "TRIGGER_DECISION=DEPLOY reason=cached_commit_ref_unresolved"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  fi
-
-  changed_paths=$(git diff --name-only "$cached_commit" "$probe_commit") || {
-    echo "TRIGGER_DECISION=DEPLOY reason=production_diff_failed"
-    echo "NETLIFY_TRIGGER_DECISION_END"
-    exit 1
-  }
-
-  echo "CHANGE_BOUNDARY=production_cached_to_current"
-  echo "CHANGED_PATHS_BEGIN"
-  printf "%s\n" "$changed_paths"
-  echo "CHANGED_PATHS_END"
-  deploy_from_changed_paths "$changed_paths"
+  if [ -z "${CACHED_COMMIT_REF:-}" ]; then echo "TRIGGER_DECISION=DEPLOY reason=cached_commit_ref_missing"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+  if [ "${CACHED_COMMIT_REF}" = "${COMMIT_REF}" ]; then echo "TRIGGER_DECISION=DEPLOY reason=cached_equals_commit"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+  if ! cached_commit=$(git rev-parse --verify "${CACHED_COMMIT_REF}^{commit}" 2>/dev/null); then echo "TRIGGER_DECISION=DEPLOY reason=cached_commit_ref_unresolved"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; fi
+  changed_paths=$(git diff --name-only "$cached_commit" "$probe_commit") || { echo "TRIGGER_DECISION=DEPLOY reason=production_diff_failed"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1; }
+  echo "CHANGE_BOUNDARY=production_cached_to_current"; echo "CHANGED_PATHS_BEGIN"; printf "%s\n" "$changed_paths"; echo "CHANGED_PATHS_END"; deploy_from_changed_paths "$changed_paths"
 fi
 
-echo "TRIGGER_DECISION=DEPLOY reason=unsupported_context"
-echo "NETLIFY_TRIGGER_DECISION_END"
-exit 1
+echo "TRIGGER_DECISION=DEPLOY reason=unsupported_context"; echo "NETLIFY_TRIGGER_DECISION_END"; exit 1
 '
 '''
 

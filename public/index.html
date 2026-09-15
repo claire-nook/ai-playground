@@ -1,741 +1,141 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="AI Playground 公開實驗展示頁，整理目前可操作與已完成的技術實驗。"
-    />
-    <title>AI Playground · Human View</title>
-    <link rel="stylesheet" href="/assets/markdown-reader.css" />
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"
-    ></script>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"
-    ></script>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
-    ></script>
-    <script defer src="/assets/markdown-reader.js"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI Playground 公開研究成果 Gallery：Experiment、Field Verification、Commentary 與可追溯 Evidence。" />
+  <title>AI Playground · Human View</title>
+  <link rel="stylesheet" href="/assets/markdown-reader.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+  <script defer src="/assets/markdown-reader.js"></script>
+  <style>
+    /* Forest-green Human View shell. Research type, method, verification and presentation are intentionally separate dimensions. */
+    :root { --page-bg:#f4f6f8; --surface:#fff; --muted:#f7f8fa; --border:#d8dee4; --text:#1f2328; --text-muted:#59636e; --link:#0969da; --green:#284a3b; --green-bg:#dce9e2; --live-bg:#dafbe1; --live-text:#116329; --warn-bg:#fff8c5; --warn-text:#7d4e00; --verified-bg:#ddf4ff; --verified-text:#0550ae; --shadow:0 14px 36px rgba(31,35,40,.08); }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.6; color:var(--text); background:var(--page-bg); }
+    a { color:var(--link); text-underline-offset:.16em; } code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; word-break:break-word; } button,input,select { font:inherit; }
+    .page-shell { width:min(1080px,calc(100% - 2rem)); margin:0 auto; padding:3rem 0 4rem; }
+    .hero { padding:2.25rem; border:1px solid var(--border); border-radius:22px; background:var(--surface); box-shadow:var(--shadow); }
+    .eyebrow { margin:0 0 .35rem; font-size:.82rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); }
+    h1,h2,h3 { line-height:1.2; } h1 { margin:0; font-size:clamp(2rem,6vw,4rem); letter-spacing:-.04em; }
+    .hero-copy { max-width:800px; margin:1rem 0 0; font-size:1.05rem; color:var(--text-muted); }
+    .hero-note { margin:1.25rem 0 0; padding:1rem 1.1rem; border-left:4px solid var(--green-bg); background:var(--muted); color:var(--text-muted); }
+    .view-tabs { display:flex; gap:.4rem; margin-top:1.25rem; padding:.35rem; overflow-x:auto; border:1px solid var(--border); border-radius:14px; background:var(--surface); }
+    .view-tab { flex:0 0 auto; padding:.7rem 1rem; border:0; border-radius:10px; color:var(--text-muted); background:transparent; cursor:pointer; font-weight:750; }
+    .view-tab[aria-selected="true"] { color:var(--green); background:var(--green-bg); } .view-panel[hidden] { display:none; }
+    .section { margin-top:2.25rem; } .section-heading { display:flex; align-items:end; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+    .section-heading h2 { margin:0; font-size:1.55rem; } .section-heading p { margin:0; color:var(--text-muted); }
+    .catalog-controls { display:grid; grid-template-columns:2fr repeat(5,1fr); gap:.7rem; margin-bottom:1rem; padding:1rem; border:1px solid var(--border); border-radius:14px; background:var(--surface); }
+    .control { display:grid; gap:.25rem; } .control label { font-size:.78rem; font-weight:800; color:var(--text-muted); }
+    .control input,.control select { width:100%; min-height:2.6rem; padding:.45rem .65rem; border:1px solid var(--border); border-radius:8px; background:#fff; color:var(--text); }
+    .research-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+    .research-card,.runtime-card { border:1px solid var(--border); border-radius:16px; background:var(--surface); }
+    .research-card { display:flex; flex-direction:column; min-height:100%; padding:1.35rem; }
+    .research-meta,.badges,.tags { display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; }
+    .research-meta { justify-content:space-between; margin-bottom:.65rem; } .research-id { font-size:.83rem; font-weight:800; color:var(--text-muted); }
+    .status-badge,.tag,.kind-badge { display:inline-flex; align-items:center; min-height:1.7rem; padding:.18rem .6rem; border-radius:999px; font-size:.75rem; font-weight:800; white-space:nowrap; }
+    .kind-badge { color:var(--green); background:var(--green-bg); } .status-live { background:var(--live-bg); color:var(--live-text); }
+    .status-retired,.status-none,.status-candidate { background:var(--warn-bg); color:var(--warn-text); } .status-verified,.status-partial { background:var(--verified-bg); color:var(--verified-text); }
+    .tag { background:var(--muted); color:var(--text-muted); border:1px solid var(--border); } .research-card h3 { margin:0; font-size:1.18rem; }
+    .research-card p { margin:.7rem 0 0; color:var(--text-muted); } .tags { margin-top:.85rem; }
+    .flow { margin-top:.85rem; padding:.75rem; border-radius:10px; background:var(--muted); font-size:.84rem; } .card-actions { margin-top:auto; padding-top:1.1rem; } .card-actions a { font-weight:750; }
+    .gallery-note,.catalog-state { margin-top:1rem; padding:1rem 1.1rem; border:1px dashed var(--border); border-radius:14px; color:var(--text-muted); background:var(--muted); } .catalog-state.error { border-color:#cf222e; color:#82071e; }
+    .pagination { display:flex; align-items:center; justify-content:center; gap:.75rem; margin-top:1rem; } .pagination button { padding:.4rem .8rem; border:1px solid var(--border); border-radius:8px; background:var(--surface); cursor:pointer; } .pagination button:disabled { opacity:.5; cursor:default; }
+    .runtime-card { padding:1.25rem; } .runtime-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.8rem; margin-top:1rem; } .runtime-item { padding:.9rem; border-radius:12px; background:var(--muted); } .runtime-label { display:block; margin-bottom:.3rem; font-size:.78rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+    footer { margin-top:2rem; color:var(--text-muted); font-size:.9rem; text-align:center; }
+    @media(max-width:900px){ .catalog-controls { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:760px){ .page-shell{width:min(100% - 1rem,1080px);padding-top:.5rem}.hero{padding:1.5rem;border-radius:16px}.research-grid,.runtime-grid,.catalog-controls{grid-template-columns:1fr}.section-heading{align-items:flex-start;flex-direction:column} }
+  </style>
+</head>
+<body>
+<main class="page-shell">
+  <header class="hero">
+    <p class="eyebrow">AI Playground · Research Gallery</p>
+    <h1>撞牆可以，牆上要留下牙印。</h1>
+    <p class="hero-copy">這裡不是正式開發環境，也不是永久 Demo 站。它是一張公開的研究桌：用真實 Browser、API、Database、Provider Runtime 與實際工作流程回答技術問題，再把 Experience / Evidence 留下來。</p>
+    <p class="hero-note"><strong>Gallery 展示 Playground 的公開研究成果。</strong>成果可以來自 Controlled Experiment、Field Verification 或既有 Evidence 的整理。Live Demo 只是證據呈現方式之一，不是成果成立的必要條件；Verification 看的是可追溯 Evidence，不是畫面上有沒有一顆能按的按鈕。</p>
+  </header>
 
-    <style>
-      /* Theme tokens and document-wide defaults. */
-      :root {
-        --page-bg: #f4f6f8;
-        --surface: #ffffff;
-        --surface-muted: #f7f8fa;
-        --border: #d8dee4;
-        --text: #1f2328;
-        --text-muted: #59636e;
-        --link: #0969da;
-        --live-bg: #dafbe1;
-        --live-text: #116329;
-        --retired-bg: #fff8c5;
-        --retired-text: #7d4e00;
-        --verified-bg: #ddf4ff;
-        --verified-text: #0550ae;
-        --shadow: 0 14px 36px rgba(31, 35, 40, 0.08);
-      }
+  <nav class="view-tabs" role="tablist" aria-label="Repository views">
+    <button id="tab-research" class="view-tab" role="tab" aria-selected="true" aria-controls="view-research" data-view="research">Research</button>
+    <button id="tab-short-term" class="view-tab" role="tab" aria-selected="false" aria-controls="view-short-term" data-view="short-term">Short Term</button>
+    <button id="tab-knowledge-map" class="view-tab" role="tab" aria-selected="false" aria-controls="view-knowledge-map" data-view="knowledge-map">Knowledge Map</button>
+  </nav>
 
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family:
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
-        line-height: 1.6;
-        color: var(--text);
-        background: var(--page-bg);
-      }
-      a {
-        color: var(--link);
-        text-underline-offset: 0.16em;
-      }
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        word-break: break-word;
-      }
-      button,
-      input,
-      select {
-        font: inherit;
-      }
-
-      /* Page shell and explanatory hero. */
-      .page-shell {
-        width: min(1080px, calc(100% - 2rem));
-        margin: 0 auto;
-        padding: 3rem 0 4rem;
-      }
-      .hero {
-        padding: 2.25rem;
-        border: 1px solid var(--border);
-        border-radius: 22px;
-        background: var(--surface);
-        box-shadow: var(--shadow);
-      }
-      .eyebrow {
-        margin: 0 0 0.35rem;
-        font-size: 0.82rem;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-      }
-      h1,
-      h2,
-      h3 {
-        line-height: 1.2;
-      }
-      h1 {
-        margin: 0;
-        font-size: clamp(2rem, 6vw, 4rem);
-        letter-spacing: -0.04em;
-      }
-      .hero-copy {
-        max-width: 760px;
-        margin: 1rem 0 0;
-        font-size: 1.05rem;
-        color: var(--text-muted);
-      }
-      .hero-note {
-        margin: 1.25rem 0 0;
-        padding: 1rem 1.1rem;
-        border-left: 4px solid var(--border);
-        background: var(--surface-muted);
-        color: var(--text-muted);
-      }
-
-      /* Human View tabs keep the shell stable while switching canonical sources. */
-      .view-tabs {
-        display: flex;
-        gap: 0.4rem;
-        margin-top: 1.25rem;
-        padding: 0.35rem;
-        overflow-x: auto;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        background: var(--surface);
-      }
-      .view-tab {
-        flex: 0 0 auto;
-        padding: 0.7rem 1rem;
-        border: 0;
-        border-radius: 10px;
-        color: var(--text-muted);
-        background: transparent;
-        cursor: pointer;
-        font-weight: 750;
-      }
-      .view-tab[aria-selected="true"] {
-        color: #284a3b;
-        background: #dce9e2;
-      }
-      .view-panel[hidden] {
-        display: none;
-      }
-
-      /* Catalog heading and search/filter controls. */
-      .section {
-        margin-top: 2.25rem;
-      }
-      .section-heading {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1rem;
-      }
-      .section-heading h2 {
-        margin: 0;
-        font-size: 1.55rem;
-      }
-      .section-heading p {
-        margin: 0;
-        color: var(--text-muted);
-      }
-      .catalog-controls {
-        display: grid;
-        grid-template-columns: 2fr repeat(3, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-        padding: 1rem;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        background: var(--surface);
-      }
-      .control {
-        display: grid;
-        gap: 0.25rem;
-      }
-      .control label {
-        font-size: 0.78rem;
-        font-weight: 800;
-        color: var(--text-muted);
-      }
-      .control input,
-      .control select {
-        width: 100%;
-        min-height: 2.6rem;
-        padding: 0.45rem 0.65rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: white;
-        color: var(--text);
-      }
-
-      /* Catalog cards, status badges, tags, and action links. */
-      .experiment-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-      }
-      .experiment-card,
-      .runtime-card {
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        background: var(--surface);
-      }
-      .experiment-card {
-        display: flex;
-        flex-direction: column;
-        min-height: 100%;
-        padding: 1.35rem;
-      }
-      .experiment-meta,
-      .badges,
-      .tags {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-      .experiment-meta {
-        justify-content: space-between;
-        margin-bottom: 0.65rem;
-      }
-      .experiment-id {
-        font-size: 0.83rem;
-        font-weight: 800;
-        color: var(--text-muted);
-      }
-      .status-badge,
-      .tag {
-        display: inline-flex;
-        align-items: center;
-        min-height: 1.7rem;
-        padding: 0.18rem 0.6rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        white-space: nowrap;
-      }
-      .status-live {
-        background: var(--live-bg);
-        color: var(--live-text);
-      }
-      .status-retired,
-      .status-none,
-      .status-candidate {
-        background: var(--retired-bg);
-        color: var(--retired-text);
-      }
-      .status-verified,
-      .status-partial {
-        background: var(--verified-bg);
-        color: var(--verified-text);
-      }
-      .tag {
-        background: var(--surface-muted);
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-      }
-      .experiment-card h3 {
-        margin: 0;
-        font-size: 1.18rem;
-      }
-      .experiment-card p {
-        margin: 0.7rem 0 0;
-        color: var(--text-muted);
-      }
-      .tags {
-        margin-top: 0.85rem;
-      }
-      .flow {
-        margin-top: 0.85rem;
-        padding: 0.75rem;
-        border-radius: 10px;
-        background: var(--surface-muted);
-        font-size: 0.84rem;
-      }
-      .card-actions {
-        margin-top: auto;
-        padding-top: 1.1rem;
-      }
-      .card-actions a {
-        font-weight: 750;
-      }
-      .gallery-note,
-      .catalog-state {
-        margin-top: 1rem;
-        padding: 1rem 1.1rem;
-        border: 1px dashed var(--border);
-        border-radius: 14px;
-        color: var(--text-muted);
-        background: var(--surface-muted);
-      }
-      .catalog-state.error {
-        border-color: #cf222e;
-        color: #82071e;
-      }
-
-      /* Pagination stays quiet when the filtered result fits on one page. */
-      .pagination {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        margin-top: 1rem;
-      }
-      .pagination button {
-        padding: 0.4rem 0.8rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: var(--surface);
-        cursor: pointer;
-      }
-      .pagination button:disabled {
-        cursor: default;
-        opacity: 0.5;
-      }
-
-      /* Runtime diagnostics verify that the static page executed in a browser. */
-      .runtime-card {
-        padding: 1.25rem;
-      }
-      .runtime-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.8rem;
-        margin-top: 1rem;
-      }
-      .runtime-item {
-        padding: 0.9rem;
-        border-radius: 12px;
-        background: var(--surface-muted);
-      }
-      .runtime-label {
-        display: block;
-        margin-bottom: 0.3rem;
-        font-size: 0.78rem;
-        font-weight: 800;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-      footer {
-        margin-top: 2rem;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        text-align: center;
-      }
-
-      /* Responsive layout preserves usable controls and cards on iPad-sized screens. */
-      @media (max-width: 760px) {
-        .page-shell {
-          width: min(100% - 1rem, 1080px);
-          padding-top: 0.5rem;
-        }
-        .hero {
-          padding: 1.5rem;
-          border-radius: 16px;
-        }
-        .experiment-grid,
-        .runtime-grid,
-        .catalog-controls {
-          grid-template-columns: 1fr;
-        }
-        .section-heading {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="page-shell">
-      <header class="hero">
-        <p class="eyebrow">AI Playground · Experiment Gallery</p>
-        <h1>撞牆可以，牆上要留下牙印。</h1>
-        <p class="hero-copy">
-          這裡不是正式開發環境，也不是永久 Demo 站。它是一張公開的實驗桌：用真實
-          Browser、API、Database、Provider Runtime 去回答技術問題，再把
-          Experience / Evidence 留下來。
-        </p>
-        <p class="hero-note">
-          <strong>Gallery 只負責展示。</strong> Experiment
-          的完整條件、限制與結論保存在 GitHub 的 Experiment Record /
-          Evidence。某個 Demo 日後失效，不代表當年的 Evidence 跟著蒸發。
-        </p>
-      </header>
-
-      <nav class="view-tabs" role="tablist" aria-label="Repository views">
-        <button
-          id="tab-experiments"
-          class="view-tab"
-          role="tab"
-          aria-selected="true"
-          aria-controls="view-experiments"
-          data-view="experiments"
-        >
-          Experiments
-        </button>
-        <button
-          id="tab-short-term"
-          class="view-tab"
-          role="tab"
-          aria-selected="false"
-          aria-controls="view-short-term"
-          data-view="short-term"
-        >
-          Short Term
-        </button>
-        <button
-          id="tab-knowledge-map"
-          class="view-tab"
-          role="tab"
-          aria-selected="false"
-          aria-controls="view-knowledge-map"
-          data-view="knowledge-map"
-        >
-          Knowledge Map
-        </button>
-      </nav>
-
-      <div
-        id="view-experiments"
-        class="view-panel"
-        role="tabpanel"
-        aria-labelledby="tab-experiments"
-      >
-        <section class="section" aria-labelledby="experiments-title">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Current Gallery</p>
-              <h2 id="experiments-title">Public Experiments</h2>
-            </div>
-            <p>Status 是 Demo 狀態，不是研究可信度分數。</p>
-          </div>
-          <div class="catalog-controls">
-            <div class="control">
-              <label for="search">Search</label
-              ><input
-                id="search"
-                type="search"
-                placeholder="ID、名稱、摘要或 Tag"
-              />
-            </div>
-            <div class="control">
-              <label for="tag-filter">Tag</label
-              ><select id="tag-filter">
-                <option value="">All tags</option>
-              </select>
-            </div>
-            <div class="control">
-              <label for="demo-filter">Demo status</label
-              ><select id="demo-filter">
-                <option value="">All demo statuses</option>
-                <option value="live">Live Demo</option>
-                <option value="retired">Demo Retired</option>
-                <option value="none">No Demo</option>
-              </select>
-            </div>
-            <div class="control">
-              <label for="verification-filter">Verification</label
-              ><select id="verification-filter">
-                <option value="">All verification statuses</option>
-                <option value="verified">Verified</option>
-                <option value="partial">Partial</option>
-                <option value="candidate">Candidate</option>
-              </select>
-            </div>
-          </div>
-          <p
-            id="catalog-state"
-            class="catalog-state"
-            role="status"
-            aria-live="polite"
-          >
-            Catalog 載入中…
-          </p>
-          <div id="experiment-grid" class="experiment-grid" hidden></div>
-          <nav
-            id="pagination"
-            class="pagination"
-            aria-label="Catalog pages"
-            hidden
-          ></nav>
-          <div class="gallery-note">
-            <strong>關於狀態：</strong> Demo status 只描述目前入口；Verification
-            status 描述既有研究判定。Demo 退休不會讓 Experiment Record /
-            Evidence 失效。
-          </div>
-        </section>
+  <div id="view-research" class="view-panel" role="tabpanel" aria-labelledby="tab-research">
+    <section class="section" aria-labelledby="research-title">
+      <div class="section-heading"><div><p class="eyebrow">Current Gallery</p><h2 id="research-title">Playground Research</h2></div><p>Output、Method、Presentation、Verification 各管各的，終於不用拿 Demo 冒充研究戶口。</p></div>
+      <div class="catalog-controls">
+        <div class="control"><label for="search">Search</label><input id="search" type="search" placeholder="ID、名稱、摘要或 Tag" /></div>
+        <div class="control"><label for="tag-filter">Tag</label><select id="tag-filter"><option value="">All tags</option></select></div>
+        <div class="control"><label for="output-filter">Output</label><select id="output-filter"><option value="">All outputs</option><option value="experiment">Experiment</option><option value="commentary">Commentary</option><option value="technical-note">Technical Note</option><option value="knowledge">Knowledge</option></select></div>
+        <div class="control"><label for="method-filter">Method</label><select id="method-filter"><option value="">All methods</option><option value="controlled-experiment">Controlled Experiment</option><option value="field-verification">Field Verification</option><option value="analysis">Analysis</option><option value="synthesis">Synthesis</option></select></div>
+        <div class="control"><label for="demo-filter">Presentation</label><select id="demo-filter"><option value="">All presentations</option><option value="live">Live Demo</option><option value="retired">Demo Retired</option><option value="none">No Demo</option></select></div>
+        <div class="control"><label for="verification-filter">Verification</label><select id="verification-filter"><option value="">All verification statuses</option><option value="verified">Verified</option><option value="partial">Partial</option><option value="candidate">Candidate</option></select></div>
       </div>
+      <p id="catalog-state" class="catalog-state" role="status" aria-live="polite">Catalog 載入中…</p>
+      <div id="research-grid" class="research-grid" hidden></div>
+      <nav id="pagination" class="pagination" aria-label="Catalog pages" hidden></nav>
+      <div class="gallery-note"><strong>核心原則：</strong> Verification belongs to evidence, not to demos. Demo 退休、沒有 Demo，甚至成果本身是 Commentary，都不會自動抹掉已經留下的 Evidence。</div>
+    </section>
+  </div>
 
-      <section
-        id="view-short-term"
-        class="view-panel reader-panel"
-        role="tabpanel"
-        aria-labelledby="tab-short-term"
-        hidden
-      >
-        <div class="reader-toolbar">
-          <strong>Human-facing Research Navigation</strong
-          ><a class="github-record" href="#">在 GitHub 查看</a>
-        </div>
-        <p class="reader-state" role="status">
-          選擇此視角後讀取最新 Markdown。
-        </p>
-        <article class="markdown-body" hidden></article>
-      </section>
-      <section
-        id="view-knowledge-map"
-        class="view-panel reader-panel"
-        role="tabpanel"
-        aria-labelledby="tab-knowledge-map"
-        hidden
-      >
-        <div class="reader-toolbar">
-          <strong>Canonical Knowledge Map</strong
-          ><a class="github-record" href="#">在 GitHub 查看</a>
-        </div>
-        <p class="reader-state" role="status">
-          選擇此視角後讀取最新 Markdown。
-        </p>
-        <article class="markdown-body" hidden></article>
-      </section>
+  <section id="view-short-term" class="view-panel reader-panel" role="tabpanel" aria-labelledby="tab-short-term" hidden><div class="reader-toolbar"><strong>Human-facing Research Navigation</strong><a class="github-record" href="#">在 GitHub 查看</a></div><p class="reader-state" role="status">選擇此視角後讀取最新 Markdown。</p><article class="markdown-body" hidden></article></section>
+  <section id="view-knowledge-map" class="view-panel reader-panel" role="tabpanel" aria-labelledby="tab-knowledge-map" hidden><div class="reader-toolbar"><strong>Canonical Knowledge Map</strong><a class="github-record" href="#">在 GitHub 查看</a></div><p class="reader-state" role="status">選擇此視角後讀取最新 Markdown。</p><article class="markdown-body" hidden></article></section>
 
-      <div id="view-runtime" class="view-panel">
-        <section class="section" aria-labelledby="runtime-title">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Deployment Surface</p>
-              <h2 id="runtime-title">Runtime Check</h2>
-            </div>
-            <p>
-              只是確認這張 Gallery 本身有正常被 Netlify 送到 Browser，沒有玄學。
-            </p>
-          </div>
-          <div class="runtime-card">
-            <div class="runtime-grid">
-              <div class="runtime-item">
-                <span class="runtime-label">JavaScript</span
-                ><code id="js-status">尚未執行</code>
-              </div>
-              <div class="runtime-item">
-                <span class="runtime-label">Current URL</span
-                ><code id="current-url">讀取中…</code>
-              </div>
-              <div class="runtime-item">
-                <span class="runtime-label">Browser Time</span
-                ><code id="browser-time">讀取中…</code>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-      <footer>
-        AI Playground · Experiment Demo is disposable; Evidence should not be.
-      </footer>
-    </main>
+  <div id="view-runtime" class="view-panel"><section class="section" aria-labelledby="runtime-title"><div class="section-heading"><div><p class="eyebrow">Deployment Surface</p><h2 id="runtime-title">Runtime Check</h2></div><p>只是確認 Gallery 本身正常被 Netlify 送到 Browser，沒有玄學。</p></div><div class="runtime-card"><div class="runtime-grid"><div class="runtime-item"><span class="runtime-label">JavaScript</span><code id="js-status">尚未執行</code></div><div class="runtime-item"><span class="runtime-label">Current URL</span><code id="current-url">讀取中…</code></div><div class="runtime-item"><span class="runtime-label">Browser Time</span><code id="browser-time">讀取中…</code></div></div></div></section></div>
+  <footer>AI Playground · Demo is disposable; Evidence should not be.</footer>
+</main>
+<script>
+  const pageSize=12;
+  const labels={live:"Live Demo",retired:"Demo Retired",none:"No Demo",verified:"Verified",partial:"Partial",candidate:"Candidate",experiment:"Experiment",commentary:"Commentary","technical-note":"Technical Note",knowledge:"Knowledge","controlled-experiment":"Controlled Experiment","field-verification":"Field Verification",analysis:"Analysis",synthesis:"Synthesis"};
+  const state={catalog:[],page:1};
+  const grid=document.getElementById("research-grid"),catalogState=document.getElementById("catalog-state"),pagination=document.getElementById("pagination");
+  const filters=["search","tag-filter","output-filter","method-filter","demo-filter","verification-filter"].map(id=>document.getElementById(id));
+  function escapeHtml(value){const el=document.createElement("span");el.textContent=value??"";return el.innerHTML;}
 
-    <script>
-      const pageSize = 12;
-      const labels = {
-        live: "Live Demo",
-        retired: "Demo Retired",
-        none: "No Demo",
-        verified: "Verified",
-        partial: "Partial",
-        candidate: "Candidate",
-      };
-      const state = { catalog: [], page: 1 };
-      const grid = document.getElementById("experiment-grid");
-      const catalogState = document.getElementById("catalog-state");
-      const pagination = document.getElementById("pagination");
-      const filters = [
-        "search",
-        "tag-filter",
-        "demo-filter",
-        "verification-filter",
-      ].map((id) => document.getElementById(id));
+  // Search and filters treat research dimensions independently so a Commentary can still be Verified Field Evidence.
+  function filteredCatalog(){
+    const query=filters[0].value.trim().toLocaleLowerCase(),tag=filters[1].value,output=filters[2].value,method=filters[3].value,demo=filters[4].value,verification=filters[5].value;
+    return state.catalog.filter(entry=>{
+      const searchable=[entry.id,entry.title,entry.summary,entry.outputType,entry.researchMethod,...entry.tags].join(" ").toLocaleLowerCase();
+      return (!query||searchable.includes(query))&&(!tag||entry.tags.includes(tag))&&(!output||entry.outputType===output)&&(!method||entry.researchMethod===method)&&(!demo||entry.demoStatus===demo)&&(!verification||entry.verificationStatus===verification);
+    });
+  }
 
-      function escapeHtml(value) {
-        const element = document.createElement("span");
-        element.textContent = value;
-        return element.innerHTML;
-      }
+  // Card metadata names what the output is and how it was verified instead of assuming every card is an Experiment.
+  function renderCard(entry){
+    const flow=entry.flow?`<div class="flow"><code>${escapeHtml(entry.flow)}</code></div>`:"";
+    const demoAction=entry.demoStatus==="live"?`<a href="${escapeHtml(entry.demoPath)}">開啟 Live Demo</a>`:"";
+    const action=`<div class="card-actions"><a href="/result/?id=${encodeURIComponent(entry.id)}">查看研究成果</a>${demoAction?` · ${demoAction}`:""}</div>`;
+    return `<article class="research-card"><div class="research-meta"><span class="research-id"><span class="kind-badge">${labels[entry.outputType]||escapeHtml(entry.outputType)}</span> · ${escapeHtml(entry.id)} · ${escapeHtml(entry.completedDate)}</span><span class="badges"><span class="status-badge status-${entry.demoStatus}">${labels[entry.demoStatus]}</span><span class="status-badge status-${entry.verificationStatus}">${labels[entry.verificationStatus]}</span></span></div><h3>${escapeHtml(entry.title)}</h3><p><strong>${labels[entry.researchMethod]||escapeHtml(entry.researchMethod)}</strong> · ${escapeHtml(entry.summary)}</p><div class="tags">${entry.tags.map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>${flow}${action}</article>`;
+  }
 
-      // Filter/search: match the documented fields and reset pagination after input changes.
-      function filteredCatalog() {
-        const query = filters[0].value.trim().toLocaleLowerCase();
-        const tag = filters[1].value;
-        const demoStatus = filters[2].value;
-        const verificationStatus = filters[3].value;
-        return state.catalog.filter((entry) => {
-          const searchable = [
-            entry.id,
-            entry.title,
-            entry.summary,
-            ...entry.tags,
-          ]
-            .join(" ")
-            .toLocaleLowerCase();
-          return (
-            (!query || searchable.includes(query)) &&
-            (!tag || entry.tags.includes(tag)) &&
-            (!demoStatus || entry.demoStatus === demoStatus) &&
-            (!verificationStatus ||
-              entry.verificationStatus === verificationStatus)
-          );
-        });
-      }
+  function renderCatalog(){
+    const entries=filteredCatalog(),pageCount=Math.max(1,Math.ceil(entries.length/pageSize)); state.page=Math.min(state.page,pageCount);
+    grid.innerHTML=entries.slice((state.page-1)*pageSize,state.page*pageSize).map(renderCard).join(""); grid.hidden=entries.length===0; catalogState.hidden=entries.length>0; catalogState.textContent=entries.length?"":"沒有符合條件的 Research Output。";
+    pagination.hidden=pageCount<=1; pagination.innerHTML=`<button type="button" data-page="previous" ${state.page===1?"disabled":""}>上一頁</button><span>第 ${state.page} / ${pageCount} 頁</span><button type="button" data-page="next" ${state.page===pageCount?"disabled":""}>下一頁</button>`;
+  }
 
-      // Render: translate catalog metadata into cards without making HTML a second source of truth.
-      function renderCard(entry) {
-        const flow = entry.flow
-          ? `<div class="flow"><code>${escapeHtml(entry.flow)}</code></div>`
-          : "";
-        const demoAction =
-          entry.demoStatus === "live"
-            ? `<a href="${escapeHtml(entry.demoPath)}">開啟 Live Demo</a>`
-            : "";
-        const action = `<div class="card-actions"><a href="/result/?id=${encodeURIComponent(entry.id)}">查看實驗結果</a>${demoAction ? ` · ${demoAction}` : ""}</div>`;
-        return `<article class="experiment-card"><div class="experiment-meta"><span class="experiment-id">Experiment ${escapeHtml(entry.id)} · 完成於 ${escapeHtml(entry.completedDate)}</span><span class="badges"><span class="status-badge status-${entry.demoStatus}">${labels[entry.demoStatus]}</span><span class="status-badge status-${entry.verificationStatus}">${labels[entry.verificationStatus]}</span></span></div><h3>${escapeHtml(entry.title)}</h3><p>${escapeHtml(entry.summary)}</p><div class="tags">${entry.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>${flow}${action}</article>`;
-      }
+  // Catalog load fails visibly. Silent empty galleries are how humans start inventing ghosts in deployment pipelines.
+  async function loadCatalog(){
+    try{
+      const response=await fetch("./research-catalog.json",{headers:{Accept:"application/json"}}); if(!response.ok)throw new Error(`HTTP ${response.status}`); const catalog=await response.json(); if(!Array.isArray(catalog))throw new Error("Catalog payload is not an array");
+      state.catalog=catalog; const tags=[...new Set(catalog.flatMap(entry=>entry.tags))].sort((a,b)=>a.localeCompare(b)); filters[1].insertAdjacentHTML("beforeend",tags.map(tag=>`<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`).join("")); renderCatalog();
+    }catch(error){grid.hidden=true;pagination.hidden=true;catalogState.hidden=false;catalogState.classList.add("error");catalogState.textContent=`Catalog 載入失敗：${error.message}`;}
+  }
+  filters.forEach(control=>control.addEventListener("input",()=>{state.page=1;renderCatalog();}));
+  pagination.addEventListener("click",event=>{const direction=event.target.dataset.page;if(!direction)return;state.page+=direction==="next"?1:-1;renderCatalog();});
 
-      // Pagination: show one twelve-item slice and omit navigation when it adds no value.
-      function renderCatalog() {
-        const entries = filteredCatalog();
-        const pageCount = Math.max(1, Math.ceil(entries.length / pageSize));
-        state.page = Math.min(state.page, pageCount);
-        grid.innerHTML = entries
-          .slice((state.page - 1) * pageSize, state.page * pageSize)
-          .map(renderCard)
-          .join("");
-        grid.hidden = entries.length === 0;
-        catalogState.hidden = entries.length > 0;
-        catalogState.textContent = entries.length
-          ? ""
-          : "沒有符合條件的 Experiment。";
-        pagination.hidden = pageCount <= 1;
-        pagination.innerHTML = `<button type="button" data-page="previous" ${state.page === 1 ? "disabled" : ""}>上一頁</button><span>第 ${state.page} / ${pageCount} 頁</span><button type="button" data-page="next" ${state.page === pageCount ? "disabled" : ""}>下一頁</button>`;
-      }
-
-      // Catalog load and error handling: surface fetch/parse failures instead of rendering an empty gallery.
-      async function loadCatalog() {
-        try {
-          const response = await fetch("./experiment-catalog.json", {
-            headers: { Accept: "application/json" },
-          });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const catalog = await response.json();
-          if (!Array.isArray(catalog))
-            throw new Error("Catalog payload is not an array");
-          state.catalog = catalog;
-          const tags = [
-            ...new Set(catalog.flatMap((entry) => entry.tags)),
-          ].sort((a, b) => a.localeCompare(b));
-          filters[1].insertAdjacentHTML(
-            "beforeend",
-            tags
-              .map(
-                (tag) =>
-                  `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`,
-              )
-              .join(""),
-          );
-          renderCatalog();
-        } catch (error) {
-          grid.hidden = true;
-          pagination.hidden = true;
-          catalogState.hidden = false;
-          catalogState.classList.add("error");
-          catalogState.textContent = `Catalog 載入失敗：${error.message}`;
-        }
-      }
-
-      filters.forEach((control) =>
-        control.addEventListener("input", () => {
-          state.page = 1;
-          renderCatalog();
-        }),
-      );
-      pagination.addEventListener("click", (event) => {
-        const direction = event.target.dataset.page;
-        if (!direction) return;
-        state.page += direction === "next" ? 1 : -1;
-        renderCatalog();
-      });
-
-      const documentViews = {
-        "short-term": {
-          path: "notes/short-term-work.md",
-          id: "view-short-term",
-        },
-        "knowledge-map": {
-          path: "knowledge/maps/nook-technical-platform.md",
-          id: "view-knowledge-map",
-        },
-      };
-      const loadedViews = new Set();
-      document
-        .querySelector(".view-tabs")
-        .addEventListener("click", async (event) => {
-          const tab = event.target.closest("[data-view]");
-          if (!tab) return;
-          document
-            .querySelectorAll(".view-tab")
-            .forEach((item) =>
-              item.setAttribute("aria-selected", String(item === tab)),
-            );
-          document.querySelectorAll(".view-panel").forEach((panel) => {
-            panel.hidden =
-              panel.id !== `view-${tab.dataset.view}` &&
-              !(
-                tab.dataset.view === "experiments" &&
-                panel.id === "view-runtime"
-              );
-          });
-          const config = documentViews[tab.dataset.view];
-          if (config && !loadedViews.has(config.id)) {
-            const container = document.getElementById(config.id);
-            loadedViews.add(config.id);
-            await window.PlaygroundReader.renderMarkdown({
-              path: config.path,
-              container,
-              fallback: container.querySelector(".github-record"),
-            });
-          }
-        });
-
-      document.getElementById("js-status").textContent = "執行成功";
-      document.getElementById("current-url").textContent = window.location.href;
-      document.getElementById("browser-time").textContent =
-        new Date().toLocaleString();
-      loadCatalog();
-    </script>
-  </body>
+  const documentViews={"short-term":{path:"notes/short-term-work.md",id:"view-short-term"},"knowledge-map":{path:"knowledge/maps/nook-technical-platform.md",id:"view-knowledge-map"}}; const loadedViews=new Set();
+  document.querySelector(".view-tabs").addEventListener("click",async event=>{
+    const tab=event.target.closest("[data-view]");if(!tab)return; document.querySelectorAll(".view-tab").forEach(item=>item.setAttribute("aria-selected",String(item===tab)));
+    document.querySelectorAll(".view-panel").forEach(panel=>{panel.hidden=panel.id!==`view-${tab.dataset.view}`&&!(tab.dataset.view==="research"&&panel.id==="view-runtime");});
+    const config=documentViews[tab.dataset.view]; if(config&&!loadedViews.has(config.id)){const container=document.getElementById(config.id);loadedViews.add(config.id);await window.PlaygroundReader.renderMarkdown({path:config.path,container,fallback:container.querySelector(".github-record")});}
+  });
+  document.getElementById("js-status").textContent="執行成功"; document.getElementById("current-url").textContent=window.location.href; document.getElementById("browser-time").textContent=new Date().toLocaleString(); loadCatalog();
+</script>
+</body>
 </html>
