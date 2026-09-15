@@ -35,8 +35,11 @@
 - Experiment C-DB-1 — Database-centric Custom API：`Verified`
 - Experiment C-EXT-1 — External API Orchestration：`Verified`
 - Netlify Git Deployment / Trigger Boundary：`Verified`
+- P-CODEX-PHONE — ChatGPT → Codex Autonomous Dispatch Reconnaissance：`Verified Provider Gap / Deferred`
 
 Supabase Edge Functions 仍是目前 Nook Works Primary Custom API Runtime Candidate；Netlify Functions 保留為 credible secondary candidate。這是 Research Judgment，不是 Production Architecture Decision。
+
+P-CODEX-PHONE 已畢業到 `experiments/codex-dispatch/README.md`、`knowledge/maps/ai-agent-collaboration.md` 與 `evidence/index.md`。目前不進 Phase 3 implementation，也不佔用近期施工前緣；只在 provider capability 出現明確 re-open trigger 時恢復。
 
 ## Current — D-BATCH-1｜Supabase Cron / Scheduling 最後能力缺口
 
@@ -136,6 +139,7 @@ UI Pattern 預期需要多個 Prototype / Browser Artifact 做比較。目前不
 
 ## Deferred / Candidate
 
+- **P-CODEX-PHONE / Autonomous ChatGPT → Codex Dispatch**：2026-09-15 已完成 reconnaissance。Current verdict 是 `WAIT / Deferred by Provider Gap`。只有在 OpenAI 提供 stable Cloud Task API/tool、subscription-backed unattended identity、OIDC federation、official short-lived CI credential helper、direct ChatGPT→Codex dispatch 等新 primitive 時重開；不以 API key 額外計費、personal OAuth escrow 或 persistent runner 硬補。
 - **Pure Compute / Longer-running Processing**：等出現 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit Business Authorization / Error Contract**：當 API 真正需要區分 No Data / No Application Access / Validation / Conflict / Not Found 等 semantics 時再研究。
 - **PostgreSQL RPC / Application Operation Contract**：mechanism 已在 C-DB-1 驗證；哪些正式 operation 應優先由 DB Function 提供 contract，與 C-BSA-1 的 representative workload 一起判斷，不另外為 checklist 製造抽象實驗。
