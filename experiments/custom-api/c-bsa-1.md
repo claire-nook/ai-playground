@@ -2,10 +2,10 @@
 
 - Started: 2026-09-15
 - Overall Status: **In Progress**
-- Current checkpoint: **Phase B Verified**
+- Current checkpoint: **Phase C Verified**
 - Representative workload: Nook Works Daily Weather Batch transaction semantics
 
-> 這是 C-BSA-1 的實驗總覽與目前結果入口。完整實驗尚未結束；Phase A、Phase B 已驗證，Phase C 尚待驗證。
+> Phase A Access、Phase B Operation、Phase C Transaction 已完成 runtime verification。Phase D 已從 optional placeholder 收斂為 caller-owned transaction 對照實驗，尚待驗證。
 
 ## Research Question
 
@@ -26,14 +26,18 @@ C-BSA-1
 │  ├─ RPC / PostgreSQL Function
 │  ├─ EXECUTE privilege
 │  └─ SECURITY INVOKER / SECURITY DEFINER
-├─ Phase C / Transaction Model            PLANNED
-│  ├─ multiple Data API requests
+├─ Phase C / Transaction Model            VERIFIED
+│  ├─ separate Data API requests
 │  ├─ atomic PostgreSQL operation
-│  └─ rollback boundary
-└─ Phase D / Composed Transaction         OPTIONAL / DEFERRED
+│  ├─ database failure rollback
+│  └─ explicit business exception rollback
+└─ Phase D / Caller-owned Transaction     PLANNED
+   ├─ Data API transaction-context capability
+   ├─ Edge Function direct PostgreSQL session feasibility
+   └─ backend-owned BEGIN / COMMIT / ROLLBACK boundary
 ```
 
-核心原則目前仍是假說，不是 Platform Decision：
+核心原則目前是 Evidence-backed Current Judgment，不是 Platform Decision：
 
 > **Transaction boundary 應由擁有完整 Business Operation 的那一層決定。**
 
@@ -43,65 +47,9 @@ C-BSA-1
 
 **Status: VERIFIED — 2026-09-15**
 
-Phase A 已完成 A-1～A-4 runtime verification。完整 checkpoint：[`evidence/c-bsa-1-phase-a.md`](../../evidence/c-bsa-1-phase-a.md)。
+完整 checkpoint：[`evidence/c-bsa-1-phase-a.md`](../../evidence/c-bsa-1-phase-a.md)。
 
-### What was verified
-
-使用 synthetic secured table `public.test_bsa_access`，刻意控制 PostgreSQL table grants 與 RLS，透過 Edge Function / Native Data API 分離觀察 object privilege 與 row-level policy。
-
-```text
-A-1  service_role SELECT = true
-     RLS = ON / no policy
-     backend service SELECT → SUCCESS / 2 rows
-
-A-2  service_role SELECT = false
-     backend service SELECT → FAIL / permission denied
-
-A-3  anon SELECT = true
-     RLS = ON / no policy
-     SELECT → SUCCESS / 0 rows
-
-     same identity + same table privilege
-     add allow policy
-     SELECT → SUCCESS / 2 rows
-
-A-4  INSERT privilege = true  → INSERT SUCCESS
-     INSERT privilege = false → permission denied
-
-     UPDATE privilege = true  → UPDATE SUCCESS
-     UPDATE privilege = false → permission denied
-
-     DELETE privilege = true  → DELETE SUCCESS
-     DELETE privilege = false → permission denied
-```
-
-### Phase A Current Judgment
-
-Phase A 的 Evidence 支持以下模型：
-
-```text
-Backend / Data API request
-        │
-        ├─ PostgreSQL Object Privilege
-        │    決定 database role 是否可對 object 執行 operation
-        │
-        └─ Row Level Security (RLS)
-             對 non-bypass-RLS identity 再決定可見 / 可操作 rows
-```
-
-Backend Service Identity **不等於 unrestricted database access**。即使是 privileged backend client，缺少對應 PostgreSQL object privilege 時，Native Data API operation 仍會被拒絕。
-
-對 non-bypass-RLS identity，table privilege 與 RLS 是可獨立觀察的 authorization boundaries：有 SELECT privilege 不代表一定能看到 rows。
-
-因此「Backend Service 依 component responsibility 取得最小 object / operation privilege」在目前 Supabase 候選架構中具有 runtime feasibility evidence。
-
-這仍是 **Evidence / Current Judgment，不是 Production Architecture Decision**。
-
-### Phase A Evidence
-
-- [`evidence/c-bsa-1-a1.md`](../../evidence/c-bsa-1-a1.md) — backend service SELECT positive control
-- [`evidence/c-bsa-1-a2.md`](../../evidence/c-bsa-1-a2.md) — object privilege SELECT negative control
-- [`evidence/c-bsa-1-phase-a.md`](../../evidence/c-bsa-1-phase-a.md) — Phase A consolidated evidence + Current Judgment
+Phase A 驗證 PostgreSQL object privilege 與 RLS 是可獨立觀察的 authorization boundaries；Backend Service Identity 不等於 unrestricted database access，SELECT / INSERT / UPDATE / DELETE 可以依 object privilege 明確收斂。
 
 ---
 
@@ -111,96 +59,127 @@ Backend Service Identity **不等於 unrestricted database access**。即使是 
 
 完整 checkpoint：[`evidence/c-bsa-1-phase-b.md`](../../evidence/c-bsa-1-phase-b.md)。
 
-Phase B 使用 synthetic PostgreSQL Functions，比較 `SECURITY INVOKER`、`SECURITY DEFINER`、caller `EXECUTE` privilege，以及 caller 是否具有 underlying table `UPDATE` privilege。
+Phase B 驗證 Function `EXECUTE` 可以形成 operation-level authorization boundary：Backend Service 可沒有 direct table UPDATE privilege，卻能 EXECUTE 經批准的 `SECURITY DEFINER` operation；同一 identity 的 direct Native Data API UPDATE 仍被拒絕。
 
-### What was verified
-
-```text
-B-1  SECURITY INVOKER
-     EXECUTE = YES / table UPDATE = NO
-     → FAIL / permission denied for table
-
-B-2  SECURITY DEFINER
-     EXECUTE = YES / table UPDATE = NO
-     → SUCCESS / database row updated
-
-B-3  SECURITY DEFINER
-     EXECUTE = NO / table UPDATE = NO
-     → FAIL / permission denied for function
-
-B-4  SECURITY DEFINER EXECUTE = YES
-     direct table UPDATE = NO
-     → approved RPC succeeds
-     → direct Native Data API UPDATE fails
-```
-
-### Phase B Current Judgment
-
-Phase B provides runtime evidence that RPC / PostgreSQL Function can form an **operation-level authorization boundary**.
-
-Backend Service 可以不持有 underlying table 的直接 UPDATE privilege，而只取得特定 Function 的 EXECUTE privilege；經批准的 `SECURITY DEFINER` operation 可以完成封裝的資料庫修改，同一 identity 的 direct Native Data API UPDATE 仍被 table privilege 阻擋。
-
-```text
-Backend Service
-  │
-  ├─ direct table UPDATE = NO
-  │
-  └─ EXECUTE approved operation = YES
-          │
-          ▼
-    SECURITY DEFINER Function
-          │
-          ▼
-    constrained DB operation
-```
-
-這證明「允許執行特定 Business Operation」與「允許直接修改 underlying table」可被分離治理。
-
-這仍是 **Evidence / Current Judgment，不是 Production Architecture Decision**。`SECURITY DEFINER` 的 production hardening、ownership、`search_path`、schema exposure、Function governance 等議題不因本 synthetic feasibility test 自動獲得解答。
-
-是否值得把 RPC operation boundary 升格為 Nook Works Preferred Pattern，需再結合 Phase C 的 atomic transaction / rollback evidence 判斷。
+這證明「允許執行特定 Business Operation」與「允許直接修改 underlying table」可被分離治理，但不自動代表所有寫入都應改成 RPC。
 
 ---
 
 ## Phase C — Atomic Business Transaction
 
-**Status: PLANNED**
+**Status: VERIFIED — 2026-09-15**
 
-以 Daily Weather Batch 的 Delete + Insert transaction semantics 建立 synthetic representative case，刻意讓 INSERT 違反 constraint，比較：
+完整 checkpoint：[`evidence/c-bsa-1-phase-c.md`](../../evidence/c-bsa-1-phase-c.md)。
 
-```text
-Pattern A
-Edge Function
-→ Native Data API DELETE
-→ Native Data API INSERT
-```
-
-與：
+以 synthetic Daily Weather-like replacement case 比較 separate Native Data API requests 與 one RPC / PostgreSQL Function transaction。
 
 ```text
-Pattern B
-Edge Function
-→ one RPC / PostgreSQL Function call
-→ DELETE
-→ INSERT
-→ success or rollback as one database operation
+C-1 Separate Data API + forced DB failure
+    DELETE commits
+    INSERT fails
+    → OLD missing
+
+C-2 Atomic RPC + forced DB failure
+    DELETE executes
+    INSERT fails
+    → whole operation rollback
+    → OLD preserved
+
+C-3 Atomic RPC success
+    DELETE + INSERT NEW
+    → complete operation commits
+    → NEW exists
+
+C-4 Atomic RPC + explicit Business Logic exception
+    DELETE executes
+    Function raises exception
+    → whole operation rollback
+    → OLD preserved
 ```
 
-驗收重點不是 API 有沒有回 200，而是 forced failure 後 synthetic database state 是否證明 atomic rollback boundary。
+### Phase C Current Judgment
+
+Phase C proves that transaction ownership is not equivalent to sequencing API calls.
+
+Multiple completed Native Data API requests do not provide a shared rollback boundary. A single PostgreSQL RPC operation can own the complete database transaction and preserve atomicity across multiple statements for both database failure and explicit Business Logic abort.
+
+This strongly supports the working hypothesis that the layer owning the complete Business Operation should own its transaction boundary.
+
+However, Phase C only proves the **database-owned RPC transaction** pattern. It does not prove that every Business Operation should be implemented in PostgreSQL. That remaining distinction is the purpose of Phase D.
 
 ---
 
-## Optional Phase D — Caller-owned / Composed Transaction
+## Phase D — Caller-owned / Backend-owned Transaction
 
-**Status: OPTIONAL / DEFERRED**
+**Status: PLANNED**
 
-只有 Phase C 完成後仍具平台決策價值才進行，避免把 C-BSA-1 養成 PostgreSQL Transaction 百科全書。
+### Research Question
+
+Can an Edge Function own a multi-statement PostgreSQL transaction without encapsulating the complete operation in one RPC?
+
+Phase D exists to determine whether Nook Works has a meaningful third transaction-ownership pattern for operations whose orchestration belongs in Backend Service rather than PostgreSQL.
+
+### D-1 — Native Data API Transaction Context Capability
+
+Determine whether Supabase Native Data API provides a caller-controlled transaction context that can span multiple client operations / requests.
+
+Expected comparison point from Phase C: ordinary separate Data API operations behaved as independent transaction boundaries.
+
+D-1 should distinguish documented/runtime capability from assumptions; lack of a public caller-owned transaction mechanism is itself useful architecture evidence.
+
+### D-2 — Edge Function Direct PostgreSQL Session Feasibility
+
+If Native Data API cannot expose a reusable transaction context, verify whether an Edge Function can establish a direct PostgreSQL connection/session suitable for explicit transaction ownership.
+
+The experiment must consider Supabase-supported connection mechanism, Edge Runtime compatibility, credential handling, pooling / connection lifetime, and least-privilege database identity. Technical connectivity alone is not sufficient evidence of operational suitability.
+
+### D-3 — Backend-owned Atomic Failure Control
+
+Using the same synthetic representative semantics:
+
+```text
+Edge Function owns DB session
+BEGIN
+DELETE OLD
+attempt forced failure / explicit abort
+ROLLBACK
+```
+
+Independent DB verification must prove whether OLD is preserved.
+
+A positive success control should also prove:
+
+```text
+BEGIN
+DELETE OLD
+INSERT NEW
+COMMIT
+→ NEW exists
+```
+
+### Phase D Comparison Target
+
+```text
+Pattern 1 — Multiple Native Data API requests
+Transaction owner: individual request
+Evidence: VERIFIED in Phase C
+
+Pattern 2 — One RPC / PostgreSQL Function
+Transaction owner: database operation
+Evidence: VERIFIED in Phase C
+
+Pattern 3 — Direct PostgreSQL session from Backend Service
+Transaction owner: Backend Service
+Evidence: Phase D pending
+```
+
+Phase D should stop once feasibility, rollback behavior, and operational/security cost are clear. Nested transactions, savepoints, isolation-level benchmarking, distributed transactions, and general PostgreSQL transaction research are out of scope unless a concrete Nook Works requirement later demands them.
 
 ---
 
 ## Evidence Discipline
 
-C-BSA-1 必須保留 successful access、intentionally denied access、RLS / object privilege 差異、RPC INVOKER / DEFINER behavior，以及 forced transaction failure 前後 database state。HTTP success、scheduler invocation success 或 Function invocation success 都不能單獨當成 authorization / transaction evidence。
+C-BSA-1 必須保留 successful access、intentionally denied access、RLS / object privilege 差異、RPC INVOKER / DEFINER behavior，以及 transaction forced-failure 前後 database state。HTTP success、scheduler invocation success 或 Function invocation success 都不能單獨當成 authorization / transaction evidence。
 
 ## Privacy / Provenance
 
