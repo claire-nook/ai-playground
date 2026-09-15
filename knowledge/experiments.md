@@ -6,6 +6,32 @@
 
 ---
 
+## 2026-09-15
+
+### P-CODEX-PHONE — ChatGPT → Codex Autonomous Dispatch Reconnaissance
+
+- Status: `Verified / Deferred by Provider Gap`
+- Record: [`../experiments/codex-dispatch/README.md`](../experiments/codex-dispatch/README.md)
+- Research Map: [`maps/ai-agent-collaboration.md`](maps/ai-agent-collaboration.md)
+- Primary Intent: `AI Engineering / Multi-Agent Collaboration / Remove Human Relay`
+- Tags: `ai-engineering`, `codex`, `agent-collaboration`, `remote-execution`, `github-actions`, `authentication`, `credential`, `ipad-first`
+
+**Why it existed**
+
+Claire 目前仍需在 ChatGPT Primary 與 Codex 之間手動複製 Work Order、啟動 Task、再回報完成。研究目標不是移除人類判斷，而是消除這段沒有判斷價值的 Human Relay / middleware responsibility。
+
+**What is verified**
+
+- GitHub 可以承擔 Work Order / Report / PR / Evidence 的 durable collaboration state。
+- `codex exec` 可作 non-interactive execution primitive；Codex Cloud Task 與 `codex exec` 的 workspace / repository / credential boundary 不同。
+- Codex Cloud Task 應 operationally 視為 selected repository/source snapshot + separate publication flow，不假設 ambient cross-repo GitHub authority。
+- ChatGPT sign-in 與 API-key sign-in 是不同 billing boundary；API key route 會進 API pricing，不符合本案「使用既有 Plus Codex allowance」的成本條件。
+- Current provider gap 是缺少 supported subscription-backed unattended workload identity / stable task invocation。Device auth 仍需人類；restore personal auth state 到 CI 不符合 credential custody；persistent runner 維運成本不合理。
+
+**What it unlocked**
+
+研究沒有進入 Phase 3 implementation。Current Architecture Judgment 是 `WAIT`：保留 Claire 一次 per-task dispatch gate，持續使用 OpenAI-managed Codex Cloud + GitHub evidence + Primary QC。未來若出現 stable Cloud Task API、subscription workload identity、GitHub OIDC federation、official short-lived CI credential helper 或 direct ChatGPT→Codex tool，再重新開啟，不必從零研究。
+
 ## 2026-09-14
 
 ### D-BATCH-1 — Supabase Batch Runtime / Scheduling
@@ -131,6 +157,7 @@ Git source → Deploy Preview → invoke / logs → Production → source delete
 - **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
 - **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
+- **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以自建 persistent credential infrastructure 硬補。
 
 ---
 
