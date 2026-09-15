@@ -1,0 +1,21 @@
+{
+  "id": "P-CODEX-PHONE",
+  "title": "ChatGPT → Codex Autonomous Dispatch Reconnaissance",
+  "completedDate": "2026-09-15",
+  "recordPath": "experiments/codex-dispatch/README.md",
+  "summary": "研究 ChatGPT Primary 是否能在不靠 Claire 人工傳話、不額外使用 API billing、不保存個人 ChatGPT refresh credential 的前提下自主 dispatch Codex。結果確認 GitHub 可作 durable state、codex exec 可 non-interactive、Cloud Task 與 exec 的 repo/credential boundary 不同；真正 blocker 是缺少 supported subscription-entitled unattended workload identity / stable Cloud Task invocation。現階段決策為 WAIT / Deferred by Provider Gap。",
+  "tags": [
+    "AI Engineering",
+    "Codex",
+    "Agent Collaboration",
+    "GitHub Actions",
+    "Authentication",
+    "Credential",
+    "Remote Execution",
+    "iPad-first"
+  ],
+  "demoStatus": "none",
+  "demoPath": null,
+  "verificationStatus": "verified",
+  "flow": "Primary → Work Order → Claire one-step dispatch → Codex Cloud Task → GitHub evidence → Primary QC. Autonomous path deferred until provider exposes supported subscription-backed unattended identity / task invocation."
+}
