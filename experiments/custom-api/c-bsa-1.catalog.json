@@ -2,7 +2,7 @@
   "id": "C-BSA-1",
   "title": "Custom API / Backend Service Database Access",
   "recordPath": "experiments/custom-api/c-bsa-1.md",
-  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Phase A Access Model 已完成 runtime verification：service identity、PostgreSQL object privilege 與 RLS 可被獨立觀察，且 SELECT / INSERT / UPDATE / DELETE least-privilege boundary 已驗證。Phase B Operation Model 與 Phase C Transaction Model 尚待驗證。",
+  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Phase A Access Model 與 Phase B Operation Model 已完成 runtime verification：PostgreSQL object privilege、RLS 與 RPC Function EXECUTE 可形成可分離的 authorization boundaries；Backend Service 可在沒有 direct table UPDATE privilege 時透過 approved SECURITY DEFINER operation 完成指定修改。Phase C Transaction Model 尚待驗證。",
   "tags": [
     "Supabase",
     "Custom API",
@@ -15,5 +15,5 @@
   ],
   "demoStatus": "none",
   "verificationStatus": "candidate",
-  "flow": "Phase A VERIFIED: backend service identity → PostgreSQL object privilege / RLS → Native Data API CRUD. Phase B PLANNED: Edge Function → RPC → SECURITY INVOKER / DEFINER + EXECUTE boundary. Phase C PLANNED: compare separate Data API DELETE + INSERT with one atomic RPC operation under forced INSERT failure. Phase D optional/deferred."
+  "flow": "Phase A VERIFIED: backend service identity → PostgreSQL object privilege / RLS → Native Data API CRUD. Phase B VERIFIED: SECURITY INVOKER / DEFINER + Function EXECUTE establish an operation-level authorization boundary; approved RPC can write while direct table UPDATE remains denied. Phase C PLANNED: compare separate Data API DELETE + INSERT with one atomic RPC operation under forced INSERT failure. Phase D optional/deferred."
 }
