@@ -2,7 +2,7 @@
   "id": "C-BSA-1",
   "title": "Custom API / Backend Service Database Access",
   "recordPath": "experiments/custom-api/c-bsa-1.md",
-  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫存取與 transaction boundary。Phase A Access、Phase B Operation、Phase C Transaction 已完成 runtime verification：object privilege / RLS、Function EXECUTE 與 atomic RPC transaction 可形成不同層級的治理邊界；separate Data API requests 無法 rollback 已完成的前一個 request，而 one RPC operation 可在 DB failure 或 Business Logic abort 時完整 rollback。Phase D 將驗證 Backend Service caller-owned transaction feasibility。",
+  "summary": "研究 Supabase Edge Function 作為 trusted backend service 時的資料庫 access、operation authorization 與 transaction ownership。Phase A/B/C/D 全部完成 runtime verification：object privilege / RLS、Function EXECUTE、database-owned RPC transaction 與 backend-owned PostgreSQL transaction 均已取得 controlled evidence。研究支持依 Business Operation responsibility 選擇 Native Data API、RPC 或 Backend-owned transaction，並要求 production direct DB access 使用 least-privilege identity。",
   "tags": [
     "Supabase",
     "Custom API",
@@ -14,6 +14,7 @@
     "Transaction"
   ],
   "demoStatus": "none",
-  "verificationStatus": "candidate",
-  "flow": "Phase A VERIFIED: access boundary via PostgreSQL object privilege / RLS. Phase B VERIFIED: approved Function EXECUTE can be separated from direct table UPDATE. Phase C VERIFIED: separate Data API requests leave partial state on later failure; one RPC operation commits or rolls back the complete database operation, including explicit Business Logic exception. Phase D PLANNED: test whether Edge Function can own a direct PostgreSQL session transaction and evaluate its operational/security cost."
+  "verificationStatus": "verified",
+  "completedDate": "2026-09-15",
+  "flow": "Phase A VERIFIED: PostgreSQL object privilege / RLS access boundaries. Phase B VERIFIED: approved Function EXECUTE can be separated from direct table writes. Phase C VERIFIED: one RPC owns atomic database transaction while separate Data API operations do not share rollback. Phase D VERIFIED: Edge Function PostgreSQL client can own BEGIN/COMMIT/ROLLBACK through Transaction Pooler; production adoption requires restricted DB identity and connection governance. Core experiment complete; no Phase E."
 }
