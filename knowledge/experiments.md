@@ -75,30 +75,36 @@ Static Literal
 
 Platform adoption 必須區分：`Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule`。平台初期可只標準化少數 Pattern，其他已知能力保留為 Deferred / Future Expansion Candidate，隨需求與平台成熟度再 Promote。
 
-Formal `place` SELECT 曾因 current `service_role` 缺少 table SELECT privilege 而失敗。這不是 Cron limitation；該問題已抽離為 C-BSA-1。
-
-## 2026-09-14
+Formal `place` SELECT 曾因 current `service_role` 缺少 table SELECT privilege 而失敗。這不是 Cron limitation；該問題已抽離並由 C-BSA-1 完成驗證。
 
 ### C-BSA-1 — Custom API / Backend Service Database Access
 
-- Status: `Planned`
+- Status: `Verified / Completed`
 - Card: [`../experiments/custom-api/c-bsa-1.catalog.json`](../experiments/custom-api/c-bsa-1.catalog.json)
-- Record family: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
+- Record: [`../experiments/custom-api/c-bsa-1.md`](../experiments/custom-api/c-bsa-1.md)
+- Consolidated Findings: [`../evidence/c-bsa-1-consolidated-findings.md`](../evidence/c-bsa-1-consolidated-findings.md)
 - Primary Intent: `Nook Technical Platform / Backend Service Access / Database Authorization & Transaction`
 - Tags: `nook-platform`, `custom-api`, `backend-service`, `data-api`, `rpc`, `postgresql`, `authorization`, `transaction`
 
-**Why it exists**
+**Why it existed**
 
-D-BATCH-1 已證明 service-authenticated Edge Function 可讀寫有權限的 synthetic table，但 formal `place` read 暴露了 service identity、table privilege 與 RLS 是不同層次。下一步需要獨立回答「Custom API 作為 backend service，如何正確存取正式 DB objects」，而不是繼續讓 Cron Experiment 背這個問題。
+D-BATCH-1 已證明 service-authenticated Edge Function 可讀寫有權限的 synthetic table，但 formal `place` read 暴露了 service identity、table privilege 與 RLS 是不同層次。C-BSA-1 因此獨立回答 Backend Service 如何存取 PostgreSQL objects，以及完整 Business Operation 的 transaction boundary 可以由哪一層持有。
 
-**Planned scope**
+**What is verified**
 
-- Native Data API CRUD on formal-style secured table。
-- service identity / table privilege / RLS boundary。
-- RPC / PostgreSQL Function `EXECUTE` 與 security context。
-- representative atomic operation / transaction boundary。
+- Backend Service Identity 不等於 unrestricted DB object access；PostgreSQL object privilege 與 RLS 是可分離的 authorization boundaries。
+- Function `EXECUTE` 可以形成 operation-level authorization boundary，與 direct table CUD 分離。
+- Separate Native Data API requests 不共享 rollback boundary。
+- One RPC / PostgreSQL Function 可以持有 Database-owned Transaction。
+- Edge Function PostgreSQL client 可以持有 Backend-owned Transaction，並完成 controlled rollback / commit。
 
-Nook Works Daily Weather Batch 的 `Delete + Insert same transaction / failure rollback` 提供了真實 transaction use case，因此此題有正式需求來源，不是為了把 PostgreSQL 功能表全部點亮。
+**What it unlocked**
+
+C-BSA-1 支持三種可供未來 Platform Architecture 選擇的 operation / transaction placement：Native Data API、RPC / PostgreSQL Function、Backend-owned PostgreSQL Transaction。核心 Evidence-backed Current Judgment 是：
+
+> `Transaction owner = layer owning complete Business Operation.`
+
+這仍不是自動生效的 Platform Rule。Phase D 使用 `postgres` credential 只證明 technical feasibility，不是 Production least-privilege credential design。
 
 ## 2026-09-13
 
@@ -118,7 +124,7 @@ Nook Works Daily Weather Batch 的 `Delete + Insert same transaction / failure r
 - Primary Intent: `Nook Technical Platform / Custom API Runtime Feasibility`
 - Tags: `nook-platform`, `custom-api`, `supabase`, `rpc`, `data-api`, `rls`, `cors`, `browser`, `netlify`
 
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。caller-scoped user path 不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者由 C-BSA-1 接手。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。caller-scoped user path 不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者已由 C-BSA-1 補齊 Evidence。
 
 ### C-NF-0 — Netlify Functions Deployment Lifecycle
 
@@ -165,10 +171,11 @@ Git source → Deploy Preview → invoke / logs → Production → source delete
 
 ## Current Candidate Experiments
 
-- **C-BSA-1 / Backend Service Database Access**：formal-style CRUD、RPC / Function access、authorization 與 transaction boundary。
-- **Application UI Maintenance Pattern**：Batch / Backend Access 第一輪完成後進入 UI Pattern exploration。
+- **Application Shell Lifecycle**：把 Menu / Navigation、Application bootstrap、session context、route / page lifecycle、permission-aware feature entry 與 global loading / error boundary 從一般 UI presentation 拆出；以最小 multi-route probe 驗證 lifecycle，不研究 aesthetics。
+- **Application UI Maintenance Pattern**：在 Shell boundary 之外研究單檔 / 主從維護、List / Detail / Edit、Validation presentation、Toolbar / action hierarchy 與 iPad-first responsive behavior。
 - **Pure Compute / Longer-running**：等 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
-- **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
+- **Explicit API Authorization / Business Contract**：目前優先視為 Platform Rule / Design；只有 provider semantics 真正成為決策疑義時才補 Experiment。
+- **Batch Retry / Idempotency**：先由 formal Business Specification / Platform Rule 定義 logical run、retry ownership、failure persistence；只有 chosen contract 需要 duplicate / concurrent / timeout-after-commit assurance 時才做 focused experiment。
 - **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
 - **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以 API key 額外計費、personal OAuth escrow 或 persistent runner 硬補。
 
