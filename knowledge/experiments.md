@@ -24,7 +24,6 @@ Claire 目前仍需在 ChatGPT Primary 與 Codex 之間手動複製 Work Order�
 
 - GitHub 可以承擔 Work Order / Report / PR / Evidence 的 durable collaboration state。
 - `codex exec` 可作 non-interactive execution primitive；Codex Cloud Task 與 `codex exec` 的 workspace / repository / credential boundary 不同。
-- Codex Cloud Task 應 operationally 視為 selected repository/source snapshot + separate publication flow，不假設 ambient cross-repo GitHub authority。
 - ChatGPT sign-in 與 API-key sign-in 是不同 billing boundary；API key route 會進 API pricing，不符合本案「使用既有 Plus Codex allowance」的成本條件。
 - Current provider gap 是缺少 supported subscription-backed unattended workload identity / stable task invocation。Device auth 仍需人類；restore personal auth state 到 CI 不符合 credential custody；persistent runner 維運成本不合理。
 
@@ -32,20 +31,19 @@ Claire 目前仍需在 ChatGPT Primary 與 Codex 之間手動複製 Work Order�
 
 研究沒有進入 Phase 3 implementation。Current Architecture Judgment 是 `WAIT`：保留 Claire 一次 per-task dispatch gate，持續使用 OpenAI-managed Codex Cloud + GitHub evidence + Primary QC。未來若出現 stable Cloud Task API、subscription workload identity、GitHub OIDC federation、official short-lived CI credential helper 或 direct ChatGPT→Codex tool，再重新開啟，不必從零研究。
 
-## 2026-09-14
-
 ### D-BATCH-1 — Supabase Batch Runtime / Scheduling
 
-- Status: `Partial`（scheduled runtime chain verified; parameterized invocation remains）
+- Status: `Verified / Completed`
 - Record: [`../experiments/batch-scheduling/README.md`](../experiments/batch-scheduling/README.md)
 - Phase Evidence: [`../evidence/d-batch-1-phase-1.md`](../evidence/d-batch-1-phase-1.md)
+- Parameter Evidence: [`../evidence/d-batch-1-parameter-invocation.md`](../evidence/d-batch-1-parameter-invocation.md)
 - Live Demo: [`/cron-edge-observer/`](/cron-edge-observer/)
 - Primary Intent: `Nook Technical Platform / Batch Runtime / Scheduling Feasibility`
-- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `external-api`, `parameterized-invocation`, `observability`
+- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `external-api`, `parameterized-invocation`, `observability`, `platform-pattern`
 
 **Why it existed**
 
-Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility。
+Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility，並進一步驗證 scheduled API parameter preparation 的責任邊界。
 
 **What is verified**
 
@@ -54,17 +52,32 @@ Cron → PostgreSQL Database Function → synthetic row
 Cron → pg_net → Edge Function
 Edge Function → Native Data API SELECT / UPDATE on authorized synthetic table
 Cron-scheduled Edge Function → Open-Meteo → synthetic SUCCESS + temperature
+Cron HTTP body ← static literal
+Cron HTTP body ← execution-time SQL expression
+Cron HTTP body ← PostgreSQL Function return value
 ```
+
+Cron job lifecycle 也已實測：`cron.schedule / cron.alter_job / cron.unschedule`，並可從 `cron.job` inspect runtime definition。
+
+**What it unlocked**
+
+Batch parameter preparation 的已知 capability ladder：
+
+```text
+Static Literal
+→ SQL Runtime Expression
+→ DB Helper Function
+→ Launcher / Preparation API
+→ Orchestrator
+```
+
+前三層有直接 runtime Evidence。`Cron → Launcher API → Core API` 的 building blocks 已由既有 Custom API composition / Native Data API / External API evidence 支持，因此不另做重複 probe。
+
+Platform adoption 必須區分：`Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule`。平台初期可只標準化少數 Pattern，其他已知能力保留為 Deferred / Future Expansion Candidate，隨需求與平台成熟度再 Promote。
 
 Formal `place` SELECT 曾因 current `service_role` 缺少 table SELECT privilege 而失敗。這不是 Cron limitation；該問題已抽離為 C-BSA-1。
 
-**Remaining gate**
-
-由 Nook Works Daily Weather Batch Specification 暴露出的最後 Cron capability：parameterized invocation。
-
-需驗證固定參數與 execution-time 動態參數，例如 `executor_oid = -1`、固定 `process_mode`、`query_date = current_date - 1` 能在 Cron 執行時正確組入 Edge Function request body，並由 runtime evidence 證明接收值正確。
-
-複雜參數若需要 DB query / business rules / orchestration，預期由 Launcher / Preparation API 準備後再呼叫 Main Batch API，不把複雜 business logic 放進 Cron。
+## 2026-09-14
 
 ### C-BSA-1 — Custom API / Backend Service Database Access
 
@@ -105,7 +118,7 @@ Nook Works Daily Weather Batch 的 `Delete + Insert same transaction / failure r
 - Primary Intent: `Nook Technical Platform / Custom API Runtime Feasibility`
 - Tags: `nook-platform`, `custom-api`, `supabase`, `rpc`, `data-api`, `rls`, `cors`, `browser`, `netlify`
 
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。此 Probe 驗證 caller-scoped user path，不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者由 C-BSA-1 接手。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。caller-scoped user path 不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者由 C-BSA-1 接手。
 
 ### C-NF-0 — Netlify Functions Deployment Lifecycle
 
@@ -152,12 +165,12 @@ Git source → Deploy Preview → invoke / logs → Production → source delete
 
 ## Current Candidate Experiments
 
-- **D-BATCH-1 / Parameterized Invocation**：固定 + execution-time dynamic request parameters。
 - **C-BSA-1 / Backend Service Database Access**：formal-style CRUD、RPC / Function access、authorization 與 transaction boundary。
-- **Pure Compute / Longer-running**：duration、CPU / memory、timeout、concurrency、cost。
+- **Application UI Maintenance Pattern**：Batch / Backend Access 第一輪完成後進入 UI Pattern exploration。
+- **Pure Compute / Longer-running**：等 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：需要時研究 `200 + []` 與 explicit `403` 等 semantics。
 - **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
-- **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以自建 persistent credential infrastructure 硬補。
+- **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以 API key 額外計費、personal OAuth escrow 或 persistent runner 硬補。
 
 ---
 
