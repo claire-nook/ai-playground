@@ -50,14 +50,15 @@ Nook Technical Platform
 ├─ Remote Execution / Toolchain
 │  └─ GitHub Actions                                    [Verified]
 │
-└─ Batch Runtime / Scheduling                           [Partial D-BATCH-1]
+└─ Batch Runtime / Scheduling                           [Verified D-BATCH-1]
    ├─ Cron → Database Function → synthetic INSERT       [Verified]
    ├─ Cron → pg_net → Edge Function                     [Verified]
    ├─ Edge → Data API synthetic SELECT / UPDATE         [Verified]
    ├─ Cron-scheduled Edge → External API → update       [Verified]
-   └─ Cron → parameterized Edge invocation              [Remaining]
-      ├─ fixed parameters                               [Remaining]
-      └─ execution-time dynamic parameters              [Remaining]
+   └─ Cron → parameterized Edge invocation              [Verified]
+      ├─ static literal                                 [Verified]
+      ├─ execution-time SQL expression                  [Verified]
+      └─ PostgreSQL Function return value               [Verified]
 ```
 
 ## Current Judgment
@@ -70,7 +71,7 @@ Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model�
 
 C-DB-1 已驗證 Database-centric path；C-EXT-1 已驗證 API composition 與 Edge Function outbound HTTP → Open-Meteo。Supabase Edge Functions 因此仍是 Nook Works Primary Custom API Runtime Candidate。這是 Research Judgment，不是 Production Architecture Decision。
 
-### Batch Runtime / Scheduling — scheduled runtime chain verified, parameter gate remains
+### Batch Runtime / Scheduling — D-BATCH-1 verified
 
 D-BATCH-1 已直接確認：
 
@@ -79,34 +80,46 @@ Cron → PostgreSQL Database Function → synthetic row                     Veri
 Cron → pg_net → Edge Function                                          Verified
 Edge Function → Native Data API Read/Update synthetic table             Verified
 Cron → Edge Function → Open-Meteo → synthetic SUCCESS + temperature     Verified
+Cron → static parameter → Edge Function                                 Verified
+Cron → execution-time SQL expression → Edge Function                    Verified
+Cron → PostgreSQL Function return value → Edge Function                 Verified
 ```
 
-可重用的實作方式與注意事項已整理於：`knowledge/implementation/supabase-cron.md`。
-
-因此 Supabase Cron 已具備作為 Nook Works platform scheduler candidate 的主要 runtime evidence。正式關閉第一輪 Cron research 前，仍需補一個由 Nook Works `daily-weather` Batch Specification 暴露出的能力缺口：**parameterized invocation**。
-
-代表性 scheduled input：
+Cron job lifecycle 亦已實測可由 SQL 管理：
 
 ```text
-executor_oid = -1
-query_date   = execution date - 1
-process_mode = scheduled mode
+Create  → cron.schedule(...)
+Read    → cron.job
+Update  → cron.alter_job(...)
+Delete  → cron.unschedule(...)
 ```
 
-研究需區分：
+可重用實作與 SQL sample：`knowledge/implementation/supabase-cron.md`。
+Parameter evidence：`evidence/d-batch-1-parameter-invocation.md`。
 
-- Fixed parameter：Cron request body 能帶固定值。
-- Execution-time dynamic parameter：Cron job 執行當下能以 SQL / PostgreSQL expression 計算值並組入 HTTP body，例如 `current_date - 1`。
+### Parameter preparation responsibility ladder
 
-若參數準備需要查詢 DB、套用 business rules、建立多段日期範圍或其他 orchestration，責任不應繼續膨脹到 Cron。預期 pattern 為：
+D-BATCH-1 的重要產出不是單一 Cron 語法，而是未來 Platform Pattern 的 responsibility placement evidence：
 
 ```text
-Simple schedule:  Cron → Main Batch API
-Complex schedule: Cron → Launcher / Preparation API → Main Batch API
-Manual:           UI / Admin → Main Batch API
+Static Literal
+→ SQL Runtime Expression
+→ DB Helper Function
+→ Launcher / Preparation API
+→ Orchestrator
 ```
 
-Cron research 的邊界停在「可靠啟動帶參數的 endpoint」；Launcher 內部參數準備屬 Custom API orchestration。
+前三層已有直接 runtime Evidence。`Cron → Launcher / Preparation API → Core API` 不另做專用 probe，因其 building blocks 已由 Custom API composition、Native Data API 與 outbound HTTP 分別驗證；它屬已知可行 architecture option，而非未解 Cron capability。
+
+平台初期不需要把所有可行層次一次建完。應區分：
+
+```text
+Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
+```
+
+可先選 1～2 個 Preferred Pattern，其他已知能力保留為 Deferred / Future Expansion Candidate。平台本身會隨需求與成熟度成長，不把「目前未納入」誤寫成「技術不需要 / 不可用」。
+
+未來實際開發的 Pattern Guide 應回答「平台目前提供哪些 Pattern、如何選、怎麼用」；另外保留 known-but-not-yet-standardized capability index，作為平台下一階段演進依據，而不是每次新需求再從零猜還能做什麼。
 
 ### Backend Service Access — C-BSA-1
 
@@ -119,14 +132,13 @@ D-BATCH-1 曾因 worker SELECT formal `place` 得到 `permission denied for tabl
 - 需要 atomicity 的多步驟 DB operation 應如何形成 transaction boundary。
 - Frontend User Access (`authenticated + RLS`) 與 Backend Service Access 的責任分離。
 
-Nook Works `daily-weather` Batch Specification 已提供真實代表性需求，例如 `Delete + Insert` 必須同一 Transaction、失敗時 rollback，因此 transaction 不再只是抽象 checklist，而是 C-BSA-1 應驗證的實際 capability。
+Nook Works `daily-weather` Batch Specification 已提供代表性需求，例如 `Delete + Insert` 必須同一 Transaction、失敗時 rollback，因此 transaction 不再只是抽象 checklist，而是 C-BSA-1 應驗證的實際 capability。
 
 ## Remaining Supabase-first Questions
 
-1. D-BATCH-1：Cron fixed + execution-time dynamic parameter invocation。
-2. C-BSA-1：Backend Service Access，包括 formal-style table CRUD、RPC / Function access 與 transaction boundary。
-3. Explicit Business Authorization / Error Contract，在真實 API 需要區分 No Data / No Access / Validation / Conflict 等 semantics 時再研究。
-4. Pure Compute / Longer-running：保持 Deferred，直到有 representative workload。
+1. C-BSA-1：Backend Service Access，包括 formal-style table CRUD、RPC / Function access 與 transaction boundary。
+2. Explicit Business Authorization / Error Contract，在真實 API 需要區分 No Data / No Access / Validation / Conflict 等 semantics 時再研究。
+3. Pure Compute / Longer-running：保持 Deferred，直到有 representative workload。
 
 ## Decision Boundary
 
