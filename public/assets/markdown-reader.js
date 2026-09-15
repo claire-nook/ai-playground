@@ -3,6 +3,8 @@
   const branch = "main";
   const rawRoot = `https://raw.githubusercontent.com/${repository}/${branch}/`;
   const githubRoot = `https://github.com/${repository}/blob/${branch}/`;
+  const mapIndexPath = "knowledge/maps/README.md";
+  const legacyMapPath = "knowledge/maps/nook-technical-platform.md";
 
   function safeRepositoryPath(path) {
     return (
@@ -10,6 +12,14 @@
       !path.startsWith("/") &&
       !path.split("/").includes("..")
     );
+  }
+
+  // Keep the existing page contract working while promoting the old single-map view
+  // into the canonical Research Maps index. This avoids making the Human View know
+  // about one privileged map forever, because apparently two maps already counts as
+  // enough civilization to need navigation.
+  function canonicalDocumentPath(path) {
+    return path === legacyMapPath ? mapIndexPath : path;
   }
 
   // Repository-relative links remain useful from raw Markdown, including images.
@@ -55,10 +65,17 @@
     }
   }
 
+  function repositoryPathFromRawUrl(url) {
+    if (!url.startsWith(rawRoot)) return null;
+    const path = decodeURIComponent(url.slice(rawRoot.length));
+    return safeRepositoryPath(path) && path.endsWith(".md") ? path : null;
+  }
+
   async function renderMarkdown({ path, container, fallback }) {
-    if (!safeRepositoryPath(path))
+    const recordPath = canonicalDocumentPath(path);
+    if (!safeRepositoryPath(recordPath))
       throw new Error("Invalid repository document path");
-    fallback.href = `${githubRoot}${path}`;
+    fallback.href = `${githubRoot}${recordPath}`;
     const state = container.querySelector(".reader-state");
     const article = container.querySelector(".markdown-body");
     state.hidden = false;
@@ -66,7 +83,7 @@
     state.textContent = "正在從 GitHub 讀取最新 Markdown…";
     article.hidden = true;
     try {
-      const response = await fetch(`${rawRoot}${path}`, {
+      const response = await fetch(`${rawRoot}${recordPath}`, {
         headers: { Accept: "text/plain" },
         cache: "no-cache",
       });
@@ -77,7 +94,7 @@
       article.innerHTML = window.DOMPurify.sanitize(html, {
         USE_PROFILES: { html: true },
       });
-      resolveDocumentUrls(article, path);
+      resolveDocumentUrls(article, recordPath);
       state.hidden = true;
       article.hidden = false;
       await upgradeMermaid(article);
@@ -86,6 +103,31 @@
       state.innerHTML = `無法載入這份文件：${String(error.message)}。<br><a href="${fallback.href}">改在 GitHub 查看原始 Record</a>`;
     }
   }
+
+  // Let Research Map links behave like an in-page reader instead of ejecting the
+  // user to raw.githubusercontent.com. The canonical Markdown files remain the
+  // source of truth; this is only a Human View navigation layer.
+  document.addEventListener("click", async (event) => {
+    const link = event.target.closest("#view-knowledge-map .markdown-body a[href]");
+    if (!link) return;
+    const path = repositoryPathFromRawUrl(link.href);
+    if (!path || !path.startsWith("knowledge/maps/")) return;
+    event.preventDefault();
+    const container = document.getElementById("view-knowledge-map");
+    await renderMarkdown({
+      path,
+      container,
+      fallback: container.querySelector(".github-record"),
+    });
+    container.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // The original page predates multiple Research Maps. Adjust the visible labels
+  // here while preserving the existing DOM ids and tab contract.
+  const mapTab = document.getElementById("tab-knowledge-map");
+  if (mapTab) mapTab.textContent = "Knowledge Maps";
+  const mapToolbar = document.querySelector("#view-knowledge-map .reader-toolbar strong");
+  if (mapToolbar) mapToolbar.textContent = "Research Maps Index";
 
   // Human View collaboration signature belongs to the Primary collaboration layer,
   // not to generated Experiment metadata or an Implementation Agent identity.
