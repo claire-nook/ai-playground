@@ -3,87 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="AI Playground Experiment Record Reader" />
-    <title>Experiment Result · AI Playground</title>
+    <meta name="description" content="AI Playground Research Output Reader" />
+    <title>Research Output · AI Playground</title>
     <link rel="stylesheet" href="/assets/markdown-reader.css" />
     <style>
-      :root {
-        color-scheme: light;
-        background: #e6ebe7;
-        color: #2f3a35;
-        font-family:
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-      }
-      main {
-        width: min(980px, calc(100% - 1rem));
-        margin: 0 auto;
-        padding: 0.5rem 0 3rem;
-      }
+      /* Keep the shared forest-green reader visually stable for every output type. */
+      :root { color-scheme: light; background: #e6ebe7; color: #2f3a35; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(980px, calc(100% - 1rem)); margin: 0 auto; padding: 0.5rem 0 3rem; }
     </style>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"
-    ></script>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"
-    ></script>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
-    ></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
     <script defer src="/assets/markdown-reader.js"></script>
   </head>
   <body>
     <main>
-      <section id="reader" class="reader-panel" aria-label="Experiment Result">
+      <section id="reader" class="reader-panel" aria-label="Research Output">
         <nav class="reader-toolbar">
           <a href="/">← AI Playground</a>
-          <a
-            id="github-record"
-            href="https://github.com/claire-nook/ai-playground"
-            >在 GitHub 查看 Record</a
-          >
+          <a id="github-record" href="https://github.com/claire-nook/ai-playground">在 GitHub 查看 Record</a>
         </nav>
-        <p class="reader-state" role="status">正在確認 Experiment…</p>
+        <p class="reader-state" role="status">正在確認 Research Output…</p>
         <article class="markdown-body" hidden></article>
       </section>
     </main>
     <script>
+      // Resolve any catalogued research output by stable ID; the reader no longer assumes Experiment-only records.
       window.addEventListener("DOMContentLoaded", async () => {
         const container = document.getElementById("reader");
         const fallback = document.getElementById("github-record");
         const id = new URLSearchParams(window.location.search).get("id");
         try {
-          if (!id) throw new Error("URL 缺少 Experiment id");
-          const response = await fetch("/experiment-catalog.json", {
-            cache: "no-cache",
-          });
-          if (!response.ok)
-            throw new Error(`Catalog 回應 HTTP ${response.status}`);
+          if (!id) throw new Error("URL 缺少 Research Output id");
+          const response = await fetch("/research-catalog.json", { cache: "no-cache" });
+          if (!response.ok) throw new Error(`Catalog 回應 HTTP ${response.status}`);
           const catalog = await response.json();
           const entry = catalog.find((candidate) => candidate.id === id);
-          if (!entry) throw new Error(`找不到 Experiment ${id}`);
+          if (!entry) throw new Error(`找不到 Research Output ${id}`);
           document.title = `${entry.id} ${entry.title} · AI Playground`;
-          await window.PlaygroundReader.renderMarkdown({
-            path: entry.recordPath,
-            container,
-            fallback,
-          });
+          await window.PlaygroundReader.renderMarkdown({ path: entry.recordPath, container, fallback });
         } catch (error) {
           const state = container.querySelector(".reader-state");
           state.classList.add("error");
-          state.textContent = `無法開啟 Experiment Result：${error.message}`;
+          state.textContent = `無法開啟 Research Output：${error.message}`;
         }
       });
     </script>
