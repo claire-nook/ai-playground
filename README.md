@@ -27,6 +27,7 @@ ai-playground/
 
 | 你現在需要知道什麼 | 先讀哪裡 |
 | --- | --- |
+| Primary Agent 現在有哪些工具 / Connector / Evidence surface，以及開工前要檢查什麼 | [`knowledge/agent-capability-inventory.md`](knowledge/agent-capability-inventory.md) |
 | 目前整體研究到哪、有哪些 Research Branch | [`knowledge/README.md`](knowledge/README.md) → relevant [`knowledge/maps/`](knowledge/maps/) |
 | 做過哪些 Experiment、為什麼做 | [`knowledge/experiments.md`](knowledge/experiments.md) |
 | 哪些技術能力真的有 Evidence | [`evidence/index.md`](evidence/index.md) |
@@ -37,9 +38,30 @@ ai-playground/
 | 要找 remote execution / deployment mechanism | `.github/workflows/` |
 | 只是想知道近期正在忙什麼 | [`notes/short-term-work.md`](notes/short-term-work.md)，但不要把它當長期知識 |
 
+### Primary Agent Startup Self-check｜先確認今天有哪些手腳
+
+當工作涉及 Repository、Deployment、Database、Provider Runtime、External Service、Automation 或其他 execution surface 時，Primary Agent 在採取方案前應先確認**目前 session 真正暴露的 Tool / Connector / Plugin / Permission**，不要只靠過往記憶推測。
+
+至少先問：
+
+```text
+What action / evidence is needed?
+→ Which current tool surface can provide it?
+→ Is that tool installed / exposed / authorized right now?
+→ Read or write? Which scope?
+→ Can Primary collect acceptance evidence directly?
+→ What genuinely remains a Human / other-Agent gate?
+```
+
+Connector 可能被卸載、停用、改權限或更換 surface；昨天沒有的工具今天也可能出現。**Tool availability is runtime state, not memory.**
+
+完整 operational guide：[`knowledge/agent-capability-inventory.md`](knowledge/agent-capability-inventory.md)。
+
+> 先看工具箱，再決定施工方法。倉庫有電鋸時，不要拿隨身小刀砍森林。
+
 ### Current Research Orientation｜不要一進門就掃整棟樓
 
-目前主要 Research Context 應以 [`knowledge/maps/nook-technical-platform.md`](knowledge/maps/nook-technical-platform.md) 為準；已完成 Experiment 的短目錄看 [`knowledge/experiments.md`](knowledge/experiments.md)，需要確認「真的驗證過什麼」再進 [`evidence/index.md`](evidence/index.md)。
+目前 Research Context 已有多張 Map；先從 [`knowledge/maps/README.md`](knowledge/maps/README.md) 選擇相關 Research Map。已完成 Experiment 的短目錄看 [`knowledge/experiments.md`](knowledge/experiments.md)，需要確認「真的驗證過什麼」再進 [`evidence/index.md`](evidence/index.md)。
 
 閱讀順序的原則是：
 
@@ -114,6 +136,7 @@ Knowledge entry point：[`knowledge/README.md`](knowledge/README.md)
 
 - `knowledge/maps/`：有明確 Research Topic 的 Research Map，保存 Context、Question、Candidate Branch 與 Research Coverage。
 - `knowledge/open-exploration.md`：尚未形成獨立 Research Map 的自由探索與 Potential Cluster。
+- `knowledge/agent-capability-inventory.md`：Primary Agent 的 dynamic tool / connector / evidence-surface inventory 與 startup self-check。
 - `experiments/**/README.md`：Experiment Record，保存實際做法與驗證過程。
 - `evidence/index.md`：集中檢索已形成的 Evidence。
 - `notes/short-term-work.md`：只負責近期工作狀態，不承擔長期知識保存。
@@ -144,6 +167,8 @@ Primary Agent 不必親自執行每一個 Experiment 或大量 Implementation。
 
 Playground is not only a persistent repository. Verified experiments may add reusable execution capabilities that future AI collaborators should inspect before assuming their current sandbox or Claire's local device is the only available environment.
 
+**開始 execution-oriented 工作前，先做 Current Tool Surface self-check。** Repository 保存的是 last-known capability 與 working principle，不代表 connector 今天一定仍被安裝。Operational inventory：[`knowledge/agent-capability-inventory.md`](knowledge/agent-capability-inventory.md)。
+
 Current verified capabilities include：
 
 - **GitHub Actions Remote Execution Environment** — GitHub-hosted Runner 可作為 iPad-first / AI 的 remote execution surface；manual `workflow_dispatch` 可保留 Human Gate。
@@ -151,8 +176,9 @@ Current verified capabilities include：
 - **Supabase Custom API Workloads** — Database-centric processing 與 Custom API composition / External API orchestration 已留下 runtime Evidence。
 - **Netlify Static Publish / Trigger Boundary** — `public/` 是 static Publish boundary，且 relevant-path deploy / docs-only skip 已有實驗 Evidence。
 - **Netlify Functions Lifecycle** — Git source → Deploy Preview / invoke / logs → Production → source delete / function absent 已驗證。
+- **Netlify Connector Deploy Evidence** — Primary 已實際讀取 production deploy metadata / summary，可確認 matching commit、deploy state、automatic/manual、deploy time、asset / function / edge-function summary；目前未直接暴露完整逐行 Netlify build log。
 
-完整狀態不要依這份摘要猜測，請以 [`knowledge/experiments.md`](knowledge/experiments.md) 與 [`evidence/index.md`](evidence/index.md) 為準。
+完整狀態不要依這份摘要猜測，請以 [`knowledge/experiments.md`](knowledge/experiments.md)、[`evidence/index.md`](evidence/index.md) 與當前 runtime tool discovery 為準。
 
 Historical capability evidence 不代表永久 Provider guarantee；高影響決策或 Evidence 已過時時應重新驗證。
 
@@ -218,7 +244,7 @@ A useful disagreement is more valuable than polite consensus.
 
 New experiments should read relevant existing notes and evidence before repeating old work. Existing Evidence means "verified under these conditions at this time", not "true forever".
 
-For execution or provider capability questions, check the relevant Research Map, `evidence/index.md`, and Experiment Record before returning to provider documentation or rebuilding a proof from zero. If work is better delegated, also read `agent-work/README.md` and create a lightweight Work Order rather than silently transferring an underspecified prompt.
+For execution or provider capability questions, **先檢查 current tool surface**，再查 relevant Research Map、`evidence/index.md`、Experiment Record 與 [`knowledge/agent-capability-inventory.md`](knowledge/agent-capability-inventory.md)。如果 work better delegated，再讀 `agent-work/README.md` 並建立 lightweight Work Order，而不是默默把 underspecified prompt 丟給下一個 Agent。
 
 Existing conclusions are not sacred. Re-run, contradict, or replace them when better Evidence appears. When new Evidence changes an old Judgment, preserve the historical condition rather than pretending the old conclusion never existed.
 
