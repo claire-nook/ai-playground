@@ -19,18 +19,6 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 Research across Primary + Codex established that the blocker is not model capability, GitHub durable state, or `codex exec` non-interactive execution. The blocking gap is the absence of a supported, subscription-entitled, unattended workload identity / stable Cloud Task invocation boundary that can be used from an ephemeral managed runner without copying Claire's personal refreshable ChatGPT credential or switching to separately billed API-key usage.
 
-### Reusable Evidence
-
-- GitHub can serve as durable shared state across independent Agent sessions through Work Order / Report / commit / PR / Evidence artifacts.
-- Codex Cloud Task and `codex exec` are different execution models. Cloud Task behaves operationally as a selected repository/source snapshot plus provider publication flow; `codex exec` is a process whose filesystem/repository authority comes from the runner.
-- Workspace read access, Git fetch/push authority, PR publication authority and merge/deploy authority are separate boundaries.
-- `codex exec` exposes non-interactive execution and CLI filesystem roots; multi-repo capability therefore depends on runner filesystem/network/credentials, not on a magical cross-repo Codex entitlement.
-- ChatGPT sign-in and API-key sign-in are distinct billing/auth modes. API-key automation is technically credible but violates this experiment's no-additional-API-cost requirement.
-- Device authorization solves remote-machine browser absence, not unattended identity: a fresh runner still requires human authorization unless auth state is persisted.
-- Persisting/restoring a personal Codex/ChatGPT auth store into CI is not accepted as a project pattern because it converts Claire's refreshable personal account identity into a long-lived automation secret with an unnecessarily large blast radius.
-- A persistent authenticated runner is technically plausible but rejected architecturally because it introduces a credential-bearing host, maintenance, security, availability and re-auth responsibilities disproportionate to the single manual dispatch action it removes.
-- `codex cloud exec` remains a useful clue and future re-test target, but observed runtime still labels the surface Experimental and it does not solve caller authentication.
-
 ### Current Supported Collaboration Shape
 
 ```text
@@ -41,15 +29,6 @@ Primary prepares bounded Work Order
 → Primary independent Technical QC
 ```
 
-### Not Verified / Deferred
-
-- Stable public external Codex Cloud Task API/tool with ChatGPT subscription billing.
-- Supported GitHub/OIDC or workload-identity exchange into ChatGPT/Codex entitlement.
-- Official short-lived CI credential helper for personal/subscription Codex usage.
-- Provider-supported unattended use of personal ChatGPT OAuth in CI.
-- Cross-repo Cloud Task behavior beyond the selected workspace/publication contract.
-- Bidirectional Primary↔Codex escalation/resume protocol.
-
 ### Re-open Triggers
 
 Re-run this research if OpenAI exposes a stable Cloud Task API/tool, subscription workload identity, GitHub OIDC federation, short-lived CI credential helper, direct ChatGPT→Codex task tool, or equivalent GitHub integration that avoids exporting user session credentials.
@@ -59,61 +38,92 @@ Re-run this research if OpenAI exposes a stable Cloud Task API/tool, subscriptio
 ## Supabase Batch Runtime / Scheduling
 
 - Experiment: D-BATCH-1
-- Date: 2026-09-14
-- Status: Partial（Cron A tested path Verified; Cron B scheduled invocation Verified, processing blocked at authorization）
+- Date: 2026-09-14 ～ 2026-09-15
+- Status: Verified / Completed
 - Record: `experiments/batch-scheduling/README.md`
-- Worker: `supabase/functions/test-cron-edge-worker/index.ts`
+- Phase Evidence: `evidence/d-batch-1-phase-1.md`
+- Parameter Evidence: `evidence/d-batch-1-parameter-invocation.md`
+- Implementation Guide: `knowledge/implementation/supabase-cron.md`
 - Browser Artifact: `public/cron-edge-observer/index.html`
-- Deployment Workflow: `.github/workflows/deploy-test-cron-edge-worker.yml`
-- Topics: Supabase Cron, PostgreSQL Function, Edge Function, Native Data API, Open-Meteo, Observability
+- Topics: Supabase Cron, PostgreSQL Function, Edge Function, Native Data API, External API, Parameterized Invocation, Observability, Platform Pattern
 
 ### Direct Evidence
 
-**Cron A Verified for the tested path.** Primary runtime observation 已確認：
+完整 tested chain：
 
 ```text
-Supabase Cron → PostgreSQL Database Function → synthetic test-table INSERT PENDING
+Supabase Cron → PostgreSQL Database Function → synthetic row
+Supabase Cron → pg_net → Edge Function
+Edge Function → Native Data API SELECT / UPDATE synthetic table
+Cron-scheduled Edge Function → Open-Meteo → synthetic SUCCESS + temperature
 ```
 
-後續 Observer 亦看到 producer 持續依 3-minute cadence 建立 `PENDING` rows。
-
-**Cron B scheduled invocation Verified for the tested path.** Claire Environment Evidence 已確認：
+Parameterized HTTP invocation 已直接驗證：
 
 ```text
-Supabase Cron → pg_net → HTTP POST → test-cron-edge-worker
+Static Literal                                  Verified
+Execution-time SQL Expression                   Verified
+PostgreSQL Function Return Value                Verified
 ```
 
-Cron Dashboard、5-minute runtime lifecycle cadence 與 Edge Function Invocation 可互相對應。Invocation 顯示 caller user agent 為 `pg_net/0.20.4`，request 到達目前 deployment，並回 HTTP `403`。
+Receiver 最終不再自行產生 date/time；request body 中的 runtime values 由 Cron command 在 execution time 求值。DB Function probe 連續產生不同 `DBFUNC-*` 值並經 Cron → Edge Function 原樣持久化，建立清楚 parameter provenance。
 
-Repository source inspection 將該 403 定位於 worker 自己的 authorization equality check，發生在 Native Data API access 前。因此這次 Evidence 驗證 scheduled dispatch / runtime invocation，但沒有驗證後續 Data API、Open-Meteo 或 row transition。
+### Cron lifecycle SQL evidence
 
-### Human Evidence Surface
-
-Claire 已在 iPad Safari 實際登入 `/cron-edge-observer/`，authenticated Native Data API read 可顯示 synthetic rows。觀察時 producer 持續建立 `PENDING`，consumer 尚未造成 `SUCCESS` / `FAILED` transition。
-
-### Reusable Observability Evidence
-
-本次失敗直接證明以下 status 不可混為同一件事：
+Synthetic job 已實測：
 
 ```text
-Scheduler History → Runtime Lifecycle → HTTP Invocation → Business/Data State
+Create  → cron.schedule(...)
+Read    → cron.job
+Update  → cron.alter_job(...)
+Delete  → cron.unschedule(...)
 ```
 
-- Cron Dashboard `Succeeded`：job command 已被 scheduler 執行。
-- Edge runtime `Boot` / `Shutdown`：runtime lifecycle evidence，不代表 HTTP/business success。
-- Edge Function Invocation：可確認 request HTTP status；本次為 403。
-- Observer / Data State：最終 business processing evidence；本次 rows 仍為 PENDING。
+`cron.job` 可用於 inspection；managed schema mutation 應走 pg_cron functions，不直接 DML。
 
-因此 **Scheduler Success ≠ Batch Process Success**。對 HTTP Cron job，尤其 `pg_net` asynchronous dispatch，未來 monitoring 不應只依賴 scheduler 的綠色狀態。
+### Reusable parameter responsibility evidence
 
-### Reusable Boundary
+```text
+Static Literal
+→ SQL Runtime Expression
+→ DB Helper Function
+→ Launcher / Preparation API
+→ Orchestrator
+```
 
-- Experiment 寫入限於 synthetic `test_b8c3q1`；formal `place` data 僅 read。
-- Server-side invocation credential 不進入 Browser / repository；Evidence 不保存 credential value、prefix 或 hash。
-- Dashboard `Add secret key` 的 request 已被觀察到帶 `apikey` 抵達 Edge Function；provider 如何持久化該 credential 仍未知。
-- Current duplicated runtime-secret equality design 已暴露 credential synchronization weakness；auth REWORK 尚待新的 runtime Evidence。
-- Retry、concurrency / idempotency、quota / cost 與 Dashboard-vs-Git configuration policy尚未驗證。
-- Playground Evidence is not a Production Architecture Decision。
+前三層直接 Verified。Launcher pattern 不另重做專用 Cron probe，因 Custom API → Custom API、Custom API → Native Data API、Custom API → External API 等 building blocks 已在其他 experiments runtime verified。
+
+重要治理原則：
+
+```text
+Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
+```
+
+平台可以在初期只選少量 Preferred Pattern；已知但未標準化的能力應保留為 Deferred / Future Expansion Candidate，隨需求與平台成熟度再 Promote。
+
+### Dashboard / SQL boundary
+
+Dashboard HTTP Request Body 適合 static JSON，但當 `cron.job.command` 使用 SQL expression / `jsonb_build_object(...)` / DB Function return value 時，Dashboard 表單未必能還原顯示完整 dynamic command。
+
+因此 SQL command 才是完整 runtime representation；正式系統若需要 canonical definition，應保存在 repository / migration source-of-truth。
+
+### Observability evidence
+
+D-BATCH-1 多次直接證明：
+
+```text
+Scheduler Success ≠ HTTP Success ≠ Business/Data Success
+```
+
+曾觀察 scheduler command succeeded 但 downstream HTTP 403；也曾在 `pg_net` client timeout 時，Edge Function 實際已完成 DB insert。因此 troubleshooting 必須依層次檢查 Scheduler、HTTP、Runtime、DB 與 application-visible state。
+
+### Scope / related issue
+
+Formal `place` read 曾因 current service identity 缺少 table privilege 而失敗。這不是 Cron limitation；Backend Service Access 已抽離為 C-BSA-1。
+
+Playground Evidence is not a Production Architecture Decision。
+
+---
 
 ## Supabase Custom API Composition / External API Orchestration
 
@@ -144,10 +154,6 @@ Netlify Browser
 → Browser
 ```
 
-具有效 Application Access 的 Claire 測試帳號：HTTP 200、Valid Place API 200、2 places、2 weather success、0 failure；兩個 Open-Meteo calls 均 provider HTTP 200。
-
-TU01 / TU02：Authentication Success，但 0 visible places、0 weather calls、HTTP 200 + `rows=[]`。直接開 endpoint 不帶 Authorization 則得到 `UNAUTHORIZED_NO_AUTH_HEADER`。
-
 ### Reusable Evidence
 
 - Edge Function → Edge Function server-side HTTP composition：Verified。
@@ -157,11 +163,6 @@ TU01 / TU02：Authentication Success，但 0 visible places、0 weather calls、
 - Per-Place external response normalization：Verified。
 - Zero-visible-place short-circuit before provider calls：Verified。
 - GitHub Actions `workflow_dispatch` → Supabase CLI deployment：Verified。
-- D-1 在本 workload 應以 each Place local timezone 的 previous local calendar date 定義。
-
-### Scope limit
-
-這不驗證 explicit 403 Business Authorization、external provider credential management、retry / queue / scheduling、long-running limits 或 DB writes。Open-Meteo 本 Probe 不需要 API key。
 
 ---
 
@@ -174,7 +175,7 @@ TU01 / TU02：Authentication Success，但 0 visible places、0 weather calls、
 - API Source: `supabase/functions/test-place-country/index.ts`
 - Browser Artifact: `public/custom-api/index.html`
 
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → application-side mapping → Browser result` 已實測。具有效 Application Access 的 Claire 測試帳號取得 2 rows；TU01 / TU02 均 Authentication Success 但 HTTP 200 + empty rows。RLS row visibility 不等於 explicit Business Authorization semantics。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → application-side mapping → Browser result` 已實測。caller-scoped user path 不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者由 C-BSA-1 接手。
 
 ---
 
