@@ -93,10 +93,35 @@
     indexLink.hidden = recordPath === mapIndexPath;
   }
 
-  async function renderMarkdown({ path, container, fallback }) {
+  function updateReaderNavigation(container) {
+    if (container.id !== "reader") return;
+    const toolbar = container.querySelector(".reader-toolbar");
+    let backLink = toolbar.querySelector(".reader-back-link");
+    if (!backLink) {
+      backLink = document.createElement("a");
+      backLink.className = "reader-back-link";
+      backLink.href = "#";
+      backLink.textContent = "← 返回";
+      toolbar.insertBefore(backLink, toolbar.firstChild);
+    }
+    backLink.hidden = (container.dataset.readerDepth || "0") === "0";
+  }
+
+  async function renderMarkdown({ path, container, fallback, pushHistory = false }) {
     const recordPath = canonicalDocumentPath(path, container);
     if (!safeRepositoryPath(recordPath))
       throw new Error("Invalid repository document path");
+
+    if (container.id === "reader") {
+      const currentPath = container.dataset.recordPath;
+      const history = JSON.parse(container.dataset.readerHistory || "[]");
+      if (pushHistory && currentPath && currentPath !== recordPath) history.push(currentPath);
+      container.dataset.readerHistory = JSON.stringify(history);
+      container.dataset.readerDepth = String(history.length);
+      container.dataset.recordPath = recordPath;
+      updateReaderNavigation(container);
+    }
+
     fallback.href = `${githubRoot}${recordPath}`;
     updateMapNavigation(container, recordPath);
     const state = container.querySelector(".reader-state");
@@ -126,6 +151,46 @@
       state.innerHTML = `無法載入這份文件：${String(error.message)}。<br><a href="${fallback.href}">改在 GitHub 查看原始 Record</a>`;
     }
   }
+
+  // Keep every repository Markdown link inside the same reader shell. The document
+  // graph may have many inbound references, so navigation history represents the
+  // user's path instead of pretending each document has one fixed parent.
+  document.addEventListener("click", async (event) => {
+    const readerBack = event.target.closest("#reader .reader-back-link");
+    const readerLink = event.target.closest("#reader .markdown-body a[href]");
+    if (!readerBack && !readerLink) return;
+
+    const container = document.getElementById("reader");
+    if (!container) return;
+
+    if (readerBack) {
+      event.preventDefault();
+      const history = JSON.parse(container.dataset.readerHistory || "[]");
+      const path = history.pop();
+      if (!path) return;
+      container.dataset.readerHistory = JSON.stringify(history);
+      container.dataset.readerDepth = String(history.length);
+      await renderMarkdown({
+        path,
+        container,
+        fallback: container.querySelector("#github-record, .github-record"),
+      });
+      updateReaderNavigation(container);
+      container.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    const path = repositoryPathFromRawUrl(readerLink.href);
+    if (!path) return;
+    event.preventDefault();
+    await renderMarkdown({
+      path,
+      container,
+      fallback: container.querySelector("#github-record, .github-record"),
+      pushHistory: true,
+    });
+    container.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   // Let Research Map links behave like an in-page reader instead of ejecting the
   // user to raw.githubusercontent.com. The canonical Markdown files remain the
