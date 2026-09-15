@@ -15,7 +15,6 @@
     "iPad-first"
   ],
   "demoStatus": "none",
-  "demoPath": null,
   "verificationStatus": "verified",
   "flow": "Primary → Work Order → Claire one-step dispatch → Codex Cloud Task → GitHub evidence → Primary QC. Autonomous path deferred until provider exposes supported subscription-backed unattended identity / task invocation."
 }
