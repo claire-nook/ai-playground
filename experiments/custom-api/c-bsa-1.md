@@ -2,10 +2,10 @@
 
 - Started: 2026-09-15
 - Overall Status: **In Progress**
-- Current checkpoint: **Phase A Verified**
+- Current checkpoint: **Phase B Verified**
 - Representative workload: Nook Works Daily Weather Batch transaction semantics
 
-> 這是 C-BSA-1 的實驗總覽與目前結果入口。完整實驗尚未結束；Phase B、Phase C 尚待驗證。
+> 這是 C-BSA-1 的實驗總覽與目前結果入口。完整實驗尚未結束；Phase A、Phase B 已驗證，Phase C 尚待驗證。
 
 ## Research Question
 
@@ -21,7 +21,7 @@ C-BSA-1
 │  ├─ service identity
 │  ├─ PostgreSQL object privilege
 │  └─ RLS boundary
-├─ Phase B / Operation Model              PLANNED
+├─ Phase B / Operation Model              VERIFIED
 │  ├─ Native Data API CRUD
 │  ├─ RPC / PostgreSQL Function
 │  ├─ EXECUTE privilege
@@ -95,7 +95,7 @@ Backend Service Identity **不等於 unrestricted database access**。即使是 
 
 因此「Backend Service 依 component responsibility 取得最小 object / operation privilege」在目前 Supabase 候選架構中具有 runtime feasibility evidence。
 
-這仍是 **Evidence / Current Judgment，不是 Production Architecture Decision**。是否應讓 Business Operation 直接持有 table CUD privilege，或改以 RPC / PostgreSQL Function 的 EXECUTE privilege收斂操作面，交由 Phase B 驗證。
+這仍是 **Evidence / Current Judgment，不是 Production Architecture Decision**。
 
 ### Phase A Evidence
 
@@ -107,13 +107,58 @@ Backend Service Identity **不等於 unrestricted database access**。即使是 
 
 ## Phase B — RPC / PostgreSQL Function Operation Boundary
 
-**Status: PLANNED**
+**Status: VERIFIED — 2026-09-15**
 
-建立 synthetic PostgreSQL Functions，比較 `SECURITY INVOKER`、`SECURITY DEFINER`、caller `EXECUTE` privilege，以及 caller 是否具有 underlying table write privilege。
+完整 checkpoint：[`evidence/c-bsa-1-phase-b.md`](../../evidence/c-bsa-1-phase-b.md)。
 
-核心研究問題：Backend Service 能否不直接取得廣泛 table write privilege，而只被允許 EXECUTE 經批准的 database operation？
+Phase B 使用 synthetic PostgreSQL Functions，比較 `SECURITY INVOKER`、`SECURITY DEFINER`、caller `EXECUTE` privilege，以及 caller 是否具有 underlying table `UPDATE` privilege。
 
-Phase B 只產生 feasibility / security-boundary evidence，不預先指定 Preferred Pattern。
+### What was verified
+
+```text
+B-1  SECURITY INVOKER
+     EXECUTE = YES / table UPDATE = NO
+     → FAIL / permission denied for table
+
+B-2  SECURITY DEFINER
+     EXECUTE = YES / table UPDATE = NO
+     → SUCCESS / database row updated
+
+B-3  SECURITY DEFINER
+     EXECUTE = NO / table UPDATE = NO
+     → FAIL / permission denied for function
+
+B-4  SECURITY DEFINER EXECUTE = YES
+     direct table UPDATE = NO
+     → approved RPC succeeds
+     → direct Native Data API UPDATE fails
+```
+
+### Phase B Current Judgment
+
+Phase B provides runtime evidence that RPC / PostgreSQL Function can form an **operation-level authorization boundary**.
+
+Backend Service 可以不持有 underlying table 的直接 UPDATE privilege，而只取得特定 Function 的 EXECUTE privilege；經批准的 `SECURITY DEFINER` operation 可以完成封裝的資料庫修改，同一 identity 的 direct Native Data API UPDATE 仍被 table privilege 阻擋。
+
+```text
+Backend Service
+  │
+  ├─ direct table UPDATE = NO
+  │
+  └─ EXECUTE approved operation = YES
+          │
+          ▼
+    SECURITY DEFINER Function
+          │
+          ▼
+    constrained DB operation
+```
+
+這證明「允許執行特定 Business Operation」與「允許直接修改 underlying table」可被分離治理。
+
+這仍是 **Evidence / Current Judgment，不是 Production Architecture Decision**。`SECURITY DEFINER` 的 production hardening、ownership、`search_path`、schema exposure、Function governance 等議題不因本 synthetic feasibility test 自動獲得解答。
+
+是否值得把 RPC operation boundary 升格為 Nook Works Preferred Pattern，需再結合 Phase C 的 atomic transaction / rollback evidence 判斷。
 
 ---
 
