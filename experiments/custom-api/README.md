@@ -174,3 +174,172 @@ C-DB-1 與 C-EXT-1 合併後，Supabase Edge Functions 已對兩種 Nook Works �
 2. Internal API composition + External API orchestration.
 
 因此 `Supabase = Auth + Primary Custom API + PostgreSQL/RLS` 的候選架構可信度進一步提高；Netlify 可自然維持 Web/UI delivery responsibility。這仍不是 Production Architecture Decision，Pure Compute / longer-running、runtime limits、observability、cost 與需要時的 explicit Business Contract 仍待後續研究。
+
+---
+
+## C-BSA-1 — Custom API / Backend Service Database Access
+
+- Date: 2026-09-15
+- Status: Candidate / Research Design Ready
+- Representative workload: Nook Works Daily Weather Batch transaction semantics
+
+### Why this experiment exists
+
+D-BATCH-1 暴露了 formal `place` permission failure，但真正問題不屬於 Cron。C-BSA-1 要回答的是：**Supabase Edge Function 作為 trusted backend service 時，應如何以明確、最小且可治理的權限存取 PostgreSQL objects，以及當一個 Business Operation 需要多個 SQL statement 時，transaction boundary 應落在哪一層。**
+
+本實驗只使用 synthetic / formal-style secured objects，不為實驗直接放寬 Nook Works 正式資料表。
+
+### Research model
+
+C-BSA-1 不把「Backend Service 能不能碰 DB」當成單一問題，而拆成三個互相相關但必須分開觀察的模型：
+
+```text
+C-BSA-1
+├─ Access Model
+│  ├─ service identity
+│  ├─ PostgreSQL object privilege
+│  └─ RLS boundary
+├─ Operation Model
+│  ├─ Native Data API CRUD
+│  ├─ RPC / PostgreSQL Function
+│  ├─ EXECUTE privilege
+│  └─ SECURITY INVOKER / SECURITY DEFINER
+└─ Transaction Model
+   ├─ multiple Data API requests
+   ├─ atomic PostgreSQL operation
+   └─ rollback boundary
+```
+
+核心原則是假說而非既定結論：
+
+> **Transaction boundary 應由擁有完整 Business Operation 的那一層決定。**
+
+C-BSA-1 的目的之一，就是用 Supabase / PostgreSQL runtime evidence 驗證這個原則在 Nook Platform 候選架構中如何落地。
+
+### Phase A — Backend Service Access / Privilege Boundary
+
+建立 synthetic secured table，刻意控制 table grants 與 RLS，透過 Edge Function 使用 backend service identity 執行 `SELECT / INSERT / UPDATE / DELETE`。
+
+至少觀察：
+
+1. backend service 具 table privilege、RLS policy 不允許一般 caller 時，實際行為為何；
+2. backend service 缺少 `SELECT` privilege 時，SELECT 是否確實失敗；
+3. backend service 具 `SELECT` 但缺少 `UPDATE` 時，是否形成可觀察的 least-privilege boundary；
+4. table privilege 與 RLS 是否能在 Evidence 中被清楚區分，而不是把所有 permission failure 混成「RLS 問題」。
+
+Research output：定義 Frontend User Access 與 Backend Service Access 是否應採不同 trust / authorization model。
+
+### Phase B — RPC / PostgreSQL Function Operation Boundary
+
+建立 synthetic PostgreSQL Functions，比較：
+
+- `SECURITY INVOKER`
+- `SECURITY DEFINER`
+- caller `EXECUTE` privilege
+- caller 自身是否具有 underlying table write privilege
+
+重點不是證明 PostgreSQL Function「可以跑」，C-DB-1 已有 RPC mechanism evidence；本 Phase 要回答：
+
+> Nook Platform 是否需要支援「Backend Service 不直接取得廣泛 table write privilege，而只允許 EXECUTE 經批准的 database operation」這種 operation-level security model？
+
+此 Phase 只產生 feasibility / security-boundary evidence，不預先指定它必須成為 Preferred Pattern。
+
+### Phase C — Atomic Business Transaction
+
+以 Daily Weather Batch 的 transaction semantics 建立 synthetic representative case，不直接操作正式 `daily_weather`。
+
+初始狀態：
+
+```text
+Synthetic Place A
+→ existing weather row = OLD
+```
+
+Business Operation：
+
+```text
+DELETE OLD
+→ INSERT NEW
+```
+
+刻意讓 INSERT 違反 constraint。驗收結果必須能區分：
+
+```text
+Atomic behavior:
+INSERT fails
+→ DELETE rolls back
+→ OLD remains
+→ NEW does not exist
+```
+
+與：
+
+```text
+Non-atomic behavior:
+DELETE succeeds
+→ INSERT fails
+→ OLD is lost
+```
+
+比較至少兩條候選路徑：
+
+```text
+Pattern A
+Edge Function
+→ Native Data API DELETE
+→ Native Data API INSERT
+```
+
+```text
+Pattern B
+Edge Function
+→ one RPC / PostgreSQL Function call
+→ DELETE
+→ INSERT
+→ success or rollback as one database operation
+```
+
+目前 Research Hypothesis：**多次獨立 Data API request 不應被假設共享同一 database transaction；需要 atomic multi-statement Business Operation 時，完整 operation 很可能必須收斂至同一 PostgreSQL transaction boundary。** 此項必須以 runtime evidence 驗證，不得直接升格為 Platform Rule。
+
+### Optional Phase D — Caller-owned / Composed Transaction
+
+若 Phase C 完成後仍有平台決策價值，再驗證 composed database operations：
+
+```text
+Outer Business Operation
+→ Inner Function A
+→ Inner Function B
+→ B fails
+→ whole outer operation rolls back
+```
+
+研究問題是：較小的 reusable DB operation 不自行決定 commit，而由擁有完整 Business Operation 的 caller 決定 transaction boundary，在 PostgreSQL / Supabase 下如何實際表現。
+
+此 Phase 預設 Deferred，避免 C-BSA-1 膨脹成 PostgreSQL Transaction 百科全書。
+
+### Evidence discipline
+
+本實驗必須分別留下：
+
+- successful access evidence；
+- intentionally denied access evidence；
+- RLS 與 object privilege 的區分；
+- RPC INVOKER / DEFINER behavior；
+- forced transaction failure 前後的 synthetic row state；
+- API / RPC response 與 database state 的對照。
+
+不得只以 HTTP 200 或 scheduler / function invocation success 宣稱 transaction 或 authorization 已驗證。
+
+### Expected platform decisions after C-BSA-1
+
+C-BSA-1 完成後，應足以支援下列 Platform Pattern 討論，但不預寫答案：
+
+1. Backend Service 的標準 service identity 與 least-privilege object access。
+2. 何時允許 Native Data API direct CRUD。
+3. 何時應使用 RPC / PostgreSQL Function 封裝 application/database operation。
+4. 需要 multi-statement atomicity 時，transaction owner 應位於何處。
+5. Frontend User Access、Backend Service Access、Atomic Business Operation 是否應被視為三種不同平台責任。
+
+### Privacy / provenance note
+
+本 Research Design 的 transaction semantics 只引用 Nook Works repository 中已存在的 Daily Weather Batch Specification 作為 representative workload。私人、非 repository 的歷史業務程式與內容不得寫入 Playground、Evidence 或後續公開文件。
