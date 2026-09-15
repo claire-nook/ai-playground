@@ -14,12 +14,20 @@
     );
   }
 
-  // Keep the existing page contract working while promoting the old single-map view
-  // into the canonical Research Maps index. This avoids making the Human View know
-  // about one privileged map forever, because apparently two maps already counts as
-  // enough civilization to need navigation.
-  function canonicalDocumentPath(path) {
-    return path === legacyMapPath ? mapIndexPath : path;
+  // The current Human View still asks for the historical single-map path on its
+  // first load. Redirect only that first request to the new index. After the index
+  // is initialized, clicking the Nook map must open the real map rather than loop
+  // back to the index.
+  function canonicalDocumentPath(path, container) {
+    if (
+      container?.id === "view-knowledge-map" &&
+      path === legacyMapPath &&
+      container.dataset.mapIndexInitialized !== "true"
+    ) {
+      container.dataset.mapIndexInitialized = "true";
+      return mapIndexPath;
+    }
+    return path;
   }
 
   // Repository-relative links remain useful from raw Markdown, including images.
@@ -86,7 +94,7 @@
   }
 
   async function renderMarkdown({ path, container, fallback }) {
-    const recordPath = canonicalDocumentPath(path);
+    const recordPath = canonicalDocumentPath(path, container);
     if (!safeRepositoryPath(recordPath))
       throw new Error("Invalid repository document path");
     fallback.href = `${githubRoot}${recordPath}`;
