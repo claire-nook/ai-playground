@@ -1,105 +1,114 @@
 # Work Order Template
 
-> 這是 Handoff Contract，不是官僚表單。沒有內容的 Section 可以刪掉；高風險工作再補細節。
+> Canonical Work Order structure for Primary Agent dispatch management.
+>
+> Work Order 管理的是「派出了什麼工作」，不是 Worker KPI / task progress。建立新 Work Order 時複製本結構；Section 與 Metadata label 保持固定。當次不適用的欄位或 Section 明確填 `None`，不要刪除，避免未來 Primary Agent 必須猜測「沒有」還是「漏寫」。
 
 ## Metadata
 
-- Work Order:
-- Status: `Draft | Ready | In Progress | Reported | Review | Accepted | Rework | Closed`
-- Work Type: `Experiment | Implementation | Investigation | Review Support`
-- Requested By:
+- Work Order ID: `YYYY-MM-DD-short-name`
+- Date: `YYYY-MM-DD`
+- Type: `Implementation | Investigation | Review | Documentation | Experiment`
+- Primary Objective: `<one-line objective>`
+- Requested By: `Primary Agent | Claire | Primary Agent / Claire`
 - Intended Executor: `Codex | Implementation Agent | Unassigned`
-- Target Repository / Branch:
-- Related Research / Specification:
+- Target Repository: `<owner/repo | None>`
+- Source Baseline: `<branch / ref / snapshot contract | None>`
+- Related Phase: `<research / delivery phase | None>`
+- Related Experiment / Research: `<path / ID | None>`
+- Related Specification: `<path / ID | None>`
+- Related Evidence / Report: `<path / ID | None>`
+- Related PR / Issue: `<reference | None>`
+- Supersedes: `<Work Order ID | None>`
+
+### Metadata Rules
+
+- `Type` 表達這張 Work Order 的**主要工作性質**，只選一個 canonical value；不要用 slash 疊加多個近義 Type。
+- `Primary Objective` 用一句話讓未來 Primary Agent 不開全文也能知道這張工單主要在做什麼，並作為 Work Order Catalog 摘要來源。
+- `Source Baseline` 描述 dispatch 時要求的 source snapshot / branch / ref，不要求 Codex Cloud local branch name 必須與其相同。
+- `Related ...` 欄位是 navigation pointers，不代表執行者必須能跨 Repository 存取；真正 Required Context 仍由 `Read First` 定義。
+- Work Order 不維護 `Status`。執行進度、Worker KPI、task board state 不屬 Work Order Governance。
+- 歷史 Work Order 不因 Template 演進而強制 retroactive rewrite；Catalog 可依歷史內容做 normalized navigation metadata。
 
 ## Objective｜目標
 
-這次到底要回答什麼問題，或完成什麼可驗收工作？
+描述這次到底要回答什麼問題，或完成什麼可驗收工作。
 
-用一句話寫出成功後我們「知道了什麼」或「多了什麼」。
+成功後應能清楚回答「我們知道了什麼」或「多了什麼」。
 
-## Context / Read First｜先讀這些
+## Context / Background｜背景
 
-執行前應閱讀的文件、既有 Experiment、Evidence、Specification、Technical Pattern 或 Platform Rule。
+提供理解本次工作所需、但不適合塞進 Metadata 的背景、既有 Evidence、已知限制或 architecture context。
 
-- 
+若無額外背景：`None`
 
-不要假設執行 Agent 自動知道 Claire / Nook / Playground 的歷史脈絡。
+## Read First｜先讀這些
 
-## Execution Context Preflight｜執行環境確認（需要時）
+列出執行前真正需要閱讀的 Repository / Specification / Experiment / Evidence / Technical Pattern。
 
-Preflight 的目的，是在修改前確認 Agent 正在正確的 Context 執行正確的 Work Order，不是強迫所有 Cloud Workspace 模仿傳統 local Git clone。
+- `None`
 
-Codex Cloud Workspace 目前已觀察到可能只有 local `work` branch、沒有 Git remote、沒有 local / remote-tracking `main`、也沒有 `gh` authentication；因此除非任務本身真的依賴這些能力，不要把它們寫成 repository identity 的必要條件。
+不要假設執行 Agent 自動知道 Claire / Nook / Playground 的歷史脈絡，也不要為了儀式要求掃完整個 Repository。
 
-可依任務選擇驗證：
+## Execution Context Preflight｜執行環境確認
+
+Preflight 用來確認 Agent 正在正確 Context 執行正確 Work Order，不是要求 Cloud Workspace 模仿傳統 local Git clone。
+
+可依任務驗證：
 
 - 指定 Work Order / Read First 文件存在。
 - 預期 Repository structure / target files 存在。
 - working tree 在施工前 clean。
 - 必要 baseline Artifact / Context 存在。
-- Claire 已在 Codex UI 選擇預期 Repository / Workspace。
+- Claire 已在 Codex Product UI 選擇預期 Repository / source baseline。
 
-如果任何必要 Context mismatch，停止修改並回報。完整已觀察工作模式見 `agent-work/experience/codex-cloud-workspace.md`。
+Codex Cloud Workspace 可能只有 local `work` branch、沒有 Git remote、沒有 local / remote-tracking `main`、也沒有 `gh` authentication；除非任務本身真的依賴這些能力，不要把它們寫成 repository identity 的必要條件。
+
+若本任務不需要 Preflight：`None`
 
 ## Scope｜範圍
 
 可以做：
 
-- 
+- `None`
 
 ## Out of Scope｜不要順手裝修隔壁
 
 不要做：
 
-- 
+- `None`
 
-如果發現 Out of Scope 的問題，記在 Report，不要自行擴張工程範圍。
+若發現 Out of Scope 問題，記入 Report，不自行擴張工程範圍。
 
 ## Constraints｜限制與必守規則
 
-例如：
+可包含 Security / Credential Boundary、Formal DB mutation boundary、Public Playground data rule、Technical Pattern、Provider / Runtime constraint、不得改動的 File / Object / Environment。
 
-- Security / Credential Boundary
-- Formal DB mutation boundary
-- Public Playground data rule
-- Applicable Technical Pattern
-- Provider / Runtime / Version constraint
-- 不得改動的 File / Object / Environment
-
-具體限制：
-
-- 
+- `None`
 
 ## Tasks / Suggested Method｜工作內容
 
-這裡可以指定必要步驟，也可以只描述要驗證的 Cases，讓執行者自行安排低風險 Implementation Detail。
+指定必要步驟、Cases 或執行方向；低風險 implementation detail 可留給執行者。
 
-1. 
+1. `None`
 
 ## Required Evidence / Acceptance｜必要 Evidence / 驗收條件
 
-至少留下哪些可重新檢查的結果？
+定義 Primary Agent 後續可以重新檢查的完成證據與驗收邊界。
 
-- [ ] Source / Diff
-- [ ] Test Result
-- [ ] Runtime Output / Log Summary
-- [ ] Provider Result
-- [ ] Artifact / Screenshot / Response Sample（適用時）
-- [ ] Reproduction Steps（適用時）
-- [ ] Failure Evidence（若失敗）
+- [ ] `None`
 
-這些 checkbox 是提醒，不是每張單都必須全勾。
+Evidence 類型依任務選擇，例如 Source / Diff、Test Result、Runtime Output、Provider Result、Artifact、Reproduction Steps、Failure Evidence。不要把 Implementation Agent Report 自動視為 Verified Evidence。
 
 ## Deliverables｜交付物
 
-- Code / Experiment Artifact:
-- Report:
-- Local Commit（若 Workspace 支援）:
-- GitHub-visible PR / Commit（若需要 Primary Agent Review）:
-- Other:
+- Artifact / Code / Document: `None`
+- Report: `None`
+- Local Commit: `None`
+- GitHub-visible PR / Commit: `None`
+- Other: `None`
 
-若執行者是 Codex Cloud，不要預設 local commit SHA 等於 GitHub PR head SHA。Primary Agent Review 應以 Create PR 後的 GitHub-visible state 為準。
+若執行者是 Codex Cloud，不要預設 local commit SHA 等於 GitHub PR head SHA。Primary Agent Technical QC 以 GitHub-visible state 為準。
 
 ## Decision Boundary｜決策邊界
 
@@ -112,38 +121,36 @@ Codex Cloud Workspace 目前已觀察到可能只有 local `work` branch、沒�
 - Architecture / Platform Rule 變更。
 - 正式 Business Requirement 變更。
 - 擴張 Formal DB / Production mutation scope。
-- 將 Experiment Result 自動升格成 Production Decision。
+- 將 Experiment / Report Result 自動升格成 Production Decision 或 Verified Evidence。
 
-遇到需要以上決策才能繼續時，停止該部分並在 Report 標示 `Decision Needed`。
+若本任務有不同 Decision Boundary，明確覆寫上述 generic boundary；若沒有額外內容：`None`。
 
-## Report｜執行後填寫
+## Report Contract｜執行後回報
 
-Report 預設遵守 `agent-work/report-language-guideline.txt`：說明與判斷使用繁體中文，technical terms、code、path、command、field、log marker 與 raw provider output 保留英文。除非 Work Order 明確要求，避免整份 Report 全英文。
+Report 預設遵守 `agent-work/report-language-guideline.txt`：說明與判斷使用繁體中文，technical terms、code、path、command、field、log marker 與 raw provider output 保留英文。
+
+至少回報：
 
 ### Result
 
-實際結果。
+實際完成結果。
 
-### Evidence
+### Evidence / Validation
 
 Evidence 路徑、Test / Runtime Result、Log / Artifact 摘要。
 
 ### Deviations
 
-與 Work Order 原方法或 Scope 有何差異，以及原因。
+與 Work Order 原方法或 Scope 的差異及原因；若無：`None`。
 
 ### Failure / Unknown
 
-哪些失敗、哪些仍未知。不要把 Unknown 補成推論。
+失敗與仍未知事項；若無：`None`。不要把 Unknown 補成推論。
 
-### Observation
+### Observation / Candidate Conclusion
 
-值得 Primary Agent Review 的技術觀察。
-
-### Candidate Conclusion
-
-執行者可以提出 Candidate，但不得自行標記為正式 Technical Decision。
+值得 Primary Agent Review 的技術觀察或 Candidate；若無：`None`。不得自行升格成正式 Technical Decision。
 
 ### Follow-up / Decision Needed
 
-需要 Primary Agent / Claire 決定或後續驗證的事項。
+需要 Primary Agent / Claire 決定或後續驗證的事項；若無：`None`。
