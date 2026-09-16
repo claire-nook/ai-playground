@@ -8,6 +8,14 @@ This is a **Review / Experiment Design Refinement** task, not Shell implementati
 
 The previous Issue #35 review request is superseded as the dispatch contract because the formal Nook Works Application User model has since been clarified and because GitHub-visible PR is the required handoff surface.
 
+## Context Boundary
+
+This Work Order must depend only on artifacts available inside the `claire-nook/ai-playground` Repository snapshot plus architecture context explicitly embedded in this Work Order.
+
+`playground.md` is a ChatGPT Project-level context file and is **not** a file in this Repository. It is therefore not a Codex Workspace dependency and must not be required during Preflight.
+
+Do not infer that any Repository file is equivalent to Project-level `playground.md`. Repository-side governance and research context must come from the actual files listed under **Read First** below.
+
 ## Confirmed Cross-Repository Architecture Context
 
 The formal `claire-nook/nook-works` repository has now established the following Application User design (PR #3, merged to `main`, merge commit `bc62d0cf20ee185fd4455e3907e9c6c7193c50f7`):
@@ -25,24 +33,28 @@ Do not attempt to fetch or modify `nook-works` from this Workspace. Treat the ab
 
 ## Read First
 
-Repository files available in this Workspace:
+Required Repository files available in this Workspace:
 
-1. `playground.md`
-2. `knowledge/README.md`
-3. `knowledge/maps/nook-technical-platform.md`
-4. `notes/short-term-work.md`
-5. `agent-work/README.md`
-6. Existing relevant Supabase Auth / browser CRUD / custom API experiment records and evidence referenced by the Research Map.
-7. Previous Issue #35 only as historical context if accessible; this Work Order is authoritative when the two differ.
+1. `knowledge/README.md`
+2. `knowledge/maps/nook-technical-platform.md`
+3. `notes/short-term-work.md`
+4. `agent-work/README.md`
+5. Existing relevant Supabase Auth / browser CRUD / custom API experiment records and evidence referenced by the Research Map, where present in the Repository snapshot.
+
+Optional historical context:
+
+- Previous Issue #35, only if accessible from the Workspace/tooling. Lack of Issue access is **not** a blocker. This Work Order is authoritative when historical material differs.
 
 ## Preflight
 
 Before review:
 
-1. Confirm this Work Order and the required Playground context files exist in the snapshot.
+1. Confirm this Work Order and required Repository files 1–4 under **Read First** exist in the snapshot.
 2. Confirm the task is review-only and does not require Shell implementation.
-3. Confirm `user_type = admin / user / guest` is treated as an established external architecture input, not an open research question.
-4. If required Playground context is actually missing or contradictory, stop and report the blocker instead of inventing context.
+3. Confirm `user_type = admin / user / guest` is treated as established architecture input embedded in this Work Order, not an open research question and not a requirement to access `nook-works`.
+4. Resolve referenced experiment/evidence files through the Repository's own Research Map / indexes. A referenced historical experiment that is absent may be reported as a limitation when non-essential; do not silently invent its content.
+5. If one of required files 1–4 is missing, or Repository context materially contradicts this Work Order, stop and report the blocker instead of guessing.
+6. Do **not** search for or require Project-level `playground.md`; it is intentionally outside the Codex Repository snapshot.
 
 ## Primary Draft to Review
 
@@ -163,7 +175,7 @@ Use Mermaid where a lifecycle/state diagram materially improves understanding an
 
 After completing the review:
 
-- validate Markdown structure and internal repository references as practical;
+- validate Markdown structure and internal Repository references as practical;
 - run `git diff --check` or equivalent static sanity check;
 - local commit the review artifact;
 - report changed files, validation performed, known limitations / unknowns, and local commit SHA;
