@@ -7,19 +7,40 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" />
 
 <!-- Highlight.js：使用官方 cdn-release 的 browser build。
-     預設 browser bundle包含 SQL / JSON；只主動處理明確標示語言的 code block。 -->
+     只主動處理我們技術文件實際會使用的語言，不啟用 auto-detect。 -->
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.12.0/build/highlight.min.js"></script>
 
 <!-- Mermaid：讓 ```mermaid code block 變流程圖 -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 <script>
+  // 技術文件實用白名單。Alias 會正規化成 Highlight.js 的 canonical language name。
+  var supportedFenceLanguages = {
+    sql: 'sql',
+    json: 'json',
+    javascript: 'javascript',
+    js: 'javascript',
+    typescript: 'typescript',
+    ts: 'typescript',
+    html: 'xml',
+    css: 'css',
+    bash: 'bash',
+    shell: 'bash',
+    sh: 'bash',
+    yaml: 'yaml',
+    yml: 'yaml'
+  };
+
+  function normalizeFenceLanguage(value) {
+    if (!value) return '';
+    return supportedFenceLanguages[value.trim().toLowerCase()] || '';
+  }
+
   // 找出 MultiMarkdown / 常見 Markdown renderer 可能留下的 fenced-code 語言資訊。
   function getFenceLanguage(code) {
     if (!code) return '';
 
     var pre = code.parentElement;
     var candidates = [code, pre];
-    var supportedLanguages = ['sql', 'json'];
 
     for (var i = 0; i < candidates.length; i += 1) {
       var element = candidates[i];
@@ -29,27 +50,22 @@
         element.getAttribute('data-language') ||
         element.getAttribute('data-lang');
 
-      if (dataLanguage) {
-        var normalizedDataLanguage = dataLanguage.trim().toLowerCase();
-        if (supportedLanguages.indexOf(normalizedDataLanguage) !== -1) {
-          return normalizedDataLanguage;
-        }
-      }
+      var normalizedDataLanguage = normalizeFenceLanguage(dataLanguage);
+      if (normalizedDataLanguage) return normalizedDataLanguage;
 
       var classes = Array.prototype.slice.call(element.classList || []);
       for (var j = 0; j < classes.length; j += 1) {
         var className = classes[j].toLowerCase();
+        var rawLanguage = className;
 
-        for (var k = 0; k < supportedLanguages.length; k += 1) {
-          var language = supportedLanguages[k];
-          if (
-            className === language ||
-            className === 'language-' + language ||
-            className === 'lang-' + language
-          ) {
-            return language;
-          }
+        if (className.indexOf('language-') === 0) {
+          rawLanguage = className.slice('language-'.length);
+        } else if (className.indexOf('lang-') === 0) {
+          rawLanguage = className.slice('lang-'.length);
         }
+
+        var normalizedClassLanguage = normalizeFenceLanguage(rawLanguage);
+        if (normalizedClassLanguage) return normalizedClassLanguage;
       }
     }
 
@@ -108,15 +124,21 @@
     if (!hasSqlHighlightDebugMarker(root)) return;
 
     var blocks = root.querySelectorAll('pre > code');
+    var languagesToCheck = ['sql', 'json', 'javascript', 'typescript', 'xml', 'css', 'bash', 'yaml'];
     var lines = [
       'T-TXT-2 HIGHLIGHT DEBUG',
       'hljs loaded: ' + Boolean(window.hljs),
-      'hljs.highlight: ' + Boolean(window.hljs && typeof hljs.highlight === 'function'),
-      'sql language registered: ' + Boolean(window.hljs && typeof hljs.getLanguage === 'function' && hljs.getLanguage('sql')),
-      'json language registered: ' + Boolean(window.hljs && typeof hljs.getLanguage === 'function' && hljs.getLanguage('json')),
-      'pre > code count: ' + blocks.length,
-      ''
+      'hljs.highlight: ' + Boolean(window.hljs && typeof hljs.highlight === 'function')
     ];
+
+    languagesToCheck.forEach(function (language) {
+      lines.push(
+        language + ' language registered: ' +
+        Boolean(window.hljs && typeof hljs.getLanguage === 'function' && hljs.getLanguage(language))
+      );
+    });
+
+    lines.push('pre > code count: ' + blocks.length, '');
 
     blocks.forEach(function (code, index) {
       lines.push(describeCodeBlock(code, index));
