@@ -1,10 +1,17 @@
 # Dispatch Handoff｜派工通知規則
 
-這份文件補充 `agent-work/README.md` 的 Dispatch Procedure，保存 2026-09-14 實際撞牆後確認的 execution-surface boundary 與 Codex Task continuation 行為。
+這份文件補充 `agent-work/README.md` 的 Dispatch Procedure，保存實際撞牆後確認的 execution-surface boundary 與 Codex Task continuation 行為。
 
 ## 核心原則
 
 > **Work Order 是完整施工 contract；Dispatch Handoff 是短通知，不承載 Work Order 本文。**
+
+Primary Agent 建立新 Work Order 前，必須先讀：
+
+1. `agent-work/work-orders/index.md`：Work Order Catalog / Governance 與 Historical Navigation。
+2. `agent-work/templates/work-order.md`：canonical Work Order structure 與 Completion Contract。
+
+新 Work Order 應由 canonical Template 建立，而不是從某張歷史 Work Order 複製後繼續遺傳舊格式。Template 的固定 Section 不適用時填 `None`，不要刪除。
 
 Primary Agent 必須把完整 Work Order 放在 Implementation Agent 實際可讀的 execution surface。對目前 Codex workflow，預設就是 target Repository 內的 `agent-work/work-orders/`。
 
@@ -14,7 +21,7 @@ GitHub Issue、ChatGPT Project File、Connector-visible context 或 Primary Agen
 
 ## Dispatch Handoff 必須明確標示 Task 模式
 
-Primary Agent 要 Claire 通知 Codex 工作時，必須明確告訴 Claire這次屬於哪一種模式，不得只說「請弟弟處理」：
+Primary Agent 要 Claire 通知 Codex 工作時，必須明確告訴 Claire 這次屬於哪一種模式，不得只說「請弟弟處理」：
 
 - **新 Task（New Task / New implementation snapshot）**：需要從指定 GitHub-visible source baseline 建立新的 workspace，重新讀取 Work Order 與 Read First。
 - **原 Task 繼續施工（Existing Task continuation / REWORK）**：回到原 Codex Task，使用「要求變更或詢問問題」繼續同一 workspace / implementation lineage；完成後由 Claire 使用「更新分支」把後續修改發布到既有 PR。
@@ -32,7 +39,7 @@ Primary Agent 要 Claire 通知 Codex 工作時，必須明確告訴 Claire這�
 - 一段可直接複製給 Implementation Agent 的短 Prompt
 - 僅在本次派工有特殊 execution 注意事項時補充 exception
 
-不要在 Dispatch Prompt 重新複製第二份完整 Requirement。Requirement 的 Source of Truth 是 Work Order。
+不要在 Dispatch Prompt 重新複製第二份完整 Requirement，也不要重寫 Template 已經固定承載的 Completion Contract。Requirement 與 completion behavior 的 Source of Truth 是 Work Order。
 
 ## 新 Task 建議格式
 
@@ -43,7 +50,7 @@ Work Order: agent-work/work-orders/<name>.md
 Execution type: New Task / New implementation snapshot
 
 可複製給 Implementation Agent：
-請在 <owner/repo>，以 GitHub-visible <branch-or-ref> 的最新狀態建立新的工作環境。Workspace 內部 branch 名稱不必是 <branch-or-ref>，也不要求 Git remote。請先完成 repository preflight，完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，然後依 Work Order 施工、測試並 local commit。不要自行擴張 Architecture / Scope。完成後依 Work Order Report Contract 回報 changed files、tests、known limitations 與 local commit SHA，然後停止，等待 Claire 建立 PR。
+請在 <owner/repo>，以 GitHub-visible <branch-or-ref> 的最新狀態建立新的工作環境。Workspace 內部 branch 名稱不必是 <branch-or-ref>，也不要求 Git remote。請先完成 repository preflight，完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，然後依 Work Order 執行。不要自行擴張 Architecture / Scope。最後必須依 Work Order 的 Report Contract 與 Completion Contract 結案；若無法完成，依 Cannot Complete 規則停止並回報 blocker；若可以完成，依 Completed 規則完成 validation、local commit、回報 local commit SHA 後停止，等待 Claire 建立 PR。
 ```
 
 ## 原 Task REWORK 建議格式
@@ -54,7 +61,7 @@ PR: #<number>
 Execution type: Existing Task continuation / REWORK
 
 可複製給 Implementation Agent：
-回到原 Codex Task 繼續施工。Primary Agent 已完成 QC；依本訊息中的 REWORK delta 修正，不要擴張原 Work Order scope。修改前先確認目前 workspace / branch / HEAD 與原 implementation lineage 的關係。完成後測試、local commit，回報修改後 commit SHA 與 branch / PR 關係。Claire 之後使用「更新分支」發布到既有 PR。
+回到原 Codex Task 繼續施工。Primary Agent 已完成 QC；依本訊息中的 REWORK delta 修正，不要擴張原 Work Order scope。修改前先確認目前 workspace / branch / HEAD 與原 implementation lineage 的關係。完成後依原 Work Order 的 Report Contract 與 Completion Contract 結案：完成 validation、local commit 並回報修改後 local commit SHA 與 branch / PR 關係後停止。Claire 之後使用「更新分支」發布到既有 PR；若無法安全完成 REWORK，停止並明確回報 blocker，不製造看似完成的 handoff。
 ```
 
 若 REWORK 只是小型評語、需求澄清或局部修正，必要 delta 應直接放進原 Task continuation message，不得假設 GitHub PR comment 會自動進入 Codex workspace。
