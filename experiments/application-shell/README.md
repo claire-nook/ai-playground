@@ -32,6 +32,17 @@ Browser Entry
 
 ---
 
+## Supporting Design / Probe
+
+S-SHELL-1 的 Navigation / Feature Entry 需要一組 synthetic Platform Metadata model，先驗證 Feature Registry、Navigation Definition 與 `user_type` → Feature Entry mapping 能否共同描述 Shell behavior。
+
+- [Synthetic Platform Metadata Design](./synthetic-platform-metadata.md) — Conceptual Model、synthetic object mapping、設計邊界與 Evidence interpretation。
+- [Synthetic Platform Metadata SQL](./synthetic-platform-metadata.sql) — 實際準備用於 probe 的 DDL、fixture INSERT 與 inspection query。
+
+這些 `test_*` objects 是 Experiment Design，不是正式 Nook Works Platform Schema。未來若形成 Technical Decision，仍須回到正式 Repository 重新依 Platform convention 設計與命名。
+
+---
+
 ## Architecture Inputs
 
 ### Identity layers
@@ -76,15 +87,15 @@ user
 guest
 ```
 
-本 Experiment：
+本 Experiment 三種 classification 都 In Scope：
 
 ```text
-admin    In Scope
-user     In Scope
-guest    Reserved / Out of Scope
+admin    Shell + Business + Common
+user     Shell + Business
+guest    Shell only
 ```
 
-`guest` 目前沒有 Business Use Case，因此不建立 guest account，也不定義 guest login、Navigation、Route、Authorization 或 RWD behavior。
+`guest` 是 Application Eligible 的 active Application User，可以完成 Auth → Application Context → Shell Ready，但沒有 Business / Common Feature Entry。這讓 Experiment 能明確區分 Application Eligibility 與 Feature Eligibility。
 
 `user_type` 是 coarse Application User classification，不是 Role / RBAC / Permission architecture。
 
@@ -111,6 +122,8 @@ Logout
 
 Login Page 是 Authentication Entry，不是 authenticated Shell。只有 Auth + Application User bootstrap 成功後，Shell 才進入 Ready。
 
+`/home` 是 Shell-owned landing，不是 Feature。對 `guest` 而言，Shell Ready 後仍可看到基本 Application User Context 與 Logout，但沒有 Feature Entry。
+
 Normal transition：
 
 ```text
@@ -129,12 +142,24 @@ Representative failure outcome 應包含 invalid / no session、no `app_user`、
 
 ## User Fixture
 
-| Application User | `user_type` | Business Function | Common Function |
-| --- | --- | :---: | :---: |
-| Claire | `admin` | Visible / usable | Visible / usable |
-| Test User | `user` | Visible / usable | Hidden from Navigation |
+| Application User | `user_type` | Shell | Business Function | Common Function |
+| --- | --- | :---: | :---: | :---: |
+| Claire | `admin` | Ready | Visible / usable | Visible / usable |
+| TU01 | `user` | Ready | Visible / usable | Hidden from Navigation |
+| TU02 | `guest` | Ready / Home only | Hidden | Hidden |
 
-No guest account required.
+Direct route expectation：
+
+```text
+admin  /business → enter
+admin  /common   → enter
+user   /business → enter
+user   /common   → deterministic Shell rejection
+guest  /business → deterministic Shell rejection
+guest  /common   → deterministic Shell rejection
+```
+
+這裡的 Shell rejection 是 Feature Entry behavior，不等於 authoritative Backend Authorization。
 
 ---
 
@@ -142,7 +167,7 @@ No guest account required.
 
 使用三個 stable route：
 
-- `/home` — Shell landing content，只顯示足夠的 Application User Context，讓 bootstrap success 可觀察；不是 Dashboard。
+- `/home` — Shell landing content，只顯示足夠的 Application User Context，讓 bootstrap success 可觀察；不是 Dashboard，也不屬於 Feature Registry。
 - `/business` — minimal Business Function。
 - `/common` — minimal Common / Control Function。
 
@@ -150,7 +175,7 @@ No guest account required.
 
 ### Business Function
 
-`admin` / `user` 都可以進入。
+`admin` / `user` 都可以進入；`guest` 沒有 Feature Entry。
 
 Feature 必須做 real data read。Preferred path 是對安全且適合的 Business-domain source 使用已驗證的 Native Data API SELECT，再 render result。
 
@@ -167,7 +192,7 @@ Authenticated Application
 
 ### Common Function
 
-`admin` 可以看見並進入 Common Feature；`user` 不顯示 Common Navigation entry。
+`admin` 可以看見並進入 Common Feature；`user` / `guest` 不顯示 Common Navigation entry。
 
 Common Feature 也必須 real data read。如果有 safe existing Custom API 可以直接 reuse、且不擴張 scope，可讓 Common Feature 使用 Custom API，以觀察 Shell 是否能保持 data-access mechanism neutral：
 
@@ -191,9 +216,11 @@ Navigation Visibility
 ≠ Authoritative Backend Authorization
 ```
 
-Test User 的 `/common` 不出現在 Navigation，但仍要 direct URL `/common`，觀察 Shell 如何處理 route responsibility。
+`user` 的 `/common` 不出現在 Navigation；`guest` 的 `/business`、`/common` 都不出現在 Navigation。仍要 direct URL 這些 route，觀察 Shell 如何 deterministic 處理 Feature Entry。
 
-不能 fake backend `403`，也不能把 Hidden Navigation 寫成 Backend Authorization。若正式 backend 尚未 enforce `user_type=user → Common data denied`，保留給後續 Authorization / Error Contract design。
+不能 fake backend `403`，也不能把 Hidden Navigation 寫成 Backend Authorization。Formal `private.can_access_application()` 目前只判斷 valid Auth Identity + active `app_user`，不判斷 `user_type`；因此 active `guest` 通過 Application Access 是本 Experiment 刻意保留的 layering，不是 defect。
+
+若正式 backend 尚未 enforce feature-level authorization，保留給後續 Authorization / Error Contract design。
 
 ---
 
@@ -213,7 +240,8 @@ Evidence：
 - `is_active` eligibility
 - `user_type` / Application User Context establishment
 - Claire / `admin` Ready state
-- Test User / `user` Ready state
+- TU01 / `user` Ready state
+- TU02 / `guest` Ready state，Shell Home only
 - authenticated + no `app_user`
 - inactive `app_user`
 - representative invalid-session / context-load failure
@@ -230,9 +258,11 @@ Evidence：
 
 - `admin`: Business visible / usable; Common visible / usable
 - `user`: Business visible / usable; Common Navigation hidden
+- `guest`: Shell Ready; no Business / Common Navigation entry
 - Business Feature real data retrieval + render
 - Common Feature real data retrieval + render on admin path
 - `user` direct `/common` has deterministic Shell outcome
+- `guest` direct `/business` and `/common` have deterministic Shell outcomes
 - deep link preserves requested route through bootstrap
 - refresh preserves meaningful route semantics
 - Back / Forward behaves as browser route history
@@ -253,7 +283,7 @@ Primary observations：
 
 Human Environment Evidence 應觀察 touch Navigation、menu open / close、orientation transition、refresh、Back / Forward、sign-out、loading / error presentation，以及是否出現 horizontal overflow、trapped overlay、stale privileged content。
 
-使用 `admin` 作為 maximum Navigation Set、`user` 作為 reduced Navigation Set。不為了 responsive matrix 額外發明 guest scenario。
+使用 `admin` 作為 maximum Navigation Set、`user` 作為 reduced Navigation Set；`guest` 的 Shell-only state 可做 targeted observation，但不需要為 responsive matrix 重複所有 viewport 組合。
 
 Real-device / emulated evidence 必須明確標示。
 
@@ -296,10 +326,10 @@ New Evidence 聚焦 integrated Application Runtime 與 responsibility boundary�
 
 1. Real login 可完成 Auth Identity → `app_user` → eligibility → Application User Context → Shell Ready。
 2. Signed-out、ineligible、failure、sign-out / invalidation 都有 deterministic outcome，不留下 stale privileged state 或 loop。
-3. `admin` / `user` coarse Feature Entry visibility 可預期，而且沒有被擴張成 Role / Permission architecture。
+3. `admin` / `user` / `guest` coarse Feature Entry behavior 可預期，而且沒有被擴張成 Role / Permission architecture；`guest` 可進 Shell 但沒有 Feature Entry。
 4. Business / Common Feature 都能 real data retrieval + render，證明完整 Application vertical slice，不只是 visual-only shell。
 5. Direct route、deep link、refresh、unknown route、Back / Forward semantics coherent。
-6. Hidden Navigation 沒有被當成 Backend Authorization；missing backend `user_type` authorization 明確保持 open。
+6. Hidden Navigation 沒有被當成 Backend Authorization；missing backend feature-level authorization 明確保持 open。
 7. Same Shell 在 iPad landscape / portrait、iPhone narrow target 可用，並留下 desktop sanity Evidence。
 8. Runtime Evidence 與 open Platform Design choice 有明確界線。
 
@@ -313,9 +343,8 @@ New Evidence 聚焦 integrated Application Runtime 與 responsibility boundary�
 - production router library selection
 - global state-management library selection
 - component library / Design System selection
-- Dynamic Menu / Menu Maintenance
+- production Dynamic Menu / Menu Maintenance implementation
 - Role / Permission / RBAC
-- `guest` behavior implementation
 - production Business Authorization / 401 / 403 / 404 contract
 - Feature CRUD / Form / Table / Dialog maintenance patterns
 - dashboard design
@@ -327,6 +356,8 @@ New Evidence 聚焦 integrated Application Runtime 與 responsibility boundary�
 - production Session Policy
 - new backend mechanism solely for making the Demo appear more complete
 
+Synthetic Platform Metadata probe 是 S-SHELL-1 supporting design，因此不屬於 production Dynamic Menu implementation；它只驗證 metadata structure 是否足以支撐本 Experiment 的 Navigation / Feature Entry behavior。
+
 ---
 
 ## Open Implementation Planning
@@ -336,11 +367,11 @@ New Evidence 聚焦 integrated Application Runtime 與 responsibility boundary�
 - exact safe Business-domain data source for `/business`
 - exact safe Common-domain data source for `/common`
 - whether existing Custom API can be reused without scope expansion
-- deterministic route outcome for `user` direct `/common`
+- deterministic Shell outcome for unauthorized Feature Entry (`user` / `guest` direct route)
 - visual Navigation behavior for iPad portrait / iPhone narrow
 - Evidence capture format / Catalog metadata
 
-如果其中某項暴露 Business / Platform decision，再交由 Claire + Primary Agent 判斷；不要由 disposable Demo 偷偷決定 Platform Rule。
+如果其中某項暴露 Business / Platform decision，再交由 Claire + Primary Agent判斷；不要由 disposable Demo 偷偷決定 Platform Rule。
 
 ---
 
@@ -349,6 +380,8 @@ New Evidence 聚焦 integrated Application Runtime 與 responsibility boundary�
 Preferred Experiment 是 **single disposable-but-realistic Nook Works Shell Live Demo + three Evidence Phases**。
 
 Normal path 使用 real Supabase Auth、`app_user`、Application Context、Shell、Feature Entry、data retrieval、rendered result。Synthetic control 只保留給 difficult failure state。
+
+Navigation / Feature Entry 的 metadata structure 由 supporting synthetic Platform Metadata probe 驗證；Experiment 成功只形成 Evidence，不直接把 synthetic table design 升格為正式 Platform Schema。
 
 研究目標是驗證 composition 與 responsibility boundary。Demo 使用的 router、CSS、state mechanism、menu implementation、data-access choice，不因為 Demo 成功就自動升格為 Platform Rule。
 
