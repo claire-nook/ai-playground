@@ -6,8 +6,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const catalogRoots = [path.join(root, "experiments"), path.join(root, "knowledge", "wall")];
 const outputPath = path.join(root, "public", "research-catalog.json");
 const legacyOutputPath = path.join(root, "public", "experiment-catalog.json");
-const requiredStringFields = ["id", "title", "summary", "completedDate", "recordPath", "demoStatus", "verificationStatus"];
-const demoStatuses = new Set(["live", "retired", "none"]);
+const requiredStringFields = ["id", "title", "summary", "recordPath", "demoStatus", "verificationStatus"];
+const demoStatuses = new Set(["live", "retired", "none", "planned"]);
 const verificationStatuses = new Set(["verified", "partial", "candidate"]);
 const outputTypes = new Set(["experiment", "commentary", "technical-note", "knowledge"]);
 const researchMethods = new Set(["controlled-experiment", "field-verification", "analysis", "synthesis"]);
@@ -40,16 +40,29 @@ function validateCatalogEntry(entry, sourcePath) {
   if (new Set(normalizedTags).size !== normalizedTags.length) throw new Error(`${sourcePath}: tags must not contain case-insensitive duplicates`);
   if (!demoStatuses.has(entry.demoStatus)) throw new Error(`${sourcePath}: invalid demoStatus`);
   if (!verificationStatuses.has(entry.verificationStatus)) throw new Error(`${sourcePath}: invalid verificationStatus`);
-  const parsedCompletedDate = new Date(`${entry.completedDate}T00:00:00Z`);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.completedDate) || Number.isNaN(parsedCompletedDate.valueOf()) || parsedCompletedDate.toISOString().slice(0, 10) !== entry.completedDate) {
-    throw new Error(`${sourcePath}: completedDate must be a valid YYYY-MM-DD date`);
+
+  // Candidate research may be cataloged before it is completed. A completion date becomes mandatory
+  // once the output advances beyond candidate, while candidate cards may explicitly use null.
+  if (entry.verificationStatus === "candidate") {
+    if (entry.completedDate !== null && entry.completedDate !== undefined) {
+      throw new Error(`${sourcePath}: candidate completedDate must be null or omitted`);
+    }
+  } else {
+    if (typeof entry.completedDate !== "string" || entry.completedDate.trim() === "") {
+      throw new Error(`${sourcePath}: completedDate must be a non-empty string once verificationStatus is not candidate`);
+    }
+    const parsedCompletedDate = new Date(`${entry.completedDate}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.completedDate) || Number.isNaN(parsedCompletedDate.valueOf()) || parsedCompletedDate.toISOString().slice(0, 10) !== entry.completedDate) {
+      throw new Error(`${sourcePath}: completedDate must be a valid YYYY-MM-DD date`);
+    }
   }
+
   if (path.isAbsolute(entry.recordPath) || !entry.recordPath.endsWith(".md") || entry.recordPath.split("/").includes("..")) {
     throw new Error(`${sourcePath}: recordPath must be a repository-relative Markdown path`);
   }
   if (entry.outputType === "experiment" && !entry.recordPath.startsWith("experiments/")) throw new Error(`${sourcePath}: experiment recordPath must live under experiments/`);
   if (entry.demoStatus === "live" && (typeof entry.demoPath !== "string" || !entry.demoPath.startsWith("/"))) throw new Error(`${sourcePath}: a live demo requires an absolute demoPath`);
-  if (entry.demoStatus !== "live" && "demoPath" in entry) throw new Error(`${sourcePath}: demoPath is only valid for a live demo`);
+  if (entry.demoStatus !== "live" && "demoPath" in entry && entry.demoPath !== null) throw new Error(`${sourcePath}: demoPath must be null or omitted unless the demo is live`);
   if ("flow" in entry && (typeof entry.flow !== "string" || !entry.flow.trim())) throw new Error(`${sourcePath}: flow must be a non-empty string when present`);
 }
 
@@ -69,8 +82,13 @@ for (const entry of catalog) {
   ids.add(entry.id);
 }
 
-// Research chronology is primary; natural ID order only breaks same-day ties.
-catalog.sort((left, right) => right.completedDate.localeCompare(left.completedDate) || left.id.localeCompare(right.id, "en", { numeric: true }));
+// Completed outputs are ordered by research chronology. Candidate cards without a completion date
+// stay after dated outputs and use natural ID order among themselves.
+catalog.sort((left, right) => {
+  const leftDate = left.completedDate ?? "";
+  const rightDate = right.completedDate ?? "";
+  return rightDate.localeCompare(leftDate) || left.id.localeCompare(right.id, "en", { numeric: true });
+});
 
 await mkdir(path.dirname(outputPath), { recursive: true });
 const payload = `${JSON.stringify(catalog, null, 2)}\n`;
