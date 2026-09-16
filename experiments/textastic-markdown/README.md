@@ -62,6 +62,14 @@ Claire 平常幾乎不需要把 Markdown 轉成 PDF。正常情況下，Markdown
 
 再以真實長文件進行 Human Environment Validation。文件在沒有人工 marker 的區域仍由 iPadOS 自然 pagination；加入 marker 的位置則強制開始新頁。人工換頁造成前一頁留下空白、以及後續自然 pagination 重新計算，皆屬預期行為。
 
+Textastic Preview 中的人工換頁 marker：
+
+![Textastic Markdown Preview 顯示 PAGE BREAK marker](../../public/images/wall/textastic-markdown-pagebreak-preview.png)
+
+A4 / 100% iPadOS Print Preview 的長文件驗證：
+
+![iPadOS Print Preview 驗證人工換頁與自然 pagination 共存](../../public/images/wall/textastic-markdown-pagebreak-print.png)
+
 這證明 Automatic Pagination 與 Manual Forced Page Break 可以共存，而不需要把 Textastic Preview 改造成 page-layout editor。
 
 ## 4. Scope boundary
