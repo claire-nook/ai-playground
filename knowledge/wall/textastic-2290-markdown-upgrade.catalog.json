@@ -1,0 +1,21 @@
+{
+  "id": "WALL-TEXTASTIC-1",
+  "title": "花 NT$2,290 買文字編輯器之後，我們決定自己補功能",
+  "completedDate": "2026-09-16",
+  "recordPath": "knowledge/wall/textastic-2290-markdown-upgrade.md",
+  "summary": "從早期 Claire × 墨衡靠手動 copy / paste 協作出的 Textastic Markdown customization，到 2026 年補上 opt-in manual print page break。附可直接使用的 markdown_head.html / markdown.css、Textastic 官方安裝位置與 <!-- pagebreak --> 語法。",
+  "tags": [
+    "iPad-first",
+    "Textastic",
+    "Markdown",
+    "Authoring Tooling",
+    "Print / PDF",
+    "Manual Page Break",
+    "Field Evidence"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "field-verification",
+  "demoStatus": "none",
+  "verificationStatus": "verified",
+  "flow": "legacy Textastic customization → repository preservation → manual page-break experiment → iPad long-document print validation → reusable public artifacts and field note."
+}

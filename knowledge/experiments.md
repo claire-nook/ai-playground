@@ -6,6 +6,34 @@
 
 ---
 
+## 2026-09-16
+
+### T-TXT-1 — Textastic Markdown Preview / Manual Print Page Break
+
+- Status: `Verified / Completed`
+- Card: [`../experiments/textastic-markdown/t-txt-1.catalog.json`](../experiments/textastic-markdown/t-txt-1.catalog.json)
+- Record: [`../experiments/textastic-markdown/README.md`](../experiments/textastic-markdown/README.md)
+- Artifacts: [`markdown_head.html`](../experiments/textastic-markdown/markdown_head.html) / [`markdown.css`](../experiments/textastic-markdown/markdown.css)
+- Commentary: [`wall/textastic-2290-markdown-upgrade.md`](wall/textastic-2290-markdown-upgrade.md)
+- Primary Intent: `iPad-first Authoring / Textastic Markdown Preview / Manual Print Control`
+- Tags: `ipad-first`, `textastic`, `markdown`, `webkit`, `print-pdf`, `manual-page-break`, `authoring-tooling`
+
+**Why it existed**
+
+一般 Markdown → PDF 不需要人工接管 pagination；只有少數特殊交付文件需要 Claire 明確指定某個章節從新頁開始。研究目標因此不是建立 PDF Engine，而是在不影響原生 automatic pagination 的前提下加入 opt-in manual page break。
+
+**What is verified**
+
+- Markdown `<!-- pagebreak -->` 可由 Textastic custom `markdown_head.html` 轉成 `.page-break` DOM node。
+- Textastic Preview 可顯示 `PAGE BREAK` 作者提示，Print media 可隱藏提示並在該位置強制換頁。
+- A4 / 100% iPadOS Print Preview minimal probe 驗證成功。
+- 真實 15 頁長文件驗證：人工 marker 與 WebKit / iPadOS 原生 automatic pagination 可共存。
+- 沒有 marker 時，不建立 page-break node，也不加入 page-level pagination intervention。
+
+**What it unlocked**
+
+保留一套可直接安裝的 Textastic Markdown Preview customization：森林霧綠 theme、Mermaid rendering 與 opt-in manual print page break。特殊 PDF 文件可透過 Print Preview → 人工插入 `<!-- pagebreak -->` → 再 Preview 的方式逐頁微調，不需要為 1% 的需求改造 99% 的 Markdown workflow。
+
 ## 2026-09-15
 
 ### P-CODEX-PHONE — ChatGPT → Codex Autonomous Dispatch Reconnaissance
