@@ -14,14 +14,21 @@ function show(id) { views.forEach(view => { el(view).hidden = view !== id; }); }
 function message(error) { return error instanceof Error ? error.message : String(error || "未知錯誤"); }
 function escapeHtml(value) { const node=document.createElement("span"); node.textContent=value ?? ""; return node.innerHTML; }
 function maskedEmail(email) { if (!email?.includes("@")) return "Authenticated user"; const [name,domain]=email.split("@"); return `${name.slice(0,2)}***@${domain}`; }
+function clearApplicationState() {
+  state.renderVersion+=1; state.session=null; state.appUser=null; state.features=[]; state.navigation=[]; state.allowedPaths=new Set();
+  el("navigation").innerHTML='<a href="/home" data-route>Home</a>'; el("user-context").textContent=""; el("content").replaceChildren(); closeNavigation();
+}
+function enterSignedOutState() { clearApplicationState(); history.replaceState({},"","/application-shell/"); el("password").value=""; show("login-view"); }
 
 async function bootstrap(session) {
-  state.renderVersion += 1; state.session=null; state.appUser=null; state.features=[]; state.navigation=[]; state.allowedPaths=new Set();
+  clearApplicationState();
   if (!session) { show("login-view"); return; }
+  const bootstrapVersion=state.renderVersion;
   show("startup-view");
   try {
     // Auth Identity 必須解析成一筆 active app_user，才建立 Application User Context。
-    const { data:appUser, error:userError } = await supabase.from("app_user").select("oid,app_user_name,user_type,is_active,id_auth_user").eq("id_auth_user", session.user.id).eq("is_active", true).maybeSingle();
+    const { data:appUser, error:userError } = await supabase.from("app_user").select("oid,app_user_name,user_type,is_active").eq("id_auth_user", session.user.id).eq("is_active", true).maybeSingle();
+    if(bootstrapVersion!==state.renderVersion)return;
     if (userError) throw new Error(`Application User 查詢失敗：${userError.message}`);
     if (!appUser) throw new Error("此 Authentication Identity 沒有 active Application User Context。");
     if (!["admin","user","guest"].includes(appUser.user_type)) throw new Error("Application User classification 不在本 Experiment contract 內。");
@@ -30,6 +37,7 @@ async function bootstrap(session) {
       supabase.from("test_m8q3v6").select("oid,menu_code,menu_name,parent_menu_oid,feature_oid,sort_order,is_active").eq("is_active", true),
       supabase.from("test_r5n9c1").select("oid,user_type,feature_oid")
     ]);
+    if(bootstrapVersion!==state.renderVersion)return;
     for (const result of [featureResult,menuResult,mappingResult]) if (result.error) throw new Error(`Metadata 載入失敗：${result.error.message}`);
     state.session=session; state.appUser=appUser; state.features=featureResult.data ?? [];
     state.navigation=buildNavigation(state.features, menuResult.data ?? [], mappingResult.data ?? [], appUser.user_type);
@@ -60,7 +68,7 @@ async function renderCurrentRoute(replaceAlias=false) {
 
 async function renderPlaces(version) {
   setContent(`${heading("Place Native","Browser → Supabase Native Data API → bounded render") }<p class="feature-state">Place data 載入中…</p>`);
-  const {data,error}=await supabase.from("place").select("oid,place_code,place_name,latitude,longitude,timezone,is_active").eq("is_active",true).order("place_code").limit(8);
+  const {data,error}=await supabase.from("place").select("oid,place_code,place_name,latitude,longitude,timezone,is_active").eq("is_active",true).order("place_code").limit(5);
   if(version!==state.renderVersion)return; if(error){setContent(`${heading("Place Native","Feature-level failure") }<p class="feature-state error">${escapeHtml(error.message)}</p>`);return;}
   if(!data?.length){setContent(`${heading("Place Native","Native Data API completed") }<p class="feature-state">沒有 active Place。</p>`);return;}
   setContent(`${heading("Place Native","Browser → Supabase Native Data API → bounded render") }<div class="grid">${data.map(place=>placeCard(place)).join("")}</div>`);
@@ -86,14 +94,16 @@ async function renderPlaceCountry(version) {
   setContent(`${heading("Place-Country Custom API","Current caller session → test-place-country") }<p class="feature-state">Custom API 載入中…</p>`);
   const response=await fetch(`${SUPABASE_URL}/functions/v1/test-place-country`,{headers:{Authorization:`Bearer ${state.session.access_token}`,apikey:SUPABASE_PUBLISHABLE_KEY,Accept:"application/json"}});
   const body=await response.json().catch(()=>({})); if(version!==state.renderVersion)return; if(!response.ok){setContent(`${heading("Place-Country Custom API","Feature-level failure") }<p class="feature-state error">HTTP ${response.status}：${escapeHtml(body.error||body.message||"Request failed")}</p>`);return;}
-  const rows=Array.isArray(body.rows)?body.rows.slice(0,8):[]; if(!rows.length){setContent(`${heading("Place-Country Custom API","Custom API completed") }<p class="feature-state">Response 沒有 Place rows。</p>`);return;}
+  const rows=Array.isArray(body.rows)?body.rows.slice(0,5):[]; if(!rows.length){setContent(`${heading("Place-Country Custom API","Custom API completed") }<p class="feature-state">Response 沒有 Place rows。</p>`);return;}
   setContent(`${heading("Place-Country Custom API",`${body.experiment||"test-place-country"} · ${rows.length} bounded rows`) }<div class="grid">${rows.map(row=>placeCard(row,`<dt>Country</dt><dd>${escapeHtml(row.country_name)} (${escapeHtml(row.country_code)})</dd>`)).join("")}</div>`);
 }
 
 document.addEventListener("click",event=>{const link=event.target.closest("a[data-route]");if(!link)return;event.preventDefault();history.pushState({},"",link.getAttribute("href"));renderCurrentRoute();});
 el("login-form").addEventListener("submit",async event=>{event.preventDefault();el("login-button").disabled=true;el("login-message").textContent="登入中…";const {data,error}=await supabase.auth.signInWithPassword({email:el("account").value.trim(),password:el("password").value});el("login-button").disabled=false;if(error){el("login-message").textContent=`登入失敗：${error.message}`;return;}el("login-message").textContent="";await bootstrap(data.session);});
-document.querySelectorAll(".signout-button").forEach(button=>button.addEventListener("click",async()=>{button.disabled=true;state.renderVersion+=1;state.session=null;state.appUser=null;state.features=[];state.navigation=[];state.allowedPaths=new Set();closeNavigation();show("startup-view");await supabase.auth.signOut();history.replaceState({},"","/application-shell/");el("password").value="";show("login-view");button.disabled=false;}));
+document.querySelectorAll(".signout-button").forEach(button=>button.addEventListener("click",async()=>{button.disabled=true;clearApplicationState();show("startup-view");await supabase.auth.signOut();enterSignedOutState();button.disabled=false;}));
 el("retry-button").addEventListener("click",()=>bootstrap(state.session));
 el("menu-button").addEventListener("click",()=>{const open=!el("sidebar").classList.contains("open");el("sidebar").classList.toggle("open",open);el("nav-backdrop").hidden=!open;el("menu-button").setAttribute("aria-expanded",String(open));document.body.classList.toggle("nav-open",open);});
 el("nav-backdrop").addEventListener("click",closeNavigation); window.addEventListener("popstate",()=>state.appUser&&renderCurrentRoute()); window.addEventListener("resize",()=>{if(innerWidth>800)closeNavigation();});
+// Token refresh 失敗、其他 tab sign-out 等 auth invalidation 必須立即 fail closed，不保留舊 Context / Navigation / Feature DOM。
+supabase.auth.onAuthStateChange((_event,nextSession)=>{if(!nextSession)queueMicrotask(enterSignedOutState);});
 const {data:{session}}=await supabase.auth.getSession(); await bootstrap(session);

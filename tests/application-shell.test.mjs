@@ -37,3 +37,13 @@ test("browser artifact contains no privileged credential markers",async()=>{
   assert.doesNotMatch(source,/service_role\s*[:=]/i);
   assert.match(source,/sb_publishable_/);
 });
+
+test("auth invalidation fails closed and bounded reads remain explicit",async()=>{
+  const source=await readFile(new URL("../public/application-shell/app.js",import.meta.url),"utf8");
+  assert.match(source,/onAuthStateChange\(\(_event,nextSession\)=>\{if\(!nextSession\)queueMicrotask\(enterSignedOutState\)/);
+  assert.match(source,/state\.appUser=null; state\.features=\[\]; state\.navigation=\[\]; state\.allowedPaths=new Set\(\)/);
+  assert.match(source,/\.order\("place_code"\)\.limit\(5\)/);
+  assert.match(source,/body\.rows\.slice\(0,5\)/);
+  assert.match(source,/select\("oid,app_user_name,user_type,is_active"\)\.eq\("id_auth_user", session\.user\.id\)/);
+  assert.doesNotMatch(source,/select\("[^"]*id_auth_user/);
+});
