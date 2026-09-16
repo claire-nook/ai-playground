@@ -6,13 +6,71 @@
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" />
 
+<!-- Highlight.js：V1 只載入 SQL grammar，不啟用自動語言偵測。 -->
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/languages/sql.min.js"></script>
+
 <!-- Mermaid：讓 ```mermaid code block 變流程圖 -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
-<!-- Highlight.js：V1 只主動處理明確標記為 SQL 的 fenced code block。
-     不呼叫 highlightAll()，避免自動猜測一般 code block 的語言。 -->
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/lib/common.min.js"></script>
 <script>
+  // 找出 MultiMarkdown / 常見 Markdown renderer 可能留下的 fenced-code 語言資訊。
+  // Textastic 使用 MultiMarkdown；不同 renderer 不一定把語言 class 放在同一個元素。
+  function getFenceLanguage(code) {
+    if (!code) return '';
+
+    var pre = code.parentElement;
+    var candidates = [code, pre];
+
+    for (var i = 0; i < candidates.length; i += 1) {
+      var element = candidates[i];
+      if (!element) continue;
+
+      var dataLanguage =
+        element.getAttribute('data-language') ||
+        element.getAttribute('data-lang');
+
+      if (dataLanguage) return dataLanguage.trim().toLowerCase();
+
+      var classes = Array.prototype.slice.call(element.classList || []);
+      for (var j = 0; j < classes.length; j += 1) {
+        var className = classes[j].toLowerCase();
+
+        if (className === 'sql') return 'sql';
+        if (className === 'language-sql') return 'sql';
+        if (className === 'lang-sql') return 'sql';
+      }
+    }
+
+    return '';
+  }
+
+  // SQL Syntax Highlighting V1：只處理明確標示為 SQL 的 fenced code block。
+  // 不使用 Highlight.js auto-detect，避免普通 code block 被 renderer 自作聰明猜語言。
+  function upgradeSqlHighlightingIn(root) {
+    if (!root || !window.hljs) return;
+
+    var blocks = root.querySelectorAll('pre > code');
+    if (!blocks.length) return;
+
+    blocks.forEach(function (code) {
+      if (getFenceLanguage(code) !== 'sql') return;
+      if (code.dataset.sqlHighlighted === 'true') return;
+
+      try {
+        var result = hljs.highlight(code.textContent, {
+          language: 'sql',
+          ignoreIllegals: true
+        });
+
+        code.innerHTML = result.value;
+        code.classList.add('hljs', 'language-sql');
+        code.dataset.sqlHighlighted = 'true';
+      } catch (e) {
+        console.log('SQL highlight error:', e);
+      }
+    });
+  }
+
   // 把 <pre><code class="language-mermaid">...</code></pre>
   // 轉成 <div class="mermaid">...</div> 並交給 Mermaid 繪圖。
   function upgradeMermaidIn(root) {
@@ -51,32 +109,6 @@
     } catch (e) {
       console.log('Mermaid render error:', e);
     }
-  }
-
-  // SQL Syntax Highlighting V1：只處理作者明確標記為 SQL 的 code block。
-  // 不使用 Highlight.js auto-detect；一般 code block、Mermaid 與其他語言完全不碰。
-  function upgradeSqlHighlightingIn(root) {
-    if (!root || !window.hljs) return;
-
-    var selector =
-      'pre > code.language-sql,' +
-      'pre > code.lang-sql,' +
-      'pre > code.sql';
-
-    var blocks = root.querySelectorAll(selector);
-    if (!blocks.length) return;
-
-    blocks.forEach(function (code) {
-      // 防止同一個 Preview lifecycle 中重複處理。
-      if (code.dataset.sqlHighlighted === 'true') return;
-
-      try {
-        hljs.highlightElement(code);
-        code.dataset.sqlHighlighted = 'true';
-      } catch (e) {
-        console.log('SQL highlight error:', e);
-      }
-    });
   }
 
   // Opt-in 人工換頁：只有 Markdown 明確寫入 <!-- pagebreak --> 時才介入。
