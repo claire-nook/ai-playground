@@ -1,0 +1,22 @@
+{
+  "id": "WALL-TEXTASTIC-2",
+  "title": "把 Textastic Markdown Preview 養成 iPad 技術文件工作台",
+  "completedDate": "2026-09-17",
+  "recordPath": "knowledge/wall/textastic-markdown-technical-workbench.md",
+  "summary": "整理 Textastic Markdown Preview customization 從 SQL syntax highlighting probe 擴充成通用 explicit fenced-language pipeline 的技術經驗，盤點 Mermaid、Manual Page Break、八種語言 Highlighting 與森林系 theme，並說明 renderer metadata、diagnostic probe、no auto-detect、token semantics / visual theme 分工與 Authoring Capability 的設計判斷。",
+  "tags": [
+    "iPad-first",
+    "Textastic",
+    "Markdown",
+    "Authoring Tooling",
+    "Syntax Highlighting",
+    "Mermaid",
+    "Manual Page Break",
+    "Technical Retrospective"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "field-verification",
+  "demoStatus": "none",
+  "verificationStatus": "verified",
+  "flow": "Textastic custom preview → SQL highlighting probe → renderer metadata diagnostics → explicit fenced-language pipeline → multi-language iPad validation → reusable authoring capability."
+}
