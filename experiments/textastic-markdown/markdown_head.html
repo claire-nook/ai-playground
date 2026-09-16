@@ -6,9 +6,9 @@
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" />
 
-<!-- Highlight.js：V1 只載入 SQL grammar，不啟用自動語言偵測。 -->
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/languages/sql.min.js"></script>
+<!-- Highlight.js：使用官方 cdn-release 的 browser build。
+     預設 browser bundle 已包含 SQL；V1 仍只主動處理明確標示為 sql 的 code block。 -->
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.12.0/build/highlight.min.js"></script>
 
 <!-- Mermaid：讓 ```mermaid code block 變流程圖 -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -44,7 +44,6 @@
   }
 
   // T-TXT-2 診斷探針：只有測試文件放入 <!-- sql-highlight-debug --> 時才顯示。
-  // 目的不是正式功能，而是讓 iPad Preview 自己回報 DOM 與 Highlight.js 載入狀態，避免靠猜。
   function hasSqlHighlightDebugMarker(root) {
     if (!root || !document.createTreeWalker) return false;
 
@@ -183,7 +182,6 @@
       var mermaidNodes = root.querySelectorAll('.mermaid');
       if (!mermaidNodes.length) return;
 
-      // 兼容新舊版 Mermaid。
       if (typeof mermaid.run === 'function') {
         mermaid.run({ nodes: mermaidNodes });
       } else if (typeof mermaid.init === 'function') {
