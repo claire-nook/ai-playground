@@ -39,7 +39,8 @@ async function bootstrap(session) {
     ]);
     if(bootstrapVersion!==state.renderVersion)return;
     for (const result of [featureResult,menuResult,mappingResult]) if (result.error) throw new Error(`Metadata 載入失敗：${result.error.message}`);
-    state.session=session; state.appUser=appUser; state.features=featureResult.data ?? [];
+    // Bootstrap 期間若 token 已 refresh，保留 auth listener 同步的新 Session，不覆寫成舊 token。
+    state.session ??= session; state.appUser=appUser; state.features=featureResult.data ?? [];
     state.navigation=buildNavigation(state.features, menuResult.data ?? [], mappingResult.data ?? [], appUser.user_type);
     state.allowedPaths=new Set(state.navigation.flatMap(group => group.entries.map(entry => entry.route_path)));
     renderNavigation(); el("user-context").textContent=`${appUser.app_user_name || maskedEmail(session.user.email)} · ${appUser.user_type}`;
@@ -105,5 +106,6 @@ el("retry-button").addEventListener("click",()=>bootstrap(state.session));
 el("menu-button").addEventListener("click",()=>{const open=!el("sidebar").classList.contains("open");el("sidebar").classList.toggle("open",open);el("nav-backdrop").hidden=!open;el("menu-button").setAttribute("aria-expanded",String(open));document.body.classList.toggle("nav-open",open);});
 el("nav-backdrop").addEventListener("click",closeNavigation); window.addEventListener("popstate",()=>state.appUser&&renderCurrentRoute()); window.addEventListener("resize",()=>{if(innerWidth>800)closeNavigation();});
 // Token refresh 失敗、其他 tab sign-out 等 auth invalidation 必須立即 fail closed，不保留舊 Context / Navigation / Feature DOM。
-supabase.auth.onAuthStateChange((_event,nextSession)=>{if(!nextSession)queueMicrotask(enterSignedOutState);});
+// 正常 refresh 只同步 caller JWT；不重建 Application Context、Navigation、route 或 Feature DOM。
+supabase.auth.onAuthStateChange((_event,nextSession)=>{if(nextSession){state.session=nextSession;return;}queueMicrotask(enterSignedOutState);});
 const {data:{session}}=await supabase.auth.getSession(); await bootstrap(session);
