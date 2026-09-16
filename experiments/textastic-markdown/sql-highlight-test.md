@@ -50,10 +50,7 @@ WHERE item_code = 'A001';
   "version": 2,
   "score": 98.5,
   "notes": null,
-  "languages": [
-    "sql",
-    "json"
-  ],
+  "languages": ["sql", "json", "javascript", "typescript", "html", "css", "bash", "yaml"],
   "theme": {
     "name": "forest",
     "darkCodePanel": true,
@@ -87,6 +84,105 @@ WHERE item_code = 'A001';
 }
 ```
 
+## JavaScript：DOM / async / function
+
+```javascript
+// 讀取 API 並更新頁面狀態
+async function loadBatchStatus(batchCode) {
+  const response = await fetch(`/api/batch/${batchCode}`);
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Batch status request failed');
+  }
+
+  document.querySelector('#batch-status').textContent = result.status;
+  return result;
+}
+```
+
+## TypeScript：Edge Function 常見型別與 async
+
+```typescript
+type BatchRequest = {
+  batchCode: string;
+  dryRun: boolean;
+  retryCount?: number;
+};
+
+async function runBatch(request: BatchRequest): Promise<Response> {
+  const payload = {
+    ...request,
+    requestedAt: new Date().toISOString()
+  };
+
+  return Response.json(payload, { status: 200 });
+}
+```
+
+## HTML：Markdown renderer 客製片段
+
+```html
+<section class="experiment-card" data-status="verified">
+  <h2>Textastic Markdown Preview</h2>
+  <p>Syntax highlighting is <strong>enabled</strong>.</p>
+  <button type="button" aria-label="Run preview">Preview</button>
+</section>
+```
+
+## CSS：森林系 Preview 元件
+
+```css
+.experiment-card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.experiment-card[data-status="verified"] strong {
+  color: #557f6e;
+  font-weight: 700;
+}
+```
+
+## Bash / Shell：技術文件常見 CLI
+
+```bash
+# 呼叫本機觀察端點，失敗時立即停止
+set -e
+
+API_URL="http://localhost:8888/api/batch/run"
+curl --fail --silent --show-error \
+  -H "Content-Type: application/json" \
+  -d '{"batchCode":"WEATHER_DAILY","dryRun":true}' \
+  "$API_URL"
+```
+
+## YAML：GitHub Actions workflow
+
+```yaml
+name: Deploy Playground
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run verification
+        run: |
+          echo "Verifying Textastic showcase"
+          test -f experiments/textastic-markdown/markdown_head.html
+```
+
 ## 無 language fence：不應該被自動猜測
 
 ```
@@ -106,8 +202,9 @@ FROM no_auto_detection;
 flowchart LR
     A[Markdown] --> B[Textastic Preview]
     B --> C[Mermaid]
-    B --> D[SQL Highlight]
-    B --> E[JSON Highlight]
+    B --> D[Syntax Highlight]
+    D --> E[SQL / JSON]
+    D --> F[JS / TS / HTML / CSS / Bash / YAML]
 ```
 
 <!-- pagebreak -->
