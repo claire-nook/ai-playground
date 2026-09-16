@@ -1,6 +1,10 @@
+<!-- sql-highlight-debug -->
+
 # T-TXT-2 — SQL Syntax Highlighting Probe
 
 這份文件只驗證一件事：Textastic Markdown Preview 能否只對明確標記為 `sql` 的 fenced code block 套用 Highlight.js，並維持既有森林系樣式。
+
+> 診斷模式：頁面最上方會暫時顯示 T-TXT-2 SQL HIGHLIGHT DEBUG。這是實驗探針，不是正式 Preview 功能。
 
 ## SQL：應該出現語法上色
 
