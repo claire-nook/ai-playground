@@ -4,6 +4,55 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Nook Works Application Shell Integration / Lifecycle
+
+- Experiment: S-SHELL-1
+- Date: 2026-09-16
+- Status: Verified / Completed
+- Record: `experiments/application-shell/README.md`
+- Consolidated Findings: `evidence/s-shell-1-application-shell-findings.md`
+- Related Auth Evidence: `evidence/2026-09-16-safari-auth-session-lifecycle.md`
+- Live Demo: `/application-shell/`
+- Topics: Application Shell, Supabase Auth, Application User Context, Navigation, Routing, Session Lifecycle, Native Data API, Custom API, External API, iPad-first, RWD
+
+### Result
+
+S-SHELL-1 stop condition 已滿足。Claire Environment Evidence 已在 deployed Live Demo 驗證 real login / persisted Session、active `app_user` Application Context、admin/user/guest Feature Entry、三種 real integration、iPad/iPhone responsive behavior、deep link、reload、same-browser new-tab、cross-browser unauthenticated entry、Back/Forward 與 explicit Logout。
+
+Verified lifecycle：
+
+```text
+Browser Entry / Deep Link
+→ Login / Session Restore
+→ Auth Identity
+→ active app_user / Application Context
+→ metadata-driven Navigation / Route
+→ Shell Ready
+→ Feature Entry
+→ Native / Custom / External integration
+→ Render
+→ explicit Logout / Invalidation
+```
+
+重要 boundary：
+
+```text
+Authentication Identity
+≠ Application Eligibility
+≠ Navigation Visibility
+≠ Route / Feature Entry
+≠ Feature Data Access
+≠ Backend Authorization
+
+Browser Navigation ≠ Logout ≠ Business Action
+```
+
+PR #39 / #40 的 Technical QC 修正了 auth invalidation、refreshed Session synchronization、bounded read、Application Context projection 與 explicit Logout error handling。PR #40 deployed 後 explicit Logout → re-entry remained Login，Claire Environment Acceptance PASS。
+
+Historical explicit-logout Session restoration anomaly 仍獨立保存為 intermittent Known Observation / root cause Unknown，不影響 S-SHELL-1 lifecycle completion，也沒有被宣稱為已修復 root cause。
+
+---
+
 ## Safari Auth Session Lifecycle / Intermittent Restoration
 
 - Experiment: A-SAFARI-LIFECYCLE
@@ -16,24 +65,11 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ### Current Evidence
 
-Claire 曾在 iPad Ordinary Safari 直接觀察 logout → Login surface → re-entry → Session restore / Claire-admin Application Context restored；類似現象在 Application Shell 出現以前的 Auth 小型實驗時期也曾出現。Private Browsing 的歷史對照則維持 signed-out。
+Claire 曾在 iPad Ordinary Safari 直接觀察 explicit logout → Login surface → re-entry → Session restore；類似現象在 Application Shell 出現以前的 Auth 小型實驗時期也曾出現。Private Browsing 的歷史對照則維持 signed-out。
 
-PR #41 diagnostic probe 的 Ordinary Safari controlled run 顯示：
+PR #41 diagnostic probe 的 controlled Ordinary Safari run 顯示 local sign-out `error=none`，immediate `getSession()`、reload 與 re-entry 都維持 `session=null`。因此 anomaly 是 **directly observed but intermittent**；root cause 仍 Unknown。
 
-```text
-session=null
-→ Login / session=present
-→ signOut({ scope: "local" })
-→ SIGNED_OUT / session=null
-→ signOut resolved / error=none
-→ getSession session=null
-→ Reload session=null
-→ Re-entry session=null
-```
-
-因此 historical restoration anomaly 是 **directly observed but intermittent**；目前 controlled probe 未能重現，root cause 仍 Unknown。不得把 anomaly 直接定性為 Safari bug、Supabase bug 或 Shell bug。
-
-PR #40 的 explicit local logout + signOut error handling 可作 logout lifecycle correctness / defensive hardening 評估，但目前沒有 Evidence 證明它是 historical restoration anomaly 的 root-cause fix。
+PR #40 已 merge/deploy，並完成 Technical QC + Shell Environment Acceptance。它是 logout lifecycle correctness / defensive hardening；目前仍沒有 Evidence 證明它是 historical restoration anomaly 的 root-cause fix。
 
 ---
 
@@ -91,70 +127,9 @@ Edge Function → Native Data API SELECT / UPDATE synthetic table
 Cron-scheduled Edge Function → Open-Meteo → synthetic SUCCESS + temperature
 ```
 
-Parameterized HTTP invocation 已直接驗證：
+Parameterized HTTP invocation 已直接驗證 Static Literal、Execution-time SQL Expression、PostgreSQL Function Return Value。Cron job lifecycle 亦已實測 `cron.schedule / cron.alter_job / cron.unschedule`。
 
-```text
-Static Literal                                  Verified
-Execution-time SQL Expression                   Verified
-PostgreSQL Function Return Value                Verified
-```
-
-Receiver 最終不再自行產生 date/time；request body 中的 runtime values 由 Cron command 在 execution time 求值。DB Function probe 連續產生不同 `DBFUNC-*` 值並經 Cron → Edge Function 原樣持久化，建立清楚 parameter provenance。
-
-### Cron lifecycle SQL evidence
-
-Synthetic job 已實測：
-
-```text
-Create  → cron.schedule(...)
-Read    → cron.job
-Update  → cron.alter_job(...)
-Delete  → cron.unschedule(...)
-```
-
-`cron.job` 可用於 inspection；managed schema mutation 應走 pg_cron functions，不直接 DML。
-
-### Reusable parameter responsibility evidence
-
-```text
-Static Literal
-→ SQL Runtime Expression
-→ DB Helper Function
-→ Launcher / Preparation API
-→ Orchestrator
-```
-
-前三層直接 Verified。Launcher pattern 不另重做專用 Cron probe，因 Custom API → Custom API、Custom API → Native Data API、Custom API → External API 等 building blocks 已在其他 experiments runtime verified。
-
-重要治理原則：
-
-```text
-Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
-```
-
-平台可以在初期只選少量 Preferred Pattern；已知但未標準化的能力應保留為 Deferred / Future Expansion Candidate，隨需求與平台成熟度再 Promote。
-
-### Dashboard / SQL boundary
-
-Dashboard HTTP Request Body 適合 static JSON，但當 `cron.job.command` 使用 SQL expression / `jsonb_build_object(...)` / DB Function return value時，Dashboard 表單未必能還原顯示完整 dynamic command。
-
-因此 SQL command 才是完整 runtime representation；正式系統若需要 canonical definition，應保存在 repository / migration source-of-truth。
-
-### Observability evidence
-
-D-BATCH-1 多次直接證明：
-
-```text
-Scheduler Success ≠ HTTP Success ≠ Business/Data Success
-```
-
-曾觀察 scheduler command succeeded 但 downstream HTTP 403；也曾在 `pg_net` client timeout 時，Edge Function 實際已完成 DB insert。因此 troubleshooting 必須依層次檢查 Scheduler、HTTP、Runtime、DB 與 application-visible state。
-
-### Scope / related issue
-
-Formal `place` read 曾因 current service identity 缺少 table privilege 而失敗。這不是 Cron limitation；Backend Service Access 已抽離為 C-BSA-1。
-
-Playground Evidence is not a Production Architecture Decision。
+重要治理原則：`Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule`。
 
 ---
 
@@ -164,38 +139,8 @@ Playground Evidence is not a Production Architecture Decision。
 - Date: 2026-09-13
 - Status: Completed / Runtime Verified
 - Record: `experiments/custom-api/README.md`
-- Weather API: `supabase/functions/test-weather-orchestrator/index.ts`
-- Internal API: `supabase/functions/test-place-country/index.ts`
-- Browser Artifact: `public/custom-api-orchestration/index.html`
-- Deployment Workflow: `.github/workflows/deploy-test-weather-orchestrator.yml`
-- Topics: Supabase Edge Functions, API Composition, JWT Forwarding, RLS, Open-Meteo, Netlify Browser, GitHub Actions
 
-### Result
-
-**YES.** 已實測完整鏈：
-
-```text
-Netlify Browser
-→ Supabase Auth JWT
-→ Weather Custom API
-→ same caller Authorization
-→ Valid Place Custom API
-→ PostgreSQL / RLS
-→ Weather Custom API
-→ Open-Meteo
-→ normalization
-→ Browser
-```
-
-### Reusable Evidence
-
-- Edge Function → Edge Function server-side HTTP composition：Verified。
-- Same caller Authorization forwarding through tested internal API chain：Verified。
-- Caller-scoped RLS visibility behavior through composition：Verified。
-- Edge Function outbound HTTP → Open-Meteo：Verified。
-- Per-Place external response normalization：Verified。
-- Zero-visible-place short-circuit before provider calls：Verified。
-- GitHub Actions `workflow_dispatch` → Supabase CLI deployment：Verified。
+`Netlify Browser → Supabase Auth JWT → Weather Custom API → same caller Authorization → Valid Place Custom API → PostgreSQL/RLS → Open-Meteo → normalization → Browser` 已 runtime verified。
 
 ---
 
@@ -205,10 +150,8 @@ Netlify Browser
 - Date: 2026-09-13
 - Status: Completed / Verified
 - Record: `experiments/custom-api/README.md`
-- API Source: `supabase/functions/test-place-country/index.ts`
-- Browser Artifact: `public/custom-api/index.html`
 
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → application-side mapping → Browser result` 已實測。caller-scoped user path 不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者由 C-BSA-1 接手。
+`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping → Browser` 已實測。
 
 ---
 
@@ -219,7 +162,7 @@ Netlify Browser
 - Status: Completed / Verified
 - Record: `experiments/custom-api/README.md`
 
-GitHub Actions + Supabase CLI 已完成 deploy / invoke / delete；Supabase Connector 已完成 direct deployment，Connector-deployed function 亦由 Actions 成功 delete。iPad-first lifecycle 不要求本地 Desktop / Mac。
+GitHub Actions + Supabase CLI 已完成 deploy / invoke / delete；iPad-first lifecycle 不要求本地 Desktop / Mac。
 
 ---
 
@@ -230,7 +173,7 @@ GitHub Actions + Supabase CLI 已完成 deploy / invoke / delete；Supabase Conn
 - Status: Completed / Verified
 - Record: `experiments/custom-api/netlify-functions-lifecycle.md`
 
-Git source → Deploy Preview → HTTP invoke / logs → Production → source delete / Production function absent 已驗證。Netlify Functions 因此是 credible secondary Custom API runtime candidate。
+Git source → Deploy Preview → HTTP invoke / logs → Production → source delete / Production function absent 已驗證。
 
 ---
 
@@ -250,7 +193,7 @@ Netlify Browser → Supabase Auth → Session 已由 iPad Safari 驗證。Authen
 - Status: Completed / Verified
 - Record: `experiments/data-api/README.md`
 
-具有效 Application Access 的 User 可由 Browser 完成 SELECT / INSERT / UPDATE / DELETE。TU01 / TU02 證明 Authentication Success 不會自動取得 Application Data Access。`error=null` / empty rows / affected-row semantics 不等於 Business Operation Success。
+具有效 Application Access 的 User 可由 Browser 完成 SELECT / INSERT / UPDATE / DELETE。Authentication Success 不會自動取得 Application Data Access。
 
 ---
 
@@ -260,7 +203,7 @@ Netlify Browser → Supabase Auth → Session 已由 iPad Safari 驗證。Authen
 - Status: Completed / Verified
 - Record: `experiments/data-api-view/README.md`
 
-`security_invoker=true` PostgreSQL View 可透過 Native Data API SELECT，並在 tested conditions 下保留 invoking identity 的 underlying privilege / RLS behavior。View 可作為 Read Model。
+`security_invoker=true` PostgreSQL View 可透過 Native Data API SELECT，並在 tested conditions 下保留 invoking identity 的 underlying privilege / RLS behavior。
 
 ---
 
@@ -269,7 +212,7 @@ Netlify Browser → Supabase Auth → Session 已由 iPad Safari 驗證。Authen
 - Status: Completed / Verified
 - Record: `experiments/github-actions/README.md`
 
-GitHub-hosted Runner 已驗證可作為 iPad-first / AI Playground 的 remote execution surface；Manual Approval 與 controlled push-triggered autonomous mode均有 runtime Evidence。
+GitHub-hosted Runner 已驗證可作為 iPad-first / AI Playground 的 remote execution surface。
 
 ---
 
@@ -279,4 +222,4 @@ GitHub-hosted Runner 已驗證可作為 iPad-first / AI Playground 的 remote ex
 - Trigger Boundary Record: `experiments/netlify-trigger-boundary/README.md`
 - Related: `evidence/provider-boundary-pitfalls.md`
 
-`public/` 已驗證為 Static Public Artifact boundary；Trigger Boundary 已驗證可依 relevant paths 決定 deploy / skip，避免 docs-only changes 無意義地叫醒 Netlify。
+`public/` 已驗證為 Static Public Artifact boundary；Trigger Boundary 已驗證可依 relevant paths 決定 deploy / skip。
