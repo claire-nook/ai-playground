@@ -13,7 +13,7 @@
 - Related Phase: `S-SHELL-1 pre-implementation review`
 - Related Experiment / Research: `experiments/application-shell/README.md`
 - Related Specification: `experiments/application-shell/synthetic-platform-metadata.md`
-- Related Evidence / Report: `agent-work/reviews/application-shell-experiment-review-v2.md`
+- Related Evidence / Report: `agent-work/work-orders/application-shell-experiment-review-v2.md`
 - Related PR / Issue: `None`
 - Supersedes: `None`
 
@@ -42,7 +42,7 @@ Primary Agent 已完成部分 Supabase-side experiment infrastructure：
 1. `experiments/application-shell/README.md`
 2. `experiments/application-shell/synthetic-platform-metadata.md`
 3. `experiments/application-shell/synthetic-platform-metadata.sql`
-4. `agent-work/reviews/application-shell-experiment-review-v2.md`
+4. `agent-work/work-orders/application-shell-experiment-review-v2.md`
 5. `knowledge/maps/nook-technical-platform.md`
 6. `knowledge/experiments.md`
 7. `agent-work/README.md`
@@ -56,7 +56,7 @@ Primary Agent 已完成部分 Supabase-side experiment infrastructure：
 - 本 Work Order 存在且可完整閱讀。
 - `experiments/application-shell/README.md` 存在。
 - `experiments/application-shell/synthetic-platform-metadata.md` 與 `.sql` 存在。
-- `agent-work/reviews/application-shell-experiment-review-v2.md` 存在。
+- `agent-work/work-orders/application-shell-experiment-review-v2.md` 存在。
 - Repository snapshot 可讀，且本 Work Order 要求的是 Review，不是 Implementation。
 - 不要求 local branch 名稱必須為 `main`，不要求 Git remote / `gh` authentication。
 
@@ -122,7 +122,7 @@ Primary Agent 已完成部分 Supabase-side experiment infrastructure：
    - `Implementable but requires real-environment validation`
    - `Blocked by missing contract/context`
 5. 列出後續 Implementation Work Order 在 dispatch 前應固定提供的 minimum runtime contract，例如 browser-safe configuration source、table/query shape、expected fixture semantics、expected deterministic route outcomes。只列 contract，不要求或暴露 secret。
-6. 評估 implementation slicing：完整 vertical slice 交給 Codex是否合理；若建議拆分，說明真正的 dependency / validation reason，不要只因為「碰到 Supabase」就機械式拆成 frontend/backend。
+6. 評估 implementation slicing：完整 vertical slice 交給 Codex 是否合理；若建議拆分，說明真正的 dependency / validation reason，不要只因為「碰到 Supabase」就機械式拆成 frontend/backend。
 7. 提出 validation handoff matrix：哪些結果 Codex 可以自己驗證，哪些需要 Primary Agent 用 Supabase/provider surface 驗證，哪些需要 Claire 在 iPad Safari 取得 Human Environment Evidence。
 8. 檢查是否仍存在會讓 Implementation Agent 被迫猜測的 ambiguity；依 severity 區分 blocker 與 non-blocking concern。
 9. 將 Review 寫入 `agent-work/reviews/application-shell-implementation-readiness-review.md`。
@@ -134,7 +134,7 @@ Primary Agent 已完成部分 Supabase-side experiment infrastructure：
 - [ ] Report 列出 minimum runtime contract / preconditions，且不要求 secret 或 privileged frontend credential。
 - [ ] Report 評估完整 vertical slice vs split implementation 的 trade-off 與 dependency。
 - [ ] Report 提供 Codex / Primary Agent / Claire 三方 validation handoff matrix。
-- [ ] Report 明確區分 repository-derived fact、Work Order assumption、runtime unknown，不把無法直接驗證的 Supabase state寫成自己的 Evidence。
+- [ ] Report 明確區分 repository-derived fact、Work Order assumption、runtime unknown，不把無法直接驗證的 Supabase state 寫成自己的 Evidence。
 - [ ] Report 指出 blocker 與 non-blocking concern；若沒有 blocker，明確寫 `None`。
 - [ ] 除 Review Report 與必要 local commit 外，不修改 runtime implementation 或 provider resource。
 
