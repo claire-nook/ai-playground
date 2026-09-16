@@ -14,7 +14,6 @@
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 <script>
   // 找出 MultiMarkdown / 常見 Markdown renderer 可能留下的 fenced-code 語言資訊。
-  // Textastic 使用 MultiMarkdown；不同 renderer 不一定把語言 class 放在同一個元素。
   function getFenceLanguage(code) {
     if (!code) return '';
 
@@ -42,6 +41,90 @@
     }
 
     return '';
+  }
+
+  // T-TXT-2 診斷探針：只有測試文件放入 <!-- sql-highlight-debug --> 時才顯示。
+  // 目的不是正式功能，而是讓 iPad Preview 自己回報 DOM 與 Highlight.js 載入狀態，避免靠猜。
+  function hasSqlHighlightDebugMarker(root) {
+    if (!root || !document.createTreeWalker) return false;
+
+    var walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_COMMENT,
+      null,
+      false
+    );
+
+    var node;
+    while ((node = walker.nextNode())) {
+      if (
+        node.nodeValue &&
+        node.nodeValue.trim().toLowerCase() === 'sql-highlight-debug'
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function describeCodeBlock(code, index) {
+    var pre = code ? code.parentElement : null;
+    var codeAttrs = code
+      ? Array.prototype.map.call(code.attributes, function (attr) {
+          return attr.name + '=' + JSON.stringify(attr.value);
+        }).join(', ')
+      : '';
+    var preAttrs = pre
+      ? Array.prototype.map.call(pre.attributes, function (attr) {
+          return attr.name + '=' + JSON.stringify(attr.value);
+        }).join(', ')
+      : '';
+
+    return [
+      'block[' + index + ']',
+      '  detectedLanguage: ' + (getFenceLanguage(code) || '(none)'),
+      '  code.className: ' + (code.className || '(empty)'),
+      '  pre.className: ' + ((pre && pre.className) || '(empty)'),
+      '  code.attributes: ' + (codeAttrs || '(none)'),
+      '  pre.attributes: ' + (preAttrs || '(none)'),
+      '  text-start: ' + JSON.stringify((code.textContent || '').slice(0, 80))
+    ].join('\n');
+  }
+
+  function showSqlHighlightDiagnostics(root) {
+    if (!hasSqlHighlightDebugMarker(root)) return;
+
+    var blocks = root.querySelectorAll('pre > code');
+    var lines = [
+      'T-TXT-2 SQL HIGHLIGHT DEBUG',
+      'hljs loaded: ' + Boolean(window.hljs),
+      'hljs.highlight: ' + Boolean(window.hljs && typeof hljs.highlight === 'function'),
+      'sql language registered: ' + Boolean(
+        window.hljs &&
+        typeof hljs.getLanguage === 'function' &&
+        hljs.getLanguage('sql')
+      ),
+      'pre > code count: ' + blocks.length,
+      ''
+    ];
+
+    blocks.forEach(function (code, index) {
+      lines.push(describeCodeBlock(code, index));
+      lines.push('');
+    });
+
+    var panel = document.createElement('pre');
+    panel.id = 'sql-highlight-debug-panel';
+    panel.textContent = lines.join('\n');
+    panel.style.whiteSpace = 'pre-wrap';
+    panel.style.wordBreak = 'break-word';
+    panel.style.border = '2px solid #8b5e3c';
+    panel.style.background = '#fff8ed';
+    panel.style.color = '#3d3027';
+    panel.style.fontSize = '12px';
+
+    root.insertBefore(panel, root.firstChild);
   }
 
   // SQL Syntax Highlighting V1：只處理明確標示為 SQL 的 fenced code block。
@@ -112,8 +195,6 @@
   }
 
   // Opt-in 人工換頁：只有 Markdown 明確寫入 <!-- pagebreak --> 時才介入。
-  // 沒有 marker 的文件不建立任何 page-break DOM，維持原本的 Preview / Print 世界。
-  // 有 marker 時，也只要求該位置強制換頁；其他頁面仍交由 WebKit / iPadOS 自然分頁。
   function upgradeManualPageBreaksIn(root) {
     if (!root || !document.createTreeWalker) return;
 
@@ -133,7 +214,6 @@
       }
     }
 
-    // 99% 的一般 Markdown 會走到這裡直接結束，不改動文件結構。
     if (!pageBreakComments.length) return;
 
     pageBreakComments.forEach(function (comment) {
@@ -145,6 +225,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    // 診斷必須在 Mermaid / SQL 改寫 DOM 之前執行，才能看到 Textastic 原始 renderer 輸出。
+    showSqlHighlightDiagnostics(document.body);
     upgradeManualPageBreaksIn(document.body);
     upgradeMermaidIn(document.body);
     upgradeSqlHighlightingIn(document.body);
