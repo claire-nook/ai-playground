@@ -46,6 +46,26 @@ Authentication Success ≠ Application Ready。
 
 Experiment B 已驗證：authenticated identity 若沒有 `app_user` mapping，或 `app_user` inactive，仍不會取得當時測試的 Application Access。本 Experiment 直接重用這個 model，不重新 probe RLS mechanism。
 
+### Authorization model premise
+
+一般企業 Application 若有多個 User、不同職責或交叉權限需求，通常會採用 Role / Permission model，讓 User 與可執行功能之間不必形成固定的一對一分類。這是正常且合理的 enterprise authorization design。
+
+Nook Works 現階段的實際條件不同：預期 Application User 只有約 1～2 人，目前主要使用者實際上就是 Claire，也尚未出現 multi-role、cross-role 或 fine-grained permission 的 Business Requirement。
+
+因此本階段不建立 Role / Permission architecture，不是因為否定這種設計，也不是因為技術上無法實作，而是目前的 requirement complexity 不足以合理化額外的 Role、User-Role mapping、Permission 與 maintenance structure。
+
+Current boundary：
+
+```text
+Current Nook Works
+→ expected Application Users: 1–2
+→ no current multi-role / fine-grained permission requirement
+→ use app_user.user_type as coarse Application User classification
+→ defer Role / Permission architecture until Business Requirement justifies it
+```
+
+這是 deliberate simplification，不是永久的 Platform Rule。未來若出現同一 User 需要多組職責、不同 Feature 需要獨立 Permission，或使用者規模與管理需求明顯增加，再重新評估 Role / Permission model。
+
 ### `user_type` scope
 
 Formal schema 目前保留：
