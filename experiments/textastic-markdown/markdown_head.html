@@ -7,7 +7,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" />
 
 <!-- Highlight.js：使用官方 cdn-release 的 browser build。
-     預設 browser bundle 已包含 SQL；V1 仍只主動處理明確標示為 sql 的 code block。 -->
+     預設 browser bundle包含 SQL / JSON；只主動處理明確標示語言的 code block。 -->
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.12.0/build/highlight.min.js"></script>
 
 <!-- Mermaid：讓 ```mermaid code block 變流程圖 -->
@@ -19,6 +19,7 @@
 
     var pre = code.parentElement;
     var candidates = [code, pre];
+    var supportedLanguages = ['sql', 'json'];
 
     for (var i = 0; i < candidates.length; i += 1) {
       var element = candidates[i];
@@ -28,15 +29,27 @@
         element.getAttribute('data-language') ||
         element.getAttribute('data-lang');
 
-      if (dataLanguage) return dataLanguage.trim().toLowerCase();
+      if (dataLanguage) {
+        var normalizedDataLanguage = dataLanguage.trim().toLowerCase();
+        if (supportedLanguages.indexOf(normalizedDataLanguage) !== -1) {
+          return normalizedDataLanguage;
+        }
+      }
 
       var classes = Array.prototype.slice.call(element.classList || []);
       for (var j = 0; j < classes.length; j += 1) {
         var className = classes[j].toLowerCase();
 
-        if (className === 'sql') return 'sql';
-        if (className === 'language-sql') return 'sql';
-        if (className === 'lang-sql') return 'sql';
+        for (var k = 0; k < supportedLanguages.length; k += 1) {
+          var language = supportedLanguages[k];
+          if (
+            className === language ||
+            className === 'language-' + language ||
+            className === 'lang-' + language
+          ) {
+            return language;
+          }
+        }
       }
     }
 
@@ -96,14 +109,11 @@
 
     var blocks = root.querySelectorAll('pre > code');
     var lines = [
-      'T-TXT-2 SQL HIGHLIGHT DEBUG',
+      'T-TXT-2 HIGHLIGHT DEBUG',
       'hljs loaded: ' + Boolean(window.hljs),
       'hljs.highlight: ' + Boolean(window.hljs && typeof hljs.highlight === 'function'),
-      'sql language registered: ' + Boolean(
-        window.hljs &&
-        typeof hljs.getLanguage === 'function' &&
-        hljs.getLanguage('sql')
-      ),
+      'sql language registered: ' + Boolean(window.hljs && typeof hljs.getLanguage === 'function' && hljs.getLanguage('sql')),
+      'json language registered: ' + Boolean(window.hljs && typeof hljs.getLanguage === 'function' && hljs.getLanguage('json')),
       'pre > code count: ' + blocks.length,
       ''
     ];
@@ -126,35 +136,36 @@
     root.insertBefore(panel, root.firstChild);
   }
 
-  // SQL Syntax Highlighting V1：只處理明確標示為 SQL 的 fenced code block。
-  // 不使用 Highlight.js auto-detect，避免普通 code block 被 renderer 自作聰明猜語言。
-  function upgradeSqlHighlightingIn(root) {
+  // Syntax Highlighting：只處理明確標示且列入支援清單的 fenced code block。
+  // 不使用 auto-detect，避免普通 code block 被 renderer 自作聰明猜語言。
+  function upgradeCodeHighlightingIn(root) {
     if (!root || !window.hljs) return;
 
     var blocks = root.querySelectorAll('pre > code');
     if (!blocks.length) return;
 
     blocks.forEach(function (code) {
-      if (getFenceLanguage(code) !== 'sql') return;
-      if (code.dataset.sqlHighlighted === 'true') return;
+      var language = getFenceLanguage(code);
+      if (!language) return;
+      if (code.dataset.syntaxHighlighted === 'true') return;
+      if (typeof hljs.getLanguage === 'function' && !hljs.getLanguage(language)) return;
 
       try {
         var result = hljs.highlight(code.textContent, {
-          language: 'sql',
+          language: language,
           ignoreIllegals: true
         });
 
         code.innerHTML = result.value;
-        code.classList.add('hljs', 'language-sql');
-        code.dataset.sqlHighlighted = 'true';
+        code.classList.add('hljs', 'language-' + language);
+        code.dataset.syntaxHighlighted = 'true';
       } catch (e) {
-        console.log('SQL highlight error:', e);
+        console.log('Syntax highlight error (' + language + '):', e);
       }
     });
   }
 
-  // 把 <pre><code class="language-mermaid">...</code></pre>
-  // 轉成 <div class="mermaid">...</div> 並交給 Mermaid 繪圖。
+  // 把 Mermaid fenced code block 轉成圖表容器並交給 Mermaid 繪圖。
   function upgradeMermaidIn(root) {
     if (!root) return;
 
@@ -178,7 +189,6 @@
 
     try {
       mermaid.initialize({ startOnLoad: false });
-
       var mermaidNodes = root.querySelectorAll('.mermaid');
       if (!mermaidNodes.length) return;
 
@@ -196,13 +206,7 @@
   function upgradeManualPageBreaksIn(root) {
     if (!root || !document.createTreeWalker) return;
 
-    var walker = document.createTreeWalker(
-      root,
-      NodeFilter.SHOW_COMMENT,
-      null,
-      false
-    );
-
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT, null, false);
     var pageBreakComments = [];
     var node;
 
@@ -223,10 +227,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    // 診斷必須在 Mermaid / SQL 改寫 DOM 之前執行，才能看到 Textastic 原始 renderer 輸出。
+    // 診斷先讀原始 renderer 輸出，再進行各種 DOM enhancement。
     showSqlHighlightDiagnostics(document.body);
     upgradeManualPageBreaksIn(document.body);
     upgradeMermaidIn(document.body);
-    upgradeSqlHighlightingIn(document.body);
+    upgradeCodeHighlightingIn(document.body);
   });
 </script>
