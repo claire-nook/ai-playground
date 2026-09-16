@@ -1,8 +1,8 @@
 # Agent Work｜Agent 工程委派區
 
-這個目錄保存 Primary Agent（墨衡）委派給其他 Engineering Agent 的 Work Order、派工規則、協作 Experience 與可重用的 execution guidance。
+這個目錄保存 Primary Agent（墨衡）委派給其他 Engineering Agent 的 Work Order、派工規則、協作 Experience 與可重用 execution guidance。
 
-它不是 Project Management System，也不是 Codex 專屬祖厝。今天執行者可能是 Codex，未來也可能是其他具有適合 Workspace / Runtime / Tooling 的 Agent。
+它不是 Project Management System，也不是 Codex 專屬祖厝。Executor 可以是 Codex，也可以是其他具有適合 Workspace / Runtime / Tooling 的 Agent。
 
 核心原則：
 
@@ -11,27 +11,31 @@
 > **Work Order 管理工單，不管理 Worker KPI / task progress。**
 >
 > **Agent Report ≠ Verified Evidence.**
+>
+> **Reduce ceremony, not boundaries.**
+>
+> **Governance weight should scale with risk.**
 
 ---
 
 ## 0. Primary Agent Start Here｜墨衡派工入口
 
-未來 Primary Agent 只要準備建立、查找或重新理解 Work Order，先走這條 Progressive Reading Path：
+建立、查找或重新理解 Work Order，走 Progressive Reading Path：
 
-1. 本 `agent-work/README.md`：理解角色、派工與 QC governance。
-2. [`work-orders/index.md`](work-orders/index.md)：查歷史 Work Order Catalog 與 Work Order Governance。
-3. [`templates/work-order.md`](templates/work-order.md)：**建立新 Work Order 前必讀**。這是 canonical Work Order structure，包含固定 Metadata、Sections、Report Contract 與 Completion Contract。
-4. [`dispatch-handoff.md`](dispatch-handoff.md)：Work Order commit 後，依 New Task / Existing Task continuation 產生給 Claire 的短 Dispatch Handoff。
-5. 只有遇到 execution-surface / provider behavior 問題時，再讀 [`experience/codex-cloud-workspace.md`](experience/codex-cloud-workspace.md) 等 Experience。
+1. 本 `agent-work/README.md`：角色、派工與 QC governance。
+2. [`work-orders/index.md`](work-orders/index.md)：歷史 Work Order Catalog / Governance。
+3. [`templates/work-order.md`](templates/work-order.md)：建立新 Work Order 前必讀的 canonical contract。
+4. [`dispatch-handoff.md`](dispatch-handoff.md)：Work Order commit 後的短 Dispatch Handoff、Task mode 與 Execution Profile。
+5. 只有遇到 execution-surface / provider behavior 問題時，再讀 `experience/`。
 
-**不要從歷史 Work Order 複製一張再改。** 歷史文件保留當時 dispatch contract，結構可能屬於舊版。新 Work Order 一律從 canonical Template 建立；不適用的固定欄位 / Section 填 `None`，不要刪除。
+不要從歷史 Work Order 複製舊格式。新 Work Order 一律從 canonical Template 建立；歷史文件保留當時 dispatch contract，不 retroactive rewrite。
 
-Template 的 `Completion Contract` 是 Primary Agent 與 Implementation Agent 的固定工作準則。目前只承認兩種合法終態：
+Completion 只承認兩個 executor 終態：
 
-- `Cannot Complete`：停止、保留 failure evidence、回報 blocker / workspace residue / decision needed。
-- `Completed`：完成 Scope 與 validation、檢查 diff、**local commit**、回報 local commit SHA、停止，等待 Claire Create PR。
+- `Cannot Complete`：fail closed、保留 failure evidence、回報 blocker / residue / decision needed。
+- `Completed`：表示 **Executor Completion**；不自動等於 Technical QC、Deployment、Human Acceptance、Provider Verification 或 Experiment Verified。
 
-除非實際 Agent execution model 出現第三種合法終態，Primary 不應在每張 Work Order 重新發明 completion procedure。
+外部驗證留在 `External Gates`，不要為了描述「executor 做完、實機還沒驗」發明模糊的 Partially Completed。
 
 ---
 
@@ -39,9 +43,17 @@ Template 的 `Completion Contract` 是 Primary Agent 與 Implementation Agent �
 
 優先委派：多檔 implementation、interactive runtime/debug loop、正式 Specification 已清楚、獨立 investigation/review，或 Primary 需要保留 Technical QC 角色。
 
-不必為形式開單：Primary 幾步可完成的小 Probe、Research Question 尚未想清楚、或仍需要 Claire 補 Business Requirement / Technical Decision。
+不必為形式開單：Primary 幾步可安全完成的小 Probe / typo / link fix、Research Question 尚未想清楚、或仍需要 Claire 補 Business Requirement / Technical Decision。
 
-文件重量應與風險成正比。Template 結構固定，不代表每個 Section 都要寫成招標文件；不適用就 `None`，適用則寫到足以施工與驗收。
+**Micro Work Order 不是要求所有小事都派工。** 它只處理「已決定值得委派、但風險低且 deterministic」的工作。
+
+Canonical Template 只有一份，以 `Work Weight` 控制密度：
+
+- `Micro`：最小充分 contract。
+- `Standard`：一般 implementation / investigation / documentation。
+- `High-Risk`：Auth、Security、Migration、Transaction、Provider integration、Production、Architecture experiment、Adversarial review 等需要更完整 boundary / evidence 的工作。
+
+不要養三份 Template。文件會 drift，然後大家開始研究哪一份 `final-v3-really-final` 才是真的。
 
 ---
 
@@ -49,25 +61,23 @@ Template 的 `Completion Contract` 是 Primary Agent 與 Implementation Agent �
 
 ### Claire
 
-負責 Business Intent / Functional Requirement / Functional Acceptance，以及目前產品架構必要的 Human Relay / Dispatch Gate。Human Relay 不等於 Requirement Translator。
+負責 Business Intent / Functional Requirement / Functional Acceptance，以及必要的 Human Relay / Dispatch Gate。Human Relay 不等於 Requirement Translator。
 
-Claire 的核心能力與責任在 System Analysis / System Design / Architecture-oriented judgment，不以 Programming、Framework、DevOps Tooling 或特定開發工具操作熟練度作為角色前提。
-
-Primary 應協助建立足以進行 Requirement、Boundary、Architecture、Risk、Acceptance 與 Evolution Decision 的 Technical Literacy，而不是把協作偷偷改造成 Programmer Training。
+Claire 的核心責任在 System Analysis / System Design / Architecture-oriented judgment，不以 Programming、Framework、DevOps Tooling 熟練度作角色前提。
 
 ### Primary Agent / Architecture & Technical QC｜墨衡
 
 負責 Research Question、Architecture / Responsibility Boundary、Technical Pattern、Security / Data Ownership、Work Order Scope、Evidence Review、Technical QC 與 Deployment Judgment。
 
-「墨衡」是這個 Project 對 **Primary Agent / Architecture Lead role continuity** 的命名。未來接手 Project、重新讀取 Repository context 並承擔同一組責任的 Primary Agent，應理解自己是在承接這個角色，而不是假設自己擁有前一個 Session 的記憶。
-
-因此重要理解必須沉澱進 Repository。Repository structure 應讓冷啟動的墨衡能逐步恢復 System Mental Model，而不是要求它靠聊天考古或一次吞完整個 Repository。
+「墨衡」代表 Primary Agent / Architecture Lead role continuity。接手者應透過 Repository 恢復 System Mental Model，不假設自己擁有前一個 Session 的記憶。
 
 ### Implementation Agent / PG Pool
 
-依 Work Order 執行 implementation / experiment / investigation / review，使用自己的 Workspace / Runtime / Tooling，保留 Diff、Test、Logs、Artifacts、Failure / Unknown，並依 Work Order Completion Contract 結案。
+依 Work Order 執行 implementation / experiment / investigation / review，使用自己的 Workspace / Runtime / Tooling，保留 Diff、Test、Logs、Artifacts、Failure / Unknown。
 
-Implementation authority 不等於 Architecture Decision authority。
+**Implementation authority ≠ Architecture Decision authority.**
+
+Executor 可以指出 Work Order 問題、提出更安全替代方案、回報 scope 外 blocker；但不能因為「順手」就把 Candidate 直接蓋成 Platform Decision。
 
 ---
 
@@ -79,7 +89,7 @@ Playground 同時服務 Product / Architecture 與 interest-driven technical exp
 
 `Discovery → Mechanism → Capability / Constraint → Alternatives → Architecture Implication → Evidence → Judgment`
 
-有價值的 Experiment / Evidence / Experience 應沉澱進 Repository，但必須保留日期、條件、Evidence strength 與 Provider-change risk。
+有價值的 Experiment / Evidence / Experience 應沉澱進 Repository，並保留日期、條件、Evidence strength 與 Provider-change risk。
 
 > **Optimize for understanding and sound judgment, not merely task completion.**
 
@@ -87,9 +97,9 @@ Playground 同時服務 Product / Architecture 與 interest-driven technical exp
 
 ## 4. Naming / Documentation Expression
 
-Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名或技術詞彙，預設是 semantic intent，不自動成為正式 Identifier Contract。Primary 應依 Domain、Platform、Repository convention 與 maintainability 決定 canonical naming；既有正式 Domain Term 則不得私改。
+Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名或技術詞彙，預設是 semantic intent，不自動成為正式 Identifier Contract。Primary 依 Domain、Platform、Repository convention 與 maintainability 決定 canonical naming；既有正式 Domain Term 不得私改。
 
-Markdown 在流程、架構關係、狀態轉換、Dependency 或資料關係用圖更清楚時，可使用 Mermaid。Diagram 服務理解，不取代 Evidence / Constraint / Conclusion，也不因 Renderer 支援就強迫每個箭頭變成一張圖。
+Markdown 在流程、架構關係、狀態轉換、Dependency 或資料關係用圖更清楚時可使用 Mermaid。Diagram 服務理解，不取代 Evidence / Constraint / Conclusion。
 
 ---
 
@@ -104,61 +114,65 @@ Canonical Work Order
         ↓
 Implementation Agent Workspace
         ↓
-Cannot Complete report
-        │
-        └──→ Primary / Claire decision
+Cannot Complete ──→ Primary / Claire decision
 
 or
 
 Implementation / Test / Validation
         ↓
-Local Commit + Report SHA
+Executor Completion
         ↓
-Claire Create PR / Update Branch
+Traceable Commit + Publication Adapter
         ↓
-GitHub-visible PR
+GitHub-visible Handoff Surface
         ↓
 Primary Agent Technical QC
         ↓
 Accepted / Rework / Deployment Candidate
         ↓
-Human / Provider Gate when required
+External Gates when required
+        ↓
+Verified / Accepted state at the appropriate layer
 ```
 
 > **Prompt Access ≠ Tool Access ≠ Workspace Access.**
 >
 > **Provider Credential ≠ GitHub Execution Credential.**
 
-### 5.1 Current Codex Dispatch Procedure
+### 5.1 Stable Governance vs Execution Adapter
 
-目前 Claire 是 Codex Product 的 Human Relay / Dispatch Gate。
+穩定治理要求：
 
-1. Primary + Claire 將 Research Question / Specification / Scope 討論到足以委派。
-2. Primary 先讀 `work-orders/index.md` 與 `templates/work-order.md`。
-3. Primary **由 canonical Template 建立 Work Order**，填妥固定 Metadata / Sections；不適用填 `None`。不得從歷史 Work Order 複製舊結構。
-4. Primary 同步在 `work-orders/index.md` Catalog 新增 `Date / Type / Work Order / Primary Objective`。
-5. Primary commit Work Order、Catalog 與 Implementation Agent 必要 Context。
-6. Primary 讀 `dispatch-handoff.md`，判斷 `New Task` 或 `Existing Task continuation / REWORK`，交給 Claire 可直接複製的 Dispatch Handoff。Dispatch 不重寫完整 Requirement 或 Completion Contract。
-7. Claire 在 Codex Product UI 選擇預期 Repository / source baseline，建立新 Task；REWORK 則回原 Task continuation。
-8. Codex 依 Work Order 做 snapshot-oriented Preflight。Git remote、local `main`、remote-tracking `main`、`origin`、`gh auth` 或 `fetch` capability 不是新 implementation 的通用必要條件。
-9. Codex 依 Work Order 執行，最後只能依 Completion Contract 進入 `Cannot Complete` 或 `Completed`。
-10. `Completed` 必須包含 validation、final diff check、local commit、Report 與 local commit SHA；完成後停止。
-11. Claire 由 Codex Product UI Create PR；Existing Task continuation 則使用 Update Branch 發布後續 local result。
-12. Primary 以 GitHub-visible `head_sha` / Diff / Files / Report 做 Technical QC，需要時記錄 `ACCEPTED` / `REWORK`。
-13. Merge / deployment / runtime evidence 依 Human / Provider / Knowledge Capture Gate 處理。
+1. Research / Requirement / Scope 已足以委派。
+2. Repository-local Work Order 可被 executor 讀取。
+3. Source baseline / required context 可重現。
+4. Executor 依 `Must / Must Not / Acceptance / Executor Judgment` 工作。
+5. Missing context / unsafe condition 時 fail closed。
+6. Completed 時有 validation、final diff check、traceable commit / change identity。
+7. 需要 Technical QC 的 change 最終有 GitHub-visible handoff surface。
+8. Primary 以 GitHub-visible state 做 QC。
+9. Human / Provider / Environment Gate 依風險保留。
 
-完整 Dispatch Prompt 與 execution-mode 規則以 [`dispatch-handoff.md`](dispatch-handoff.md) 為準，不在 README 維護第二份易漂移的 Prompt。
+Publication mechanics 由 `Execution Profile` 決定：
+
+- Codex Product UI：通常 local commit → report → stop → Claire Create PR；continuation 由 Claire Update Branch。
+- CLI / GitHub-integrated Agent：若已授權，可由 Agent commit / publish / create PR。
+- Human-supervised Agent：Agent 完成 change，由 human push / PR。
+
+**Governance Contract 保持穩定；publication mechanics 隨 execution surface 演進。**
+
+完整 adapter 與 Dispatch Prompt 見 [`dispatch-handoff.md`](dispatch-handoff.md)。
 
 ### 5.2 Snapshot / Continuation Boundary
 
-`Source baseline: main` 描述 Claire 建立新 Task / Workspace 時應從哪個 GitHub-visible state 取得 snapshot，不代表 Codex Workspace local branch 必須叫 `main`。
+`Source baseline: main` 描述 dispatch 時要求的 GitHub-visible snapshot，不代表 workspace local branch 必須叫 `main`。
 
-如果 Primary 在 Workspace 建立後才 commit 新必要 Context，不假設舊 Workspace 自動 refresh。
+對 Codex Product UI，目前沒有直接證據證明 Primary 後來寫入 GitHub 的 Work Order / repo file / PR comment 會自動同步進 Existing Task workspace，因此保守視為 task-creation snapshot。
 
-- **New implementation**：驗 required snapshot content 是否存在。
-- **Existing PR REWORK / continuation**：必須保有待修 implementation lineage；只有 baseline snapshot 而沒有 PR implementation 時應停止，不得平行重建。
+- New implementation：驗 required snapshot content。
+- Existing PR REWORK：保留原 implementation lineage；若 required context 無法可靠同步，建立 GitHub-visible checkpoint 後開 New Task，不平行重建。
 
-完整 Direct Evidence 與撞牆紀錄見 `dispatch-handoff.md` 與 `experience/`。
+其他 runtime 依自己的 Direct Evidence 判斷，不把 Codex Cloud limitation 當所有 Agent 的限制。
 
 ---
 
@@ -166,83 +180,107 @@ Human / Provider Gate when required
 
 Canonical Source：[`templates/work-order.md`](templates/work-order.md)。
 
-Work Order Template 固定承載：Metadata、Objective、Context、Read First、Preflight、Scope、Out of Scope、Constraints、Tasks、Required Evidence / Acceptance、Deliverables、Decision Boundary、Report Contract、Completion Contract。
+Work Order 的主要 reading contract：
 
-這份 Template 是 Work Order 的 reading contract。未來墨衡不應靠記憶補「記得叫弟弟 commit」之類流程細節；穩定規則應寫在 Template，讓每張新 Work Order 自動繼承。
+`Metadata → Objective → Why / Context → Read First → Context Preflight → Must → Must Not → Suggested Method → Acceptance → Executor Judgment → External Gates → Deliverables → Report Contract → Completion Contract`
 
-Work Order **不維護 Status**。Codex 的 Assigned / In Progress / Done、工時、KPI、完成百分比不屬 Work Order Governance。Work Order 保存 dispatch intent / contract；PR / Commit 保存 change；Experiment / Evidence 保存研究與驗證。
+這個結構刻意把：
+
+- contract requirement (`Must`)
+- prohibition / boundary (`Must Not`)
+- 可驗收結果 (`Acceptance`)
+- 建議方法 (`Suggested Method`)
+- 刻意授權的低風險裁量 (`Executor Judgment`)
+- executor 無法自行完成的驗證 (`External Gates`)
+
+分開，避免背景文字與 implementation suggestion 淹沒真正 contract。
+
+Work Order 不維護 `Status`。Assigned / In Progress / Done、工時、KPI、百分比不屬 Work Order Governance。Work Order 保存 dispatch intent；PR / Commit 保存 change；Experiment / Evidence 保存研究與驗證。
 
 ---
 
-## 7. Dispatch Handoff Contract
+## 7. Report Contract
+
+Report 是 execution handoff，不是第二套 Knowledge Base。
+
+Report weight 依 `Type / Work Weight`：
+
+- Implementation / Documentation：短摘要、changed files、validation、limitations、commit / publication、External Gates。
+- Investigation：Evidence、alternatives、unknown、reproduction、candidate conclusion。
+- Experiment：完整 execution evidence，但 durable truth 仍進 Experiment Record / Evidence。
+- Review：findings、impact、evidence、required rework / recommendation。
+- Cannot Complete：blocker、attempt、failure evidence、residue、decision needed。
+
+避免 Source 說一次、commit 說一次、PR 說一次、Report 又寫成長篇小說。未來 Agent 也是要讀這些東西的，請不要報復它。
+
+---
+
+## 8. Dispatch Handoff Contract
 
 Canonical Source：[`dispatch-handoff.md`](dispatch-handoff.md)。
 
-Dispatch Handoff 是短通知，只負責：
+Dispatch Handoff 是短通知，只負責 Repository、Source baseline、Work Order path、Execution type、Execution Profile、可複製 Prompt 與本次特殊 exception。
 
-- Repository
-- Source baseline
-- Work Order path
-- Execution type
-- 可直接複製給 Implementation Agent 的短 Prompt
-- 本次特有 execution exception，若有
-
-Dispatch Prompt 應要求 Implementation Agent **依 Work Order 的 Report Contract 與 Completion Contract 結案**，而不是由 Primary 每次手工重新列出完整交付程序。
+Requirement 與 Completion Source of Truth 是 Work Order，不在 Dispatch 重抄第二份。
 
 ---
 
-## 8. Evidence Rule｜不要讓弟弟自己簽聯絡簿
+## 9. Evidence Rule｜不要讓弟弟自己簽聯絡簿
 
-Implementation Agent Report 只能證明「它這樣回報」。Primary 依風險檢查 Source / Diff、Test Result、Runtime Output、Provider Result、Log / Artifact、Claire Environment Evidence 或可重現步驟。
+Implementation Agent Report 只能證明「它這樣回報」。Primary 依風險檢查 Source / Diff、Test Result、Runtime Output、Provider Result、Log / Artifact、Claire Environment Evidence 或 reproduction steps。
 
-Codex Create PR 後，以 GitHub-visible PR state 為 QC identity，不以 local SHA 為準。Codex local SHA 是 Workspace completion marker，不等於 GitHub PR head SHA。
+Primary Technical QC 以 GitHub-visible state 為 review identity；workspace/local SHA 可以是 executor completion marker，但不假設等於 PR head SHA。
 
-Evidence 只支持部分結論時保持 Partial / Candidate / Open。Failure 也是 Deliverable，只要保留嘗試、錯誤、已排除與 Unknown。
+Evidence 只支持部分結論時保持 Partial / Candidate / Open。Failure 也是 Deliverable，只要保留 attempt、error、已排除與 Unknown。
+
+認知角色分離 / execution context 分離 / review round 分離，不自動等於合規上的 independent principal 或 four-eyes approval。若未來需要 formal approval authority，identity / credential / approval model 必須另行設計。
 
 ---
 
-## 9. Repository Boundary
+## 10. Repository Boundary
 
 Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Implementation Source of Truth 留在正式 Repository。
 
-Work Order 所需的穩定 Context 必須存在 Implementation Agent 實際可讀的 execution surface。ChatGPT Project-level file、private connector context 或 Primary 私有上下文，不得被假裝成 Codex Workspace 必然可讀的 repository file。
+Work Order 所需穩定 Context 必須存在 executor 實際可讀的 execution surface。ChatGPT Project-level file、private connector context 或 Primary 私有上下文，不得被假裝成 workspace 必然可讀的 repository file。
 
 只有真的出現大量 cross-repo dispatch need，才評估獨立 Agent Workbench。不要因為今天有一個 Codex 就先蓋 Codex 王國，Provider 會換，家訓最好別跟著搬家。
 
 ---
 
-## 10. Root Files / Reading Ownership
+## 11. Root Files / Reading Ownership
 
-`agent-work/` 根目錄目前三份入口文件各自負責：
+- `README.md`：角色、Governance、Progressive Reading Path、Dispatch / QC 高階模型。
+- `templates/work-order.md`：canonical Work Order contract、Weight、Report / Completion semantics。
+- `dispatch-handoff.md`：Task mode、Execution Profile、publication adapter、snapshot boundary。
+- `work-orders/index.md`：Work Order Catalog / historical navigation。
+- `report-language-guideline.txt`：Report 語言規則。
+- `experience/`：Provider / Agent execution Direct Experience 與 workflow design input。
 
-- `README.md`：角色、Governance、Progressive Reading Path、Dispatch / QC 高階流程。
-- `dispatch-handoff.md`：New Task / Existing Task continuation 的實際派工通知與 execution-surface boundary。
-- `report-language-guideline.txt`：Implementation Agent Report 的語言規則。
-
-詳細 Work Order history / governance 在 `work-orders/index.md`；canonical structure 在 `templates/work-order.md`；Provider / Agent execution Experience 在 `experience/`。
-
-這個分工是刻意的 Progressive Disclosure。不要再把所有細節塞回 README，也不要讓同一規則在三個地方各長一個版本。
+這是刻意的 Progressive Disclosure。不要讓同一規則在三個地方各長一個版本。
 
 ---
 
-## 11. Current Judgment
+## 12. Current Judgment｜2026-09-16
 
-截至 2026-09-16，目前可成立：
+目前可成立：
 
 - Work Order as Handoff Contract：有效。
-- Work Order Catalog as Historical Navigation：已建立；不是 Task Board。
-- Canonical Work Order Template：已建立；新 Work Order 應從 Template 產生。
-- Completion Contract：固定承載 `Cannot Complete / Completed` 兩種合法終態；Completed 必須 local commit + report SHA。
+- Work Order Catalog as Historical Navigation：有效；不是 Task Board。
+- 一份 Canonical Template + `Work Weight`：採用；不建立 Micro / Standard / High-Risk 三套模板。
+- `Cannot Complete / Completed`：保留兩個合法 executor 終態。
+- `Completed = Executor Completion`：External Gates 可仍待完成。
+- `Must / Must Not / Acceptance / Executor Judgment`：作為主要 contract semantics。
+- Report weight 應依 Type / Risk 調整。
 - Claire as Human Relay, not Requirement Translator：有效。
-- Codex as independent Implementation Agent：有效。
-- GitHub PR as Observable Handoff Surface：有效。
-- Primary Agent independent Technical QC：有效。
-- Context-oriented / snapshot-oriented Preflight：必要；traditional local-Git assumptions 不適用。
+- GitHub-visible state as Observable Handoff Surface：有效。
+- Primary Technical QC：有效；Agent Report 不等於 Verified Evidence。
+- Context-oriented / snapshot-oriented Preflight：必要。
 - Workspace branch name ≠ Repository baseline identity。
 - Project-level context ≠ Repository file。
-- Codex local SHA ≠ GitHub Review identity。
-- New Codex Workspace ≠ existing PR branch continuation。
-- Existing Task continuation 的 local result 需 Claire Update Branch 才成為 GitHub-visible evidence。
-- Primary direct GitHub patch 可作小型低風險 REWORK fallback，但不取代 interactive implementation surface。
+- Governance Contract ≠ Execution Adapter。
+- Codex Product UI 的 Create PR / Update Branch 是已驗證 adapter，不是所有 Agent runtime 的固定 completion protocol。
+- Primary direct GitHub patch 可作小型低風險 REWORK fallback，但不取代需要 interactive implementation surface 的工作。
 
-未來流程改變時，先判斷變的是 Work Order Contract、Dispatch mechanism、Agent execution behavior 還是 Evidence / QC，再修改對應 Source of Truth。不要看到一條新規則就到處複製，文件會繁殖，人類與 AI 都會遭殃。
+2026-09-16 Implementation Agent field feedback 已保存於 [`experience/implementation-agent-work-order-feedback-2026-09-16.md`](experience/implementation-agent-work-order-feedback-2026-09-16.md)。
+
+未來流程改變時，先判斷變的是 Work Order Contract、Execution Profile、Dispatch mechanism、Agent runtime behavior 還是 Evidence / QC，再修改對應 Source of Truth。文件會繁殖，人類與 AI 都已經吃過這個虧。
