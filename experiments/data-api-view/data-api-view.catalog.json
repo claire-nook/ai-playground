@@ -5,8 +5,8 @@
   "recordPath": "experiments/data-api-view/README.md",
   "summary": "驗證 security_invoker=true View 可作為 Read Model，同時保留 invoking user 的權限與 RLS 行為。",
   "tags": ["Supabase", "Data API", "View", "RLS"],
-  "demoStatus": "live",
-  "demoPath": "/data-api-view/",
+  "demoStatus": "retired",
+  "demoPath": null,
   "verificationStatus": "verified",
   "flow": "Browser → View → Base Table RLS"
 }
