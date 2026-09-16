@@ -37,6 +37,14 @@
     </section>
   </main>
 
+  <main id="logout-error-view" class="centered" hidden>
+    <section class="state-card error-card">
+      <p class="eyebrow">Authentication</p><h1>無法確認登出</h1>
+      <p id="logout-error-message"></p>
+      <div class="button-row"><button id="retry-logout-button" type="button">重新登出</button><button id="restore-session-button" type="button">返回目前 Session</button></div>
+    </section>
+  </main>
+
   <div id="shell-view" class="shell" hidden>
     <header class="topbar">
       <button id="menu-button" class="menu-button" type="button" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><span>選單</span></button>

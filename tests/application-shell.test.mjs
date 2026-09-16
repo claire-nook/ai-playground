@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildNavigation, resolveRoute } from "../public/application-shell/shell-core.mjs";
+import { buildNavigation, resolveRoute, signOutCurrentSession } from "../public/application-shell/shell-core.mjs";
 
 const features=[
   {oid:1,feature_code:"FUNC_BUSINESS_PLACE",route_path:"/business/places",is_active:true},
@@ -40,11 +40,33 @@ test("browser artifact contains no privileged credential markers",async()=>{
 
 test("auth invalidation fails closed and bounded reads remain explicit",async()=>{
   const source=await readFile(new URL("../public/application-shell/app.js",import.meta.url),"utf8");
-  assert.match(source,/onAuthStateChange\(\(_event,nextSession\)=>\{if\(nextSession\)\{state\.session=nextSession;return;\}queueMicrotask\(enterSignedOutState\)/);
+  assert.match(source,/onAuthStateChange\(\(_event,nextSession\)=>\{if\(nextSession\)\{state\.session=nextSession;return;\}if\(!manualLogoutPending\)queueMicrotask\(enterSignedOutState\)/);
   assert.match(source,/state\.session \?\?= session/);
   assert.match(source,/state\.appUser=null; state\.features=\[\]; state\.navigation=\[\]; state\.allowedPaths=new Set\(\)/);
   assert.match(source,/\.order\("place_code"\)\.limit\(5\)/);
   assert.match(source,/body\.rows\.slice\(0,5\)/);
   assert.match(source,/select\("oid,app_user_name,user_type,is_active"\)\.eq\("id_auth_user", session\.user\.id\)/);
   assert.doesNotMatch(source,/select\("[^"]*id_auth_user/);
+});
+
+test("manual logout uses local scope and resolves only after provider success",async()=>{
+  const calls=[];
+  await signOutCurrentSession({signOut:async options=>{calls.push(options);return {error:null};}});
+  assert.deepEqual(calls,[{scope:"local"}]);
+});
+
+test("manual logout propagates provider failure instead of reporting success",async()=>{
+  const providerError=new Error("provider rejected sign-out");
+  await assert.rejects(
+    signOutCurrentSession({signOut:async()=>({error:providerError})}),
+    providerError
+  );
+});
+
+test("manual logout UI clears stale context but keeps failure distinct from Login",async()=>{
+  const source=await readFile(new URL("../public/application-shell/app.js",import.meta.url),"utf8");
+  assert.match(source,/clearApplicationState\(\); show\("startup-view"\)/);
+  assert.match(source,/await signOutCurrentSession\(supabase\.auth\); enterSignedOutState\(\)/);
+  assert.match(source,/catch\(error\) \{ showLogoutFailure\(error\); \}/);
+  assert.match(source,/show\("logout-error-view"\)/);
 });
