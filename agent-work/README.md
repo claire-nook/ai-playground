@@ -26,7 +26,7 @@
 2. [`work-orders/index.md`](work-orders/index.md)：歷史 Work Order Catalog / Governance。
 3. [`templates/work-order.md`](templates/work-order.md)：建立新 Work Order 前必讀的 canonical contract。
 4. [`dispatch-handoff.md`](dispatch-handoff.md)：Work Order commit 後的短 Dispatch Handoff、Task mode 與 Execution Profile。
-5. 只有遇到 execution-surface / provider behavior 問題時，再讀 `experience/`。
+5. 只有遇到 execution-surface / provider behavior 問題時，再讀 `experience/`。若 Primary 需要理解 Implementation Agent 的 Context / Workspace model、能力與權限邊界、self-review limitation、Agent-to-Agent asynchronous collaboration，或正在調整 Agent Work governance，按需閱讀 [`experience/codex-implementation-agent-self-introduction.md`](experience/codex-implementation-agent-self-introduction.md)。
 
 不要從歷史 Work Order 複製舊格式。新 Work Order 一律從 canonical Template 建立；歷史文件保留當時 dispatch contract，不 retroactive rewrite。
 
@@ -255,6 +255,7 @@ Work Order 所需穩定 Context 必須存在 executor 實際可讀的 execution 
 - `work-orders/index.md`：Work Order Catalog / historical navigation。
 - `report-language-guideline.txt`：Report 語言規則。
 - `experience/`：Provider / Agent execution Direct Experience 與 workflow design input。
+- `experience/codex-implementation-agent-self-introduction.md`：Codex Implementation Agent 的 self-reported operating model / Working Contract Input；供 Primary 在理解 Context、Workspace、能力邊界、self-review limitation 或調整 Agent collaboration governance 時按需閱讀，不視為 Provider Specification 或 Verified Evidence。
 
 這是刻意的 Progressive Disclosure。不要讓同一規則在三個地方各長一個版本。
 
