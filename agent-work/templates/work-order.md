@@ -154,3 +154,44 @@ Evidence 路徑、Test / Runtime Result、Log / Artifact 摘要。
 ### Follow-up / Decision Needed
 
 需要 Primary Agent / Claire 決定或後續驗證的事項；若無：`None`。
+
+## Completion Contract｜固定結案準則
+
+本 Section 是 Primary Agent 與 Implementation Agent 之間的 canonical working protocol。除非實際執行模式出現新的合法終態，建立新 Work Order 時**不要刪除、改名或自由改寫本 Section**。
+
+目前 Work Order 執行只有兩種合法結案方式：`Cannot Complete` 或 `Completed`。
+
+### A. Cannot Complete｜無法完成
+
+若因 Preflight failure、必要 Context 缺失、權限或 execution-surface 限制、需求矛盾、安全邊界、不可接受風險或其他 blocker，導致 Work Order 無法安全完成：
+
+1. 停止工作，不猜測缺失 Context，不用 workaround 繞過明確限制，也不為了交付而擴張 Scope。
+2. 保留已取得的真實 observation / failure evidence；不要把部分完成描述成完成。
+3. 最終回報至少包含：
+   - Blocker / reason。
+   - 已完成到哪個步驟。
+   - 是否修改任何檔案，以及 changed files。
+   - 是否存在未提交修改或其他 workspace residue。
+   - 已執行的 validation / evidence，若無則填 `None`。
+   - 需要 Primary Agent / Claire 補充、判斷或授權的事項。
+4. 不建立虛假的完成訊號；若沒有符合本 Work Order 的可交付結果，不要為了產生 PR 而製造無意義修改。
+5. 回報後停止，等待 Primary Agent / Claire 決定後續處理。
+
+### B. Completed｜可以完成
+
+若 Work Order 可以完成：
+
+1. 完成 Scope 內工作，並確認沒有把 Out of Scope 修改混入交付。
+2. 執行本 Work Order 要求的 validation / test / static check；不能執行的項目必須明確列為 limitation，不得假裝已驗證。
+3. 檢查 final diff / changed files，確認交付內容與 Work Order 一致。
+4. **建立 local commit。Work Order 未完成 local commit，不視為 Completed handoff。**
+5. 最終回報至少包含：
+   - Completed work summary。
+   - Changed files / artifact paths。
+   - Validation / test result。
+   - Known limitations / unknowns；若無則填 `None`。
+   - Local commit SHA。
+6. Local commit SHA 只代表 Codex Workspace 的完成節點，不等同未來 GitHub PR head SHA。
+7. 完成上述回報後停止，不再自行擴張工作；等待 Claire 使用 Codex Product UI 的 **Create PR** 建立 GitHub-visible handoff surface，供 Primary Agent Technical QC。
+
+除非特定 Work Order 明確定義不同的 delivery mechanism，否則不得省略 `local commit → report SHA → stop → Claire Create PR` 這個 Completed handoff sequence。
