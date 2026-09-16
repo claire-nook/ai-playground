@@ -145,6 +145,8 @@ Markdown
 ──────────── PAGE BREAK ────────────
 ```
 
+![Textastic Markdown Preview 中的 PAGE BREAK 提示](../../public/images/wall/textastic-markdown-pagebreak-preview.png)
+
 到了 Print media，這條提示會消失，只留下真正的 forced page break。
 
 因此作者看得到，PDF 看不到。終於有一件事情的使用者體驗沒有打算報復人類。
@@ -162,6 +164,8 @@ Markdown
 - Print output 不會印出提示線。
 
 接著拿真實的 **15 頁長文件**再測一次。
+
+![A4 100% 的 iPadOS Print Preview 長文件驗證](../../public/images/wall/textastic-markdown-pagebreak-print.png)
 
 結果是我們真正想要的模型：指定位置人工換頁，其他內容繼續由 iPadOS 自然 pagination。
 
