@@ -26,12 +26,16 @@ Nook Technical Platform
 │  │  ├─ Browser → Edge Function / CORS                  [Verified C-DB-1]
 │  │  ├─ Auth JWT propagation                           [Verified C-DB-1]
 │  │  └─ authenticated Weather Orchestration             [Verified C-EXT-1]
-│  └─ Application Shell                                 [Next Focus]
-│     ├─ bootstrap / session context                     [To Verify]
-│     ├─ navigation / menu                               [To Verify]
-│     ├─ route / page lifecycle                          [To Verify]
-│     ├─ permission-aware feature entry                  [To Verify]
-│     └─ global loading / error boundary                 [To Design]
+│  ├─ Application Shell                                 [Verified S-SHELL-1]
+│  │  ├─ bootstrap / Application User Context            [Verified]
+│  │  ├─ metadata-driven Navigation / Feature Entry      [Verified]
+│  │  ├─ deep link / reload / Back / Forward             [Verified]
+│  │  ├─ Session refresh / invalidation / explicit Logout[Verified]
+│  │  └─ iPad / iPhone responsive lifecycle              [Verified]
+│  └─ Feature UI / Maintenance Interaction               [Next Research Front]
+│     ├─ list / table / query interaction                 [To Research]
+│     ├─ CRUD / form lifecycle                            [To Research]
+│     └─ Browser History vs Business Action               [To Research]
 │
 ├─ Custom API Runtime
 │  ├─ Supabase Edge Functions
@@ -71,11 +75,53 @@ Nook Technical Platform
 
 ## Current Judgment
 
-### Architecture readiness checkpoint — 2026-09-15
+### Application Shell — S-SHELL-1 verified 2026-09-16
 
-Primary review 與獨立 Codex Blind Spot Review 得到一致方向：**Backend / Data / Integration 的 core feasibility Evidence 已足以開始形成 Platform Architecture draft，目前沒有已識別的 technical Blocking Gap。**
+S-SHELL-1 已完成 deployed vertical slice 與 Claire Environment Evidence。Consolidated Findings：`evidence/s-shell-1-application-shell-findings.md`。
 
-這不代表 Platform Architecture 已完成。研究前緣應從 broad capability probing 逐步轉成：
+Verified composition：
+
+```text
+Browser Entry / Deep Link
+→ Login / Session Restore
+→ Auth Identity
+→ active app_user / Application Context
+→ metadata-driven Navigation / Route
+→ Shell Ready
+→ Feature Entry
+→ Native / Custom / External integration
+→ Render
+→ explicit Logout / Invalidation
+```
+
+Environment Evidence 已涵蓋 admin/user/guest Feature Entry、三種 real integration、iPad/iPhone responsive、deep link、reload、same-browser new-tab persisted Session、cross-browser unauthenticated entry、Back/Forward 與 explicit Logout。
+
+重要 boundary：
+
+```text
+Authentication Identity
+≠ Application Eligibility
+≠ Navigation Visibility
+≠ Route / Feature Entry
+≠ Feature Data Access
+≠ Backend Authorization
+```
+
+另外：
+
+```text
+Browser Navigation ≠ Logout ≠ Business Action
+```
+
+Historical explicit-logout Session restoration anomaly 保留為 `A-SAFARI-LIFECYCLE` Known Observation，intermittent / root cause Unknown；它不再阻擋 S-SHELL-1 closure，也沒有被誤寫成已證實的 Shell/Safari/Supabase root cause。
+
+Formal Nook Works 應把 S-SHELL-1 的 verified contracts、portable logic 與 lifecycle traps 帶回 Platform Shell design，而不是直接把 disposable monolithic `app.js` 當 Production architecture。
+
+### Architecture readiness checkpoint — 2026-09-16
+
+Backend / Data / Integration 與 Application Shell lifecycle 的 core feasibility Evidence 已足以進入 Platform Architecture / UI interaction design；目前沒有已識別的 technical Blocking Gap。
+
+研究前緣從 broad capability probing 轉成：
 
 ```text
 Verified Capability
@@ -84,38 +130,28 @@ Verified Capability
 → Production Implementation
 ```
 
-獨立 Review 特別提醒以下 cross-cutting concerns。它們多數不是新 Experiment：
-
-- Transaction Pattern Selection：依完整 Business Operation owner 與 atomicity requirement 選 Native Data API、Database-owned RPC 或 Backend-owned Transaction。
-- Authorization / Error Contract：RLS empty result / zero affected rows 是 security mechanism semantics，不自動等於 Business Operation result contract。
-- Batch Execution Contract：logical run identity、idempotency、retry ownership、failure persistence 應先由 Business Specification / Platform Rule 定義；只有 chosen contract 需要 provider-specific assurance 時才開 focused experiment。
-- Production Identity / Secret / Connection Governance：C-BSA-1 Phase D 的 `postgres` identity 只證明 feasibility；Production 必須回到 least privilege、restricted role、secret custody 與 connection lifecycle。
-- Observability Contract：Scheduler、HTTP、runtime、DB 與 business outcome 是不同 layers；未來需 operation / run correlation 與 durable outcome model。
-- Requirement-to-platform traceability：正式 Platform Architecture 定稿前，應抽樣 Nook Works representative Specifications，確認沒有 requirement responsibility 落在 Research Map 之外。這是 review / design work，不是 provider Experiment。
-
-獨立 Review Report 由 Work Order `agent-work/work-orders/2026-09-15-nook-platform-readiness-blind-spot-review.md` 派出；其 Report 進入 `agent-work/reports/` 後，作為 collaboration history 與 independent review evidence 保存。
+Cross-cutting design queue：Transaction Pattern Selection、Authorization / Error Contract、Batch Execution Contract、Production Identity / Secret / Connection Governance、Observability Contract、Requirement-to-platform traceability。
 
 ### Browser / Backend baseline
 
-Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation，以及 Custom API orchestration。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 已有多條 runtime chain 支持。
+Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation、Custom API orchestration與 Application Shell composition。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 已有多條 runtime chain 支持。
 
-### Application Shell — separate from Feature UI
+### Next Research Front — Feature UI / Maintenance Interaction
 
-Application Shell 應視為 **browser-side composition layer**，不是單純 UI presentation。Menu 雖然有畫面，但其 architecture responsibility 涉及 Navigation、Session Context、Route lifecycle、permission-aware feature entry 與 cross-feature bootstrap，因此從一般 Feature UI Pattern 拆開研究。
+S-SHELL-1 回答「Feature 如何裝進 Application Runtime」，不回答 Feature 內的 CRUD / query interaction。
 
-目前合理的最小 focused experiment 應驗證 lifecycle，而不是 aesthetics：
+下一階段 candidate：List/Table、Pagination、Sort、Filter/Search、Loading/Empty/Error、responsive presentation、Create/Edit/Delete/Save/Cancel、Validation/Dialog/Toolbar，以及：
 
 ```text
-cold start / deep link
-→ session restore / invalid session
-→ application user eligibility
-→ route resolution
-→ menu / feature visibility
-→ direct route / backend authorization
-→ sign-out / state invalidation
+Query
+→ Detail / Edit
+→ Save / Cancel
+→ Return
+→ Browser Back / Forward
+→ unsaved changes / query-state restoration
 ```
 
-Acceptance 重點是 deterministic lifecycle、沒有 stale privileged state / redirect loop，並再次證明 navigation visibility 不是 authorization boundary。Component library、visual style、spacing 等留給 Feature UI exploration。
+Browser History 不應隱性觸發 Business Mutation；實際 Save-success history replacement、unsaved-change guard 與 query-state restoration contract 留給 Platform UI research。
 
 ### Supabase Custom API workload coverage
 
@@ -123,33 +159,9 @@ C-DB-1 已驗證 Database-centric path；C-EXT-1 已驗證 API composition 與 E
 
 ### Batch Runtime / Scheduling — D-BATCH-1 verified
 
-D-BATCH-1 已直接確認：
+D-BATCH-1 已直接確認 Cron → Database Function、Cron → pg_net → Edge Function、Edge → Data API、Cron-scheduled Edge → External API，以及 static / execution-time SQL expression / PostgreSQL Function return value parameter invocation。可重用實作與 SQL sample：`knowledge/implementation/supabase-cron.md`；parameter evidence：`evidence/d-batch-1-parameter-invocation.md`。
 
-```text
-Cron → PostgreSQL Database Function → synthetic row                     Verified
-Cron → pg_net → Edge Function                                          Verified
-Edge Function → Native Data API Read/Update synthetic table             Verified
-Cron → Edge Function → Open-Meteo → synthetic SUCCESS + temperature     Verified
-Cron → static parameter → Edge Function                                 Verified
-Cron → execution-time SQL expression → Edge Function                    Verified
-Cron → PostgreSQL Function return value → Edge Function                 Verified
-```
-
-Cron job lifecycle 亦已實測可由 SQL 管理：
-
-```text
-Create  → cron.schedule(...)
-Read    → cron.job
-Update  → cron.alter_job(...)
-Delete  → cron.unschedule(...)
-```
-
-可重用實作與 SQL sample：`knowledge/implementation/supabase-cron.md`。
-Parameter evidence：`evidence/d-batch-1-parameter-invocation.md`。
-
-### Parameter preparation responsibility ladder
-
-D-BATCH-1 的重要產出不是單一 Cron 語法，而是未來 Platform Pattern 的 responsibility placement evidence：
+Parameter responsibility ladder：
 
 ```text
 Static Literal
@@ -159,59 +171,25 @@ Static Literal
 → Orchestrator
 ```
 
-前三層已有直接 runtime Evidence。`Cron → Launcher / Preparation API → Core API` 不另做專用 probe，因其 building blocks 已由 Custom API composition、Native Data API 與 outbound HTTP 分別驗證；它屬已知可行 architecture option，而非未解 Cron capability。
-
-平台初期不需要把所有可行層次一次建完。應區分：
-
-```text
-Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
-```
-
-可先選 1～2 個 Preferred Pattern，其他已知能力保留為 Deferred / Future Expansion Candidate。平台本身會隨需求與成熟度成長，不把「目前未納入」誤寫成「技術不需要 / 不可用」。
+前三層有直接 runtime Evidence；後兩層保留為 architecture option。`Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule`。
 
 ### Backend Service Access — C-BSA-1 verified
 
-C-BSA-1 已完成 Access / Operation / Transaction 三個 dimensions 的 runtime verification。
+C-BSA-1 已完成 Access / Operation / Transaction 三個 dimensions 的 runtime verification。Backend Service Identity 不等於 unrestricted DB access；object privilege / RLS / Function EXECUTE 是不同 authorization boundaries；RPC 可持有 Database-owned Transaction，Edge PostgreSQL client 可持有 Backend-owned Transaction。
 
-```text
-ACCESS
-PostgreSQL privilege + RLS
+Evidence-backed Current Judgment：`Transaction boundary 應由擁有完整 Business Operation 的那一層決定。` 完整 findings：`evidence/c-bsa-1-consolidated-findings.md`。
 
-OPERATION
-Direct object operation
-vs approved Function EXECUTE
+## Remaining Supabase-first / Platform Questions
 
-TRANSACTION
-Request-owned
-vs Database-owned
-vs Backend-owned
-```
+目前沒有已識別的 Backend / Data / Integration / Shell technical Blocking Gap。剩餘議題依性質分流：
 
-已驗證：
-
-- Backend Service Identity 不等於 unrestricted DB object access。
-- PostgreSQL object privilege 與 RLS 是分離的 authorization boundaries。
-- Function `EXECUTE` 可形成 operation-level authorization boundary。
-- Separate Native Data API requests 不共享 rollback boundary。
-- RPC / PostgreSQL Function 可以持有 Database-owned Transaction。
-- Edge Function PostgreSQL client 可以持有 Backend-owned Transaction。
-
-Evidence-backed Current Judgment：
-
-> **Transaction boundary 應由擁有完整 Business Operation 的那一層決定。**
-
-這仍不是自動生效的 Platform Rule。完整 findings：`evidence/c-bsa-1-consolidated-findings.md`。
-
-## Remaining Supabase-first Questions
-
-目前沒有已識別的 Backend / Data / Integration technical Blocking Gap。剩餘議題依性質分流：
-
-1. **Application Shell Lifecycle**：下一個 focused experiment candidate；與 Feature UI 拆開，但可共用後續 UI exploration artifact。
-2. **Explicit Business Authorization / Error Contract**：優先進 Platform Rule / Design；只有 mechanism 存疑才另做 Experiment。
-3. **Batch Idempotency / Retry / Run Identity**：先由 formal requirement 與 Platform Rule 定義；出現 duplicate / concurrent / retry contract 時再 focused verify。
-4. **Production Identity / Secrets / Connection Governance**：Platform Rule / Design；不要把 Playground feasibility credential 當 Production approval。
-5. **Observability / Correlation Contract**：Platform Rule / Design；隨第一個 representative workflow 驗收即可。
-6. **Pure Compute / Longer-running、Concurrency / Isolation / Deadlock、Distributed Compensation、Advanced Workflow Orchestration**：保持 Deferred，直到 representative workload / correctness requirement 出現。
+1. **Feature UI / Maintenance Interaction**：下一個 focused research front。
+2. **Explicit Business Authorization / Error Contract**：Platform Rule / Design；只有 mechanism 存疑才另做 Experiment。
+3. **Batch Idempotency / Retry / Run Identity**：先由 formal requirement 與 Platform Rule 定義。
+4. **Production Identity / Secrets / Connection Governance**：Platform Rule / Design。
+5. **Observability / Correlation Contract**：Platform Rule / Design；隨 representative workflow 驗收。
+6. **A-SAFARI-LIFECYCLE**：Known intermittent observation；只有 anomaly 再現且可取得 diagnostic Evidence 時重開。
+7. **Pure Compute / Longer-running、Concurrency / Isolation / Deadlock、Distributed Compensation、Advanced Workflow Orchestration**：保持 Deferred，直到 representative workload / correctness requirement 出現。
 
 ## Decision Boundary
 
