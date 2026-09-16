@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 <script>
   // 把 <pre><code class="language-mermaid">...</code></pre>
-  // 轉成 <div class="mermaid">...</div> 並交給 mermaid 繪圖。
+  // 轉成 <div class="mermaid">...</div> 並交給 Mermaid 繪圖。
   function upgradeMermaidIn(root) {
     if (!root) return;
 
@@ -49,9 +49,10 @@
     }
   }
 
-  // 將 Markdown 中的 <!-- pagebreak --> 註解轉成真正的換頁節點。
-  // 這讓特殊文件可以保留簡單、好記且不污染一般 Markdown 顯示的語法。
-  function upgradePageBreaksIn(root) {
+  // Opt-in 人工換頁：只有 Markdown 明確寫入 <!-- pagebreak --> 時才介入。
+  // 沒有 marker 的文件不建立任何 page-break DOM，維持原本的 Preview / Print 世界。
+  // 有 marker 時，也只要求該位置強制換頁；其他頁面仍交由 WebKit / iPadOS 自然分頁。
+  function upgradeManualPageBreaksIn(root) {
     if (!root || !document.createTreeWalker) return;
 
     var walker = document.createTreeWalker(
@@ -70,6 +71,9 @@
       }
     }
 
+    // 99% 的一般 Markdown 會走到這裡直接結束，不改動文件結構。
+    if (!pageBreakComments.length) return;
+
     pageBreakComments.forEach(function (comment) {
       var marker = document.createElement('div');
       marker.className = 'page-break';
@@ -79,7 +83,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    upgradePageBreaksIn(document.body);
+    upgradeManualPageBreaksIn(document.body);
     upgradeMermaidIn(document.body);
   });
 </script>
