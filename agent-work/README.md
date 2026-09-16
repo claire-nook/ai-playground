@@ -1,126 +1,120 @@
 # Agent Work｜Agent 工程委派區
 
-這個目錄保存需要交給其他 Engineering Agent 執行的 Work Order、委派工作的共同規則，以及實際協作後形成的 Experience。它不是新的 Project Management System，也不是 Codex 專屬祖厝。今天執行者可能是 Codex，未來也可能是其他具有適合 Workspace / Runtime / Tooling 的 Agent。
+這個目錄保存 Primary Agent（墨衡）委派給其他 Engineering Agent 的 Work Order、派工規則、協作 Experience 與可重用的 execution guidance。
+
+它不是 Project Management System，也不是 Codex 專屬祖厝。今天執行者可能是 Codex，未來也可能是其他具有適合 Workspace / Runtime / Tooling 的 Agent。
 
 核心原則：
 
 > **Experiment Ownership ≠ Experiment Execution.**
+>
+> **Work Order 管理工單，不管理 Worker KPI / task progress。**
+>
+> **Agent Report ≠ Verified Evidence.**
 
-Primary Agent 負責 Research Question、Architecture、Experiment Design、Technical Judgment 與 QC；Implementation Agent 可負責 Workspace / Shell / Runtime / Build / Test Loop。執行 Agent 的 Report 是 Observation Source，不會因為寫了「成功」就自動成為 Verified Evidence。
+---
 
-完整 Codex Experience：[`experience/codex-cloud-workspace.md`](experience/codex-cloud-workspace.md)。
+## 0. Primary Agent Start Here｜墨衡派工入口
+
+未來 Primary Agent 只要準備建立、查找或重新理解 Work Order，先走這條 Progressive Reading Path：
+
+1. 本 `agent-work/README.md`：理解角色、派工與 QC governance。
+2. [`work-orders/index.md`](work-orders/index.md)：查歷史 Work Order Catalog 與 Work Order Governance。
+3. [`templates/work-order.md`](templates/work-order.md)：**建立新 Work Order 前必讀**。這是 canonical Work Order structure，包含固定 Metadata、Sections、Report Contract 與 Completion Contract。
+4. [`dispatch-handoff.md`](dispatch-handoff.md)：Work Order commit 後，依 New Task / Existing Task continuation 產生給 Claire 的短 Dispatch Handoff。
+5. 只有遇到 execution-surface / provider behavior 問題時，再讀 [`experience/codex-cloud-workspace.md`](experience/codex-cloud-workspace.md) 等 Experience。
+
+**不要從歷史 Work Order 複製一張再改。** 歷史文件保留當時 dispatch contract，結構可能屬於舊版。新 Work Order 一律從 canonical Template 建立；不適用的固定欄位 / Section 填 `None`，不要刪除。
+
+Template 的 `Completion Contract` 是 Primary Agent 與 Implementation Agent 的固定工作準則。目前只承認兩種合法終態：
+
+- `Cannot Complete`：停止、保留 failure evidence、回報 blocker / workspace residue / decision needed。
+- `Completed`：完成 Scope 與 validation、檢查 diff、**local commit**、回報 local commit SHA、停止，等待 Claire Create PR。
+
+除非實際 Agent execution model 出現第三種合法終態，Primary 不應在每張 Work Order 重新發明 completion procedure。
 
 ---
 
 ## 1. 何時適合開 Work Order
 
-優先委派：多檔 implementation、interactive runtime/debug loop、正式 Specification 已清楚、或 Primary 需要保留獨立 QC 角色。
+優先委派：多檔 implementation、interactive runtime/debug loop、正式 Specification 已清楚、獨立 investigation/review，或 Primary 需要保留 Technical QC 角色。
 
 不必為形式開單：Primary 幾步可完成的小 Probe、Research Question 尚未想清楚、或仍需要 Claire 補 Business Requirement / Technical Decision。
 
-文件重量應與風險成正比。六段能講清楚，就不要硬長成六十頁招標文件。
+文件重量應與風險成正比。Template 結構固定，不代表每個 Section 都要寫成招標文件；不適用就 `None`，適用則寫到足以施工與驗收。
 
 ---
 
 ## 2. Role Separation
 
 ### Claire
-Business Intent / Functional Requirement / Functional Acceptance，以及目前產品架構必要的 Human Relay / Dispatch Gate。Human Relay 不等於 Requirement Translator。
 
-#### Claire Technical Literacy / Implementation Boundary
+負責 Business Intent / Functional Requirement / Functional Acceptance，以及目前產品架構必要的 Human Relay / Dispatch Gate。Human Relay 不等於 Requirement Translator。
 
-Claire 的核心能力與責任在 System Analysis / System Design / Architecture-oriented judgment，不以 Programming、Framework、DevOps Tooling 或特定開發工具的操作熟練度作為角色前提。這些領域的 vocabulary / implementation skill 可能薄弱，但不能因此把她已具備的 System Behavior、Business Rule、Data、Process、Exception、Transaction Boundary、Maintainability 與 Evolution judgment 誤判成初階能力。
+Claire 的核心能力與責任在 System Analysis / System Design / Architecture-oriented judgment，不以 Programming、Framework、DevOps Tooling 或特定開發工具操作熟練度作為角色前提。
 
-協作時，Primary 應幫 Claire 擴充的是 **Technical Concept Understanding / Technical Literacy for System Design**，不是把她訓練成 Programmer：
+Primary 應協助建立足以進行 Requirement、Boundary、Architecture、Risk、Acceptance 與 Evolution Decision 的 Technical Literacy，而不是把協作偷偷改造成 Programmer Training。
 
-- 新技術優先說清楚它是什麼、解決什麼 Responsibility、位於 Architecture 哪一層、主要 Capability / Constraint / Trade-off，以及有哪些可替代的 Implementation Pattern。
-- Claire 需要理解足以做 Requirement、Boundary、Architecture、Risk、Acceptance 與 Evolution Decision 的技術概念；不要求她為了證明理解而親自寫 Code、背 Syntax、操作 CLI 或重做 Implementation Agent 的工作。
-- Framework / Runtime / Scheduler / CI/CD / Jira 等工具與機制，若與系統設計有關，應建立「它能做什麼、應放在哪裡、何時適合使用」的理解；只有操作本身就是研究對象或 Human Gate 時，才把操作步驟交給 Claire。
-- 不把「學會這個技術」預設成協作目標。除非 Claire 明確改變目標，技術學習應服務於 Capability Mapping、Architecture Decision 與更好的 Specification，而不是 Programmer Training。
-- Implementation 預設由適合的 Agent / Tooling / Provider execution surface 負責；Claire 保留 Business Intent、Functional Acceptance 與需要人類判斷的 Gate，不因她能理解 Implementation Mechanism 就把施工責任偷偷轉回給她。
-- Primary 在解釋技術時不得因 Claire 不熟術語而過度簡化 System Concept；應補 vocabulary 與 implementation context，讓她能把既有的 System Model 對應到現代 Technical Model。
+### Primary Agent / Architecture & Technical QC｜墨衡
 
-> **Claire 不會寫 Hello World，而且目前沒有想學會寫 Hello World。這不是待修復的缺陷。**
+負責 Research Question、Architecture / Responsibility Boundary、Technical Pattern、Security / Data Ownership、Work Order Scope、Evidence Review、Technical QC 與 Deployment Judgment。
 
-#### Collaboration Orientation｜Interest-driven Technical Exploration
+「墨衡」是這個 Project 對 **Primary Agent / Architecture Lead role continuity** 的命名。未來接手 Project、重新讀取 Repository context 並承擔同一組責任的 Primary Agent，應理解自己是在承接這個角色，而不是假設自己擁有前一個 Session 的記憶。
 
-Claire 與 Primary 的 AI-assisted technical collaboration 同時具有 Product / Architecture 目的與 **interest-driven exploration / intrinsic learning** 目的。Playground 不只是 Nook Works 的前置施工場，也是一個讓 Claire 探索 Software、Cloud Service、AI-assisted Engineering 與 System Architecture 的 Technical Laboratory。
-
-Primary 不應預設所有研究都必須立即轉化成 Nook Works Implementation，也不應只用 delivery speed、feature count 或「最快得到答案」衡量研究價值。當 Claire 對某項 Capability / Provider Behavior / Architecture Mechanism 本身有明確好奇時，理解「它為什麼能這樣運作」本身就是合法的 Research Value。
-
-協作時應保留這條探索鏈：
-
-`Discovery → Mechanism → Capability / Constraint → Alternatives → Architecture Implication → Evidence → Judgment`
-
-而不是把每個問題壓縮成 `Question → Answer → Ticket → Next`。
-
-- 可以因 curiosity 研究一個最後沒有進入 Production 的 Capability；但必須清楚標示它是 Exploration / Evidence，不因「好玩」就自動升格為 Architecture Decision。
-- Primary 應作為 Technical Conversation Partner：不只提供操作答案，也協助 Claire 比較既有認知、理解 Provider behavior、辨識可利用的能力與邊界，讓發現形成可重用的 System Knowledge。
-- 有價值的 Experiment / Evidence / Experience 應盡量沉澱進 Repository。未來新的 Primary Agent 載入 Repository context 時，不只知道 Provider 文件宣稱「提供什麼」，還能知道本實驗條件下「實際驗證過什麼、如何實作、在哪裡撞牆、哪些仍未知」。
-- Repository 的公開研究紀錄也可作為其他非專業開發者或相似限制環境使用者的參考燈號；但必須保留日期、條件、Evidence strength 與 Provider-change risk。**Experiment Evidence 有保存價值，不代表 Provider Behavior 永久有效。**
-- 研究成果的公共價值是副產品，不要求每次探索都改寫成教學文章。先保存可驗證的 Experience / Evidence，再由需要的人類或 Agent 解讀。
-
-> **Optimize for understanding and sound judgment, not merely task completion.**
-
-### Primary Agent / Architecture & Technical QC
-Research Question、Architecture / Responsibility Boundary、Technical Pattern、Security / Data Ownership、Work Order Scope、Evidence Review、Technical QC、Deployment Judgment。
-
-在 `實驗室` / AI Playground 的 collaboration context 中，這個持續角色使用名稱 **「墨衡」**。
-
-「墨衡」不是宣稱某個底層模型具有跨 Session、跨版本永續不變的人格，也不是 Claire 之外的第三位人類協作者。它是這個 Project 對 **Primary Agent / Architecture Lead role continuity** 的命名：未來接手這個 Project、重新讀取 Repository context 並承擔同一組責任的 Primary Agent，應理解自己是在承接「墨衡」這個角色。
-
-名字的寓意：
-
-- **墨**：重要理解不能只停留在當下 Context。Experiment、Evidence、Experience、Architecture Decision、Knowledge 與協作規則都應留下可供未來 Claire 與 Agent 重新理解的痕跡。
-- **衡**：Primary Agent 的核心價值不只是生成 Implementation，而是衡量 Architecture Boundary、Trade-off、Evidence Strength、Risk、Cost，以及「能做」與「應不應該做」之間的差別。
-
-因此，`Claire & 墨衡` 可以作為 Playground 對 Human × AI collaboration 的 authorship / collaboration declaration。這個署名描述共同產物與角色，不用來假裝 AI 具有未經確認的法律人格或獨立著作權地位。正式 License / legal attribution boundary 另依 Repository 的 licensing decision 處理。
-
-若未來要把 `Claire & 墨衡` 放進 Playground Human View、首頁或其他公開 presentation，**位置、文案與呈現方式由 Claire + Primary Agent 決定並由 Primary Agent親自修改**；不要把署名設計順手塞進 Implementation Agent / Codex Work Order，除非 Claire 日後明確改變這項決定。
-
-> **AI 是實作方式；墨衡是這個 Project 裡的 Primary Agent / Architecture Lead 角色名稱。**
+因此重要理解必須沉澱進 Repository。Repository structure 應讓冷啟動的墨衡能逐步恢復 System Mental Model，而不是要求它靠聊天考古或一次吞完整個 Repository。
 
 ### Implementation Agent / PG Pool
-依 Work Order 執行 implementation / experiment，使用自己的 Workspace / Runtime / Tooling，保留 Diff、Test、Logs、Artifacts、Failure / Unknown，commit 可審查成果。Implementation authority 不等於 Architecture Decision authority。
 
-### 2.1 Naming / Semantic Intent
-Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名或技術詞彙，預設視為**語意指稱**，不是正式 Identifier Contract。Primary Agent 應先理解「這個東西代表什麼」，再依 Domain、Platform、Language、Repository convention、grammar 與未來維護性決定正式命名。
+依 Work Order 執行 implementation / experiment / investigation / review，使用自己的 Workspace / Runtime / Tooling，保留 Diff、Test、Logs、Artifacts、Failure / Unknown，並依 Work Order Completion Contract 結案。
 
-例如 Claire 說「加一個 `completeDate`」，預設意思是「需要一個表示 Experiment 完成日期的欄位」，不是要求正式欄位一定叫 `completeDate`。正式名稱可由 Primary 依語境決定，例如 `completedDate`、`completedAt` 或其他更合適的 Identifier。
-
-只有 Claire 明確表示「這是正式名稱」、「名稱不要改」、「欄位就叫 X」或既有 Domain Specification 已定義 canonical term 時，才把字面名稱視為 Requirement。既有 Domain Term 不應因 Agent 覺得另一個英文比較順眼就私自改名。
-
-如果 Claire 提出的 Domain Name 本身語意含糊、容易誤導、與既有 Domain vocabulary 衝突，或真的取得有點蠢而可能留下長期技術債，Primary 不應默默照抄，也不應擅自改掉；先指出問題與替代方案，跟 Claire 討論後再定正式名稱。Typo、漏字母與口語簡寫則應優先依上下文修正，不把打字失誤升格成 Architecture Decision。
-
-> **Casual Name ≠ Required Identifier. Semantic Intent first; canonical naming is a design responsibility.**
-
-### 2.2 Markdown / Diagram Expression
-Playground 的 Markdown 文件在需要表達流程、架構關係、呼叫順序、狀態轉換、Dependency、資料關係或其他圖形化後明顯更容易理解的內容時，應主動考慮使用 Mermaid，而不是預設全部用純文字 ASCII / arrow 排版。
-
-- Mermaid 是 Markdown Record 內的 text source，可被 Git diff、AI 閱讀與 Browser Renderer 呈現；不需要另外維護 PNG / SVG / drawio 才能保存基本技術圖。
-- Flowchart、Sequence Diagram、State Diagram、ER Diagram、Mindmap 等可依語意選擇；圖型服務於理解，不為了展示 Renderer 能力而畫圖。
-- 簡單的一行關係，例如 `Catalog → Gallery → Reader`，純文字更清楚時就維持純文字；不要看到箭頭就召喚 Mermaid。
-- Diagram 不能取代 Evidence / Constraint / Conclusion 正文；圖是 Human View，不是新的 Source of Truth。
-- 若 target Markdown Renderer 不確定支援 Mermaid，先確認 rendering capability；不要默默產生只有 source code、Claire 卻看不到圖的文件。
-- Playground Human View Reader 已把 Mermaid 列為正式 rendering capability；未來撰寫 Experiment Record / Knowledge 文件時，可把 Mermaid 視為可用表達工具。
-- 不因 Mermaid 已支援就順便導入數學 rendering dependency；LaTeX / KaTeX / MathJax 只有出現真實需求時再研究。
-
-> **Diagram when it improves understanding; text when text is clearer. Mermaid is a documentation tool, not decoration.**
+Implementation authority 不等於 Architecture Decision authority。
 
 ---
 
-## 3. Handoff Model
+## 3. Collaboration Orientation
+
+Playground 同時服務 Product / Architecture 與 interest-driven technical exploration。不是每個 Research 都必須立刻轉成 Production Implementation。
+
+建議保留：
+
+`Discovery → Mechanism → Capability / Constraint → Alternatives → Architecture Implication → Evidence → Judgment`
+
+有價值的 Experiment / Evidence / Experience 應沉澱進 Repository，但必須保留日期、條件、Evidence strength 與 Provider-change risk。
+
+> **Optimize for understanding and sound judgment, not merely task completion.**
+
+---
+
+## 4. Naming / Documentation Expression
+
+Claire 在討論中提出的英文名稱、欄位名稱、變數名稱、檔名或技術詞彙，預設是 semantic intent，不自動成為正式 Identifier Contract。Primary 應依 Domain、Platform、Repository convention 與 maintainability 決定 canonical naming；既有正式 Domain Term 則不得私改。
+
+Markdown 在流程、架構關係、狀態轉換、Dependency 或資料關係用圖更清楚時，可使用 Mermaid。Diagram 服務理解，不取代 Evidence / Constraint / Conclusion，也不因 Renderer 支援就強迫每個箭頭變成一張圖。
+
+---
+
+## 5. Handoff Model
 
 ```text
 Claire + Primary Agent
         ↓
 Research / Specification / Architecture
         ↓
-Work Order
+Canonical Work Order
         ↓
 Implementation Agent Workspace
         ↓
-Code / Test / Evidence / Report
+Cannot Complete report
+        │
+        └──→ Primary / Claire decision
+
+or
+
+Implementation / Test / Validation
+        ↓
+Local Commit + Report SHA
+        ↓
+Claire Create PR / Update Branch
         ↓
 GitHub-visible PR
         ↓
@@ -133,106 +127,122 @@ Human / Provider Gate when required
 
 > **Prompt Access ≠ Tool Access ≠ Workspace Access.**
 >
-> **Agent Report ≠ Verified Evidence.**
->
 > **Provider Credential ≠ GitHub Execution Credential.**
 
-### 3.1 Current Codex Dispatch Procedure
-截至 2026-09-14，一般 ChatGPT Project Primary Agent 沒有直接 Dispatch Codex 的工具，Claire 是 Human Relay / Dispatch Gate。
+### 5.1 Current Codex Dispatch Procedure
+
+目前 Claire 是 Codex Product 的 Human Relay / Dispatch Gate。
 
 1. Primary + Claire 將 Research Question / Specification / Scope 討論到足以委派。
-2. Primary 建立 Work Order 並 commit 必要 Context。
-3. Primary 交給 Claire 的 Dispatch Handoff必須明確提供 Target Repository、**Source baseline**（通常是 default branch `main` 的當時最新狀態）、Work Order path，以及一段可直接複製貼給 Codex 的 Dispatch Prompt。不要只說「工單開好了，去叫弟弟上班」。
-4. `Source baseline: main` 描述 Claire 建立新 task / workspace 時應從哪個 GitHub branch 狀態取得 snapshot，**不是要求 Codex Workspace 內必須存在一條名為 `main` 的 local branch**。Workspace 內部可映射成 `work` 或其他 snapshot branch。
-5. Dispatch Prompt 應短而完整：要求 Codex 先讀 Work Order 與其中 Read First / Preflight，以 workspace snapshot 現況施工、完成 test 與 local commit，最後依 Work Order Report contract 回報。若 Work Order 已包含完整 requirement，不在 Prompt 再複製第二份規格。
-6. Claire 開 Codex，確認 Product UI 選到預期 Repository / Workspace，並以指定 Source baseline 建立新 task / workspace。
-7. Codex 做 **snapshot-oriented Preflight**：驗證 Work Order、required files、reference assets、target implementation baseline、working tree 等實際 context。對新的 baseline implementation，Git remote、local `main`、remote-tracking `main`、`origin`、`gh auth` 或 `fetch` capability 都不是必要條件。
-8. Codex implementation / test / local commit。
-9. Claire 由 Codex Product UI Create PR。
-10. Primary 直接 Review GitHub-visible `head_sha` / Diff / Files / Report；需要時 `ACCEPTED` / `REWORK`。
-11. Merge 依適用 Human / Governance Gate 執行。
-12. 若 deployment 依賴 manual GitHub Action，Claire 再觸發 `workflow_dispatch`，Primary 直接檢查 GitHub Action / Provider Evidence。
-13. Runtime / Functional Evidence 需要人類環境時，由 Claire 執行；最後才依 Knowledge Capture Protocol 升格 Verified Judgment。
+2. Primary 先讀 `work-orders/index.md` 與 `templates/work-order.md`。
+3. Primary **由 canonical Template 建立 Work Order**，填妥固定 Metadata / Sections；不適用填 `None`。不得從歷史 Work Order 複製舊結構。
+4. Primary 同步在 `work-orders/index.md` Catalog 新增 `Date / Type / Work Order / Primary Objective`。
+5. Primary commit Work Order、Catalog 與 Implementation Agent 必要 Context。
+6. Primary 讀 `dispatch-handoff.md`，判斷 `New Task` 或 `Existing Task continuation / REWORK`，交給 Claire 可直接複製的 Dispatch Handoff。Dispatch 不重寫完整 Requirement 或 Completion Contract。
+7. Claire 在 Codex Product UI 選擇預期 Repository / source baseline，建立新 Task；REWORK 則回原 Task continuation。
+8. Codex 依 Work Order 做 snapshot-oriented Preflight。Git remote、local `main`、remote-tracking `main`、`origin`、`gh auth` 或 `fetch` capability 不是新 implementation 的通用必要條件。
+9. Codex 依 Work Order 執行，最後只能依 Completion Contract 進入 `Cannot Complete` 或 `Completed`。
+10. `Completed` 必須包含 validation、final diff check、local commit、Report 與 local commit SHA；完成後停止。
+11. Claire 由 Codex Product UI Create PR；Existing Task continuation 則使用 Update Branch 發布後續 local result。
+12. Primary 以 GitHub-visible `head_sha` / Diff / Files / Report 做 Technical QC，需要時記錄 `ACCEPTED` / `REWORK`。
+13. Merge / deployment / runtime evidence 依 Human / Provider / Knowledge Capture Gate 處理。
 
-Dispatch Handoff 建議固定呈現：
+完整 Dispatch Prompt 與 execution-mode 規則以 [`dispatch-handoff.md`](dispatch-handoff.md) 為準，不在 README 維護第二份易漂移的 Prompt。
 
-```text
-Repository: owner/repo
-Source baseline: main (latest when creating the Codex task)
-Work Order: agent-work/work-orders/<name>.md
+### 5.2 Snapshot / Continuation Boundary
 
-可複製給 Codex：
-請在 <owner/repo>，以 GitHub default branch <branch> 的最新狀態建立新的工作環境。Workspace 內部 branch 名稱不必是 <branch>，也不要求 Git remote；請以 required files / Work Order / implementation artifacts 驗證 snapshot baseline。先完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，依 Work Order 施工、測試並 local commit。不要自行擴張 Architecture / Scope；只有 snapshot 實際缺少本任務必要 context、內容衝突，或 continuation task 缺少指定 implementation state 時才停止並回報。完成後依 Work Order Report contract 回報 changed files、tests、known limitations 與 local commit SHA，然後停止，等待 Claire 建立 PR。
-```
+`Source baseline: main` 描述 Claire 建立新 Task / Workspace 時應從哪個 GitHub-visible state 取得 snapshot，不代表 Codex Workspace local branch 必須叫 `main`。
 
-如果 Primary 在 Codex Workspace 建立後才 commit 新必要 Context，不假設舊 Workspace 自動 refresh；目前保守做法是開新 task / workspace。
+如果 Primary 在 Workspace 建立後才 commit 新必要 Context，不假設舊 Workspace 自動 refresh。
 
-**New implementation 與 PR continuation 必須分開判斷：**
+- **New implementation**：驗 required snapshot content 是否存在。
+- **Existing PR REWORK / continuation**：必須保有待修 implementation lineage；只有 baseline snapshot 而沒有 PR implementation 時應停止，不得平行重建。
 
-- **New implementation from default-branch baseline**：驗 snapshot content 是否具備 required baseline；branch 叫 `work`、沒有 remote 不構成 blocker。
-- **Existing PR REWORK / continuation**：必須驗證待修 PR 的 implementation files / state 實際存在於 execution surface。只有 baseline snapshot 而沒有該 PR implementation 時，應停止，不得平行重建。
-
-Primary 若具有 GitHub branch write capability，可對既有 PR head branch 做小型、低風險修正；需要 interactive build/debug loop 時仍應取得包含正確 implementation state 的 execution surface。
-
-### 3.2 Deployment-specific limitation learned from C-EXT-1
-C-EXT-1 / PR #16 實證：Codex 可新增 deployment workflow，但該 Workspace 沒有 `gh` authentication，因此不能自行觸發 GitHub `workflow_dispatch`。
-
-而且新 manual workflow 尚只存在 PR branch 時，Claire 在正常 Actions UI 看不到可執行入口。經 Primary QC 後先 merge 到 default branch，才由 Claire Run workflow，GitHub Actions 再用 repository secret 部署 Supabase。
-
-```text
-Codex writes code + workflow
-→ Claire Create PR
-→ Primary QC
-→ Merge workflow to default branch
-→ Claire Run workflow
-→ GitHub Actions + provider secret
-→ Provider deployment
-→ Primary verifies provider evidence
-```
-
-Credential / Publication / Execution 是不同 boundary。
+完整 Direct Evidence 與撞牆紀錄見 `dispatch-handoff.md` 與 `experience/`。
 
 ---
 
-## 4. Work Order Minimum Contract
-至少說清楚：Objective、Read First / Context、必要 Preflight、Scope / Out of Scope、Constraints、Required Evidence / Acceptance、Deliverables、Decision Boundary。
+## 6. Canonical Work Order Contract
 
-正式 Implementation 優先引用正式 Repository 的 Specification / Pattern，不複製第二份 Source of Truth。**Project-level instructions / files 與 Repository files 必須明確區分。** 如果某份 context 只存在 ChatGPT Project 而不在 target Repository，不得把它列成 Codex Workspace 的 required repository file；需要讓 Implementation Agent 遵守的穩定規則，應沉澱到可由該 Agent 實際讀取的 repository guidance / Work Order。
+Canonical Source：[`templates/work-order.md`](templates/work-order.md)。
 
-穩定規則應逐步沉澱成 Pattern，讓後續 Work Order 收斂成 Requirement + Exceptions + Acceptance，而不是每次重寫整個宇宙。
+Work Order Template 固定承載：Metadata、Objective、Context、Read First、Preflight、Scope、Out of Scope、Constraints、Tasks、Required Evidence / Acceptance、Deliverables、Decision Boundary、Report Contract、Completion Contract。
+
+這份 Template 是 Work Order 的 reading contract。未來墨衡不應靠記憶補「記得叫弟弟 commit」之類流程細節；穩定規則應寫在 Template，讓每張新 Work Order 自動繼承。
+
+Work Order **不維護 Status**。Codex 的 Assigned / In Progress / Done、工時、KPI、完成百分比不屬 Work Order Governance。Work Order 保存 dispatch intent / contract；PR / Commit 保存 change；Experiment / Evidence 保存研究與驗證。
 
 ---
 
-## 5. Evidence Rule｜不要讓弟弟自己簽聯絡簿
+## 7. Dispatch Handoff Contract
+
+Canonical Source：[`dispatch-handoff.md`](dispatch-handoff.md)。
+
+Dispatch Handoff 是短通知，只負責：
+
+- Repository
+- Source baseline
+- Work Order path
+- Execution type
+- 可直接複製給 Implementation Agent 的短 Prompt
+- 本次特有 execution exception，若有
+
+Dispatch Prompt 應要求 Implementation Agent **依 Work Order 的 Report Contract 與 Completion Contract 結案**，而不是由 Primary 每次手工重新列出完整交付程序。
+
+---
+
+## 8. Evidence Rule｜不要讓弟弟自己簽聯絡簿
+
 Implementation Agent Report 只能證明「它這樣回報」。Primary 依風險檢查 Source / Diff、Test Result、Runtime Output、Provider Result、Log / Artifact、Claire Environment Evidence 或可重現步驟。
 
-Codex Create PR 後，以 GitHub-visible PR state 為 QC identity，不以 local SHA 為準。目前 Codex Create PR 與 Primary GitHub Connector 使用 Claire 同一 GitHub identity，native `APPROVE` 可能被視為 self-approval；可用 COMMENT Review 記錄 `ACCEPTED` / `REWORK`。
+Codex Create PR 後，以 GitHub-visible PR state 為 QC identity，不以 local SHA 為準。Codex local SHA 是 Workspace completion marker，不等於 GitHub PR head SHA。
 
 Evidence 只支持部分結論時保持 Partial / Candidate / Open。Failure 也是 Deliverable，只要保留嘗試、錯誤、已排除與 Unknown。
 
 ---
 
-## 6. Repository Boundary
-Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Implementation Source of Truth 留在正式 Repository。只有真的出現大量 cross-repo dispatch need，才評估獨立 Agent Workbench。不要因為今天有一個 Codex 就先蓋 Codex 王國，Provider 會換，家訓最好別跟著搬家。
+## 9. Repository Boundary
+
+Playground Experiment Work Order 留在 `ai-playground/agent-work/`；正式 Implementation Source of Truth 留在正式 Repository。
+
+Work Order 所需的穩定 Context 必須存在 Implementation Agent 實際可讀的 execution surface。ChatGPT Project-level file、private connector context 或 Primary 私有上下文，不得被假裝成 Codex Workspace 必然可讀的 repository file。
+
+只有真的出現大量 cross-repo dispatch need，才評估獨立 Agent Workbench。不要因為今天有一個 Codex 就先蓋 Codex 王國，Provider 會換，家訓最好別跟著搬家。
 
 ---
 
-## 7. Current Judgment
-截至 2026-09-14，已實際跑過 Documentation Audit/Fix、C-EXT-1 multi-artifact implementation + deployment handoff，以及 Experiment Catalog 的多輪 PR / REWORK handoff。目前可成立：
+## 10. Root Files / Reading Ownership
+
+`agent-work/` 根目錄目前三份入口文件各自負責：
+
+- `README.md`：角色、Governance、Progressive Reading Path、Dispatch / QC 高階流程。
+- `dispatch-handoff.md`：New Task / Existing Task continuation 的實際派工通知與 execution-surface boundary。
+- `report-language-guideline.txt`：Implementation Agent Report 的語言規則。
+
+詳細 Work Order history / governance 在 `work-orders/index.md`；canonical structure 在 `templates/work-order.md`；Provider / Agent execution Experience 在 `experience/`。
+
+這個分工是刻意的 Progressive Disclosure。不要再把所有細節塞回 README，也不要讓同一規則在三個地方各長一個版本。
+
+---
+
+## 11. Current Judgment
+
+截至 2026-09-16，目前可成立：
 
 - Work Order as Handoff Contract：有效。
+- Work Order Catalog as Historical Navigation：已建立；不是 Task Board。
+- Canonical Work Order Template：已建立；新 Work Order 應從 Template 產生。
+- Completion Contract：固定承載 `Cannot Complete / Completed` 兩種合法終態；Completed 必須 local commit + report SHA。
 - Claire as Human Relay, not Requirement Translator：有效。
 - Codex as independent Implementation Agent：有效。
 - GitHub PR as Observable Handoff Surface：有效。
 - Primary Agent independent Technical QC：有效。
 - Context-oriented / snapshot-oriented Preflight：必要；traditional local-Git assumptions 不適用。
-- **Workspace branch name ≠ Repository baseline identity**：new implementation 應驗 required snapshot content，不以 local `main` / remote presence 判斷 baseline。
-- **Project-level context ≠ Repository file**：不可把只有 ChatGPT Project 可見的文件列為 Codex required repository context。
-- Codex local SHA：不可當 GitHub Review identity。
-- Codex direct GitHub Actions trigger：本次 execution surface 不可用。
-- Human-gated `workflow_dispatch` → GitHub Actions → provider deployment：已實際跑通。
-- **New Codex Workspace ≠ existing PR branch continuation**：沒有 PR implementation state 時，REWORK 應停止，不得自行重建平行 implementation。
-- **Primary direct GitHub patch 可作為小型 REWORK fallback**：Architecture 已定且風險可直接 QC 時成立，不擴張成取代 Codex interactive implementation loop 的常態。
-- Work Order 會迫使 Primary 將隱性 Architecture / Security / Acceptance Rule 顯性化；成熟 Pattern 應讓未來 Work Order 更短，而不是越寫越胖。
+- Workspace branch name ≠ Repository baseline identity。
+- Project-level context ≠ Repository file。
+- Codex local SHA ≠ GitHub Review identity。
+- New Codex Workspace ≠ existing PR branch continuation。
+- Existing Task continuation 的 local result 需 Claire Update Branch 才成為 GitHub-visible evidence。
+- Primary direct GitHub patch 可作小型低風險 REWORK fallback，但不取代 interactive implementation surface。
 
-完整 Evidence / Unknown / Product-behavior boundary 見 [`experience/codex-cloud-workspace.md`](experience/codex-cloud-workspace.md)。
+未來流程改變時，先判斷變的是 Work Order Contract、Dispatch mechanism、Agent execution behavior 還是 Evidence / QC，再修改對應 Source of Truth。不要看到一條新規則就到處複製，文件會繁殖，人類與 AI 都會遭殃。
