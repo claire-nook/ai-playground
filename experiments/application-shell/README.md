@@ -157,3 +157,15 @@ Feature data、Feature-specific API state、CRUD/form state、server result cach
 ## Current Judgment
 
 S-SHELL-1 已完成 implementation planning。Provider-side fixture、Feature Integration Contract、synthetic metadata target 與 Codex Implementation Work Order 均已固定。下一步是 single disposable vertical slice implementation，再由 Primary Agent + Claire 做 real Supabase / iPad Safari Evidence validation。
+
+## Live Demo
+
+部署後從 `/application-shell/` 開啟 disposable browser artifact。登入成功後，Shell 會把入口正規化為 `/home`；`/business/places`、`/business/weather` 與 `/common/place-country` 也可用於 refresh / deep-link validation。
+
+本地只需以能提供 `public/` 的 static server 開啟頁面，例如：
+
+```sh
+python3 -m http.server 4173 --directory public
+```
+
+Static server 不會模擬 `netlify.toml` 的 History API rewrites，因此本地檢視請由 `/application-shell/` 進入；部署環境才能驗證 feature route refresh。Real login、Supabase data、Open-Meteo、Edge Function 與 iPad Safari behavior 仍須在實際 deployment / provider environment 留下 Human Evidence。
