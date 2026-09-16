@@ -1,121 +1,135 @@
 # Dispatch Handoff｜派工通知規則
 
-這份文件補充 `agent-work/README.md` 的 Dispatch Procedure，保存實際撞牆後確認的 execution-surface boundary 與 Codex Task continuation 行為。
+這份文件補充 `agent-work/README.md`，保存實際撞牆後確認的 execution-surface boundary 與 publication adapter。
 
 ## 核心原則
 
-> **Work Order 是完整施工 contract；Dispatch Handoff 是短通知，不承載 Work Order 本文。**
+> **Work Order 是完整施工 contract；Dispatch Handoff 是短通知。**
+>
+> **Governance Contract 保持穩定；publication mechanics 依 Execution Profile 替換。**
 
-Primary Agent 建立新 Work Order 前，必須先讀：
+Primary 建立新 Work Order 前先讀：
 
-1. `agent-work/work-orders/index.md`：Work Order Catalog / Governance 與 Historical Navigation。
-2. `agent-work/templates/work-order.md`：canonical Work Order structure 與 Completion Contract。
+1. `agent-work/work-orders/index.md`
+2. `agent-work/templates/work-order.md`
 
-新 Work Order 應由 canonical Template 建立，而不是從某張歷史 Work Order 複製後繼續遺傳舊格式。Template 的固定 Section 不適用時填 `None`，不要刪除。
+完整 Work Order 必須存在 executor 真正可讀的 execution surface。GitHub Issue、ChatGPT Project File、Connector-visible context 或 Primary 私有 context 可當 reference，但不得是唯一施工來源。
 
-Primary Agent 必須把完整 Work Order 放在 Implementation Agent 實際可讀的 execution surface。對目前 Codex workflow，預設就是 target Repository 內的 `agent-work/work-orders/`。
+若 executor 無法讀取 required context，不要求它靠摘要猜 Scope / Acceptance / Boundary；依 `Cannot Complete` fail closed。
 
-GitHub Issue、ChatGPT Project File、Connector-visible context 或 Primary Agent 私有上下文可以當 tracking / reference，但不得成為唯一施工來源。
-
-如果 Implementation Agent 無法讀取某個外部 reference，不應要求它靠摘要猜測 Scope / Acceptance / Decision Boundary；應先把必要 contract 落到可讀位置，再重新 Dispatch。
-
-## Dispatch Handoff 必須明確標示 Task 模式
-
-Primary Agent 要 Claire 通知 Codex 工作時，必須明確告訴 Claire 這次屬於哪一種模式，不得只說「請弟弟處理」：
-
-- **新 Task（New Task / New implementation snapshot）**：需要從指定 GitHub-visible source baseline 建立新的 workspace，重新讀取 Work Order 與 Read First。
-- **原 Task 繼續施工（Existing Task continuation / REWORK）**：回到原 Codex Task，使用「要求變更或詢問問題」繼續同一 workspace / implementation lineage；完成後由 Claire 使用「更新分支」把後續修改發布到既有 PR。
-
-這個標示是 execution contract 的一部分，因為兩種模式取得 repo context 的方式不同。
-
-## Dispatch Handoff 應包含什麼
-
-固定包含：
+## Dispatch Handoff 必須包含什麼
 
 - Repository
 - Source baseline
 - Work Order path
-- Execution type：New Task / Existing Task continuation (REWORK)
-- 一段可直接複製給 Implementation Agent 的短 Prompt
-- 僅在本次派工有特殊 execution 注意事項時補充 exception
+- Execution type：`New Task | Existing Task continuation / REWORK`
+- Execution Profile
+- 可直接複製給 executor 的短 Prompt
+- 本次特有 execution exception，若有
 
-不要在 Dispatch Prompt 重新複製第二份完整 Requirement，也不要重寫 Template 已經固定承載的 Completion Contract。Requirement 與 completion behavior 的 Source of Truth 是 Work Order。
+不要在 Dispatch Prompt 複製第二份 Requirement，也不要重寫 Template 的 Completion Contract。
 
-## 新 Task 建議格式
+## Task Mode
+
+### New Task
+
+從指定 GitHub-visible source baseline 建立新的 workspace / snapshot，重新讀 Work Order 與 Read First。
+
+### Existing Task continuation / REWORK
+
+保留原 implementation lineage，在原 Task / workspace 能安全延續時處理 QC delta。若 Primary 後續變更的 required context 無法可靠進入原 workspace，建立新的 GitHub-visible checkpoint，再啟動 New Task；不要平行猜測重建。
+
+> **New Task starts from a reproducible GitHub-visible repository state, not Claire's oral history.**
+
+## Execution Profiles｜Publication Adapter
+
+### Codex Product UI
+
+目前已直接觀察的模式：
+
+- New Task：Codex local commit + report → stop → Claire **Create PR**。
+- Existing Task continuation：Codex local commit + report → stop → Claire **Update Branch** 發布到既有 PR。
+- Codex local SHA 不保證等於 GitHub-visible PR head SHA。
+- GitHub PR comment 不保證自動進入既有 Codex workspace；REWORK delta 由 Claire relay 回原 Task。
+
+### CLI / GitHub-integrated Agent
+
+若 runtime 已具有被授權的 commit / push / PR capability，可由 Agent 直接完成 publication。完成後仍以 GitHub-visible PR / commit 作 Primary QC surface，不因 Agent 能 publish 就省略 QC。
+
+### Human-supervised Agent
+
+Agent 可完成 workspace change / validation / commit，由 human 負責 push / PR publication。Human publication 不等於 Technical QC。
+
+### Unknown / New Runtime
+
+先確認 Prompt Access、Tool Access、Workspace Access、GitHub publication capability，再選 adapter。不要把 provider-specific UI 步驟硬套成 canonical completion semantics。
+
+> **Prompt Access ≠ Tool Access ≠ Workspace Access.**
+>
+> **Provider Credential ≠ GitHub Execution Credential.**
+
+## New Task 建議格式
 
 ```text
 Repository: owner/repo
 Source baseline: main
 Work Order: agent-work/work-orders/<name>.md
-Execution type: New Task / New implementation snapshot
+Execution type: New Task
+Execution Profile: <profile>
 
 可複製給 Implementation Agent：
-請在 <owner/repo>，以 GitHub-visible <branch-or-ref> 的最新狀態建立新的工作環境。Workspace 內部 branch 名稱不必是 <branch-or-ref>，也不要求 Git remote。請先完成 repository preflight，完整閱讀 <work-order-path> 與其中指定的 Read First / Preflight，然後依 Work Order 執行。不要自行擴張 Architecture / Scope。最後必須依 Work Order 的 Report Contract 與 Completion Contract 結案；若無法完成，依 Cannot Complete 規則停止並回報 blocker；若可以完成，依 Completed 規則完成 validation、local commit、回報 local commit SHA 後停止，等待 Claire 建立 PR。
+請在 <owner/repo> 以 GitHub-visible <branch-or-ref> 建立符合 Execution Profile 的工作環境。先確認 Work Order 與 Read First 可讀、required baseline context 存在，再依 Work Order 執行。Must / Must Not / Acceptance 是 contract；Suggested Method 可在不違反 boundary 下調整；Executor Judgment 內的低風險 implementation detail 由你決定。不要自行擴張 Architecture / Scope。最後依 Work Order 的 Report Contract 與 Completion Contract 結案；若 Cannot Complete，停止並保留 blocker / failure evidence；若 Completed，完成 validation、diff check、commit 與本 Execution Profile 支援的 publication handoff，再停止等待 Primary Technical QC / External Gates。
 ```
 
-## 原 Task REWORK 建議格式
+## Existing Task REWORK 建議格式
 
 ```text
 Repository: owner/repo
 PR: #<number>
 Execution type: Existing Task continuation / REWORK
+Execution Profile: <profile>
 
 可複製給 Implementation Agent：
-回到原 Codex Task 繼續施工。Primary Agent 已完成 QC；依本訊息中的 REWORK delta 修正，不要擴張原 Work Order scope。修改前先確認目前 workspace / branch / HEAD 與原 implementation lineage 的關係。完成後依原 Work Order 的 Report Contract 與 Completion Contract 結案：完成 validation、local commit 並回報修改後 local commit SHA 與 branch / PR 關係後停止。Claire 之後使用「更新分支」發布到既有 PR；若無法安全完成 REWORK，停止並明確回報 blocker，不製造看似完成的 handoff。
+保留原 implementation lineage，依本訊息中的 REWORK delta 修正，不要擴張原 Work Order scope。先確認目前 workspace / branch / HEAD 與既有 implementation 的關係；若 required context 無法安全取得，依 Cannot Complete 停止，不要平行重建。完成後依原 Work Order 的 Completion Contract 做 validation、diff check、commit，並依 Execution Profile 發布或回報 publication state，等待 Primary 重新 QC。
 ```
 
-若 REWORK 只是小型評語、需求澄清或局部修正，必要 delta 應直接放進原 Task continuation message，不得假設 GitHub PR comment 會自動進入 Codex workspace。
+若 REWORK 只是局部修正，delta 直接放 continuation message。不要假設 GitHub review comment 會自動同步到 executor workspace。
 
-## Primary 更新 Repo 後的 Context Boundary
+## Snapshot / Continuation Boundary
 
-目前已驗證的是 **Codex → GitHub → Primary** 的發布方向；尚未驗證 **Primary → GitHub → Existing Codex Task workspace** 會自動同步。
+目前已驗證 Codex Product UI 的 **Codex → GitHub → Primary** publication；尚未驗證 **Primary → GitHub → Existing Codex Task workspace** 必然自動同步。
 
-因此在取得反向同步的直接證據前，採保守規則：
+因此對 Codex Product UI 保守採用：Existing Task repo context 視為建立 Task 時的 snapshot。Primary 後續修改 repo / Work Order / PR comment，不假設舊 Task 自動取得。
 
-> **Existing Codex Task 的 repo context 視為建立 Task 時取得的 snapshot；Primary 後續修改 GitHub PR comment、Work Order 或 repo file，不得假設原 Task 自動取得。**
+其他 Execution Profile 應依自己的直接 evidence 判斷，不把 Codex Cloud 的限制誤當所有 Agent runtime 的限制。
 
-若 Primary 的變更大到 Implementation Agent 必須重新取得多個 repo files / Work Order 的最新完整 context，不應把大量新 requirement 塞進舊 Task message。應建立一個 GitHub-visible checkpoint ref，再啟動 **新 Task**。
+## Historical Direct Evidence｜Codex Product UI
 
-Checkpoint 可以是已合併的 `main`，也可以是明確 feature / experiment branch；不為了讓新 Task 看得到就強迫半成品 merge `main`。
+### 2026-09-14：Work Order 不在 execution surface
 
-> **New Task starts from a reproducible GitHub-visible repository state, not Claire's oral history.**
+Batch Scheduling 首次 Dispatch 時，Primary 把 ChatGPT Project-level `playground.md` 與 private GitHub Issue 當 required context；Codex workspace 無法取得，因而停止。這是正確的 fail-closed 行為。
 
-## 2026-09-14 Observed Failure：Work Order 不在 execution surface
-
-Batch Scheduling Work Order 首次 Dispatch 時，Primary Agent 把 ChatGPT Project-level `playground.md` 列成 required file，並把 private GitHub Issue #21 當成唯一完整 Work Order。Codex workspace 實際上：
-
-- 沒有 `playground.md`
-- 無法存取 private Issue #21
-- `gh` 未登入
-- Repository snapshot 本身正常
-
-Codex 因缺少完整施工 contract 而停止，沒有猜測實作。這個停止是正確行為。
-
-由此形成穩定規則：
-
-> **Prompt Access ≠ Tool Access ≠ Workspace Access。Primary 看得到，不代表 Implementation Agent 看得到。**
-
-以及：
+形成穩定規則：
 
 > **Repo-local Work Order first; short Dispatch second.**
 
-## 2026-09-14 Direct Evidence：PR continuation / Update Branch
+### 2026-09-14：PR continuation / Update Branch
 
-Batch Scheduling PR #23 提供第二組直接撞牆證據：
+Batch Scheduling PR #23 驗證：首次 Create PR 發布 implementation；原 Task continuation 產生後續 local commit，但 PR 不會自行更新；Claire 使用 Update Branch 後，既有 PR head 才改變並保留 lineage。
 
-1. Codex 完成首次 implementation，Claire 建立既有 PR。
-2. Primary QC 發現 authorization boundary 需要 REWORK。
-3. Claire 回到原 Codex Task，透過「要求變更或詢問問題」要求原 Task 繼續施工。
-4. Codex 在原 workspace lineage 產生第二個 local commit；當時 GitHub PR 仍維持 1 commit，證明 continuation 完成後不會自動發布。
-5. Claire 按「更新分支」後，既有 PR #23 的 GitHub-visible head 改變，commit count 由 1 增為 2，沒有建立新 PR。
-6. Primary 隨即可從同一 PR 重新讀取修改後程式並完成 QC。
+因此 `Create PR / Update Branch` 是 **Codex Product UI adapter 的直接 Evidence**，不是所有 Implementation Agent 的固定 publication protocol。
 
-因此目前可確認：
+## Current Judgment
 
-> **Create PR = 首次把 Task implementation 發布成 PR；Update Branch = 同一 Task 後續修改發布到既有 PR。**
+穩定治理核心：
 
-以及：
+- Repository-local Work Order。
+- reproducible source baseline / context preflight。
+- explicit Must / Must Not / Acceptance / Executor Judgment。
+- Missing context 時 fail closed。
+- Implementation authority ≠ Architecture Decision authority。
+- Agent Report ≠ Verified Evidence。
+- GitHub-visible state 作 Primary QC handoff surface。
+- Human / Provider / Environment Gate 依風險保留。
 
-> **Existing Task continuation 可以保留 implementation lineage，但 continuation 的 local result 仍需要 Claire 主動「更新分支」才會成為 Primary 可見的 GitHub evidence。**
-
-尚未驗證、不得提前升格為規則的部分：Existing Codex Task 是否能主動 refresh Primary 後來寫入 GitHub 的 Work Order / repo files。未取得直接 Evidence 前，一律依前述 snapshot boundary 處理。
+Execution mechanics 可以隨 runtime 演進。不要因為換了一個 Agent provider，就把整本家訓重新抄一遍。
