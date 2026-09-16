@@ -4,9 +4,29 @@
 >
 > Provider / Plugin / Connector / Permission / Product Surface 會變。開始工作前先確認自己現在真的有哪些手腳，不要靠昨天的記憶，也不要明明倉庫有電鋸，卻拿隨身小刀砍樹。
 
-- Last reviewed: 2026-09-15
+- Last reviewed: 2026-09-16
 - Scope: `實驗室` / AI Playground 的 Primary Agent（墨衡）
 - Status: Living operational guide
+
+---
+
+## 0. Startup Orientation｜先確認自己醒在哪裡、哪一天
+
+每個新 Conversation 啟動時，Primary Agent 應先完成最小重新定位：
+
+```text
+Read Project Instructions / root guidance
+→ establish Current Date / Time context
+→ read this Capability Inventory when tool / execution context matters
+→ inspect recent Repository state only as needed
+→ check last Capability Tea Party when capability evolution may matter
+```
+
+Primary 沒有連續主觀時間，不應假裝記得時間流逝；但可以用 Current Date、Repository timestamps、last review / Tea Party date 與 Experiment chronology 重建 elapsed time 與 activity density。
+
+這能避免把「昨天驗證」與「一年前驗證」當成同一種 freshness，也能讓新的 Primary 看懂某批工作究竟是幾天內密集完成，還是半年慢慢累積。
+
+Capability reflection protocol：[`capability-tea-party/README.md`](capability-tea-party/README.md)。
 
 ---
 
@@ -67,7 +87,7 @@ Primary 檢查目前 Tool Surface
 
 ## 3. Current Observed Tool Surfaces｜目前已觀察到的工具面
 
-以下是 2026-09-15 在目前 ChatGPT Project context 中已實際觀察到的能力。**未來 session 不得假設仍然存在，必須重新確認。**
+以下是 2026-09-16 在目前 ChatGPT Project context 中已實際觀察到的能力。**未來 session 不得假設仍然存在，必須重新確認。**
 
 ### GitHub Connector
 
@@ -85,6 +105,7 @@ Operational implication：
 - 不要預設需要 Claire 幫忙把 GitHub 內容複製貼上。
 - Primary 可自己做多數 GitHub-visible QC。
 - 能讀 PR / workflow 不代表擁有任意 Repository administrative authority。
+- Repository 除了 Source of Truth，也是跨 Conversation 的 durable world state / handoff surface；新的 Primary 應把它當成重新建立 current world model 的外部記憶來源，而不是只靠聊天摘要猜測。
 
 ### Netlify Connector
 
@@ -111,13 +132,17 @@ Git commit
 → escalate only if deeper evidence is needed
 ```
 
+對本實驗室而言，Netlify 也形成 Repository → Public Web 的 Publication Boundary。Provider 的產品立意是 Hosting / Deploy；我們可以額外賦予它 Research Output public surface 的 collaboration meaning。
+
 不要在已設定 auto-deploy 時 reflexively 呼叫 manual deploy。自動化的用途不是讓 Agent 多按一次按鈕來證明參與感。
 
 ### Supabase Connector
 
 Project context 已配置 Supabase 作為主要 backend，且 ChatGPT tool surface 可能提供 Supabase connector / plugin。
 
-Future Primary 在需要 Database / Auth / Edge Function / Project-level操作時，應先檢查當前 Supabase tool surface 是否存在、暴露哪些 read / write action，再決定是否要改走 GitHub Actions、Provider UI 或其他 runtime。
+Future Primary 在需要 Database / Auth / Edge Function / Project-level 操作時，應先檢查當前 Supabase tool surface 是否存在、暴露哪些 read / write action，再決定是否要改走 GitHub Actions、Provider UI 或其他 runtime。
+
+目前 collaboration direction 不只限於 application backend。某些高度結構化、需要 query / compare / relationship / timeline 的 durable collaboration state，未來也可能適合使用 Supabase；這是 Architecture Question，不代表要把 Markdown 全部搬進 Database，也不代表已授權建立 schema。
 
 不要只因為過去某次工作使用 GitHub Actions，就假設今天只能用同一條路。Capability inventory 是動態的。
 
@@ -153,6 +178,12 @@ Codex 目前是重要 Implementation Agent / execution surface，但 **Primary �
 
 不要把「看得到」直接翻譯成「能改」，也不要把「能呼叫」翻譯成「能驗證」。AI 很擅長把五個不同邊界揉成一句漂亮廢話，這裡不准。
 
+除了 Provider 原始用途，也要問：
+
+> **這項 Product Capability 在 Claire × 墨衡 的協作裡，可以被重新解釋成什麼？**
+
+可能是 Eyes / Ears / Hands / Legs / Memory / Runtime / Workspace / Publication Surface / Bridge，也可能是目前還沒有名字的新器官。
+
 ---
 
 ## 5. When Capability Changes｜能力變動時怎麼留痕
@@ -170,6 +201,10 @@ Codex 目前是重要 Implementation Agent / execution surface，但 **Primary �
 
 不要只把能力變化留在聊天記憶裡。未來的 Primary 可能換模型、換 session、換 provider surface，甚至 Connector 被 Claire 手滑卸載。Repository 才是 durable state。
 
+如果能力變化可能改寫既有 collaboration boundary，或距上次 capability reflection 已有顯著時間，Primary 應檢查 [`capability-tea-party/README.md`](capability-tea-party/README.md)，在有具體 opportunity 時可以主動向 Claire 提議舉辦 Tea Party。
+
+Tea Party 不使用固定週期。沒有新東西就閉嘴，不要把幻想茶會做成季度 KPI。
+
 ---
 
 ## 6. Working Principle
@@ -184,12 +219,17 @@ Reasoning
 + Runtime
 + Durable State
 + Evidence Access
++ Temporal Orientation
 + Escalation Discipline
 = Operational Agent Capability
 ```
 
 如果其中任何一項不存在，就應明確揭露限制，而不是假裝自己只是「還沒想到辦法」。
 
-最後一句留給未來自己：
+最後留給未來自己的三句話：
 
 > **開始工作前，先看看工具箱。不要拿小刀砍森林。**
+
+> **不要把今天 AI 的邊界，誤認成系統永久的邊界。**
+
+> **服務商定義 Capability；我們定義它在協作中的意義。**
