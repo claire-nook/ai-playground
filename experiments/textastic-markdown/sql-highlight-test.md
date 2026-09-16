@@ -1,10 +1,6 @@
-<!-- sql-highlight-debug -->
-
 # T-TXT-2 — Markdown Syntax Highlighting Showcase
 
-這份文件持續長大，用來驗證 Textastic Markdown Preview 對明確標記語言的 fenced code block 套用 Highlight.js，同時保留森林系樣式、Mermaid 與人工換頁。
-
-> 診斷模式：頁面最上方暫時顯示 T-TXT-2 HIGHLIGHT DEBUG。這是實驗探針，不是正式 Preview 功能。
+這份文件持續長大，用來驗證與展示 Textastic Markdown Preview 對明確標記語言的 fenced code block 套用 Highlight.js，同時保留森林系樣式、Mermaid 與人工換頁。
 
 ## SQL：查詢語法
 
@@ -211,4 +207,4 @@ flowchart LR
 
 ## Page Break regression check
 
-如果 Preview 在上方仍顯示淡淡的 `PAGE BREAK`，而 Print 時能正常強制換頁，代表既有功能沒有被 syntax highlighting 搞壞。人類今天暫時守住了相容性。
+如果 Preview 在上方仍顯示淡淡的 `PAGE BREAK`，代表既有 Preview enhancement 沒有被 syntax highlighting 搞壞。Print 強制換頁行為由 T-TXT-1 的既有 Human Environment Evidence 支持；若未重新做 Print Preview，不把這份 showcase 冒充成新的 Print regression evidence。
