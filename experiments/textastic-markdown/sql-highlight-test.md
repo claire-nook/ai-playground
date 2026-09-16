@@ -1,12 +1,12 @@
 <!-- sql-highlight-debug -->
 
-# T-TXT-2 — SQL Syntax Highlighting Probe
+# T-TXT-2 — Markdown Syntax Highlighting Showcase
 
-這份文件只驗證一件事：Textastic Markdown Preview 能否只對明確標記為 `sql` 的 fenced code block 套用 Highlight.js，並維持既有森林系樣式。
+這份文件持續長大，用來驗證 Textastic Markdown Preview 對明確標記語言的 fenced code block 套用 Highlight.js，同時保留森林系樣式、Mermaid 與人工換頁。
 
-> 診斷模式：頁面最上方會暫時顯示 T-TXT-2 SQL HIGHLIGHT DEBUG。這是實驗探針，不是正式 Preview 功能。
+> 診斷模式：頁面最上方暫時顯示 T-TXT-2 HIGHLIGHT DEBUG。這是實驗探針，不是正式 Preview 功能。
 
-## SQL：應該出現語法上色
+## SQL：查詢語法
 
 ```sql
 -- 查詢啟用中的區域代碼
@@ -22,7 +22,7 @@ WHERE type_code = 'REGION'
 ORDER BY item_code;
 ```
 
-## SQL：DDL / DML / function / number
+## SQL：DDL / DML / type / value
 
 ```sql
 CREATE TABLE test_highlight (
@@ -40,16 +40,65 @@ SET amount = amount + 100
 WHERE item_code = 'A001';
 ```
 
+## JSON：object / array / value types
+
+```json
+{
+  "experiment": "T-TXT-2",
+  "feature": "markdown-syntax-highlighting",
+  "enabled": true,
+  "version": 2,
+  "score": 98.5,
+  "notes": null,
+  "languages": [
+    "sql",
+    "json"
+  ],
+  "theme": {
+    "name": "forest",
+    "darkCodePanel": true,
+    "autoDetect": false
+  }
+}
+```
+
+## JSON：比較接近 API / config 的巢狀資料
+
+```json
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/batch/run",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "batchCode": "WEATHER_DAILY",
+      "region": "TW",
+      "dryRun": false,
+      "retryCount": 3
+    }
+  },
+  "result": {
+    "success": true,
+    "rowsAffected": 12,
+    "error": null
+  }
+}
+```
+
 ## 無 language fence：不應該被自動猜測
 
 ```
 SELECT this_should_stay_plain
 FROM no_auto_detection;
+
+{"this":"should also stay plain"}
 ```
 
 ## Inline code：不應該被影響
 
-例如 `SELECT * FROM comm_code;` 仍然只是一般 inline code。
+例如 `SELECT * FROM comm_code;` 與 `{"enabled":true}` 仍然只是一般 inline code。
 
 ## Mermaid regression check
 
@@ -58,10 +107,11 @@ flowchart LR
     A[Markdown] --> B[Textastic Preview]
     B --> C[Mermaid]
     B --> D[SQL Highlight]
+    B --> E[JSON Highlight]
 ```
 
 <!-- pagebreak -->
 
 ## Page Break regression check
 
-如果 Preview 在上方仍顯示淡淡的 `PAGE BREAK`，而 Print 時能正常強制換頁，代表既有功能沒有被 SQL highlighting 搞壞。人類今天暫時守住了相容性。
+如果 Preview 在上方仍顯示淡淡的 `PAGE BREAK`，而 Print 時能正常強制換頁，代表既有功能沒有被 syntax highlighting 搞壞。人類今天暫時守住了相容性。
