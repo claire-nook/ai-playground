@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
-import { buildNavigation, resolveRoute } from "./shell-core.mjs";
+import { buildNavigation, resolveRoute, signOutCurrentSession } from "./shell-core.mjs";
 
 // Public browser configuration only；不得在 browser artifact 放入 service_role / Secret Key。
 const SUPABASE_URL = "https://cctonymfrxneonxryqei.supabase.co";
@@ -7,8 +7,9 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MN0_kx6LzCPyNbtI4CWZ9w_y-5hew_g
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 
 const el = id => document.getElementById(id);
-const views = ["startup-view", "login-view", "bootstrap-error-view", "shell-view"];
+const views = ["startup-view", "login-view", "bootstrap-error-view", "logout-error-view", "shell-view"];
 const state = { session:null, appUser:null, features:[], navigation:[], allowedPaths:new Set(), renderVersion:0 };
+let manualLogoutPending=false;
 
 function show(id) { views.forEach(view => { el(view).hidden = view !== id; }); }
 function message(error) { return error instanceof Error ? error.message : String(error || "未知錯誤"); }
@@ -19,6 +20,10 @@ function clearApplicationState() {
   el("navigation").innerHTML='<a href="/home" data-route>Home</a>'; el("user-context").textContent=""; el("content").replaceChildren(); closeNavigation();
 }
 function enterSignedOutState() { clearApplicationState(); history.replaceState({},"","/application-shell/"); el("password").value=""; show("login-view"); }
+function showLogoutFailure(error) {
+  el("logout-error-message").textContent=`登出失敗：${message(error)} 目前 Session 尚未確認失效。`;
+  show("logout-error-view");
+}
 
 async function bootstrap(session) {
   clearApplicationState();
@@ -101,11 +106,22 @@ async function renderPlaceCountry(version) {
 
 document.addEventListener("click",event=>{const link=event.target.closest("a[data-route]");if(!link)return;event.preventDefault();history.pushState({},"",link.getAttribute("href"));renderCurrentRoute();});
 el("login-form").addEventListener("submit",async event=>{event.preventDefault();el("login-button").disabled=true;el("login-message").textContent="登入中…";const {data,error}=await supabase.auth.signInWithPassword({email:el("account").value.trim(),password:el("password").value});el("login-button").disabled=false;if(error){el("login-message").textContent=`登入失敗：${error.message}`;return;}el("login-message").textContent="";await bootstrap(data.session);});
-document.querySelectorAll(".signout-button").forEach(button=>button.addEventListener("click",async()=>{button.disabled=true;clearApplicationState();show("startup-view");await supabase.auth.signOut();enterSignedOutState();button.disabled=false;}));
+async function handleManualLogout() {
+  if(manualLogoutPending)return;
+  manualLogoutPending=true; document.querySelectorAll(".signout-button, #retry-logout-button").forEach(button=>button.disabled=true);
+  // Request 期間先清除可操作的 Application Context；只有 provider success 才顯示 Login completion。
+  clearApplicationState(); show("startup-view");
+  try { await signOutCurrentSession(supabase.auth); enterSignedOutState(); }
+  catch(error) { showLogoutFailure(error); }
+  finally { manualLogoutPending=false; document.querySelectorAll(".signout-button, #retry-logout-button").forEach(button=>button.disabled=false); }
+}
+document.querySelectorAll(".signout-button").forEach(button=>button.addEventListener("click",handleManualLogout));
+el("retry-logout-button").addEventListener("click",handleManualLogout);
+el("restore-session-button").addEventListener("click",async()=>{show("startup-view");const {data:{session},error}=await supabase.auth.getSession();if(error){showLogoutFailure(error);return;}await bootstrap(session);});
 el("retry-button").addEventListener("click",()=>bootstrap(state.session));
 el("menu-button").addEventListener("click",()=>{const open=!el("sidebar").classList.contains("open");el("sidebar").classList.toggle("open",open);el("nav-backdrop").hidden=!open;el("menu-button").setAttribute("aria-expanded",String(open));document.body.classList.toggle("nav-open",open);});
 el("nav-backdrop").addEventListener("click",closeNavigation); window.addEventListener("popstate",()=>state.appUser&&renderCurrentRoute()); window.addEventListener("resize",()=>{if(innerWidth>800)closeNavigation();});
 // Token refresh 失敗、其他 tab sign-out 等 auth invalidation 必須立即 fail closed，不保留舊 Context / Navigation / Feature DOM。
 // 正常 refresh 只同步 caller JWT；不重建 Application Context、Navigation、route 或 Feature DOM。
-supabase.auth.onAuthStateChange((_event,nextSession)=>{if(nextSession){state.session=nextSession;return;}queueMicrotask(enterSignedOutState);});
+supabase.auth.onAuthStateChange((_event,nextSession)=>{if(nextSession){state.session=nextSession;return;}if(!manualLogoutPending)queueMicrotask(enterSignedOutState);});
 const {data:{session}}=await supabase.auth.getSession(); await bootstrap(session);

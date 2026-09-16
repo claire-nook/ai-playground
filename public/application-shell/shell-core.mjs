@@ -23,4 +23,9 @@ export function resolveRoute(pathname, allowedPaths) {
   return { kind:"not-found", path:pathname };
 }
 
+export async function signOutCurrentSession(auth) {
+  const { error } = await auth.signOut({ scope:"local" });
+  if (error) throw error;
+}
+
 function byOrder(left, right) { return Number(left.sort_order) - Number(right.sort_order) || Number(left.oid) - Number(right.oid); }
