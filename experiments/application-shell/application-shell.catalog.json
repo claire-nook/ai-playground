@@ -1,12 +1,12 @@
 {
   "id": "S-SHELL-1",
   "title": "Nook Works Application Shell Integration Probe",
-  "completedDate": null,
+  "completedDate": "2026-09-16",
   "recordPath": "experiments/application-shell/README.md",
-  "summary": "以一個真的可登入的小型 Nook Works Shell Live Demo，組合既有 Auth、app_user、Native Data API / Custom API、Navigation、Route、Feature Entry 與 iPad-first responsive capability，驗證 Application Runtime lifecycle 與責任邊界。",
-  "tags": ["Nook Platform", "Application Shell", "Supabase Auth", "Application User", "Data API", "Routing", "iPad-first", "RWD"],
+  "summary": "以真的可登入 Nook Works Shell Live Demo 組合 Auth、app_user、Native Data API / Custom API / External API、metadata-driven Navigation、Route、Feature Entry、Session lifecycle 與 iPad-first responsive behavior；Production Safari Environment Evidence 已完成。",
+  "tags": ["Nook Platform", "Application Shell", "Supabase Auth", "Application User", "Data API", "Routing", "Session Lifecycle", "iPad-first", "RWD"],
   "demoStatus": "live",
   "demoPath": "/application-shell/",
-  "verificationStatus": "candidate",
-  "flow": "Login / Session Restore → Auth Identity → app_user → Application Context → Shell → Feature → Data Access → Render"
+  "verificationStatus": "verified",
+  "flow": "Login / Session Restore → Auth Identity → app_user → Application Context → Shell → Feature → Data Access → Render → Logout / Invalidation"
 }
