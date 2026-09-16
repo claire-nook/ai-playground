@@ -1,20 +1,20 @@
 # Application Shell Probe
 
-- Status: Candidate / Ready for Implementation Planning
-- Track: Application Shell
-- Evidence state: Not implemented; no new runtime evidence yet
-- Primary target: Nook Works browser application shell
-- Experience priority: iPad-first, with iPhone narrow viewport and desktop sanity
-- Review input: `agent-work/reviews/application-shell-experiment-review-v2.md`
-- Existing capability baseline: Experiment A, B, B-1, C-DB-1, C-EXT-1
+- 狀態：Candidate / Ready for Implementation Planning
+- 研究軌道：Application Shell
+- Evidence 狀態：尚未實作，目前沒有新的 Runtime Evidence
+- 主要目標：Nook Works browser Application Shell
+- 體驗優先順序：iPad-first，並觀察 iPhone narrow viewport 與 desktop sanity
+- Review input：`agent-work/reviews/application-shell-experiment-review-v2.md`
+- 既有能力基線：Experiment A、B、B-1、C-DB-1、C-EXT-1
 
-## Why this experiment exists
+## 為什麼要做這個實驗
 
-Nook Works needs more than a responsive menu. The Application Shell is the browser-side composition layer that turns already-verified Auth / Data API / Custom API capabilities into a coherent application lifecycle.
+Nook Works 需要的不只是一個 responsive menu。Application Shell 是 browser-side 的組合層，負責把已經驗證過的 Auth、Data API、Custom API 等能力，組合成一個有一致 lifecycle 的 Application Runtime。
 
-This is therefore an **integration / composition experiment**, not a repeat of earlier provider capability probes.
+因此這是一個 **integration / composition experiment**，不是把前面已完成的 provider capability probe 再做一次。
 
-The live demo should be a deliberately small but real application: it has a real Login page, real Supabase Auth, real `app_user` resolution, a visible Shell, two minimal Feature pages, real data retrieval, routing, sign-out, and responsive behavior. The features are intentionally shallow because the research target is the Shell rather than Feature UI design.
+Live Demo 應該刻意保持很小，但必須是一個真的可以運作的小型 application：有真正的 Login page、真正的 Supabase Auth、真正的 `app_user` resolution、可見的 Shell、兩個最小 Feature page、真正的 data retrieval、routing、sign-out 與 responsive behavior。Feature 本身故意做得很薄，因為這次研究的是 Shell，不是 Feature UI design。
 
 ```text
 Browser Entry
@@ -30,49 +30,49 @@ Browser Entry
 → Rendered Result
 ```
 
-## Research questions
+## Research Questions
 
-1. Can the Shell deterministically separate Authentication Identity, Application User eligibility, and Application User Context?
-2. Can the normal trunk use real Supabase Auth + `app_user` integration rather than a synthetic identity selector?
-3. Can already-verified Native Data API / Custom API mechanisms be composed behind Features without becoming Shell responsibilities?
-4. Can `user_type` drive coarse Feature Entry visibility without being mistaken for Role / Permission / backend authorization?
-5. Can route, deep-link, refresh and browser history semantics survive bootstrap and sign-out/invalidation?
-6. Can the same Shell remain usable on iPad landscape/portrait and iPhone narrow viewports?
-7. Which observed behaviors belong to Runtime Evidence, and which still require later Platform Rule / Authorization design?
+1. Shell 能不能明確區分 Authentication Identity、Application User eligibility 與 Application User Context，而不是登入成功後全部揉成一團？
+2. 正常流程能不能使用真正的 Supabase Auth + `app_user` integration，而不是用 synthetic identity selector 假裝登入？
+3. 已驗證的 Native Data API / Custom API 能力，能不能被組合到 Feature 後方，而不變成 Shell 自己的責任？
+4. `user_type` 能不能只負責 coarse Feature Entry visibility，而不被誤用成 Role / Permission / backend authorization？
+5. Route、deep link、refresh 與 browser history semantics，在 bootstrap、sign-out / invalidation 前後能不能保持一致？
+6. 同一個 Shell 在 iPad landscape / portrait 與 iPhone narrow viewport 是否仍然可用？
+7. 哪些觀察可以成為 Runtime Evidence，哪些仍然只是後續 Platform Rule / Authorization design 的待決問題？
 
-## Confirmed architecture inputs
+## 已確認的 Architecture Inputs
 
 ### Identity layers
 
-The experiment keeps three layers distinct:
+實驗刻意把三個 identity layer 分開：
 
-1. **Authentication Identity** — Supabase Auth answers who authenticated.
-2. **Application User / Eligibility** — `app_user` maps the Auth Identity into Nook Works and `is_active` determines whether that Application User is currently eligible.
-3. **Application User Context** — carries application-level identity such as `app_user_oid`, display identity and `user_type` after bootstrap succeeds.
+1. **Authentication Identity**：Supabase Auth 回答「是誰完成 authentication」。
+2. **Application User / Eligibility**：`app_user` 把 Auth Identity 對應到 Nook Works，`is_active` 決定這個 Application User 目前是否具有進入 application 的資格。
+3. **Application User Context**：bootstrap 成功後，保存 application-level identity，例如 `app_user_oid`、display identity 與 `user_type`。
 
-Authentication success does not itself mean Application Ready. Experiment B already verified that authenticated identities with no `app_user` mapping or inactive `app_user` do not obtain the tested Application Access. This Shell experiment consumes that established model instead of re-proving its RLS mechanism.
+Authentication success 本身不代表 Application Ready。Experiment B 已經驗證：已 authentication 但沒有 `app_user` mapping，或 `app_user` inactive 的 identity，不會取得當時測試的 Application Access。這次 Shell experiment 直接沿用這個已成立的模型，不重新證明 RLS mechanism。
 
-### `user_type` scope
+### `user_type` 的範圍
 
-Formal schema currently reserves:
+Formal schema 目前預留：
 
 - `admin`
 - `user`
 - `guest`
 
-For this experiment:
+本實驗只處理：
 
-- `admin` — In Scope
-- `user` — In Scope
-- `guest` — **Reserved / Out of Scope**
+- `admin`：In Scope
+- `user`：In Scope
+- `guest`：**Reserved / Out of Scope**
 
-`guest` currently has no concrete Business Use Case. The experiment does not define guest login behavior, navigation, route access, authorization or responsive acceptance merely because the schema reserves the value.
+目前沒有具體的 `guest` Business Use Case。不能只因為 schema 預留了這個值，就順手發明 guest login、navigation、route access、authorization 或 responsive acceptance。預留未來的語意空間，不代表現在就要替不存在的需求繳維護費。
 
-`user_type` is a coarse Application User classification, not Role / RBAC / Permission architecture.
+`user_type` 只是 coarse Application User classification，不是 Role / RBAC / Permission architecture。
 
-## Live demo shape
+## Live Demo 的形狀
 
-The artifact is one small, actually login-capable Nook Works-style application.
+實驗產物是一個小型、但真的可以登入的 Nook Works-style application。
 
 ```text
 Login
@@ -89,11 +89,11 @@ Shell
 Logout
 ```
 
-### Login versus Shell
+### Login 與 Shell 的界線
 
-The Login surface is the Authentication Entry, not the authenticated Shell itself. The Shell becomes Ready only after Auth and Application User bootstrap complete successfully.
+Login surface 是 Authentication Entry，不是 authenticated Shell 本身。只有 Auth 與 Application User bootstrap 都成功後，Shell 才能進入 Ready。
 
-Expected normal transition:
+正常 transition：
 
 ```text
 SIGNED OUT
@@ -105,36 +105,36 @@ SIGNED OUT
 → SHELL READY
 ```
 
-Representative failure outcomes should include no/invalid session, no `app_user`, inactive `app_user`, Application Context load failure, and malformed/unknown context where a bounded deterministic control is safer than manipulating provider state.
+代表性的 failure outcome 應包含：沒有／無效 session、沒有 `app_user`、inactive `app_user`、Application Context load failure，以及 malformed / unknown context。難以安全製造的 provider failure 可以使用 bounded synthetic control，但不能拿 synthetic flow 取代正常真實流程。
 
-## User fixture
+## User Fixture
 
-Use two real experiment users for the normal trunk:
+正常流程使用兩個真正的 experiment user：
 
 | Application User | `user_type` | Business Function | Common Function |
 | --- | --- | :---: | :---: |
-| Claire | `admin` | Visible / usable | Visible / usable |
-| Test User | `user` | Visible / usable | Hidden from Navigation |
+| Claire | `admin` | 可見 / 可使用 | 可見 / 可使用 |
+| Test User | `user` | 可見 / 可使用 | Navigation 隱藏 |
 
-No guest account is required.
+不需要建立 guest account。
 
-## Routes and Features
+## Routes 與 Features
 
-Use three stable content routes:
+使用三個穩定 content route：
 
-- `/home` — Shell landing content only; shows enough Application User Context to make successful bootstrap observable.
-- `/business` — minimal Business Function.
-- `/common` — minimal Common / Control Function.
+- `/home`：只有 Shell landing content，顯示足夠的 Application User Context，讓成功 bootstrap 可以被觀察。
+- `/business`：最小 Business Function。
+- `/common`：最小 Common / Control Function。
 
-Only `/business` and `/common` count as Feature pages. `/home` must not grow into a dashboard merely because empty space offends human instincts.
+只有 `/business` 與 `/common` 算 Feature page。`/home` 不要因為畫面有空白就開始長成 dashboard，人類看到空白就想塞東西的本能這次先忍住。
 
 ### Business Function
 
-Both `admin` and `user` can enter.
+`admin` 與 `user` 都可以進入。
 
-It should perform a real read through an already-verified application data mechanism, preferably Native Data API SELECT against an appropriate safe Business-domain source, then render the returned data in a deliberately simple presentation.
+Feature 必須透過已驗證的 application data mechanism 做一次真正的 read。優先考慮對適合且安全的 Business-domain source 使用 Native Data API SELECT，再用刻意簡單的方式把資料 render 出來。
 
-Purpose:
+目的：
 
 ```text
 Authenticated Application
@@ -145,24 +145,24 @@ Authenticated Application
 → Rendered Result
 ```
 
-This does **not** re-test Native CRUD. Experiment B already verified Browser → Auth Session → Native Data API → Grant / RLS → Application Access → CRUD on iPad Safari.
+這不是重新測 Native CRUD。Experiment B 已經在 iPad Safari 驗證 Browser → Auth Session → Native Data API → Grant / RLS → Application Access → CRUD。
 
 ### Common Function
 
-`admin` sees and can enter the Common Feature. `user` does not receive the Navigation entry.
+`admin` 看得到也能進入 Common Feature；`user` 不取得這個 Navigation entry。
 
-The Feature should also retrieve real data. If a safe existing Custom API can be reused without expanding scope, using a different already-verified access mechanism here is valuable because it demonstrates that the Shell is neutral to Feature data-access implementation:
+這個 Feature 也必須讀取真正資料。如果有安全、既存而且不會擴張 scope 的 Custom API 可以直接重用，讓 Common Feature 使用不同的既有 data-access mechanism 會很有價值，因為它能證明 Shell 不應依賴 Feature 底下究竟採用哪種 data-access implementation：
 
 ```text
 Business Feature → Native Data API
-Common Feature   → Custom API (preferred only if safe/reusable)
+Common Feature   → Custom API（只有安全且可直接重用時才優先）
 ```
 
-If Custom API reuse would require substantial new backend work, use a simple real read instead. Custom API capability itself is already verified by C-DB-1 / C-EXT-1 and must not be re-proven for ceremony.
+如果為了 Custom API symmetry 反而需要新增一堆 backend work，就不要做。C-DB-1 / C-EXT-1 已經驗證 Custom API capability，沒必要為了儀式感再證明一次。
 
-## Visibility, route handling and authorization boundary
+## Visibility、Route Handling 與 Authorization Boundary
 
-The experiment deliberately distinguishes:
+實驗必須明確區分：
 
 ```text
 Navigation Visibility
@@ -171,113 +171,113 @@ Navigation Visibility
 ≠ Authoritative Backend Authorization
 ```
 
-For the Test User, `/common` is hidden from Navigation. A direct URL attempt to `/common` must still have a deterministic Shell outcome so the experiment can observe route responsibility.
+Test User 的 `/common` 不顯示在 Navigation，但仍要直接輸入 `/common` URL，觀察 Shell 對 route responsibility 的 deterministic outcome。
 
-The experiment must **not** invent a production authorization mechanism, fake a backend `403`, or claim that hidden Navigation protects Common data. If formal backend authorization does not yet enforce `user_type=user → Common data denied`, that remains an input to the separate Authorization / Error Contract design queue.
+實驗**不能**因此發明 production authorization mechanism、假裝 backend 回了 `403`，也不能把「Navigation 看不到」寫成 Common data 已經受到保護。如果正式 backend authorization 尚未 enforce `user_type=user → Common data denied`，這仍屬於後續 Authorization / Error Contract design queue。
 
-## Evidence phases
+## Evidence Phases
 
-One disposable Shell artifact, three evidence phases.
+只做一個 disposable Shell artifact，分三個 Evidence Phase 觀察，不要做三套程式。
 
-### Phase A — Bootstrap / Application Context
+### Phase A：Bootstrap / Application Context
 
-Verify the application lifecycle around real Auth and real Application User integration.
+驗證真正 Auth 與 Application User integration 周圍的 application lifecycle。
 
-Evidence should cover:
+Evidence 應涵蓋：
 
-- Signed-out entry.
-- Real login.
-- Auth Identity → `app_user` mapping.
-- `is_active` eligibility.
-- `user_type` / Application User Context establishment.
-- Claire / `admin` Ready state.
-- Test User / `user` Ready state.
-- authenticated-but-no-`app_user` outcome.
-- inactive `app_user` outcome.
-- representative invalid-session / context-load failure outcome.
-- sign-out / invalidation clearing identity-derived state and privileged Shell UI.
-- no redirect / retry loop.
+- Signed-out entry。
+- 真正 login。
+- Auth Identity → `app_user` mapping。
+- `is_active` eligibility。
+- `user_type` / Application User Context establishment。
+- Claire / `admin` Ready state。
+- Test User / `user` Ready state。
+- authenticated 但沒有 `app_user` 的 outcome。
+- inactive `app_user` outcome。
+- 代表性的 invalid-session / context-load failure outcome。
+- sign-out / invalidation 後，identity-derived state 與 privileged Shell UI 必須被清掉。
+- 不得產生 redirect / retry loop。
 
-Synthetic controls are allowed only for difficult failure states; they must not replace the real normal trunk.
+只有難以安全製造的 failure state 可以使用 synthetic control；正常流程必須是真的。
 
-### Phase B — Feature Composition / Navigation / Route
+### Phase B：Feature Composition / Navigation / Route
 
-Verify that the established Application Context can drive coarse Feature Entry and real Feature data retrieval.
+驗證已建立的 Application Context 能不能驅動 coarse Feature Entry，並讓 Feature 完成真正的 data retrieval。
 
-Evidence should cover:
+Evidence 應涵蓋：
 
-- `admin`: Business visible and usable; Common visible and usable.
-- `user`: Business visible and usable; Common Navigation entry hidden.
-- Business Feature obtains and renders real data.
-- Common Feature obtains and renders real data for the in-scope admin path.
-- direct `/common` attempt as `user` has a deterministic Shell outcome.
-- direct/deep link preserves requested route through bootstrap.
-- refresh preserves meaningful route semantics.
-- Back / Forward behaves as browser route history rather than spawning broken bootstrap instances.
-- unknown route has a recoverable deterministic outcome.
-- Feature data/error state remains Feature-owned rather than leaking into global Shell state.
+- `admin`：Business 可見且可用；Common 可見且可用。
+- `user`：Business 可見且可用；Common Navigation entry 隱藏。
+- Business Feature 取得並 render 真正資料。
+- Common Feature 在 in-scope admin path 取得並 render 真正資料。
+- `user` 直接輸入 `/common` 時有 deterministic Shell outcome。
+- direct / deep link 經過 bootstrap 後仍保留 requested route。
+- refresh 後仍保有合理 route semantics。
+- Back / Forward 應表現成 browser route history，而不是製造壞掉的 bootstrap instance。
+- unknown route 有可恢復、可預期的 outcome。
+- Feature data / error state 仍由 Feature 自己負責，不外洩成 global Shell state。
 
-### Phase C — iPad-first Responsive / Browser Interaction
+### Phase C：iPad-first Responsive / Browser Interaction
 
-Reuse the same stabilized application; do not add Business behavior here.
+沿用同一個已穩定的 application，不在這一階段增加 Business behavior。
 
-Primary observations:
+主要觀察：
 
-- iPad landscape.
-- iPad portrait.
-- iPhone narrow viewport.
-- desktop width sanity check.
-- iPad Split View exploratory observation only unless it exposes a blocker.
+- iPad landscape。
+- iPad portrait。
+- iPhone narrow viewport。
+- desktop width sanity check。
+- iPad Split View 只做 exploratory observation，除非真的暴露 blocker。
 
-Human-visible checks should include touch navigation, menu open/close, orientation transition, refresh, Back / Forward, sign-out, loading/error presentation, no necessary horizontal page overflow, no trapped overlay, and no stale privileged content.
+Human-visible check 應包含 touch navigation、menu open / close、orientation transition、refresh、Back / Forward、sign-out、loading / error presentation、沒有必要的 horizontal page overflow、沒有 trapped overlay，也不能殘留 stale privileged content。
 
-Use `admin` as the maximum Navigation Set and `user` as the reduced Navigation Set. Do not create a guest scenario just to manufacture a third responsive matrix row.
+使用 `admin` 作為最大 Navigation Set，`user` 作為縮減後的 Navigation Set。不要為了湊第三列 responsive matrix 去發明 guest scenario。
 
-Real-device and emulated evidence must be labeled honestly.
+Real-device 與 emulated evidence 必須誠實標示，不能拿模擬器冒充 Claire 手上的 iPad。
 
-## Shell responsibility candidate
+## Shell Responsibility Candidate
 
-Keep global Shell ownership intentionally small:
+Shell 的 global responsibility 刻意維持很小：
 
-- Auth/session lifecycle.
-- Application User bootstrap and Application User Context.
-- current route / route resolution.
-- Navigation / Feature Entry visibility.
-- Shell navigation UI state.
-- bootstrap / Shell-level loading and unexpected error state.
-- sign-out and identity-derived state invalidation.
-- browser-safe runtime configuration boundary.
+- Auth / session lifecycle。
+- Application User bootstrap 與 Application User Context。
+- current route / route resolution。
+- Navigation / Feature Entry visibility。
+- Shell navigation UI state。
+- bootstrap / Shell-level loading 與 unexpected error state。
+- sign-out 與 identity-derived state invalidation。
+- browser-safe runtime configuration boundary。
 
-Feature data, CRUD/form state, server result caches, Feature validation and Feature-specific API errors do not belong in Shell global state merely because the Shell contains the Feature.
+Feature data、CRUD / form state、server result cache、Feature validation、Feature-specific API error，不應只因為 Feature 被 Shell 包住，就全部塞進 Shell global state。
 
-## Existing evidence reused rather than repeated
+## 重用既有 Evidence，不重新考古
 
-The Shell experiment should compose, not duplicate, established capability evidence:
+Shell experiment 要做的是 composition，不是重複既有 capability evidence：
 
-- Experiment A — Supabase Auth.
-- Experiment B — Native Data API CRUD / Application Access.
-- Experiment B-1 — Native View Read Model.
-- C-DB-1 — authenticated Browser → Custom API → database-centric path.
-- C-EXT-1 — authenticated Custom API composition / External API orchestration.
+- Experiment A：Supabase Auth。
+- Experiment B：Native Data API CRUD / Application Access。
+- Experiment B-1：Native View Read Model。
+- C-DB-1：authenticated Browser → Custom API → database-centric path。
+- C-EXT-1：authenticated Custom API composition / External API orchestration。
 
-These baselines reduce the amount of backend probing required. New Shell evidence is about the integrated Application Runtime and responsibility boundaries.
+這些 baseline 已經降低這次需要重新 probe backend 的範圍。新的 Shell Evidence 應聚焦 integrated Application Runtime 與 responsibility boundary。
 
-## Stop condition
+## Stop Condition
 
-Stop when the same Live Demo provides enough evidence to answer all of the following:
+當同一個 Live Demo 已經有足夠 Evidence 回答以下問題，就停止實驗：
 
-1. Real login can progress through Auth Identity → `app_user` → eligibility → Application User Context → Shell Ready.
-2. Signed-out, ineligible, failure and sign-out/invalidation outcomes are deterministic and do not leave stale privileged state or loops.
-3. `admin` / `user` coarse Feature Entry visibility behaves deterministically without creating Role / Permission architecture.
-4. Business and Common Feature pages perform real data retrieval and render results, proving a complete Application vertical slice rather than a visual-only shell.
-5. Direct route, deep link, refresh, unknown route and Back / Forward semantics remain coherent.
-6. Hidden Navigation is not presented as Backend Authorization; any missing backend `user_type` authorization remains explicitly open.
-7. The same Shell is usable across primary iPad landscape/portrait and iPhone narrow targets, with desktop sanity evidence.
-8. Runtime Evidence is clearly separated from still-open Platform Design choices.
+1. 真正 login 能完成 Auth Identity → `app_user` → eligibility → Application User Context → Shell Ready。
+2. Signed-out、ineligible、failure 與 sign-out / invalidation outcome 都 deterministic，不留下 stale privileged state，也不形成 loop。
+3. `admin` / `user` 的 coarse Feature Entry visibility 行為明確，而且沒有順手長成 Role / Permission architecture。
+4. Business 與 Common Feature 都能真正取得資料並 render，證明的是完整 Application vertical slice，而不是只有漂亮 Shell 外殼。
+5. Direct route、deep link、refresh、unknown route 與 Back / Forward semantics 保持 coherent。
+6. Hidden Navigation 不被描述成 Backend Authorization；缺少的 backend `user_type` authorization 必須明確保留為 open issue。
+7. 同一個 Shell 在主要 iPad landscape / portrait 與 iPhone narrow target 可用，並留下 desktop sanity evidence。
+8. Runtime Evidence 與仍未決的 Platform Design choice 有清楚界線。
 
-Do not continue merely to make the disposable artifact production-ready.
+達成以上條件就停。不要因為 disposable artifact 已經能跑，就突然開始把它裝修成 production application。
 
-## Explicitly out of scope
+## Explicitly Out of Scope
 
 - production framework selection
 - production router library selection
@@ -290,28 +290,30 @@ Do not continue merely to make the disposable artifact production-ready.
 - Feature CRUD / Form / Table / Dialog maintenance patterns
 - dashboard design
 - PWA / offline behavior
-- multi-tab/session synchronization
+- multi-tab / session synchronization
 - OAuth / passkey expansion
-- exhaustive Safari/device certification
+- exhaustive Safari / device certification
 - full accessibility certification
 - production Session Policy
-- new backend mechanism work solely to make the demo appear more complete
+- 只為了讓 Demo 看起來更完整而新增 backend mechanism
 
-## Open implementation-planning points
+## 尚待 Implementation Planning 決定的項目
 
-Before implementation, choose only the minimum details needed to execute the probe:
+真正開始 implementation 前，只決定足以執行 probe 的最小細節：
 
-- exact safe Business-domain data source for `/business`;
-- exact safe Common-domain data source for `/common`;
-- whether an existing Custom API can be reused for one Feature without scope expansion;
-- exact deterministic route outcome for a `user` direct `/common` attempt;
-- exact visual navigation behavior for iPad portrait versus iPhone narrow;
-- exact evidence capture format and experiment catalog metadata.
+- `/business` 要使用哪個安全的 Business-domain data source。
+- `/common` 要使用哪個安全的 Common-domain data source。
+- 是否有既存 Custom API 可以讓其中一個 Feature 直接重用，而且不擴張 scope。
+- `user` 直接輸入 `/common` 時，Shell 應採用哪個 deterministic route outcome。
+- iPad portrait 與 iPhone narrow 的實際 visual navigation behavior。
+- Evidence capture format 與 experiment catalog metadata。
 
-These are implementation-planning choices unless they expose a Business / Platform decision that requires Claire + Primary judgment.
+除非其中某項暴露出 Business / Platform decision，否則這些都只是 implementation-planning choice，不需要偷偷升格成架構憲法。
 
-## Current judgment
+## Current Judgment
 
-The preferred experiment is a **single disposable-but-realistic Nook Works Shell Live Demo with three evidence phases**. The normal path is real: Supabase Auth, `app_user`, Application Context, Shell, Feature entry, data retrieval and rendered result. Synthetic controls are reserved for difficult failure states only.
+目前偏好的實驗形式是：**一個 disposable-but-realistic 的 Nook Works Shell Live Demo，搭配三個 Evidence Phase**。
 
-The experiment exists to verify composition and responsibility boundaries. It does not promote its router, CSS, state mechanism, menu implementation or data-access choice into a Platform Rule merely because the demo works.
+正常路徑全部是真的：Supabase Auth、`app_user`、Application Context、Shell、Feature Entry、data retrieval、rendered result。Synthetic control 只保留給難以安全製造的 failure state。
+
+這個實驗要驗證的是 composition 與 responsibility boundary。不能只因為 Demo 跑得動，就把其中採用的 router、CSS、state mechanism、menu implementation 或 data-access choice 自動升格成 Platform Rule。
