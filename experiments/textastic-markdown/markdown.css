@@ -114,55 +114,56 @@ pre {
 pre code { background: transparent; padding: 0; border: 0; }
 
 /* ----------------------------
-   SQL Syntax Highlighting V1
+   SQL Syntax Highlighting V2
 
    Highlight.js 只負責替明確標記為 SQL 的內容加上 .hljs-* token。
    顏色由我們自己的森林系主題控制，不載入第三方 theme。
 
-   V1.1 視覺調整：提高 token 明度與層級差，但維持低飽和森林色。
-   目標是「容易掃讀」，不是把 SQL 變成 RGB 電競鍵盤。
+   V2 不再只靠同色系明度差，而是用清楚但低刺激的色相建立語義層級：
+   keyword = 森林亮綠、string/literal = 暖金黃、number = 杏橘、
+   其餘 identifier 保持接近暖白，讓眼睛能在掃讀時直接辨認角色。
    ---------------------------- */
 pre code.hljs {
-    color: #edf1ee;
+    color: #f0f2ef;
 }
 
-/* SQL keyword：主視覺層。嫩森林綠，提高明度但避免螢光感。 */
+/* SQL keyword：提高綠色飽和度與亮度，成為最容易掃到的結構層。 */
 .hljs-keyword,
 .hljs-selector-tag {
-    color: #b9dfc8;
+    color: #9fe0b6;
     font-weight: 700;
 }
 
-/* SQL 字串與字面值：使用溫暖米黃色，和綠色 keyword 拉開色相。 */
+/* SQL 字串與 literal：改用明確暖金黃，避免和暖白 identifier 混在一起。 */
 .hljs-string,
 .hljs-literal {
-    color: #ead7a8;
+    color: #f2cf72;
 }
 
-/* 數字：淡鼠尾草綠，清楚但不搶 keyword。 */
+/* 數字：獨立使用杏橘色，和 keyword 綠、string 金黃形成第三個語義層。 */
 .hljs-number {
-    color: #c9ddbd;
+    color: #f0aa72;
 }
 
-/* 註解刻意後退，但比上一版稍亮，避免深底上糊掉。 */
+/* 註解維持灰綠並退居背景，但仍保留足夠可讀性。 */
 .hljs-comment {
-    color: #9caaa4;
+    color: #9aa9a2;
     font-style: italic;
 }
 
-/* Built-in / function / type：偏淡青綠，和 keyword 建立第二層差異。 */
+/* Built-in / function / type：使用淡青綠，與主要 keyword 綠保持距離。 */
 .hljs-built_in,
 .hljs-function,
 .hljs-type,
 .hljs-title {
-    color: #b9d8d0;
+    color: #a9d8d0;
 }
 
-/* 變數、attribute、symbol：接近暖白，只留下很淡的森林色。 */
+/* 變數、attribute、symbol：接近暖白，避免所有 token 都搶著發光。 */
 .hljs-variable,
 .hljs-attr,
 .hljs-symbol {
-    color: #d7e5de;
+    color: #dce8e1;
 }
 
 blockquote {
