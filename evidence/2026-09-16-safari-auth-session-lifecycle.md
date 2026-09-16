@@ -141,7 +141,7 @@ session=null
 
 ## PR #40 Interpretation Boundary
 
-Current Application Shell implementation 在 manual logout path 曾存在 correctness defect：未檢查 `supabase.auth.signOut()` returned error，UI 會無條件進入 signed-out/Login state。PR #40 對此加入 explicit current-session/local logout semantics 與 error handling。
+PR #40 已 merge，並通過 Primary Agent Technical QC。它修正 Current Application Shell manual logout path 的 correctness defect：明確採 current-session/local logout semantics、檢查 `supabase.auth.signOut()` returned error，且 provider failure 不再被 UI 偽裝成成功的 signed-out/Login state。
 
 然而目前不能宣稱 PR #40 已找到 historical Session restoration 的 root cause，理由包括：
 
@@ -149,30 +149,84 @@ Current Application Shell implementation 在 manual logout path 曾存在 correc
 2. 本次 controlled Ordinary Safari probe 的 local sign-out 明確 `error=none`，且 Session 持續為 null。
 3. Historical anomaly 尚未在 diagnostic probe 中重現，因此沒有 anomaly 發生當下的 provider/browser lifecycle trace。
 
-因此 PR #40 應被視為 **logout lifecycle correctness / defensive hardening candidate**，而不是已證實的 Safari Session restoration root-cause fix。
+因此 PR #40 應被視為 **logout lifecycle correctness / defensive hardening**，而不是已證實的 Safari Session restoration root-cause fix。
+
+## Deployed S-SHELL-1 Environment Acceptance
+
+PR #40 merge/deploy 後，Claire 在原本 Production Live Demo（不是 Deploy Preview）使用 iPad Ordinary Safari 執行兩條 browser flow。
+
+### Flow A — Explicit Logout
+
+```text
+Playground Home
+→ Shell Live Demo
+→ Login
+→ authenticated Shell
+→ explicit Shell Logout
+→ Login surface
+→ Playground Home
+→ Shell Live Demo
+→ Login surface
+```
+
+Result: **PASS**。
+
+Explicit Logout 後重新進入 Live Demo 沒有 restore Application Context，符合 current-session logout contract。
+
+### Flow B — Browser Back / Leave Application Without Logout
+
+```text
+Playground Home
+→ Shell Live Demo
+→ Login
+→ authenticated Shell
+→ Safari Back（未執行 Shell Logout）
+→ Playground Home
+→ Shell Live Demo
+→ authenticated Shell restored
+```
+
+Result: **PASS / Expected persisted-session behavior**。
+
+這條 flow 沒有執行 logout。離開 Application、Browser Back、Reload 或之後重新進入 Application，本身不等於 authentication sign-out；只要 persisted Session 仍有效，Shell 應可重新取得 Session 並恢復 Application Context。
+
+這兩條 Environment Evidence 建立清楚 lifecycle boundary：
+
+```text
+Explicit Logout
+→ terminate current Session
+→ re-entry requires Login
+
+Browser Navigation / Leave Application without Logout
+→ Session remains valid
+→ re-entry restores Application Context
+```
+
+因此 browser navigation 不應被實作成隱性 logout trigger；Session lifecycle 與 Navigation lifecycle 應維持分離。
 
 ## Current Judgment
 
 截至本 Evidence checkpoint：
 
-- Ordinary Safari local logout expected lifecycle: **verified in one controlled Claire Environment run**.
-- Historical Session restoration anomaly: **confirmed observation, intermittent**.
+- Ordinary Safari local logout expected lifecycle: **verified in controlled diagnostic probe**.
+- Deployed S-SHELL-1 explicit logout → re-entry: **Claire Environment Acceptance PASS**.
+- Deployed S-SHELL-1 browser Back / leave without logout → re-entry restores valid Session: **PASS / expected behavior**.
+- Session lifecycle and browser Navigation lifecycle are intentionally separate: **supported by current Environment Evidence**.
+- Historical Session restoration anomaly after an explicit logout: **confirmed observation, intermittent**.
 - Private Browsing historical comparison: **logout/re-entry remained signed out in Claire observations**.
-- Controlled Private Browsing probe matrix: **not required for the current Ordinary Safari result; may be added only if future investigation needs stronger symmetric evidence**.
-- Root cause of intermittent restoration: **Unknown**.
+- Root cause of intermittent historical restoration: **Unknown**.
 - Production workaround specific to the anomaly: **None justified by current Evidence**.
-- S-SHELL-1 logout lifecycle final acceptance after PR #40 deployment: **Pending**.
+- PR #40: **Merged / Primary Agent Technical QC PASS / deployed logout Environment Acceptance PASS**.
 
-## Next Checkpoint
+## Re-open Trigger
 
 Do not repeatedly attempt to force the intermittent anomaly without a concrete diagnostic purpose.
 
-Recommended sequence:
+If the historical restoration anomaly appears again after an **explicit Shell Logout**:
 
-1. Preserve PR #41 probe as diagnostic/research artifact and integrate its Environment Evidence into experiment knowledge.
-2. Treat PR #40 on its own correctness merits, not as a proven root-cause fix.
-3. After PR #40 reaches deployed Shell, perform one bounded Claire Environment Acceptance:
-   `Ordinary Safari Login → Logout → leave/re-enter Live Demo → remains Login`.
-4. If the historical restoration anomaly appears again, immediately use the diagnostic probe before changing implementation, and capture the lifecycle trace around the occurrence.
+1. distinguish it from Browser Back / leaving the Application without logout;
+2. immediately use the diagnostic probe before changing implementation;
+3. capture the lifecycle trace around the occurrence;
+4. preserve the observation as new Claire Environment Evidence rather than retroactively changing the current verified logout flow.
 
-The absence of reproduction is not evidence that the historical anomaly never occurred. It only limits the conclusion that can responsibly be drawn from the current run.
+The absence of current reproduction is not evidence that the historical anomaly never occurred. It only limits the conclusion that can responsibly be drawn about its root cause.
