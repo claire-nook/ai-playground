@@ -78,36 +78,89 @@ Transaction owner = layer owning complete Business Operation.
 
 ## Next Major Track A — Application Shell
 
-Application Shell 從一般 UI Pattern 拆出，視為 browser-side composition layer。Menu 有畫面，但它承擔的是 system shell responsibility，不應只因「看得到」就跟 Form / Table aesthetics 塞進同一桶。
+Experiment Card：`experiments/application-shell/README.md`
 
-近期 focused research scope：
+Application Shell 從一般 UI Pattern 拆出，視為 browser-side composition layer。它的研究目的已從通用 Shell Draft 收斂為 **Nook Works Application Runtime 的 integration / composition probe**。
 
-- Application bootstrap。
-- Auth session restore / invalidation / sign-out lifecycle。
-- Application user eligibility context。
-- Navigation / Menu。
-- Route / Page lifecycle 與 deep link。
-- Permission-aware feature entry。
-- Global loading / unexpected error boundary 的 ownership。
-- Browser-safe configuration boundary。
+既有 A / B / B-1 / C-DB-1 / C-EXT-1 已分別驗證 Auth、Native Data API、View Read、authenticated Custom API 與 API composition；Shell 不重新證明這些零件，而是第一次把它們組成一個真的可登入、可進 Feature、可取得資料的微型 Application。
 
-### Minimal experiment intent
+### Current experiment shape
 
-不研究 Menu 長得漂不漂亮，而是驗證 lifecycle：
+一個 disposable-but-realistic Live Demo，三個 Evidence Phase：
 
 ```text
-cold start / deep link
-→ session restore / invalid session
-→ application user eligibility
-→ route resolution
-→ menu / feature visibility
-→ direct route / backend authorization
-→ sign-out / state invalidation
+Login / Session Restore
+→ Supabase Auth Identity
+→ app_user
+→ is_active / Application Eligibility
+→ Application User Context
+→ Route Resolution
+→ Shell Ready
+→ Feature
+→ Data Access
+→ Rendered Result
+→ Sign-out / Invalidation
 ```
 
-Stop condition：上述 state transition 可 deterministic 重現、沒有 redirect loop / stale privileged state，並證明 hidden menu / route guard 不是 backend authorization 的替代品。
+Phase A — Bootstrap / Application Context：
 
-Application Shell 可以與後續 UI exploration 共用 browser artifact，但 Evidence 與 acceptance criteria 應分開。
+- 真實 Supabase Auth normal trunk。
+- 真實 `app_user` mapping / `is_active` / `user_type`。
+- `admin` 與 `user` Application Context。
+- no app_user / inactive app_user / representative invalid-session or context-failure outcome。
+- sign-out / invalidation 不留下 stale privileged state 或 redirect loop。
+
+Phase B — Feature Composition / Navigation / Route：
+
+- `/home`：Shell landing content，不是 Dashboard Feature。
+- `/business`：admin / user 都可見、可用，且必須實際取得並呈現資料。
+- `/common`：admin 可見、可用並實際取得資料；user Navigation hidden。
+- user direct `/common`、deep link、refresh、unknown route、Back / Forward 都有 deterministic Shell outcome。
+- Business Feature 優先使用已驗證 Native Data API；Common Feature 若有安全且可直接重用的既有 Custom API，可刻意使用不同 mechanism 觀察 Shell 是否保持 Feature implementation neutral。不得為了 Demo 完整感擴張 backend scope。
+
+Phase C — iPad-first Responsive / Browser Interaction：
+
+- iPad landscape / portrait primary。
+- iPhone narrow primary responsive target。
+- desktop sanity。
+- iPad Split View exploratory。
+- touch navigation、orientation、refresh、Back / Forward、sign-out、loading/error、overlay/overflow/stale state。
+
+### User scope
+
+本輪只實作兩種 Application User：
+
+- `admin`：Claire；Business + Common Feature。
+- `user`：第二測試使用者；Business Feature，Common Navigation hidden。
+- `guest`：Schema Reserved / Out of Scope。尚無具體 Business Use Case，不替不存在的需求定義 behavior。
+
+### Boundary to preserve
+
+```text
+Authentication Identity
+≠ Application Identity / Eligibility
+≠ Navigation Visibility
+≠ Route Handling / Feature Entry
+≠ Feature Data Access
+≠ Authoritative Backend Authorization
+```
+
+Shell Experiment 不建立 Role / Permission / RBAC，也不為了讓 user 無法讀 Common data 而臨時發明 Production Authorization。這個缺口若仍存在，留在 Authorization / Error Contract design queue。
+
+### Stop condition
+
+當同一 Live Demo 已能在實際 iPad Safari 上證明：
+
+- real login → `app_user` → Application Context → Shell Ready；
+- admin/user coarse Feature Entry deterministic；
+- Business/Common Feature 具真實 data retrieval / render vertical slice；
+- direct route / deep link / refresh / history / unknown route deterministic；
+- sign-out / invalidation 無 stale privileged state；
+- iPad landscape/portrait 與 iPhone narrow Shell interaction usable；
+- hidden Navigation 未被冒充 Backend Authorization；
+- Runtime Evidence 與 Platform Design Candidate 清楚分離；
+
+即停止，不把 disposable Shell 順手養成 Production Application。
 
 ## Next Major Track B — Application UI Maintenance Pattern
 
@@ -129,7 +182,7 @@ Shell 解決「Application 怎麼活著、怎麼進入 Feature」；Feature UI �
 Independent Blind Spot Review 提醒的幾項工作應進 Architecture / Rule design，而不是看到名詞就再養一批實驗：
 
 - **Transaction Pattern Selection**：依 Business Operation owner / atomicity 選 Native Data API、Database-owned RPC 或 Backend-owned Transaction。
-- **Authorization / Error Contract**：區分 provider security semantics 與 Business Operation result semantics。
+- **Authorization / Error Contract**：區分 provider security semantics 與 Business Operation result semantics；Shell 只驗 visibility / route responsibility，不替 backend `user_type` authorization 做決策。
 - **Batch Execution Contract**：logical run ID、business date、idempotency、retry ownership、failure persistence、manual rerun / reconciliation。
 - **Production Identity / Secret / Connection Governance**：restricted DB role、least privilege、secret custody / rotation、Transaction Pooler / connection lifecycle。
 - **Observability Contract**：operation / run correlation、layered status、durable outcome、redaction / retention / alert ownership。
