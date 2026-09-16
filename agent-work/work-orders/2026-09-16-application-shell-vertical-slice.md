@@ -9,11 +9,11 @@
 - **Requested By:** Primary Agent / Claire
 - **Intended Executor:** Codex Implementation Agent
 - **Target Repository:** `claire-nook/ai-playground`
-- **Source Baseline:** GitHub-visible `shell-implementation-prep` checkpoint prepared by Primary Agent; use the latest commit visible on that branch when the Task is created.
+- **Source Baseline:** GitHub-visible `main` checkpoint prepared by Primary Agent; use the exact baseline SHA supplied in the Dispatch Handoff when the Task is created.
 - **Related Phase:** S-SHELL-1 Phase A / B / C
 - **Related Experiment / Research:** `experiments/application-shell/README.md`
 - **Related Specification:** `experiments/application-shell/feature-integration-contract.md`; `experiments/application-shell/synthetic-platform-metadata.md`; `experiments/application-shell/synthetic-platform-metadata.sql`
-- **Related Evidence / Report:** `agent-work/reviews/application-shell-implementation-readiness-review.md`
+- **Related Evidence / Report:** `agent-work/work-orders/2026-09-16-application-shell-implementation-readiness-review.md`
 - **Related PR / Issue:** None
 - **Supersedes:** None
 
@@ -49,7 +49,7 @@ Feature classification 與 data source 不綁定。Business/Common 定義的是 
 5. `experiments/application-shell/README.md`
 6. `experiments/application-shell/feature-integration-contract.md`
 7. `experiments/application-shell/synthetic-platform-metadata.md`
-8. `agent-work/reviews/application-shell-implementation-readiness-review.md`
+8. `agent-work/work-orders/2026-09-16-application-shell-implementation-readiness-review.md`
 
 只有在需要確認既有 implementation pattern 時，再讀：
 
