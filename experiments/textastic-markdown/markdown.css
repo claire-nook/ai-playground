@@ -289,8 +289,14 @@ kbd {
 body > h1:first-child { margin-top: 0.6rem; }
 
 /* ----------------------------
-   特殊文件：人工換頁
-   Markdown 使用 <!-- pagebreak -->，markdown_head.html 會將它轉成此節點。
+   Opt-in 人工換頁
+
+   預設世界：沒有 <!-- pagebreak --> 時，這些規則完全沒有作用，
+   Preview 與 Print pagination 都維持原本行為。
+
+   特殊世界：只有 Markdown 明確加入 <!-- pagebreak --> 時，
+   markdown_head.html 才建立 .page-break；該位置強制開始新頁，
+   其餘位置仍由 WebKit / iPadOS Print 自然分頁。
    ---------------------------- */
 .page-break {
     position: relative;
@@ -313,11 +319,13 @@ body > h1:first-child { margin-top: 0.6rem; }
     letter-spacing: 0.08em;
 }
 
-/* Print 時隱藏 Preview 提示線，只保留真正的強制換頁。 */
+/* Print 只對實際存在的人工 marker 強制換頁；不接管其他自然分頁。 */
 @media print {
     .page-break {
+        display: block;
         height: 0;
         margin: 0;
+        padding: 0;
         border: 0;
         break-before: page;
         page-break-before: always;
@@ -325,5 +333,6 @@ body > h1:first-child { margin-top: 0.6rem; }
 
     .page-break::after {
         display: none;
+        content: none;
     }
 }
