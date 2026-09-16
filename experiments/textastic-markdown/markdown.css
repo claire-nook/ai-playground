@@ -119,47 +119,54 @@ pre code { background: transparent; padding: 0; border: 0; }
    Highlight.js 只負責替明確標記為 SQL 的內容加上 .hljs-* token。
    顏色由我們自己的森林系主題控制，不載入第三方 theme。
 
-   V2 不再只靠同色系明度差，而是用清楚但低刺激的色相建立語義層級：
-   keyword = 森林亮綠、string/literal = 暖金黃、number = 杏橘、
-   其餘 identifier 保持接近暖白，讓眼睛能在掃讀時直接辨認角色。
+   V2 使用色相與字重共同建立語義層級：
+   keyword = 森林亮綠 + 粗體、type = 青綠、function = 霧藍、
+   string/literal = 暖金黃、number = 杏橘、identifier = 暖白。
+   粗體只保留給 keyword / constraint，避免所有 token 同時搶視線。
    ---------------------------- */
 pre code.hljs {
     color: #f0f2ef;
 }
 
-/* SQL keyword：提高綠色飽和度與亮度，成為最容易掃到的結構層。 */
+/* SQL keyword / constraint：唯一使用粗體的主結構層。 */
 .hljs-keyword,
 .hljs-selector-tag {
     color: #9fe0b6;
     font-weight: 700;
 }
 
-/* SQL 字串與 literal：改用明確暖金黃，避免和暖白 identifier 混在一起。 */
+/* SQL 字串與 literal：暖金黃，與 identifier、number 清楚分離。 */
 .hljs-string,
 .hljs-literal {
     color: #f2cf72;
 }
 
-/* 數字：獨立使用杏橘色，和 keyword 綠、string 金黃形成第三個語義層。 */
+/* 數字：杏橘色，形成獨立的數值層。 */
 .hljs-number {
     color: #f0aa72;
 }
 
-/* 註解維持灰綠並退居背景，但仍保留足夠可讀性。 */
+/* 註解退居背景，但維持足夠可讀性。 */
 .hljs-comment {
     color: #9aa9a2;
     font-style: italic;
 }
 
-/* Built-in / function / type：使用淡青綠，與主要 keyword 綠保持距離。 */
-.hljs-built_in,
-.hljs-function,
+/* SQL data type：提高青綠辨識度，但不使用粗體。 */
 .hljs-type,
-.hljs-title {
-    color: #a9d8d0;
+.hljs-built_in {
+    color: #79d3c2;
+    font-weight: 400;
 }
 
-/* 變數、attribute、symbol：接近暖白，避免所有 token 都搶著發光。 */
+/* Function / callable name：獨立成柔和霧藍，避免與 SQL keyword 混成同一類。 */
+.hljs-function,
+.hljs-title {
+    color: #91bfe3;
+    font-weight: 400;
+}
+
+/* 變數、attribute、symbol：接近暖白，不與語法角色競爭。 */
 .hljs-variable,
 .hljs-attr,
 .hljs-symbol {
