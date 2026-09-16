@@ -7,13 +7,13 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" />
 
 <!-- Highlight.js：使用官方 cdn-release 的 browser build。
-     只主動處理我們技術文件實際會使用的語言，不啟用 auto-detect。 -->
+     只主動處理技術文件實際會使用的語言，不啟用 auto-detect。 -->
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.12.0/build/highlight.min.js"></script>
 
 <!-- Mermaid：讓 ```mermaid code block 變流程圖 -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 <script>
-  // 技術文件實用白名單。Alias 會正規化成 Highlight.js 的 canonical language name。
+  // 技術文件實用白名單。Alias 會正規化成 Highlight.js canonical language name。
   var supportedFenceLanguages = {
     sql: 'sql',
     json: 'json',
@@ -70,92 +70,6 @@
     }
 
     return '';
-  }
-
-  // T-TXT-2 診斷探針：只有測試文件放入 <!-- sql-highlight-debug --> 時才顯示。
-  function hasSqlHighlightDebugMarker(root) {
-    if (!root || !document.createTreeWalker) return false;
-
-    var walker = document.createTreeWalker(
-      root,
-      NodeFilter.SHOW_COMMENT,
-      null,
-      false
-    );
-
-    var node;
-    while ((node = walker.nextNode())) {
-      if (
-        node.nodeValue &&
-        node.nodeValue.trim().toLowerCase() === 'sql-highlight-debug'
-      ) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  function describeCodeBlock(code, index) {
-    var pre = code ? code.parentElement : null;
-    var codeAttrs = code
-      ? Array.prototype.map.call(code.attributes, function (attr) {
-          return attr.name + '=' + JSON.stringify(attr.value);
-        }).join(', ')
-      : '';
-    var preAttrs = pre
-      ? Array.prototype.map.call(pre.attributes, function (attr) {
-          return attr.name + '=' + JSON.stringify(attr.value);
-        }).join(', ')
-      : '';
-
-    return [
-      'block[' + index + ']',
-      '  detectedLanguage: ' + (getFenceLanguage(code) || '(none)'),
-      '  code.className: ' + (code.className || '(empty)'),
-      '  pre.className: ' + ((pre && pre.className) || '(empty)'),
-      '  code.attributes: ' + (codeAttrs || '(none)'),
-      '  pre.attributes: ' + (preAttrs || '(none)'),
-      '  text-start: ' + JSON.stringify((code.textContent || '').slice(0, 80))
-    ].join('\n');
-  }
-
-  function showSqlHighlightDiagnostics(root) {
-    if (!hasSqlHighlightDebugMarker(root)) return;
-
-    var blocks = root.querySelectorAll('pre > code');
-    var languagesToCheck = ['sql', 'json', 'javascript', 'typescript', 'xml', 'css', 'bash', 'yaml'];
-    var lines = [
-      'T-TXT-2 HIGHLIGHT DEBUG',
-      'hljs loaded: ' + Boolean(window.hljs),
-      'hljs.highlight: ' + Boolean(window.hljs && typeof hljs.highlight === 'function')
-    ];
-
-    languagesToCheck.forEach(function (language) {
-      lines.push(
-        language + ' language registered: ' +
-        Boolean(window.hljs && typeof hljs.getLanguage === 'function' && hljs.getLanguage(language))
-      );
-    });
-
-    lines.push('pre > code count: ' + blocks.length, '');
-
-    blocks.forEach(function (code, index) {
-      lines.push(describeCodeBlock(code, index));
-      lines.push('');
-    });
-
-    var panel = document.createElement('pre');
-    panel.id = 'sql-highlight-debug-panel';
-    panel.textContent = lines.join('\n');
-    panel.style.whiteSpace = 'pre-wrap';
-    panel.style.wordBreak = 'break-word';
-    panel.style.border = '2px solid #8b5e3c';
-    panel.style.background = '#fff8ed';
-    panel.style.color = '#3d3027';
-    panel.style.fontSize = '12px';
-
-    root.insertBefore(panel, root.firstChild);
   }
 
   // Syntax Highlighting：只處理明確標示且列入支援清單的 fenced code block。
@@ -249,8 +163,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    // 診斷先讀原始 renderer 輸出，再進行各種 DOM enhancement。
-    showSqlHighlightDiagnostics(document.body);
     upgradeManualPageBreaksIn(document.body);
     upgradeMermaidIn(document.body);
     upgradeCodeHighlightingIn(document.body);
