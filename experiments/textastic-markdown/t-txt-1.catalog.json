@@ -1,0 +1,20 @@
+{
+  "id": "T-TXT-1",
+  "title": "Textastic Markdown Preview / Manual Print Page Break",
+  "completedDate": "2026-09-16",
+  "recordPath": "experiments/textastic-markdown/README.md",
+  "summary": "在 iPad / Textastic 實機驗證 opt-in Markdown manual page break：預設維持 WebKit / iPadOS Print 原生 automatic pagination；只有出現 <!-- pagebreak --> 時才在該位置強制換頁。提供可直接安裝的 markdown_head.html 與 markdown.css，並保留既有森林綠 Preview theme 與 Mermaid rendering。",
+  "tags": [
+    "iPad-first",
+    "Textastic",
+    "Markdown",
+    "WebKit",
+    "Print / PDF",
+    "Manual Page Break",
+    "Authoring Tooling",
+    "Human Environment Evidence"
+  ],
+  "demoStatus": "none",
+  "verificationStatus": "verified",
+  "flow": "Markdown → Textastic MultiMarkdown / custom preview → optional <!-- pagebreak --> DOM enhancement → Safari / iPadOS Print → native automatic pagination plus explicit manual forced break."
+}
