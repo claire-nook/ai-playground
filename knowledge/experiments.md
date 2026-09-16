@@ -8,6 +8,37 @@
 
 ## 2026-09-16
 
+### S-SHELL-1 — Nook Works Application Shell Integration Probe
+
+- Status: `Verified / Completed`
+- Card: [`../experiments/application-shell/application-shell.catalog.json`](../experiments/application-shell/application-shell.catalog.json)
+- Record: [`../experiments/application-shell/README.md`](../experiments/application-shell/README.md)
+- Consolidated Findings: [`../evidence/s-shell-1-application-shell-findings.md`](../evidence/s-shell-1-application-shell-findings.md)
+- Auth Lifecycle Evidence: [`../evidence/2026-09-16-safari-auth-session-lifecycle.md`](../evidence/2026-09-16-safari-auth-session-lifecycle.md)
+- Live Demo: [`/application-shell/`](/application-shell/)
+- Primary Intent: `Nook Technical Platform / Application Shell Lifecycle & Composition`
+- Tags: `nook-platform`, `application-shell`, `supabase-auth`, `application-user`, `routing`, `session-lifecycle`, `data-api`, `ipad-first`, `rwd`
+
+**Why it existed**
+
+既有 Auth、Application Access、Native Data API、Custom API 與 External API capability 都已各自驗證，但正式 Nook Works 需要的是能把這些能力組成 coherent Application Runtime 的 Shell，而不是一桌互不相識的 Demo。S-SHELL-1 因此只研究 composition/lifecycle，不研究 CRUD、Design System 或 production framework。
+
+**What is verified**
+
+- Auth / persisted Session → active `app_user` → Application User Context → Shell Ready。
+- metadata-driven Navigation / Route / Feature Entry，並驗證 admin/user/guest 不同 coarse classification。
+- Place Native、Place Weather、Place-Country Custom API 三種 real integration shape 可共存於同一 Shell。
+- iPad/iPhone responsive Shell / Navigation / Feature rendering。
+- deep link、reload、same-browser new-tab persisted Session、cross-browser unauthenticated deep link、Back/Forward。
+- Session refresh/invalidation lifecycle 與 explicit current-session Logout；Logout 後 re-entry 要求 Login，單純 Browser Back/leave 不等於 Logout。
+- Navigation Visibility / Route Entry 與 Backend Authorization 保持不同 responsibility。
+
+**What it unlocked**
+
+Application Shell lifecycle 不再是 Platform technical blocking gap。Formal Nook Works 可把 verified Shell contract、portable route/navigation logic 與 implementation lifecycle traps 作 Platform Shell design input，再依正式 repository structure 重構；不要直接把 Playground monolithic `app.js` 當 Production architecture。
+
+下一個 Browser research front 是 Feature UI / Maintenance Interaction：List/Table、query、CRUD/Form、Save/Cancel、Browser History、unsaved changes、query-state restoration 等。
+
 ### T-TXT-1 — Textastic Markdown Preview / Manual Print Page Break
 
 - Status: `Verified / Completed`
@@ -199,12 +230,12 @@ Git source → Deploy Preview → invoke / logs → Production → source delete
 
 ## Current Candidate Experiments
 
-- **Application Shell Lifecycle**：把 Menu / Navigation、Application bootstrap、session context、route / page lifecycle、permission-aware feature entry 與 global loading / error boundary 從一般 UI presentation 拆出；以最小 multi-route probe 驗證 lifecycle，不研究 aesthetics。
-- **Application UI Maintenance Pattern**：在 Shell boundary 之外研究單檔 / 主從維護、List / Detail / Edit、Validation presentation、Toolbar / action hierarchy 與 iPad-first responsive behavior。
+- **Application UI Maintenance Pattern**：研究 List / Detail / Edit、Validation、Toolbar/action hierarchy、Save/Cancel、Browser History、unsaved changes、query-state restoration 與 iPad-first responsive behavior。Application Shell lifecycle 已由 S-SHELL-1 完成，不再列 Candidate。
 - **Pure Compute / Longer-running**：等 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：目前優先視為 Platform Rule / Design；只有 provider semantics 真正成為決策疑義時才補 Experiment。
 - **Batch Retry / Idempotency**：先由 formal Business Specification / Platform Rule 定義 logical run、retry ownership、failure persistence；只有 chosen contract 需要 duplicate / concurrent / timeout-after-commit assurance 時才做 focused experiment。
 - **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
+- **A-SAFARI-LIFECYCLE Re-open**：historical explicit-logout Session restoration 為 intermittent Known Observation；只有 anomaly 再出現且能取得 diagnostic trace 時重開。
 - **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以 API key 額外計費、personal OAuth escrow 或 persistent runner 硬補。
 
 ---
