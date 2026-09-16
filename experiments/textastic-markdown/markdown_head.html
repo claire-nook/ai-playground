@@ -8,6 +8,10 @@
 
 <!-- Mermaid：讓 ```mermaid code block 變流程圖 -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<!-- Highlight.js：V1 只主動處理明確標記為 SQL 的 fenced code block。
+     不呼叫 highlightAll()，避免自動猜測一般 code block 的語言。 -->
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/lib/common.min.js"></script>
 <script>
   // 把 <pre><code class="language-mermaid">...</code></pre>
   // 轉成 <div class="mermaid">...</div> 並交給 Mermaid 繪圖。
@@ -49,6 +53,32 @@
     }
   }
 
+  // SQL Syntax Highlighting V1：只處理作者明確標記為 SQL 的 code block。
+  // 不使用 Highlight.js auto-detect；一般 code block、Mermaid 與其他語言完全不碰。
+  function upgradeSqlHighlightingIn(root) {
+    if (!root || !window.hljs) return;
+
+    var selector =
+      'pre > code.language-sql,' +
+      'pre > code.lang-sql,' +
+      'pre > code.sql';
+
+    var blocks = root.querySelectorAll(selector);
+    if (!blocks.length) return;
+
+    blocks.forEach(function (code) {
+      // 防止同一個 Preview lifecycle 中重複處理。
+      if (code.dataset.sqlHighlighted === 'true') return;
+
+      try {
+        hljs.highlightElement(code);
+        code.dataset.sqlHighlighted = 'true';
+      } catch (e) {
+        console.log('SQL highlight error:', e);
+      }
+    });
+  }
+
   // Opt-in 人工換頁：只有 Markdown 明確寫入 <!-- pagebreak --> 時才介入。
   // 沒有 marker 的文件不建立任何 page-break DOM，維持原本的 Preview / Print 世界。
   // 有 marker 時，也只要求該位置強制換頁；其他頁面仍交由 WebKit / iPadOS 自然分頁。
@@ -85,5 +115,6 @@
   document.addEventListener('DOMContentLoaded', function () {
     upgradeManualPageBreaksIn(document.body);
     upgradeMermaidIn(document.body);
+    upgradeSqlHighlightingIn(document.body);
   });
 </script>
