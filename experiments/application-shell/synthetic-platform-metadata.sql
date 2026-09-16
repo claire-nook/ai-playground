@@ -10,6 +10,8 @@
 --   2. random table name 不代表未來 Production schema naming。
 --   3. 本 probe 刻意省略 standard audit columns。
 --   4. logical references 不建立 FK；本次不研究 referential enforcement。
+--   5. Browser access contract 是 authenticated SELECT only，並以
+--      private.can_access_application() 作為 RLS Application Access gate。
 
 -- ============================================================
 -- Concept A: Routable Application Feature Registry
@@ -70,6 +72,44 @@ CREATE TABLE public.test_r5n9c1 (
 );
 
 -- ============================================================
+-- Browser Access Contract
+--
+-- 本 probe 讓已通過 Application Access gate 的 authenticated browser
+-- 直接 SELECT synthetic metadata。這只支援 Shell composition experiment，
+-- 不代表 Feature Entry 或 Backend Authorization 已由 metadata policy 完成。
+-- ============================================================
+
+ALTER TABLE public.test_k4p7x2 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.test_m8q3v6 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.test_r5n9c1 ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE public.test_k4p7x2 FROM anon, authenticated;
+REVOKE ALL ON TABLE public.test_m8q3v6 FROM anon, authenticated;
+REVOKE ALL ON TABLE public.test_r5n9c1 FROM anon, authenticated;
+
+GRANT SELECT ON TABLE public.test_k4p7x2 TO authenticated;
+GRANT SELECT ON TABLE public.test_m8q3v6 TO authenticated;
+GRANT SELECT ON TABLE public.test_r5n9c1 TO authenticated;
+
+CREATE POLICY test_k4p7x2_select_active_user
+ON public.test_k4p7x2
+FOR SELECT
+TO authenticated
+USING (private.can_access_application());
+
+CREATE POLICY test_m8q3v6_select_active_user
+ON public.test_m8q3v6
+FOR SELECT
+TO authenticated
+USING (private.can_access_application());
+
+CREATE POLICY test_r5n9c1_select_active_user
+ON public.test_r5n9c1
+FOR SELECT
+TO authenticated
+USING (private.can_access_application());
+
+-- ============================================================
 -- Seed: Feature Registry
 -- ============================================================
 
@@ -80,112 +120,50 @@ INSERT INTO public.test_k4p7x2 (
     feature_type
 )
 VALUES
-    (
-        'FUNC_BUSINESS',
-        'Business Function',
-        '/business',
-        'business'
-    ),
-    (
-        'FUNC_COMMON',
-        'Common Function',
-        '/common',
-        'common'
-    );
+    ('FUNC_BUSINESS', 'Business Function', '/business', 'business'),
+    ('FUNC_COMMON', 'Common Function', '/common', 'common');
 
 -- ============================================================
 -- Seed: Navigation Definition
---
 -- 使用 subquery 取得 logical reference，避免依賴 identity 實際數值。
 -- ============================================================
 
-INSERT INTO public.test_m8q3v6 (
-    menu_code,
-    menu_name,
-    parent_menu_oid,
-    feature_oid,
-    sort_order
-)
+INSERT INTO public.test_m8q3v6 (menu_code, menu_name, parent_menu_oid, feature_oid, sort_order)
 VALUES
-    (
-        'GROUP_BUSINESS',
-        'Business',
-        NULL,
-        NULL,
-        10
-    ),
-    (
-        'GROUP_COMMON',
-        'Common',
-        NULL,
-        NULL,
-        20
-    );
+    ('GROUP_BUSINESS', 'Business', NULL, NULL, 10),
+    ('GROUP_COMMON', 'Common', NULL, NULL, 20);
 
-INSERT INTO public.test_m8q3v6 (
-    menu_code,
-    menu_name,
-    parent_menu_oid,
-    feature_oid,
-    sort_order
-)
+INSERT INTO public.test_m8q3v6 (menu_code, menu_name, parent_menu_oid, feature_oid, sort_order)
 VALUES
     (
         'MENU_FUNC_BUSINESS',
         'Business Function',
-        (
-            SELECT oid
-            FROM public.test_m8q3v6
-            WHERE menu_code = 'GROUP_BUSINESS'
-        ),
-        (
-            SELECT oid
-            FROM public.test_k4p7x2
-            WHERE feature_code = 'FUNC_BUSINESS'
-        ),
+        (SELECT oid FROM public.test_m8q3v6 WHERE menu_code = 'GROUP_BUSINESS'),
+        (SELECT oid FROM public.test_k4p7x2 WHERE feature_code = 'FUNC_BUSINESS'),
         10
     ),
     (
         'MENU_FUNC_COMMON',
         'Common Function',
-        (
-            SELECT oid
-            FROM public.test_m8q3v6
-            WHERE menu_code = 'GROUP_COMMON'
-        ),
-        (
-            SELECT oid
-            FROM public.test_k4p7x2
-            WHERE feature_code = 'FUNC_COMMON'
-        ),
+        (SELECT oid FROM public.test_m8q3v6 WHERE menu_code = 'GROUP_COMMON'),
+        (SELECT oid FROM public.test_k4p7x2 WHERE feature_code = 'FUNC_COMMON'),
         10
     );
 
 -- ============================================================
 -- Seed: user_type → Feature Entry Mapping
---
 -- admin → Business + Common
 -- user  → Business
 -- guest → no Feature mapping; Shell Home remains available.
 -- ============================================================
 
-INSERT INTO public.test_r5n9c1 (
-    user_type,
-    feature_oid
-)
-SELECT
-    'admin',
-    oid
+INSERT INTO public.test_r5n9c1 (user_type, feature_oid)
+SELECT 'admin', oid
 FROM public.test_k4p7x2
 WHERE feature_code IN ('FUNC_BUSINESS', 'FUNC_COMMON');
 
-INSERT INTO public.test_r5n9c1 (
-    user_type,
-    feature_oid
-)
-SELECT
-    'user',
-    oid
+INSERT INTO public.test_r5n9c1 (user_type, feature_oid)
+SELECT 'user', oid
 FROM public.test_k4p7x2
 WHERE feature_code = 'FUNC_BUSINESS';
 
@@ -195,12 +173,10 @@ WHERE feature_code = 'FUNC_BUSINESS';
 -- Inspection Queries
 -- ============================================================
 
--- Feature Registry
 SELECT *
 FROM public.test_k4p7x2
 ORDER BY oid;
 
--- Navigation Definition with resolved Feature Entry Route
 SELECT
     m.oid,
     m.menu_code,
@@ -219,7 +195,6 @@ ORDER BY
     m.sort_order,
     m.oid;
 
--- Allowed Feature Set by user_type
 SELECT
     x.user_type,
     f.feature_code,
