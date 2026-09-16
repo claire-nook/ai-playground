@@ -12,7 +12,7 @@ const verificationStatuses = new Set(["verified", "partial", "candidate"]);
 const outputTypes = new Set(["experiment", "commentary", "technical-note", "knowledge"]);
 const researchMethods = new Set(["controlled-experiment", "field-verification", "analysis", "synthesis"]);
 
-// Recursive discovery keeps catalog metadata beside the research output that owns it.
+// 遞迴尋找 Catalog metadata，讓 metadata 留在所屬 Research Output 旁邊，而不是另外維護一份中央清單。
 async function findCatalogFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const nestedFiles = await Promise.all(entries.map(async (entry) => {
@@ -23,7 +23,7 @@ async function findCatalogFiles(directory) {
   return nestedFiles.flat();
 }
 
-// Validation fails the deploy rather than publishing ambiguous research metadata.
+// Catalog metadata 若有歧義就直接讓 deploy 失敗，避免網站發布一份表面可讀、實際語意不可靠的研究索引。
 function validateCatalogEntry(entry, sourcePath) {
   if (!entry || typeof entry !== "object" || Array.isArray(entry)) throw new Error(`${sourcePath}: metadata must be a JSON object`);
   for (const field of requiredStringFields) {
@@ -41,8 +41,8 @@ function validateCatalogEntry(entry, sourcePath) {
   if (!demoStatuses.has(entry.demoStatus)) throw new Error(`${sourcePath}: invalid demoStatus`);
   if (!verificationStatuses.has(entry.verificationStatus)) throw new Error(`${sourcePath}: invalid verificationStatus`);
 
-  // Candidate research may be cataloged before it is completed. A completion date becomes mandatory
-  // once the output advances beyond candidate, while candidate cards may explicitly use null.
+  // Candidate 代表目前已正式開啟、但尚未完成的研究，因此 completedDate 可以是 null 或省略。
+  // 一旦研究進入 partial / verified，就必須留下真實完成日期，不能用假日期滿足 Catalog validation。
   if (entry.verificationStatus === "candidate") {
     if (entry.completedDate !== null && entry.completedDate !== undefined) {
       throw new Error(`${sourcePath}: candidate completedDate must be null or omitted`);
@@ -82,8 +82,8 @@ for (const entry of catalog) {
   ids.add(entry.id);
 }
 
-// Candidate cards represent the active research front, so keep them ahead of completed outputs.
-// Completed/partial outputs then follow normal reverse completion chronology.
+// Candidate 是目前的 active research front，因此優先顯示在 Catalog。
+// 其他已完成／部分完成的 Research Output 再依 completedDate 倒序排列；不要把 null completedDate 當成最舊日期處理。
 catalog.sort((left, right) => {
   const leftCandidate = left.verificationStatus === "candidate";
   const rightCandidate = right.verificationStatus === "candidate";
@@ -97,6 +97,6 @@ catalog.sort((left, right) => {
 await mkdir(path.dirname(outputPath), { recursive: true });
 const payload = `${JSON.stringify(catalog, null, 2)}\n`;
 await writeFile(outputPath, payload, "utf8");
-// Compatibility artifact: existing result readers and old cached pages keep working during migration.
+// 相容性輸出：舊版 result reader 與既有 cache 在 migration 期間仍可繼續使用。
 await writeFile(legacyOutputPath, payload, "utf8");
 console.log(`Generated ${path.relative(root, outputPath)} with ${catalog.length} research outputs.`);
