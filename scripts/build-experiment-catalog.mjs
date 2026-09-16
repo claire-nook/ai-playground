@@ -82,9 +82,13 @@ for (const entry of catalog) {
   ids.add(entry.id);
 }
 
-// Completed outputs are ordered by research chronology. Candidate cards without a completion date
-// stay after dated outputs and use natural ID order among themselves.
+// Candidate cards represent the active research front, so keep them ahead of completed outputs.
+// Completed/partial outputs then follow normal reverse completion chronology.
 catalog.sort((left, right) => {
+  const leftCandidate = left.verificationStatus === "candidate";
+  const rightCandidate = right.verificationStatus === "candidate";
+  if (leftCandidate !== rightCandidate) return leftCandidate ? -1 : 1;
+
   const leftDate = left.completedDate ?? "";
   const rightDate = right.completedDate ?? "";
   return rightDate.localeCompare(leftDate) || left.id.localeCompare(right.id, "en", { numeric: true });
