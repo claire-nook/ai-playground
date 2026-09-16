@@ -4,6 +4,39 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Safari Auth Session Lifecycle / Intermittent Restoration
+
+- Experiment: A-SAFARI-LIFECYCLE
+- Date: 2026-09-16
+- Status: Candidate / Controlled Ordinary Safari Run Passed; Historical Anomaly Intermittent
+- Evidence: `evidence/2026-09-16-safari-auth-session-lifecycle.md`
+- Investigation Record: `experiments/auth/safari-session-persistence-investigation.md` (PR #41 pending merge at this checkpoint)
+- Related Shell: S-SHELL-1
+- Topics: Supabase Auth, Safari, Session, Local Logout, iPad-first, Browser Persistence
+
+### Current Evidence
+
+Claire 曾在 iPad Ordinary Safari 直接觀察 logout → Login surface → re-entry → Session restore / Claire-admin Application Context restored；類似現象在 Application Shell 出現以前的 Auth 小型實驗時期也曾出現。Private Browsing 的歷史對照則維持 signed-out。
+
+PR #41 diagnostic probe 的 Ordinary Safari controlled run 顯示：
+
+```text
+session=null
+→ Login / session=present
+→ signOut({ scope: "local" })
+→ SIGNED_OUT / session=null
+→ signOut resolved / error=none
+→ getSession session=null
+→ Reload session=null
+→ Re-entry session=null
+```
+
+因此 historical restoration anomaly 是 **directly observed but intermittent**；目前 controlled probe 未能重現，root cause 仍 Unknown。不得把 anomaly 直接定性為 Safari bug、Supabase bug 或 Shell bug。
+
+PR #40 的 explicit local logout + signOut error handling 可作 logout lifecycle correctness / defensive hardening 評估，但目前沒有 Evidence 證明它是 historical restoration anomaly 的 root-cause fix。
+
+---
+
 ## ChatGPT → Codex Autonomous Dispatch / Agent Collaboration
 
 - Experiment: P-CODEX-PHONE
@@ -103,7 +136,7 @@ Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
 
 ### Dashboard / SQL boundary
 
-Dashboard HTTP Request Body 適合 static JSON，但當 `cron.job.command` 使用 SQL expression / `jsonb_build_object(...)` / DB Function return value 時，Dashboard 表單未必能還原顯示完整 dynamic command。
+Dashboard HTTP Request Body 適合 static JSON，但當 `cron.job.command` 使用 SQL expression / `jsonb_build_object(...)` / DB Function return value時，Dashboard 表單未必能還原顯示完整 dynamic command。
 
 因此 SQL command 才是完整 runtime representation；正式系統若需要 canonical definition，應保存在 repository / migration source-of-truth。
 
