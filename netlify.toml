@@ -55,3 +55,19 @@ echo "TRIGGER_DECISION=DEPLOY reason=unsupported_context"; echo "NETLIFY_TRIGGER
 
 [functions]
   directory = "netlify/functions"
+
+# S-SHELL-1 使用 History API route；refresh / deep link 仍回到同一個 disposable browser artifact。
+[[redirects]]
+  from = "/home"
+  to = "/application-shell/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/business/*"
+  to = "/application-shell/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/common/*"
+  to = "/application-shell/index.html"
+  status = 200

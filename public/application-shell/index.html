@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="S-SHELL-1 disposable Application Shell integration probe">
+  <title>Nook Works · Application Shell Probe</title>
+  <link rel="stylesheet" href="/application-shell/shell.css">
+</head>
+<body>
+  <section id="startup-view" class="centered" aria-live="polite">
+    <div class="state-card"><span class="spinner" aria-hidden="true"></span><h1>正在恢復 Session</h1><p>確認 Authentication 與 Application User Context…</p></div>
+  </section>
+
+  <main id="login-view" class="centered" hidden>
+    <section class="login-card">
+      <p class="eyebrow">AI Playground · S-SHELL-1</p>
+      <h1>Nook Works</h1>
+      <p class="muted">登入後才會建立 Application User Context 與載入 Navigation。</p>
+      <form id="login-form">
+        <label for="account">Account</label>
+        <input id="account" type="email" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button id="login-button" class="primary" type="submit">登入</button>
+      </form>
+      <p id="login-message" class="message" role="status" aria-live="polite"></p>
+      <a href="/">返回 AI Playground</a>
+    </section>
+  </main>
+
+  <main id="bootstrap-error-view" class="centered" hidden>
+    <section class="state-card error-card">
+      <p class="eyebrow">Application Bootstrap</p><h1>無法進入 Application</h1>
+      <p id="bootstrap-error-message"></p>
+      <div class="button-row"><button id="retry-button" type="button">重新嘗試</button><button class="signout-button" type="button">登出</button></div>
+    </section>
+  </main>
+
+  <div id="shell-view" class="shell" hidden>
+    <header class="topbar">
+      <button id="menu-button" class="menu-button" type="button" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><span>選單</span></button>
+      <a class="brand" href="/home" data-route>Nook Works <small>Shell Probe</small></a>
+      <div class="account"><span id="user-context"></span><button class="signout-button" type="button">登出</button></div>
+    </header>
+    <div class="shell-body">
+      <div id="nav-backdrop" class="backdrop" hidden></div>
+      <aside id="sidebar" class="sidebar" aria-label="Application Navigation">
+        <nav id="navigation"><a href="/home" data-route>Home</a></nav>
+        <p class="nav-note">Navigation visibility 不是 Backend Authorization。</p>
+      </aside>
+      <main id="content" class="content" tabindex="-1" aria-live="polite"></main>
+    </div>
+  </div>
+
+  <script type="module" src="/application-shell/app.js"></script>
+</body>
+</html>

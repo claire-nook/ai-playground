@@ -5,8 +5,8 @@
   "recordPath": "experiments/application-shell/README.md",
   "summary": "以一個真的可登入的小型 Nook Works Shell Live Demo，組合既有 Auth、app_user、Native Data API / Custom API、Navigation、Route、Feature Entry 與 iPad-first responsive capability，驗證 Application Runtime lifecycle 與責任邊界。",
   "tags": ["Nook Platform", "Application Shell", "Supabase Auth", "Application User", "Data API", "Routing", "iPad-first", "RWD"],
-  "demoStatus": "planned",
-  "demoPath": null,
+  "demoStatus": "live",
+  "demoPath": "/application-shell/",
   "verificationStatus": "candidate",
   "flow": "Login / Session Restore → Auth Identity → app_user → Application Context → Shell → Feature → Data Access → Render"
 }
