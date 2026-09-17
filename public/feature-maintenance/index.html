@@ -27,7 +27,7 @@
       <a class="playground-return" href="/" aria-label="返回 AI Playground">← 返回 AI Playground</a>
 
       <section id="query-view" class="prototype-view">
-        <header class="page-heading"><div class="feature-identity"><div><p class="eyebrow">Single-record Maintenance Pattern</p><h1>參考資料維護</h1><p>Phase 1 / 2 沿用 Query 與 Read Detail；本輪加入 Create / Update、Dirty State、Validation 與 Concurrency。</p></div><div class="identity-meta"><span class="feature-code">F-MAINT-1</span><span class="prototype-badge">Pattern 3</span></div></div></header>
+        <header class="page-heading"><div class="feature-identity"><div><p class="eyebrow">Single-record Maintenance Pattern</p><h1>參考資料維護</h1><p>Phase 1 / 2 沿用 Query 與 Read Detail；本輪聚焦 Internal Enterprise Maintenance 的 Create / Update lifecycle。</p></div><div class="identity-meta"><span class="feature-code">F-MAINT-1</span><span class="prototype-badge">Pattern 3</span></div></div></header>
         <form id="query-form" class="query-panel">
           <div class="query-grid">
             <label>關鍵字<input id="keyword" type="search" placeholder="名稱或代碼"></label>
@@ -35,9 +35,19 @@
             <label>可修改<select id="maintainable"><option value="">全部</option><option value="Y">可修改</option><option value="N">不可修改</option></select></label>
             <label>每頁筆數<select id="page-size"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select></label>
           </div>
-          <div class="query-actions"><div class="scenario-note">Mock 760 筆；User capability = canCreate / canView / canEdit。</div><div class="button-row"><button id="clear-button" class="action-button" type="button">清除</button><button id="create-button" class="action-button" type="button">新增</button><button class="action-button primary" type="submit">查詢</button></div></div>
+          <div class="query-actions"><div class="scenario-note">Mock 760 筆；User capability = canCreate / canView / canEdit。</div><div class="button-row"><button class="action-button primary" type="submit">查詢</button><button id="clear-button" class="action-button" type="button">清除</button></div></div>
         </form>
-        <section class="result-section" aria-labelledby="result-title"><div class="result-heading"><div><p class="eyebrow">Query Result</p><h2 id="result-title">查詢結果</h2></div><p id="result-count" class="result-count"></p></div><p id="return-context" class="return-context" hidden></p><div id="desktop-result" class="table-wrap"></div><div id="mobile-result" class="mobile-cards"></div><nav id="pagination" class="pagination" aria-label="查詢結果分頁"></nav></section>
+        <section class="result-section" aria-labelledby="result-title">
+          <div class="result-heading">
+            <div><p class="eyebrow">Query Result</p><h2 id="result-title">查詢結果</h2></div>
+            <div class="result-heading-actions"><p id="result-count" class="result-count"></p><button id="create-button" class="action-button" type="button">新增</button></div>
+          </div>
+          <p id="return-context" class="return-context" hidden></p>
+          <div id="desktop-result" class="table-wrap"></div>
+          <div id="mobile-result" class="mobile-cards"></div>
+          <nav id="pagination" class="pagination" aria-label="查詢結果分頁"></nav>
+          <p class="research-note">這裡把 Query Result 視為維護作業的 Worklist。Create / Update / Read 都是暫時離開 Worklist 的 operation surface；完成或取消後回到原工作上下文。</p>
+        </section>
       </section>
 
       <section id="detail-view" class="prototype-view" hidden>
@@ -49,7 +59,7 @@
       </section>
 
       <section id="form-view" class="prototype-view" hidden>
-        <div class="detail-toolbar"><button id="form-cancel-top" class="back-button" type="button">← 取消</button><span id="form-mode-label" class="detail-context-label"></span></div>
+        <div class="detail-toolbar"><button id="form-cancel-top" class="back-button" type="button">← 返回查詢結果</button><span id="form-mode-label" class="detail-context-label"></span></div>
         <header class="detail-hero"><div><p class="eyebrow">Maintenance Surface</p><h1 id="form-title">資料維護</h1><p id="form-version-note" class="detail-lead"></p></div><div class="detail-identity"><span id="dirty-indicator" class="dirty-indicator">尚未修改</span><code id="form-record-id">NEW</code></div></header>
         <div id="form-message" class="form-message" hidden></div>
         <form id="maintenance-form" novalidate>
@@ -68,7 +78,7 @@
         </form>
       </section>
 
-      <dialog id="dirty-dialog" class="guard-dialog"><form method="dialog"><h2>有尚未儲存的變更</h2><p>離開將放棄目前修改。</p><div class="dialog-actions"><button value="stay" class="action-button">留在此頁</button><button value="leave" class="action-button primary">放棄變更並離開</button></div></form></dialog>
+      <dialog id="dirty-dialog" class="guard-dialog"><form method="dialog"><h2>有尚未儲存的變更</h2><p>離開將放棄目前修改並返回查詢工作清單。</p><div class="dialog-actions"><button value="stay" class="action-button">留在此頁</button><button value="leave" class="action-button primary">放棄變更並返回</button></div></form></dialog>
     </main>
   </div>
 </div>
