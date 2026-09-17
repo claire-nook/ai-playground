@@ -1,83 +1,66 @@
 # General Application Platform Architecture
 
-> Status: Architecture Baseline Candidate v0.3  
+> Status: Constructible Architecture Baseline Candidate v0.4  
 > Date: 2026-09-17  
-> Scope: General browser-based application platform  
-> Current challenge coverage: Application Shell + Read-only Query Feature + Implementation-agent adversarial review + Enterprise Query scale review  
-> Maturity: Direct Evidence / Inference / Candidate Boundary / Pattern-specific Decision / Open Contract are distinguished explicitly
+> Scope: General internal-enterprise browser application platform baseline  
+> Maturity: Architecture / Pattern / Contract guidance；不是 Nook Works formal production architecture  
+> Basis: S-SHELL-1、D-BATCH-1、F-QUERY-1、F-DETAIL-1、F-MAINT-1、兩輪 Implementation-agent adversarial review
 
 ## 1. Purpose
 
-This document is a general platform architecture synthesis produced from Playground Experiment / Evidence, independent implementation review, and subsequent Functional / Technical design challenge.
+本文件回答的是：
 
-It is **not** a Nook Works production specification and it does not claim that one Query prototype has discovered the universal shape of browser applications.
+> 一個 internal-enterprise browser application platform，至少要有哪些責任邊界與 minimum contracts，才能讓實作者開始施工而不用自行發明安全、狀態、錯誤與 mutation semantics？
 
-The working loop remains:
+它不是 Nook Works production specification，也不直接決定 Supabase / Netlify 的 formal schema、module、role、route 或 deployment configuration。
+
+正式採用關係是：
 
 ```text
-Real Requirement
-→ Functional Pattern
-→ Experiment / Evidence
-→ Architecture Synthesis
-→ Independent Review
-→ Architecture Revision
-→ Next Pattern Challenge
+General Platform Architecture
+→ Product / System-specific Platform Architecture
+→ Formal Technical Design / Specification
+→ Implementation
 ```
 
-v0.3 adds one important correction to v0.2: a Query Pattern cannot quietly assume that a small system, small database, or first requirement implies a small result set. **Storage scale, matching-row count, response payload and Browser rendering cost are different things.**
-
-A neat diagram is still not Evidence. Neither is saying「這系統資料不多啦」with sufficient confidence.
+因此本文件允許寫「責任與可施工準則」，但不把目前 Playground provider choice 偽裝成 universal law。
 
 ---
 
-## 2. Evidence, Review and Claim Strength
+## 2. Constructibility Definition
 
-v0.3 is primarily informed by:
+Architecture 達到「可施工」不是因為圖畫完，而是至少同時具備：
 
-- `evidence/s-shell-1-application-shell-findings.md`
-  - Session restore / login lifecycle.
-  - Application User Context bootstrap.
-  - metadata-driven Navigation / Feature Entry.
-  - route / deep-link / refresh / browser history behavior.
-  - separation between Shell lifecycle and Feature-owned business state.
-  - separation between Feature Entry and downstream authorization.
-- `experiments/feature-query/README.md`
-  - Functional shape of a Read-only Query Feature.
-  - curated Result List and Feature-specific responsibility boundaries.
-  - F-QUERY-1C Enterprise Query scale review: Business Query Boundary vs Technical Result Boundary, pagination / sorting baseline, page-size behavior, and known Master → Detail return-context pressure.
-- Earlier Playground capability evidence for Native Data API, View Read Model, authenticated Custom API, backend service access and external API orchestration.
-- `agent-work/reports/2026-09-17-general-platform-architecture-v01-review.md`
-  - independent reviewer + implementer challenge of v0.1.
-  - specific attacks on `Feature Runtime`, the five-layer pipeline, authorization obligations, boundedness, error taxonomy and construction ambiguity.
+```text
+Responsibility Boundary
++ Pattern Contract
++ Minimum Operation Contract
++ Security / Validation / Error obligations
++ Mechanism eligibility rules
++ State ownership / lifecycle
++ Implementation Guidance
++ Explicit Open Contracts
+```
 
-### 2.1 Claim-strength vocabulary
+實作者應可以回答：
 
-| Label | Meaning |
-| --- | --- |
-| **Direct Evidence** | Observed in a concrete runtime / browser / provider experiment under stated conditions |
-| **Inference from Evidence** | Reasoned conclusion supported by Evidence but not itself directly observed |
-| **Candidate Boundary** | Architecture responsibility split currently judged useful but still challengeable |
-| **Pattern-specific Decision** | Decision local to the current interaction/product context; not generalized into platform architecture |
-| **Open Contract** | Minimum responsibility is known, but exact interoperable contract still requires technical design or later Evidence |
+- 我現在實作的是哪一種 Pattern？
+- 這個 operation 的 input / output / error / lifecycle 是什麼？
+- 哪些 rule 只做 interaction feedback，哪些必須 authoritative enforcement？
+- Native CRUD / View / RPC / Custom API 何時可用、何時不應使用？
+- Authorization 語意在哪裡定義、在哪裡 enforcement？
+- state 由誰擁有、多久有效、何時 invalidated？
+- provider-specific behavior 到哪一層停止？
 
-Enterprise Query scale conclusions in F-QUERY-1C are **Design Review / Architecture Pressure**, not new runtime Evidence. That distinction stays explicit because architecture becomes useless the moment every sensible opinion starts wearing an Evidence badge.
+「可施工」不等於已完成 visual design、component library 或 production provider profile。
 
 ---
 
-## 3. Architecture Principle: Responsibility Before Abstraction
-
-A platform should centralize a responsibility when centralization materially reduces repeated lifecycle decisions, security inconsistency, integration ambiguity or cross-feature technical risk.
-
-It should not centralize behavior merely because:
-
-- several screens contain similar markup;
-- a framework offers an abstraction;
-- a provider SDK feels untidy;
-- a diagram looks more architectural with another box.
+## 3. Architecture Principle — Responsibility Before Abstraction
 
 ```text
 Shared technical lifecycle / invariant
-→ Platform candidate
+→ Platform responsibility candidate
 
 Business-operation semantics
 → Feature / Requirement
@@ -86,587 +69,497 @@ Feature-facing operation contract
 → explicit seam
 
 Execution / storage mechanism
-→ Data Access / Backend choice
+→ technical selection
 
-Library convenience
-→ implementation detail unless Evidence proves otherwise
+Library / component / framework
+→ implementation detail unless responsibility requires standardization
 ```
 
-A second v0.3 principle is equally important:
-
-> **Minimal does not mean incomplete.**
-
-A Pattern may remain simple while still including the normal baseline behavior required for the class of work. Deferring every common capability until a future Pattern is not restraint if the result is a Query Pattern that only works while everyone behaves nicely and the data stays tiny.
+Common Pattern 不等於 Common Page、Common Class 或 Auto-generated UI。
 
 ---
 
-## 4. Two Orthogonal Architecture Views
+## 4. Two Orthogonal Views
 
-### 4.1 Lifecycle / Activation View
+### 4.1 Application Lifecycle View
 
-```mermaid
-graph LR
-    A[Browser Entry] --> B[Application Shell]
-    B --> C[Feature Activation Contract]
-    C --> D[Active Feature]
-
-    I[Identity / Session] --> B
-    U[Application User Context] --> B
-    D -. session invalidation signal .-> B
+```text
+Browser Entry / Deep Link
+→ Application Shell
+→ Authentication / Session
+→ Application User Context
+→ Route / Feature Entry
+→ Feature Activation
+→ Active Feature
 ```
 
-This view answers:
+Shell 擁有 application-wide lifecycle；Feature business state 不因被 Shell 包住就變成 global state。
 
-> Who owns the application lifecycle, and how is control transferred to one active business Feature?
+### 4.2 Business Operation View
 
-### 4.2 Feature Operation View
-
-```mermaid
-graph LR
-    F[Feature Interaction Semantics] --> O[Feature-facing Operation Contract]
-    O --> M[Selected Data Access Mechanism]
-    M --> B[Backend / Data Source]
-
-    A[Authorization obligation] -. applies .-> O
-    C[Credential freshness] -. applies .-> M
-    E[Error classification] -. returns through .-> O
-    X[Cancellation / Supersession] -. operation lifecycle .-> O
-    V[Observability / Correlation] -. diagnostic path .-> M
+```text
+Feature / Scheduler Invocation
+→ Business / Feature Operation Contract
+→ Selected Execution Mechanism
+→ Trusted Enforcement / Backend
+→ Data / External Dependency
+→ Classified Outcome
 ```
 
-These views are related, but they are not layers of the same species. Shell is a lifecycle owner, Interaction Pattern is design semantics, Operation Contract is a seam, and Data Access is an execution choice.
+Feature Activation 與 Operation Contract 是不同 seam。前者處理 application control transfer；後者處理一次 business/data operation。
 
 ---
 
-## 5. Application Shell
+## 5. Application Shell Contract
 
-**Claim strength: Direct Evidence + Candidate Boundary.**
+Shell minimum responsibility：
 
-The Shell owns application-level lifecycle that exists before and across individual Features:
+- Authentication / Session restore / refresh / invalidation / explicit logout。
+- Authentication Identity → Application User Context bootstrap。
+- Application eligibility。
+- Navigation / Route / Feature Entry。
+- deep link / reload / Back / Forward integration。
+- browser-safe runtime configuration boundary。
+- session-invalid escalation 與 shell-level fatal state。
 
-- Authentication / Session lifecycle.
-- Authentication Identity → active Application User Context bootstrap.
-- Application eligibility handling.
-- metadata-derived Navigation / Feature Entry.
-- Route resolution, deep link, refresh and browser history integration.
-- Shell-level startup / failure / invalidation / explicit logout behavior.
-- browser-safe runtime configuration boundary.
+Shell 不擁有：
 
-The Shell does **not** automatically own:
+- Query criteria/result。
+- Form draft / dirty state。
+- Business validation semantics。
+- Business Authorization decision。
+- workflow state。
+- batch run state。
 
-- query criteria or query results;
-- CRUD / Form state;
-- pagination / sorting / filtering semantics;
-- business validation;
-- Business Authorization decisions;
-- server result cache merely because multiple Features render inside the same application.
+### 5.1 Feature Activation minimum obligations
 
-Candidate rule:
+Feature Activation 不要求 `FeatureRuntime` class，但必須定義：
 
-> **Application-wide lifecycle belongs to the Shell; business-operation state does not become global merely because the Feature is rendered inside the Shell.**
+- canonical Feature identity / route context；
+- current Application User Context access；
+- authenticated invocation dependency，必須取得 current auth context，不由 Feature 長期保存 credential snapshot；
+- activation / supersession / disposal owner；
+- late-result suppression / abort ownership；
+- session-invalid signal → Shell。
 
----
-
-## 6. Feature Activation Contract
-
-**Claim strength: Candidate Boundary.**
-
-v0.1 called this `Feature Runtime`. The adversarial review correctly identified that current Evidence does not justify an independent runtime owner or framework.
-
-v0.3 therefore keeps **Feature Activation Contract**: the seam where Shell hands control to an active Feature. It is not a mandatory code object.
-
-Minimum obligations:
-
-- Stable Feature identity / route context has a canonical source.
-- Application User Context access represents current application context when required.
-- Authenticated invocation obtains current credential/session or an equivalent freshness-preserving mechanism.
-- Active Feature disposal / supersession has a defined owner.
-- Session-invalid signal can return to Shell.
-
-Current architecture still does not justify a Feature plugin registry, service locator, global Feature context, generic `FeatureRuntime` class or cross-feature state container.
+Feature 不負責 Auth refresh，也不應把 token persistence 變成自己的 lifecycle。
 
 ---
 
-## 7. Read-only Query Interaction Semantics
+## 6. Baseline Interaction Patterns
 
-**Claim strength: Pattern-specific Decision + Candidate Boundary.**
+目前 baseline coverage：
 
-The Generic Read-only Query Feature remains conceptually simple:
+```text
+Scheduled / Batch
+Query
+Query → Detail
+Single-record Maintenance
+```
+
+Master-detail / one-to-many / many-to-many、Workflow / Approval、Advanced Query、Distributed Compensation 都保持 requirement-driven extension。
+
+### 6.1 Query
 
 ```text
 Feature Identity
-→ Query Criteria
+→ Criteria
 → Query Action
-→ Query Result
+→ Filter / Sort / Page
+→ Bounded Result + Metadata
+→ Result Interaction
 ```
 
-But v0.3 treats a normal paged result as part of the **baseline candidate**, not as speculative future decoration.
+Minimum semantics：criteria、sort、page、pageSize、loading、empty、recoverable error、bounded result、stable identity when downstream interaction requires it。
 
-A representative enterprise-style Query Result may therefore include:
-
-```text
-Query Result
-├─ curated result columns
-├─ total count / page metadata
-├─ current page
-├─ previous / next
-├─ page-number navigation
-├─ page-size selector
-└─ single-column sorting
-```
-
-The Query Feature owns the user-visible semantics of:
-
-- criteria values and functional validation;
-- submit / reset interaction;
-- sort field / direction as current Query State;
-- page number and page size as current Query State;
-- loading / empty / result / recoverable error state;
-- presentation of curated result columns.
-
-The Query Feature does not own physical table/view/join topology, backend query plan, Business Authorization policy, Detail lifecycle or Export lifecycle.
-
-### 7.1 Page-size behavior
-
-The platform may provide a standard page-size selector and common options such as `10 / 20 / 50`, but the exact values are not universal architecture law.
-
-Feature / Product Technical Design may select allowed options and default page size according to data density and Requirement. The behavior when page size changes must be deterministic; resetting to Page 1 is a simple candidate unless a Requirement justifies preserving another anchor.
-
----
-
-## 8. Feature-facing Operation Contract
-
-**Claim strength: Candidate Boundary + Open Contract.**
-
-The architecture requires a clear operation contract between a Feature and whichever mechanism fulfills the operation. It does **not** require a dedicated browser-side repository/service wrapper if the selected mechanism already satisfies that contract directly.
-
-For an authenticated paged Read-only Query, technical design should explicitly define at least:
-
-### 8.1 Criteria semantics
-
-- field representation;
-- omitted vs `null` vs empty-string semantics where relevant;
-- empty-set semantics for multi-select where relevant;
-- date/time/timezone encoding where relevant;
-- server-side validation expectations.
-
-### 8.2 Sorting semantics
-
-- allowed sortable fields;
-- sort direction;
-- deterministic default ordering;
-- tie-break behavior where correctness requires it;
-- whether sorting is server-owned or complete-set Browser-owned under an explicitly bounded variant.
-
-### 8.3 Pagination semantics
-
-- page number or equivalent paging state;
-- page size;
-- allowed/default page-size values as applicable;
-- total count or another contract that allows the UI to understand available navigation;
-- behavior when requested page becomes invalid after data changes.
-
-### 8.4 Result semantics
-
-- result fields and data types;
-- nullability / unknown-value handling;
-- stable row identity when the Feature requires identity;
-- whether a response is a complete set or one bounded page.
-
-### 8.5 Business Query Boundary vs Technical Result Boundary
-
-These are distinct responsibilities.
-
-```text
-Business Query Boundary
-→ Requirement / SA decides meaningful scope
-→ examples: date range, mandatory criteria, allowed empty conditions
-
-Technical Result Boundary
-→ Platform / Technical Design controls execution cost
-→ examples: page size, server-side paging, timeout, payload bound, resource protection
-```
-
-The Technical Platform must not rely on Business validation as its only protection. A User can key an overly broad range, a Requirement can miss one, and data grows while everyone is busy attending meetings.
-
-Likewise, Technical pagination does not excuse poor Business design. Returning 20 rows at a time from a meaningless seven-year query may protect the AP server while still being a terrible Feature.
-
-### 8.6 Boundedness and completeness
-
-`Boundedness` no longer means only「the entire matching set is small」.
-
-A query may match 30,000 rows and still be technically bounded if each interaction returns a controlled page and the backend execution contract remains protected.
-
-The contract must therefore distinguish:
-
-```text
-Matching Result Cardinality
-≠ Response Payload Size
-≠ Browser-rendered Row Count
-```
-
-Provider default row caps must never be silently treated as completeness guarantees.
-
-### 8.7 Authorization enforcement point
-
-The design identifies the trusted boundary that validates caller/session and enforces business/data scope.
-
-### 8.8 Operation lifecycle
-
-The design states the policy for superseded or stale requests. An older response must not overwrite a newer query merely because networking felt nostalgic.
-
-### 8.9 Error outcomes
-
-The contract exposes enough classification for Feature and Shell to respond consistently without displaying raw provider diagnostics.
-
----
-
-## 9. Pagination / Sorting Execution Candidate
-
-**Claim strength: Candidate Boundary informed by enterprise design pressure; implementation not yet runtime-verified in F-QUERY-1.**
-
-For enterprise-style queries, v0.3 prefers the following baseline candidate:
-
-```text
-Criteria
-+ Sort Field / Direction
-+ Page Number
-+ Page Size
-        ↓
-Validated Operation Contract
-        ↓
-Server-side Filter
-→ Server-side Sort
-→ Server-side Page
-        ↓
-Bounded Rows
-+ Total Count / Page Metadata
-```
-
-The correctness rule is:
-
-> **Sort the logical matching set before selecting the requested page.**
-
-Sorting only the 20 rows currently loaded in Browser while implying that 3,000 matching rows were sorted is incorrect.
-
-### 9.1 Complete-set Browser variant
-
-A Feature may still use complete-set Browser sorting / pagination when the operation contract can honestly guarantee that:
-
-- the entire matching set is loaded;
-- it is explicitly bounded;
-- transfer and Browser cost are acceptable;
-- the UI is not depending on a silently truncated provider response.
-
-This is now treated as a **bounded implementation variant**, not the general enterprise-query default.
-
-### 9.2 Advanced pagination remains deferred
-
-v0.3 does not yet standardize:
-
-- Cursor / Keyset Pagination;
-- Infinite Scroll;
-- Multi-column Sort;
-- virtualization strategy;
-- generic Data Grid behavior.
-
-OFFSET / FETCH, LIMIT / OFFSET, window-function approaches, cursor paging or another backend mechanism are Technical Design choices so long as the Feature-facing contract remains correct and performant for the real workload.
-
----
-
-## 10. Pattern 1 Runtime Trace
-
-A representative authenticated server-paged Read-only Query trace is now:
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant S as Application Shell
-    participant F as Query Feature
-    participant O as Operation Contract
-    participant M as Data Access Mechanism
-    participant B as Backend / Data Source
-
-    U->>S: Enter application / feature route
-    S->>S: Restore or establish current Session
-    S->>S: Resolve Application User Context
-    S->>S: Validate Feature Entry
-    S->>F: Activate via Feature Activation Contract
-    U->>F: Set criteria and query
-    F->>O: criteria + sort + page + pageSize
-    O->>M: Execute using current auth context
-    M->>B: Filter + Sort + Page
-    B-->>M: bounded rows + total/page metadata
-    M-->>O: Contract result / classified failure
-    O-->>F: Feature-facing outcome
-    F-->>U: Loading / Empty / Error / Result
-    U->>F: Change page / page size / sort
-    F->>O: Re-query with updated Query State
-```
-
-Important separations:
-
-- Feature Entry is not proof of Feature Data Access authorization.
-- Query criteria, sorting and paging semantics remain Feature-owned Query State even if transported via URL or API parameters.
-- Server-side execution may be standardized without making Business criteria semantics a Platform concern.
-- mechanism replaceability ends where contract semantics change.
-
----
-
-## 11. State Ownership
-
-**Claim strength: Candidate Boundary with strong support from Shell Evidence.**
-
-| State | Owner | Reason |
-| --- | --- | --- |
-| Authentication Session | Shell / Auth lifecycle | Exists across Features |
-| Application User Context | Shell-level Application Context | Application identity/context lifecycle |
-| Current Route / Feature Entry | Shell | Application navigation lifecycle |
-| Query Criteria | Query Feature | Meaning belongs to active business operation |
-| Sort Field / Direction | Query Feature | Current Query interpretation |
-| Page Number / Page Size | Query Feature | Current Query navigation state |
-| Query Result | Query Feature | Current operation result/page |
-| Operation correlation / supersession state | Feature operation lifecycle or mechanism as appropriate | Prevent stale outcome from replacing current operation |
-| Physical DB query plan / joins | Backend / Data mechanism | Not browser interaction state |
-| Business Authorization decision | Trusted authorization boundary | Must not be inferred from visibility metadata |
-
-Strong candidate rule:
-
-> **State ownership follows semantic lifecycle, not visual containment.**
-
-If criteria/page/sort later appear in a URL, Shell may transport them without becoming the semantic owner of the Query.
-
----
-
-## 12. Authorization Boundaries and Minimum Obligations
-
-**Claim strength: Direct Evidence for separation; Candidate Boundary for minimum obligations.**
-
-```text
-Authentication Identity
-≠ Application Eligibility
-≠ Navigation Visibility
-≠ Route / Feature Entry
-≠ Feature Data Access
-≠ Business Authorization
-```
-
-Minimum obligations remain:
-
-1. A data operation validates caller/session at an appropriate trusted boundary.
-2. Browser-supplied eligibility, navigation metadata, user type or other client context is not by itself proof of data authorization.
-3. Feature Entry denied, Data Access forbidden and Session invalid are different outcomes.
-4. Session invalidation can escalate back to Shell lifecycle handling.
-5. v0.3 does not prematurely standardize provider-specific RBAC / RLS / grant mechanisms.
-
----
-
-## 13. Minimum Error Taxonomy
-
-**Claim strength: Candidate Boundary / minimum interoperability obligation.**
-
-| Category | Default owner / consequence |
-| --- | --- |
-| `validation` | Feature handles user-correctable criteria/input issue |
-| `session-invalid` | Escalates to Shell application lifecycle |
-| `forbidden` | Feature operation denied; does not automatically mean logout |
-| `boundedness` | Query cannot safely/honestly satisfy the requested scope under current contract |
-| `transient/unavailable` | Feature may offer retry according to Feature requirement |
-| `internal/unknown` | Feature presents controlled failure; diagnostics remain technical |
-| `cancelled/superseded` | Operation-control outcome, normally not a user-facing error |
-
-```text
-Provider / DB / API failure
-→ mechanism captures technical diagnostics
-→ operation contract maps to bounded outcome
-→ Feature decides interaction/recovery
-→ Shell intervenes only for application-lifecycle invalidation
-```
-
----
-
-## 14. Pattern Decisions vs General Platform Architecture
-
-### 14.1 General candidate: Curated Result Contract
-
-A Result List is for identification, comparison and selection. It should expose requirement-relevant information rather than dump a physical record or API payload.
-
-### 14.2 Pattern-specific: No Normal Horizontal Scroll
-
-Avoiding horizontal scrolling remains a **Nook Works Pattern candidate**, not a general browser-platform rule.
-
-### 14.3 General candidate: Server-bounded enterprise Query
-
-General platform architecture now treats server-bounded paging / sorting as the safer enterprise-style baseline candidate, while preserving a complete-set Browser variant for explicitly small / bounded workloads.
-
-### 14.4 Field-specific: Multi-select
-
-Multi-select remains field semantics chosen by Requirement, not a universal property of dropdowns.
-
----
-
-## 15. Known Pattern-2 Pressure: Master → Detail Return Context
-
-**Claim strength: Known Design Pressure / Open Contract, not yet runtime Evidence.**
-
-Master → Detail remains a future Pattern, but one requirement pressure is already important enough to record:
-
-> A User who enters Detail from a Query Result should not lose the Query work context merely because the Detail route caused the list to be queried again.
-
-Restoring only `pageNumber = 32` is insufficient if new rows inserted ahead of the selected record move that record to Page 33.
-
-The future contract should therefore investigate a distinction between:
+### 6.2 Query → Detail
 
 ```text
 Query Context
-- criteria
-- sortField / sortDirection
-- pageSize
-
-Return Anchor
-- selected stable row identity
+→ Stable Record Identity
+→ Read Detail
+→ Return
+→ Restore useful work context
 ```
 
-Candidate return semantics:
+`Query Context ≠ old page number`。
+
+Exact current-rank resolution 仍是 Open Contract。Baseline 只要求 deterministic fallback：refresh current query；若 anchor 仍存在則 highlight / relocate；不存在、失權限或離開 result 時提供明確 outcome，不做昂貴全表 rank scan 假裝 architecture 已解。
+
+### 6.3 Single-record Maintenance
 
 ```text
-Detail → Return
-→ restore Query Context
-→ re-query current data
-→ locate selected row under current ordering
-→ return to the page containing that row
+Query / Worklist
+├─ Read   → Return        → Query Context
+├─ Create → Save / Cancel → Query Context
+└─ Update → Save / Cancel → Query Context
 ```
 
-This preserves both freshness and User workflow continuity.
+Minimum semantics：Effective Capability、editable/immutable/read-only field state、validation lifecycle、dirty state、unsaved-change guard、Save/Cancel、Mutation Policy、return context。
 
-Exact implementation is deliberately open: URL state, history state, session/feature state, rank lookup, keyset/cursor technique or another mechanism may be appropriate.
+### 6.4 Scheduled / Batch
 
-Whether a record can physically disappear is a Business Domain Rule. A domain that preserves records and uses Void / Cancel / Invalidate should not force the technical platform to invent hard-delete recovery semantics merely for sport.
+```text
+Schedule / Manual Trigger
+→ Invocation Adapter
+→ Batch Operation Contract
+→ Backend Operation
+→ Outcome Recording
+```
+
+Batch 與 Browser 不共享 UI lifecycle，但若 semantic Business Operation 相同，應重用同一 authoritative operation，而不是各自發明 validation / authorization / transaction semantics。
 
 ---
 
-## 16. What v0.3 Deliberately Does Not Design
+## 7. Operation Contract Families
 
-Current architecture still refuses to pre-build answers for problems not yet required by Evidence:
+不建立一個萬用 DTO。至少分成：
 
-- CRUD / Create / Edit / Delete lifecycle;
-- Form dirty-state / unsaved changes;
-- full Master → Detail navigation / retrieval implementation;
-- Export / download authorization, masking and audit;
-- Cursor / Keyset Pagination;
-- Infinite Scroll;
-- Multi-column Sort;
-- reusable Data Grid framework;
-- generalized component library / Design System;
-- generic workflow engine;
-- production RBAC / permission schema;
-- final Business Authorization architecture;
-- final Error Contract / universal error UI;
-- framework/router/state-management library selection;
-- generic cache layer;
-- universal retry policy;
-- cross-feature shared state;
-- generic repository/service abstraction merely to hide provider SDKs;
-- generic query-state restoration mechanism;
-- dedicated Feature Runtime / plugin framework;
-- full observability standard beyond diagnostics/correlation needed by the current operation.
+- Query Operation
+- Read Operation
+- Mutation Operation
+- Business Operation
+- Batch Operation
 
-The difference from v0.2 is deliberate: **Server-side Pagination / Sorting are no longer deferred wholesale.** Their baseline semantics now belong to the Query candidate; only advanced strategies remain deferred.
+共同 minimum envelope：
+
+```text
+Invocation Context
++ Operation Identity
++ Operation-specific Input
+→ Success | Failure
+```
+
+每一個 contract 必須顯式定義：
+
+- input representation / nullability / normalization；
+- output shape / stable identity；
+- authorization obligation；
+- authoritative validation owner；
+- transaction need / owner；
+- error classification；
+- correlation identity；
+- cancellation / supersession when relevant；
+- retry / idempotency when relevant；
+- outcome certainty for mutation (`not-applied / applied / unknown`) when relevant。
+
+詳細施工規格見 `knowledge/implementation/operation-contract-guide.md`。
 
 ---
 
-## 17. Architecture Revision Disposition
+## 8. Authorization Contract
 
-v0.3 preserves the v0.2 adversarial-review corrections:
+Architecture 只保留必要 semantic contract，不在 General layer 決定 RBAC/RLS schema。
 
-| Earlier finding | Current disposition |
-| --- | --- |
-| Feature Runtime unproven | Feature Activation Contract remains a thin seam |
-| Five-layer pipeline mixed unlike concepts | Lifecycle view + Operation view remain separate |
-| Evidence labels too broad | Claim-strength vocabulary retained |
-| No-horizontal-scroll over-generalized | Kept Nook Works / Pattern-specific |
-| Authorization obligations too vague | Trusted-boundary obligations retained |
-| Error direction lacked taxonomy | Minimum taxonomy retained |
-| Data contract not constructible enough | Operation-contract checklist retained and expanded |
-| Route/query state seam unclear | Semantic ownership retained; Pattern-2 return context now recorded as Open Contract |
+Minimum decision input：
 
-v0.3 adds these revisions from Enterprise Query review:
+```text
+Authenticated Subject
++ Application User Context
++ Operation Identity
++ Resource / Scope Inputs
+→ Authoritative Authorization Decision
+```
 
-1. `Minimal ≠ incomplete` becomes an explicit design principle.
-2. Business Query Boundary and Technical Result Boundary are separated.
-3. Server-side Pagination / Sorting become enterprise-style baseline candidates.
-4. Page navigation / page size / total metadata become baseline Query concerns.
-5. Complete-set Browser processing is demoted from implicit default to bounded variant.
-6. Master → Detail row-anchor restoration is recorded as known Pattern-2 pressure without pretending it is solved.
+Minimum obligations：
+
+1. Browser visibility / Feature Entry / Effective Capability 不是 authoritative proof。
+2. trusted boundary 必須知道真正 caller / service identity。
+3. operation permission 與 row/scope authorization 不得只靠 Browser 傳入的 claim。
+4. deny-by-default 行為要明確。
+5. provider enforcement（grant / RLS / RPC / backend policy）可以不同，但 semantic obligation 不變。
+6. `session-invalid`、`forbidden`、`not-found` 是否刻意 conceal record existence 要由 system-specific policy 決定。
+
+正式 Product Architecture 必須把這些 semantics 映射到自己的 identity / role / scope / provider profile。
 
 ---
 
-## 18. Next Challenge Protocol
+## 9. Validation and Mutation Eligibility
 
-The architecture is ready for real Pattern pressure rather than speculative framework expansion.
-
-A future Requirement should classify changes as:
+每個 mutation 必須把 rule 分成三類：
 
 ```text
-Reuse
-Extend / Generalize
-Refactor
-Replace
-New independent capability
+Interaction / Input Rule
+→ Browser may validate early
+
+Authoritative Business Precondition
+→ trusted boundary must validate against current authoritative state
+
+Database Invariant
+→ DB constraint / trusted data boundary
 ```
 
-Near-term questions include:
+Browser validation 可以重複提示，但不能取代 authoritative enforcement。
 
-- Can the first real Nook Works Query operation cleanly express criteria / sort / page / pageSize / total semantics?
-- Which server-side paging mechanism best fits the actual data access path without leaking mechanism into the Feature?
-- Does page-size behavior remain consistent on iPad / iPhone?
-- Does Master → Detail require row-anchor restoration, and what is the smallest correct contract?
-- Does Feature Activation Contract remain thin as features become stateful?
+### 9.1 Native CRUD eligibility
+
+Native CRUD 只有在以下條件成立時才是安全 candidate：
+
+- caller authorization 可由 approved data-access profile enforcement；
+- mutation invariants 可由 grants / RLS / constraints / atomic row predicate 完整保護；
+- 不需要跨多筆 / 多物件 atomic business rule；
+- 不需要 current-state-dependent rule 的 custom error semantics；
+- mutation policy 已明確宣告。
+
+任一條不成立，就升級成 RPC / Custom Operation / backend-owned transaction candidate。
+
+### 9.2 Mutation Policy
+
+Concurrency handling 必須是 explicit decision，不再由 omission 自動變成 Platform Default。
+
+允許：
+
+```text
+Last Write Wins
+Stale-update Detection
+Business-state-sensitive Mutation
+```
+
+普通低風險 Feature 可以選 `Last Write Wins`，但需在 Feature / Technical Design 顯式記載「overwrite impact accepted」。
+
+`created_at/by`、`updated_at/by` 只是 Record Provenance Metadata，不是 silent overwrite 的 mitigation，也不是完整 Audit Trail。
 
 ---
 
-## 19. Current Architecture Judgment
+## 10. Transaction Ownership
 
-The strongest emerging foundation is now:
+原則保留：
 
-```text
-Application lifecycle
-→ Application Shell
+> Transaction 由擁有完整 semantic Business Operation 的 trusted layer 持有。
 
-Shell-to-feature control transfer
-→ Feature Activation Contract
-
-Business interaction meaning and Query State
-→ Active Feature / Interaction Semantics
-
-Feature-visible operation meaning
-→ Feature-facing Operation Contract
-
-Execution choice
-→ Selected Data Access Mechanism
-
-Physical query / orchestration / storage
-→ Backend / Data Source
-```
-
-For Query specifically:
+施工順序必須是：
 
 ```text
-Requirement / SA
-→ defines meaningful Business Query Boundary
-
-Platform / Technical Design
-→ keeps each operation technically bounded
-→ server-side Filter / Sort / Page by default candidate
-→ returns bounded rows + navigation metadata
-
-Browser / Feature
-→ owns current criteria / sort / page / pageSize semantics
-→ renders the current result page
+先定義 Business Operation invariants / effects
+→ 再選 transaction owner
+→ 再選 mechanism
 ```
 
-Cross-cutting responsibilities continue to include current credential freshness, trusted authorization enforcement, bounded execution, stale-operation control, classified errors and technical diagnostics.
+Minimum prohibitions：
 
-v0.3 still favors **thin seams, explicit ownership, functional completeness and evidence-backed restraint** over generic frameworks.
+- Browser 不擁有 multi-call DB transaction。
+- Sequential Data API calls 不可被當成 atomic transaction。
+- 不在 DB transaction 中持有 slow external I/O。
+- Backend-owned transaction 必須有 connection / timeout / cleanup / restricted identity governance。
+- external side effect + DB consistency 需要 explicit idempotency / recovery / compensation decision。
 
-The useful lesson here is mildly embarrassing but healthy: avoiding over-engineering does not mean designing a Query Pattern whose survival plan is「資料應該不會很多吧」。
+---
+
+## 11. Batch Minimum Contract
+
+只要 Batch 要進 production，不論 scheduler 多簡單，至少必須定義：
+
+- stable Operation Identity；
+- logical Run Identity；
+- Attempt Identity；
+- overlap policy；
+- idempotency policy，或明確接受 at-most-once / duplicate risk；
+- timeout；
+- retry owner / limit / backoff policy class；
+- input provenance；
+- outcome recording；
+- correlation；
+- safe manual replay behavior；
+- scheduler success / transport success / business success 的分離。
+
+Exact retry 次數與 long-running orchestration 可以等 Requirement；decision points 本身不能 deferred。
+
+---
+
+## 12. Error Contract
+
+General top-level categories可維持簡潔，但每個 Feature-facing failure 至少應提供：
+
+```text
+category
+stableCode
+safeMessage / safeDetails
+fieldErrors? 
+retryable?
+outcomeCertainty?
+correlationId?
+```
+
+Candidate categories：
+
+- validation
+- session-invalid
+- forbidden
+- not-found
+- conflict / stale-state
+- boundedness
+- cancelled / superseded
+- dependency / backend failure
+- unexpected
+
+Raw provider diagnostics 不直接顯示給 User。
+
+對 Mutation，timeout / transport failure 之後若無法判斷是否已 commit，必須回 `unknown` outcome，而不是鼓勵 User 無腦重按。
+
+---
+
+## 13. Record Provenance vs Audit vs Observability
+
+Baseline common metadata：
+
+```text
+created_at / created_by
+updated_at / updated_by
+```
+
+正式名稱：**Record Provenance Metadata**。
+
+它只回答「這筆目前資料最後由誰/何時建立與修改」。
+
+它不等於：
+
+- immutable change history；
+- approval history；
+- security audit；
+- access audit；
+- compliance retention；
+- operational logs / traces / metrics。
+
+Provenance actor 必須由 authoritative boundary 取得，不能信任 Browser 自填。
+
+---
+
+## 14. State Ownership v2
+
+State 必須區分 semantic owner 與 transport/storage custodian。
+
+| State | Semantic owner | Typical custodian | Invalidation |
+| --- | --- | --- | --- |
+| Session | Shell/Auth lifecycle | Auth provider/browser storage | logout / invalidation / expiry |
+| Application User Context | Shell | memory/cache | session/user-context change |
+| Route / Feature Entry | Shell | router/history | navigation |
+| Query criteria/sort/page | Query Feature | memory / optional URL/history | new query/reset/leave policy |
+| Query result | Query Feature | memory/cache | criteria/sort/page/auth change |
+| Request abort/supersession | active operation | browser/runtime | new request/leave/session change |
+| Detail stable identity | Detail/Query interaction | route or feature state | navigation/auth change |
+| Return anchor/context | Query/Detail interaction | feature/history transport | query context invalidation |
+| Form draft/dirty | Maintenance Feature | memory | save/cancel/discard |
+| Loaded record/version snapshot | Maintenance Feature | memory | reload/save/conflict |
+| Validation errors | Feature | memory | edit/revalidate/new operation |
+| Save outcome certainty | active mutation | feature/operation result | resolved/reload |
+| Authorization decision | trusted boundary | server/DB/provider policy | identity/scope/policy change |
+| Batch logical run | Batch operation | durable backend state | terminal outcome |
+| Batch attempt | Batch runtime | durable backend state | attempt completion |
+
+URL/history 可以承載 state，不因此取得 semantic ownership。Sensitive criteria 不應因方便而無條件序列化進 URL。
+
+---
+
+## 15. Provider Assumption Boundary
+
+General Architecture 不追求「假裝 provider-neutral」。
+
+真正要求是：
+
+> SDK 可以替換不代表 semantics 可以替換。只有 replacement 保持 operation / authorization / consistency / lifecycle contract 時，mechanism 才算可替換。
+
+Provider-specific assumptions 應集中登記，不偷藏在 Feature code。見：
+
+`knowledge/implementation/provider-assumption-register.md`
+
+---
+
+## 16. Implementation Guidance Boundary
+
+Architecture 與 Pattern contract 決定 WHAT / WHO / MINIMUM OBLIGATIONS。
+
+Implementation Guidance 負責 HOW within allowed choices，例如：
+
+- Feature 應持有哪些 state；
+- operation invocation flow；
+- mechanism selection checklist；
+- error mapping；
+- accessibility / responsive obligations；
+- tests / acceptance baseline。
+
+它不固定：
+
+- final visual design；
+- color / typography / spacing；
+- exact component library；
+- mandatory filename/class hierarchy；
+- universal service/repository layer。
+
+Pattern Implementation Guide：
+
+`knowledge/implementation/pattern-implementation-guide.md`
+
+---
+
+## 17. Visual Design Boundary
+
+目前 Visual System / Design Language 尚未定型，不阻擋 Architecture Constructibility。
+
+```text
+Architecture Semantics
+→ stable enough for implementation guidance
+
+Interaction Pattern
+→ baseline candidate established
+
+Visual System / Design Tokens / Component appearance
+→ replaceable / deferred
+```
+
+Pattern 只規定 presentation obligation：哪些 state/action/feedback 必須能被使用者理解；不規定現在 Playground Prototype 的 HTML/CSS 就是 formal UI contract。
+
+---
+
+## 18. Deferred Extensions
+
+保持 deferred：
+
+- Master-detail / one-to-many / many-to-many Maintenance。
+- Workflow / Approval。
+- Delete / Void generic pattern。
+- Cursor/Keyset / Infinite Scroll / generic Data Grid。
+- full Design System。
+- pessimistic locking。
+- long-running orchestration framework。
+- distributed compensation framework。
+
+但「deferred mechanism」不等於「decision point 可以省略」。例如 Batch 可以不做 orchestrator，但不能沒有 retry/idempotency decision。
+
+---
+
+## 19. Constructibility Gate
+
+一個 Feature / Batch 可以進入 formal implementation 前，至少應能回答：
+
+```text
+Pattern?
+Operation Contract?
+Authorization semantics?
+Validation classification?
+Execution mechanism eligibility?
+Transaction owner?
+Error contract?
+State ownership/lifetime?
+Mutation or retry/idempotency policy?
+Provider assumptions?
+Acceptance/test obligations?
+```
+
+若回答是「PG 到時候自己看著辦」，那不是 agile，是 architecture 漏水。
+
+---
+
+## 20. Current Judgment
+
+v0.4 將 General Platform 從 Architecture Shape 推進到 **Constructible Baseline Candidate**：
+
+```text
+Architecture Shape
+→ Minimum Constructible Contracts
+→ Pattern Implementation Guidance
+→ Product-specific Platform Architecture
+```
+
+它仍不是 Production Rule，也沒有替 Nook Works 做正式 provider/security/module/schema 決策。
+
+下一個合理 graduation step 是把這份 General baseline 帶入 formal Nook Works repository，形成真正的 Nook Works Platform Architecture，而不是繼續把 Playground 當正式系統祖厝。
