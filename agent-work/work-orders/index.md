@@ -22,6 +22,7 @@ Historical Work Orders 不 retroactive rewrite；Catalog 只做 normalized navig
 
 | Date | Type | Work Order | Primary Objective |
 |---|---|---|---|
+| 2026-09-17 | Review | [`2026-09-17-nook-works-architecture-v01-adversarial-review`](2026-09-17-nook-works-architecture-v01-adversarial-review.md) | 從 Architecture Reviewer 與 Implementer 雙視角 adversarially challenge Nook Works Application Architecture v0.1，找出責任錯置、過早抽象、不可施工契約與隱藏假設。 |
 | 2026-09-17 | Review | [`2026-09-17-general-platform-architecture-v01-review`](2026-09-17-general-platform-architecture-v01-review.md) | 從 Architecture Reviewer 與 Implementer 雙視角 adversarially review General Application Platform Architecture v0.1。 |
 | 2026-09-16 | Implementation | [`2026-09-16-application-shell-vertical-slice`](2026-09-16-application-shell-vertical-slice.md) | 實作 S-SHELL-1 disposable Application Shell vertical slice，整合 Auth/bootstrap、metadata Navigation、三種 Feature integration shape、routing 與 iPad-first responsive behavior。 |
 | 2026-09-16 | Review | [`2026-09-16-application-shell-implementation-readiness-review`](2026-09-16-application-shell-implementation-readiness-review.md) | 獨立評估 S-SHELL-1 在 Codex 無 Supabase management access 條件下的 implementation readiness、可施工範圍、runtime contract 與 validation handoff。 |
