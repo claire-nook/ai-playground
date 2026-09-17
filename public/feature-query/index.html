@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="F-QUERY-1 Nook Works representative read-only Batch query prototype">
+  <title>Nook Works · Batch 執行紀錄 Prototype</title>
+  <link rel="stylesheet" href="/application-shell/shell.css">
+  <link rel="stylesheet" href="/feature-query/prototype.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <button id="menu-button" class="menu-button" type="button" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><span>選單</span></button>
+      <a class="brand" href="/feature-query/">Nook Works <small>Functional Prototype</small></a>
+      <div class="account"><span>Claire · admin</span><button type="button" disabled title="Prototype 不執行真實 Session">登出</button></div>
+    </header>
+    <div class="shell-body">
+      <div id="nav-backdrop" class="backdrop" hidden></div>
+      <aside id="sidebar" class="sidebar" aria-label="Application Navigation">
+        <nav id="navigation">
+          <a href="#">Home</a>
+          <section class="nav-group"><h2>系統管理</h2><a href="/feature-query/" aria-current="page">Batch 執行紀錄</a></section>
+          <section class="nav-group"><h2>旅遊資料</h2><a href="#" aria-disabled="true">城市天氣查詢</a></section>
+        </nav>
+        <p class="nav-note">F-QUERY-1 · Representative Mock，不是正式 Nook Works。</p>
+      </aside>
+
+      <main id="content" class="content" tabindex="-1">
+        <header class="page-heading">
+          <p class="eyebrow">Batch Operation</p>
+          <div class="heading-row"><div><h1>Batch 執行紀錄</h1><p>確認排程是否執行，以及每次執行的 Business Result。</p></div><span class="prototype-badge">Representative Mock</span></div>
+        </header>
+
+        <section class="today-summary" aria-labelledby="today-title">
+          <div><p class="summary-label">今日 Daily Weather</p><h2 id="today-title">已完成</h2><p id="today-copy">最近執行：2026-09-17 06:05 · 12 個地點完成，1 個地點有警告</p></div>
+          <span id="today-status" class="status-pill status-warning">部分異常</span>
+        </section>
+
+        <form id="query-form" class="query-panel">
+          <div class="query-grid">
+            <label>Batch
+              <select id="batch-code"><option value="">全部</option><option value="DAILY_WEATHER" selected>Daily Weather</option><option value="PLACE_REFRESH">Place Refresh</option></select>
+            </label>
+            <label>執行狀態
+              <select id="status"><option value="">全部</option><option value="SUCCESS">成功</option><option value="WARNING">部分異常</option><option value="FAILED">失敗</option><option value="RUNNING">執行中</option></select>
+            </label>
+            <label>執行日起
+              <input id="date-from" type="date" value="2026-09-10">
+            </label>
+            <label>執行日訖
+              <input id="date-to" type="date" value="2026-09-17">
+            </label>
+          </div>
+          <div class="query-actions">
+            <label class="scenario-control">Prototype Scenario
+              <select id="scenario"><option value="mixed">Mixed</option><option value="normal">Normal</option><option value="empty">Empty</option></select>
+            </label>
+            <div class="button-row"><button id="clear-button" type="button">清除</button><button class="primary" type="submit">查詢</button></div>
+          </div>
+        </form>
+
+        <section class="result-section" aria-labelledby="result-title">
+          <div class="result-heading"><div><p class="eyebrow">Query Result</p><h2 id="result-title">執行紀錄</h2></div><p id="result-count" class="result-count"></p></div>
+          <p id="result-message" class="feature-state" role="status" aria-live="polite" hidden></p>
+          <div id="desktop-result" class="table-wrap"></div>
+          <div id="mobile-result" class="mobile-cards"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/feature-query/prototype.js"></script>
+</body>
+</html>
