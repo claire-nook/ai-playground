@@ -8,37 +8,43 @@
 
 ## 2026-09-17
 
-### F-DETAIL-1 — General Master → Detail Interaction Prototype
+### F-MAINT-1 — Single-record Maintenance Lifecycle Prototype
+
+- Status: `In Progress / Claire Functional Review`
+- Card: [`../experiments/feature-maintenance/f-maint-1.catalog.json`](../experiments/feature-maintenance/f-maint-1.catalog.json)
+- Record: [`../experiments/feature-maintenance/README.md`](../experiments/feature-maintenance/README.md)
+- Predecessors: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md) / [`../experiments/feature-detail/README.md`](../experiments/feature-detail/README.md)
+- Live Demo: [`/feature-maintenance/`](/feature-maintenance/)
+- Primary Intent: `Nook Technical Platform / Single-record Create + Update + Read mutation lifecycle`
+- Tags: `nook-platform`, `maintenance`, `create`, `update`, `read`, `dirty-state`, `validation`, `optimistic-concurrency`, `ipad-first`, `rwd`
+
+**Why it exists**
+
+F-QUERY-1 與 F-DETAIL-1 已提供 Query / Read Detail / Return Context baseline，因此本輪不重新養一套查詢與明細，而是把壓力集中在單檔 Maintenance lifecycle：Create / Update / Read、effective capability、Validation、Save / Cancel、Dirty State、optimistic concurrency 與 Save success transition。
+
+**Current prototype question**
+
+Prototype 採 logical surface-separated Read / Create / Update，以便直接觀察 lifecycle；這不是 Platform Rule。正式 Feature 可以採 mode-based 或 surface-separated implementation，只要共享相同 operation / state contract。Delete / Void / Approval 暫不混入，免得「單檔維護」三秒鐘膨脹成 Workflow ERP。
+
+### F-DETAIL-1 — Master → Detail Interaction Prototype
 
 - Status: `Completed / Pattern Candidate Established`
-- Verification: `Partial — Functional / Interaction Evidence`
 - Card: [`../experiments/feature-detail/f-detail-1.catalog.json`](../experiments/feature-detail/f-detail-1.catalog.json)
 - Record: [`../experiments/feature-detail/README.md`](../experiments/feature-detail/README.md)
+- Predecessor: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md)
 - Findings: [`../evidence/f-detail-1-findings.md`](../evidence/f-detail-1-findings.md)
 - Pattern Synthesis: [`platform/record-detail-pattern.md`](platform/record-detail-pattern.md)
-- Predecessor: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md)
 - Live Demo: [`/feature-detail/`](/feature-detail/)
-- Primary Intent: `General Record Detail / Query → Detail → Return lifecycle`
+- Primary Intent: `Nook Technical Platform / Query → Detail interaction lifecycle`
 - Tags: `nook-platform`, `feature-ui`, `master-detail`, `read-only-detail`, `query-context`, `stable-identity`, `audit-pattern`, `pagination`, `ipad-first`, `rwd`
-
-**Why it existed**
-
-F-QUERY-1 已把 List-only Query 與 Master → Detail 明確拆開，並留下 stable row identity、return-context restoration 與 Browser History 作下一輪 design pressure。F-DETAIL-1 研究 User 從 Query Result 選取單筆資料、閱讀完整資訊、再返回原工作上下文時，Platform 與 Feature 的責任如何拆分。
 
 **What was established**
 
-- v1 因 Requirement Carrier leakage 過度擬合 Batch-specific content，保留為 negative evidence。
-- v2 改用 Synthetic Business Object，收斂成 Feature-defined Business Content + Platform-standard Detail conventions。
-- Common Pattern 不等於 auto-generated page；正式 Feature 仍由 Specification 決定 business composition。
-- 固定一列三欄不是 Platform Rule；`normal / wide / full` 目前只作 layout capability / guideline candidate。
-- Long Text 應與普通短欄位區分，並保持 `Long Text ≠ Rich Text`。
-- Audit 應作 Platform Standard sub-pattern，普通 Record Detail 使用一致的 Created / Updated semantics 與 presentation。
-- Query Context 不等於舊 page number。返回時應以 stable record identity 在 current result ordering 重新定位，再衍生 current page / scroll anchor。
-- Browser prototype 的 full-fixture scan 不代表 Production Backend strategy；bounded anchor-position / cursor resolution 仍是 Open Contract。
+F-DETAIL-1 從 v1 的 Requirement Carrier leakage 修正到 v2 General Detail Pattern：Business Content 由 Feature Specification 決定，Platform 提供一致 Detail lifecycle / presentation conventions；Audit 成為 Platform Standard sub-pattern candidate；Query Context 不等於舊 page number，stable record identity 是 return-context anchor candidate。Common Pattern 不等於 auto-generated page。
 
 **What it unlocked**
 
-Read-only General Master → Detail 第一輪可以關閉，下一個 Pattern challenge 進入 Maintenance：Create / Update / Read 的共同 contract、separate surfaces vs mode-based implementation、capability / authorization、Save / Cancel / Dirty State、Browser History 與 concurrent update conflict。
+Read-only Detail / Return Context baseline 可以進入後續 Maintenance challenge。Production 如何 bounded resolve anchor position / cursor 仍為 Open Contract，不因 Browser mock 可以掃完整 fixture 就假裝完成。
 
 ### F-QUERY-1 — Representative Read-only Query Vertical Prototype
 
@@ -66,7 +72,7 @@ S-SHELL-1 已回答 Feature 如何進入 Application Runtime，但不回答一�
 
 **What it unlocked**
 
-Read-only Query 第一輪 research cycle 可以關閉，Current Judgment 已進入 `knowledge/platform/application-platform-architecture.md` v0.3。下一個真實 Requirement 可以重用、延伸或打壞這個 Candidate；Master → Detail、Maintenance、Export、Cursor / Keyset Pagination、Multi-column Sort 等不在 F-QUERY-1 假裝完成。
+Read-only Query 第一輪 research cycle 可以關閉，Current Judgment 已進入 `knowledge/platform/application-platform-architecture.md` v0.3。下一個真實 Requirement 可以重用、延伸或打壞這個 Candidate。
 
 ## 2026-09-16
 
@@ -98,8 +104,6 @@ Read-only Query 第一輪 research cycle 可以關閉，Current Judgment 已進�
 **What it unlocked**
 
 Application Shell lifecycle 不再是 Platform technical blocking gap。Formal Nook Works 可把 verified Shell contract、portable route/navigation logic 與 implementation lifecycle traps 作 Platform Shell design input，再依正式 repository structure 重構；不要直接把 Playground monolithic `app.js` 當 Production architecture。
-
-下一個 Browser research front 是 Feature UI / Maintenance Interaction：List/Table、query、CRUD/Form、Save/Cancel、Browser History、unsaved changes、query-state restoration 等。
 
 ### T-TXT-1 — Textastic Markdown Preview / Manual Print Page Break
 
