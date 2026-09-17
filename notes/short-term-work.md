@@ -8,25 +8,65 @@ S-SHELL-1 已於 2026-09-16 完成，Application Shell lifecycle 不再是 curre
 
 F-QUERY-1 已於 2026-09-17 完成第一輪 Read-only Query Pattern research cycle。Experiment Record：`experiments/feature-query/README.md`；General Platform synthesis：`knowledge/platform/application-platform-architecture.md` v0.3。
 
-F-QUERY-1 收斂出的 baseline candidate 包含：curated result、Business Query Boundary / Technical Result Boundary separation、enterprise-style server-side pagination / sorting、total count、page navigation、page size，以及 complete-set Browser processing 只作明確 bounded variant。Master → Detail return-context / stable row anchor 已辨識為下一 Pattern 的 known design pressure。
+F-DETAIL-1 已於 2026-09-17 完成第一輪 Read-only General Master → Detail research cycle。Experiment Record：`experiments/feature-detail/README.md`；Consolidated Findings：`evidence/f-detail-1-findings.md`；Pattern Synthesis：`knowledge/platform/record-detail-pattern.md`。
 
-**F-DETAIL-1 已於 2026-09-17 啟動。** 第一輪先研究 read-only Master → Detail interaction：Query Result → Select Record → Dedicated Detail Surface → Return Query Context。Prototype 重用 F-QUERY-1 visual baseline，刻意只新增 Detail action、stable record identity、Detail information hierarchy 與 selected-record return anchor；Edit / Save / Cancel / dirty-state 暫不混入第一輪 Claire Functional Review。
-
-目前 Research Front 仍是從 Nook Works 可預期的 Business / Functional Requirement 出發，補上過去由 Technical Leader / Framework 承擔的 technical decomposition，形成可重用的 Technical Platform Pattern。
+F-DETAIL-1 收斂出的 baseline candidate：
 
 ```text
-Business / Functional Requirement
-→ Interaction Semantics
-→ Technical Responsibility Decomposition
-→ Platform Pattern Candidate
-→ Existing Evidence Mapping
-→ Gap / Open Decision
-→ 必要時才開 Minimal Experiment
+Query Context
+→ Select Stable Record Identity
+→ General Read-only Detail
+→ Feature-defined Business Content
++ Platform-standard Audit
+→ Return
+→ Re-resolve Stable Record against current result ordering
+→ Restore work context
 ```
 
-Claire 可以繼續用企業系統 SA 熟悉的語言描述需求，例如單檔維護、主從維護、條件查詢、查詢後進明細、唯讀、修改存檔、作廢、批次操作、權限差異、回查詢頁保留工作上下文；Primary Agent 的責任是把這些 Functional Pattern 對應到 technical layer，而不是要求 Business Specification 自己決定底層架構。
+重要 conclusions：
 
-### Business Specification ↔ Platform responsibility
+- Requirement Carrier 不可滲漏成 General Pattern responsibility。
+- Common Pattern 不等於 auto-generated page；Feature Specification 仍決定 business composition。
+- Audit 是 Platform Standard sub-pattern candidate。
+- Long Text 與普通短欄位 presentation 應區分，但 `Long Text ≠ Rich Text`。
+- Query Context 不等於舊 page number；stable record identity 是 return-context anchor candidate。
+- Production 如何 bounded resolve anchor position / cursor 仍是 Open Contract。
+
+### Next Pattern Challenge — Maintenance
+
+下一個 Research Front 進入 Maintenance / Mutation lifecycle，但先不預設 Create / Update / Read 一定共用同一 implementation surface。
+
+Claire 過去 enterprise system 的實務案例提供一個重要對照：
+
+```text
+ACCA01 → Create
+ACCU01 → Update
+ACCR01 → Read-only
+```
+
+因此下一輪要研究的不是「哪一種寫法比較現代」，而是：
+
+> **Create / Update / Read 哪些語意與 lifecycle 應由 Platform Pattern 統一；哪些可以由正式 Feature 選擇 mode-based 或 surface-separated implementation？**
+
+優先 pressure：
+
+- capability / authorization：`canCreate / canView / canEdit`。
+- record state 與 User permission 不應被混成單一 Frontend `status=Y` 判斷。
+- View-first vs Edit-when-allowed entry policy。
+- same surface modes vs separate Create / Update / Read surfaces。
+- editable field presentation / validation。
+- Save / Cancel。
+- dirty state / unsaved changes guard。
+- Browser Back / Sidebar navigation / reload lifecycle。
+- optimistic concurrency / record changed by another user。
+- Save success 後回 Detail、回 Query 或維持 Edit 的 behavior。
+- mutation / transaction / error contract。
+
+目前先把這些視為下一 Pattern 的 Research Question，不先養出一個全能 Form Framework。人類已經有夠多表單框架可以互相傷害了。
+
+---
+
+## Business Specification ↔ Platform Responsibility
 
 Business Specification 應描述 Business Operation 與必要 contract；Platform 應提供穩定的 technical interpretation。
 
@@ -67,15 +107,17 @@ Authorization / Transaction / Error / Lifecycle Contract
 
 ### UI research position
 
-UI / interaction 仍是 Platform research 的必要部分，但不是先建 Design System。F-QUERY-1 已證明最單純 Read-only Query 也需要一定程度的功能完整性，不能把 Pagination、Sort、Page Size 之類正常工作能力一律踢進「以後再說」。
+UI / interaction 仍是 Platform research 的必要部分，但不是先建 Design System。
 
-F-DETAIL-1 現在用 Dedicated Detail Surface 挑戰 Query → Detail → Return lifecycle；第一輪先確認閱讀與工作上下文，再決定是否進一步把 Maintenance 的 Edit / Save / Cancel、Validation、unsaved state、Browser History 等壓力疊上來。
+F-QUERY-1 已建立 Read-only Query baseline；F-DETAIL-1 已建立 General Read-only Detail / Return Context baseline。兩者都顯示 UI Pattern 的價值在於承載 lifecycle / state / operation contract，不是搶著標準化顏色、圓角或自動生成整張畫面。
 
-這些研究要回答的是：UI interaction 如何承載已定義的 Platform Contract，而不是先建立視覺規範。按鈕大小、顏色、圓角仍不是 current Research Front。
+下一輪 Maintenance 應優先研究 operation lifecycle 與 state transition；視覺 component library 仍不是 current Research Front。
+
+---
 
 ## Graduated Baseline
 
-已完成並可作 Architecture input：Supabase Auth、Native Data API / View Read、GitHub Actions execution、Supabase / Netlify Custom API runtime、Database-centric Custom API、External API Orchestration、Backend Service Access / Transaction Ownership、Netlify Trigger Boundary、Supabase Cron / Scheduling、**Application Shell lifecycle / composition**、**Read-only Query Pattern first baseline**。
+已完成並可作 Architecture input：Supabase Auth、Native Data API / View Read、GitHub Actions execution、Supabase / Netlify Custom API runtime、Database-centric Custom API、External API Orchestration、Backend Service Access / Transaction Ownership、Netlify Trigger Boundary、Supabase Cron / Scheduling、**Application Shell lifecycle / composition**、**Read-only Query Pattern baseline**、**General Read-only Detail / Return Context baseline**。
 
 S-SHELL-1 verified baseline：
 
@@ -103,6 +145,17 @@ Feature Identity
 → Result Interaction
 ```
 
+F-DETAIL-1 candidate baseline：
+
+```text
+Query Context
+→ Stable Record Identity
+→ Read-only Detail
+→ Feature Content + Platform Audit
+→ Return
+→ Current-result Re-location
+```
+
 重要治理原則：
 
 ```text
@@ -111,6 +164,8 @@ Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
 
 Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experiment Record；Short-term 不養 Completed 墓碑。上述 graduated baseline 只保存目前前緣需要知道的銜接點，不另追蹤已完成工作的細節。
 
+---
+
 ## Platform Rule / Design Queue
 
 這些是 Architecture / Rule design，不因看到名詞就立刻養新 Experiment：
@@ -118,6 +173,7 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 - Formal Nook Works Platform Shell design / module boundary extraction。
 - Business Feature → Technical Platform Pattern taxonomy / contract。
 - Query Operation Contract 的正式 Nook Works adoption，包括 pagination / sorting / page-size / boundedness semantics。
+- Detail return-anchor production contract：position / cursor resolution。
 - Transaction Pattern Selection。
 - Authorization / Error Contract。
 - Batch Execution Contract / retry / idempotency ownership。
@@ -127,12 +183,11 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 
 ## Deferred / Candidate
 
-- **Maintenance mutation extension after F-DETAIL-1 review**：Edit / Save / Cancel、unsaved changes、Validation、Browser History 與 mutation/transaction contract，待 read-only Detail lifecycle 先經 Claire review。
 - UI component / Design System / visual styling：等更多 representative interaction contract 穩定後再研究。
 - Advanced Query variants：Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort、generic saved-query / URL restoration，等 Requirement 真正需要。
 - A-SAFARI-LIFECYCLE intermittent explicit-logout Session restoration：Known Observation / root cause Unknown；只有 anomaly 再出現時帶 diagnostic purpose 重開，不反覆逼 Safari 表演靈異現象。
 - P-CODEX-PHONE autonomous dispatch：Deferred by Provider Gap。
 - Pure Compute / Longer-running Processing：等 representative workload。
-- Concurrency / Isolation / Deadlock / Load：等 quantified correctness/load requirement。
+- Concurrency / Isolation / Deadlock / Load：等 quantified correctness/load requirement；Maintenance optimistic concurrency 可以先研究 functional contract，不等於現在就做 DB load test。
 - Distributed Transaction / Compensation：等 external side effect + DB consistency requirement。
 - Advanced Workflow Orchestration：等 durable waits / branching / human approval requirement。
