@@ -8,6 +8,24 @@
 
 ## 2026-09-17
 
+### F-DETAIL-1 — Master → Detail Interaction Prototype
+
+- Status: `In Progress / Claire Functional Review`
+- Card: [`../experiments/feature-detail/f-detail-1.catalog.json`](../experiments/feature-detail/f-detail-1.catalog.json)
+- Record: [`../experiments/feature-detail/README.md`](../experiments/feature-detail/README.md)
+- Predecessor: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md)
+- Live Demo: [`/feature-detail/`](/feature-detail/)
+- Primary Intent: `Nook Technical Platform / Query → Detail interaction lifecycle`
+- Tags: `nook-platform`, `feature-ui`, `master-detail`, `read-only-detail`, `query-context`, `browser-history`, `ipad-first`, `rwd`
+
+**Why it exists**
+
+F-QUERY-1 已把 List-only Query 與 Master → Detail 明確拆開，並留下 stable row identity、return-context restoration 與 Browser History 作下一輪 design pressure。F-DETAIL-1 因此先不碰 Maintenance mutation，而是建立一個可被 Claire 推翻的 Dedicated Detail Surface，觀察 User 從 Query Result 選取單筆資料、閱讀完整資訊、再返回原工作上下文時，責任與 interaction 是否合理。
+
+**Current prototype question**
+
+第一輪使用 representative mock fixture，重用 Pattern 1 Query visual baseline，只增加明確 Detail action、read-only Detail information hierarchy、stable record identity 與返回 Query Context 的 selected-record anchor。Edit / Save / Cancel / dirty-state 刻意 deferred，避免還沒搞懂 Detail lifecycle 就先養出一隻萬能表單怪獸。
+
 ### F-QUERY-1 — Representative Read-only Query Vertical Prototype
 
 - Status: `Completed / Pattern Candidate Established`
@@ -81,189 +99,11 @@ Application Shell lifecycle 不再是 Platform technical blocking gap。Formal N
 
 **Why it existed**
 
-一般 Markdown → PDF 不需要人工接管 pagination；只有少數特殊交付文件需要 Claire 明確指定某個章節從新頁開始。研究目標因此不是建立 PDF Engine，而是在不影響原生 automatic pagination 的前提下加入 opt-in manual page break。
+Textastic 在 iPadOS 上是 Claire 的主要 Markdown authoring / preview surface，但原生 Preview 不支援手動 page break、Mermaid 與明確 code syntax highlighting。T-TXT-1 驗證 custom Markdown Preview 可以把這些能力補進 iPad-first authoring workflow，而不需要 Desktop toolchain。
 
 **What is verified**
 
-- Markdown `<!-- pagebreak -->` 可由 Textastic custom `markdown_head.html` 轉成 `.page-break` DOM node。
-- Textastic Preview 可顯示 `PAGE BREAK` 作者提示，Print media 可隱藏提示並在該位置強制換頁。
-- A4 / 100% iPadOS Print Preview minimal probe 驗證成功。
-- 真實 15 頁長文件驗證：人工 marker 與 WebKit / iPadOS 原生 automatic pagination 可共存。
-- 沒有 marker 時，不建立 page-break node，也不加入 page-level pagination intervention。
-
-**What it unlocked**
-
-保留一套可直接安裝的 Textastic Markdown Preview customization：森林霧綠 theme、Mermaid rendering 與 opt-in manual print page break。特殊 PDF 文件可透過 Print Preview → 人工插入 `<!-- pagebreak -->` → 再 Preview 的方式逐頁微調，不需要為 1% 的需求改造 99% 的 Markdown workflow。
-
-## 2026-09-15
-
-### P-CODEX-PHONE — ChatGPT → Codex Autonomous Dispatch Reconnaissance
-
-- Status: `Verified / Deferred by Provider Gap`
-- Record: [`../experiments/codex-dispatch/README.md`](../experiments/codex-dispatch/README.md)
-- Research Map: [`maps/ai-agent-collaboration.md`](maps/ai-agent-collaboration.md)
-- Primary Intent: `AI Engineering / Multi-Agent Collaboration / Remove Human Relay`
-- Tags: `ai-engineering`, `codex`, `agent-collaboration`, `remote-execution`, `github-actions`, `authentication`, `credential`, `ipad-first`
-
-**Why it existed**
-
-Claire 目前仍需在 ChatGPT Primary 與 Codex 之間手動複製 Work Order、啟動 Task、再回報完成。研究目標不是移除人類判斷，而是消除這段沒有判斷價值的 Human Relay / middleware responsibility。
-
-**What is verified**
-
-- GitHub 可以承擔 Work Order / Report / PR / Evidence 的 durable collaboration state。
-- `codex exec` 可作 non-interactive execution primitive；Codex Cloud Task 與 `codex exec` 的 workspace / repository / credential boundary 不同。
-- ChatGPT sign-in 與 API-key sign-in 是不同 billing boundary；API key route 會進 API pricing，不符合本案「使用既有 Plus Codex allowance」的成本條件。
-- Current provider gap 是缺少 supported subscription-backed unattended workload identity / stable task invocation。Device auth 仍需人類；restore personal auth state 到 CI 不符合 credential custody；persistent runner 維運成本不合理。
-
-**What it unlocked**
-
-研究沒有進入 Phase 3 implementation。Current Architecture Judgment 是 `WAIT`：保留 Claire 一次 per-task dispatch gate，持續使用 OpenAI-managed Codex Cloud + GitHub evidence + Primary QC。未來若出現 stable Cloud Task API、subscription workload identity、GitHub OIDC federation、official short-lived CI credential helper 或 direct ChatGPT→Codex tool，再重新開啟，不必從零研究。
-
-### D-BATCH-1 — Supabase Batch Runtime / Scheduling
-
-- Status: `Verified / Completed`
-- Record: [`../experiments/batch-scheduling/README.md`](../experiments/batch-scheduling/README.md)
-- Phase Evidence: [`../evidence/d-batch-1-phase-1.md`](../evidence/d-batch-1-phase-1.md)
-- Parameter Evidence: [`../evidence/d-batch-1-parameter-invocation.md`](../evidence/d-batch-1-parameter-invocation.md)
-- Live Demo: [`/cron-edge-observer/`](/cron-edge-observer/)
-- Primary Intent: `Nook Technical Platform / Batch Runtime / Scheduling Feasibility`
-- Tags: `nook-platform`, `batch-runtime`, `supabase`, `postgresql`, `data-api`, `external-api`, `parameterized-invocation`, `observability`, `platform-pattern`
-
-**Why it existed**
-
-Auth、Database 與主要 Custom API candidate 已集中於 Supabase，因此以最小 producer / consumer experiment 確認 Supabase-managed scheduling 是否能合理承擔 Nook Works 常見 batch responsibility，並進一步驗證 scheduled API parameter preparation 的責任邊界。
-
-**What is verified**
-
-```text
-Cron → PostgreSQL Database Function → synthetic row
-Cron → pg_net → Edge Function
-Edge Function → Native Data API SELECT / UPDATE on authorized synthetic table
-Cron-scheduled Edge Function → Open-Meteo → synthetic SUCCESS + temperature
-Cron HTTP body ← static literal
-Cron HTTP body ← execution-time SQL expression
-Cron HTTP body ← PostgreSQL Function return value
-```
-
-Cron job lifecycle 也已實測：`cron.schedule / cron.alter_job / cron.unschedule`，並可從 `cron.job` inspect runtime definition。
-
-**What it unlocked**
-
-Batch parameter preparation 的已知 capability ladder：
-
-```text
-Static Literal
-→ SQL Runtime Expression
-→ DB Helper Function
-→ Launcher / Preparation API
-→ Orchestrator
-```
-
-前三層有直接 runtime Evidence。`Cron → Launcher API → Core API` 的 building blocks 已由既有 Custom API composition / Native Data API / External API evidence 支持，因此不另做重複 probe。
-
-Platform adoption 必須區分：`Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule`。平台初期可只標準化少數 Pattern，其他已知能力保留為 Deferred / Future Expansion Candidate，隨需求與平台成熟度再 Promote。
-
-Formal `place` SELECT 曾因 current `service_role` 缺少 table SELECT privilege 而失敗。這不是 Cron limitation；該問題已抽離並由 C-BSA-1 完成驗證。
-
-### C-BSA-1 — Custom API / Backend Service Database Access
-
-- Status: `Verified / Completed`
-- Card: [`../experiments/custom-api/c-bsa-1.catalog.json`](../experiments/custom-api/c-bsa-1.catalog.json)
-- Record: [`../experiments/custom-api/c-bsa-1.md`](../experiments/custom-api/c-bsa-1.md)
-- Consolidated Findings: [`../evidence/c-bsa-1-consolidated-findings.md`](../evidence/c-bsa-1-consolidated-findings.md)
-- Primary Intent: `Nook Technical Platform / Backend Service Access / Database Authorization & Transaction`
-- Tags: `nook-platform`, `custom-api`, `backend-service`, `data-api`, `rpc`, `postgresql`, `authorization`, `transaction`
-
-**Why it existed**
-
-D-BATCH-1 已證明 service-authenticated Edge Function 可讀寫有權限的 synthetic table，但 formal `place` read 暴露了 service identity、table privilege 與 RLS 是不同層次。C-BSA-1 因此獨立回答 Backend Service 如何存取 PostgreSQL objects，以及完整 Business Operation 的 transaction boundary 可以由哪一層持有。
-
-**What is verified**
-
-- Backend Service Identity 不等於 unrestricted DB object access；PostgreSQL object privilege 與 RLS 是可分離的 authorization boundaries。
-- Function `EXECUTE` 可以形成 operation-level authorization boundary，與 direct table CUD 分離。
-- Separate Native Data API requests 不共享 rollback boundary。
-- One RPC / PostgreSQL Function 可以持有 Database-owned Transaction。
-- Edge Function PostgreSQL client 可以持有 Backend-owned Transaction，並完成 controlled rollback / commit。
-
-**What it unlocked**
-
-C-BSA-1 支持三種可供未來 Platform Architecture 選擇的 operation / transaction placement：Native Data API、RPC / PostgreSQL Function、Backend-owned PostgreSQL Transaction。核心 Evidence-backed Current Judgment 是：
-
-> `Transaction owner = layer owning complete Business Operation.`
-
-這仍不是自動生效的 Platform Rule。Phase D 使用 `postgres` credential 只證明 technical feasibility，不是 Production least-privilege credential design。
-
-## 2026-09-13
-
-### C-EXT-1 — Custom API Orchestration / External API
-
-- Status: `Verified`
-- Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
-- Primary Intent: `Nook Technical Platform / External API Orchestration Feasibility`
-- Tags: `nook-platform`, `custom-api`, `supabase`, `api-composition`, `external-api`, `open-meteo`, `jwt`, `rls`, `netlify`, `github-actions`
-
-`Netlify Browser → Weather Edge Function → same caller JWT → Valid Place Edge Function → RLS-filtered places → Open-Meteo → normalization → Browser` 已 runtime verified。
-
-### C-DB-1 — Database-centric Supabase Custom API
-
-- Status: `Verified`
-- Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
-- Primary Intent: `Nook Technical Platform / Custom API Runtime Feasibility`
-- Tags: `nook-platform`, `custom-api`, `supabase`, `rpc`, `data-api`, `rls`, `cors`, `browser`, `netlify`
-
-`Netlify Browser → Supabase Auth JWT → Edge Function → RPC / PostgreSQL Function → Native Data API SELECT → mapping` 已實測成功。caller-scoped user path 不等同 backend service identity 對正式 table 的完整 CRUD / authorization model；後者已由 C-BSA-1 補齊 Evidence。
-
-### C-NF-0 — Netlify Functions Deployment Lifecycle
-
-- Status: `Verified`
-- Record: [`../experiments/custom-api/netlify-functions-lifecycle.md`](../experiments/custom-api/netlify-functions-lifecycle.md)
-- Tags: `nook-platform`, `custom-api`, `deployment`, `netlify`, `ipad-first`
-
-Git source → Deploy Preview → invoke / logs → Production → source delete / function absent 已驗證。Netlify Functions 保留為 credible secondary runtime candidate。
-
-### Netlify Git Deployment Boundary
-
-- Status: `Verified`
-- Record: [`../experiments/netlify-deployment-boundary/README.md`](../experiments/netlify-deployment-boundary/README.md)
-- Related Evidence: [`../evidence/provider-boundary-pitfalls.md`](../evidence/provider-boundary-pitfalls.md)
-- Tags: `nook-platform`, `deployment`, `netlify`, `browser`
-
-建立 `public/` Static Public Artifact boundary；後續 Trigger Boundary 亦已驗證 relevant path deploy / docs-only skip。
-
----
-
-## 2026-09-12
-
-### Experiment A — Supabase Auth
-- Status: `Verified`
-- Record: [`../experiments/auth/README.md`](../experiments/auth/README.md)
-
-### Experiment B — Supabase Native Data API CRUD
-- Status: `Verified`
-- Record: [`../experiments/data-api/README.md`](../experiments/data-api/README.md)
-
-### Experiment B-1 — Supabase Native Data API View Read / Security
-- Status: `Verified`
-- Record: [`../experiments/data-api-view/README.md`](../experiments/data-api-view/README.md)
-
-### GitHub Actions Remote Execution Environment
-- Status: `Verified`
-- Record: [`../experiments/github-actions/README.md`](../experiments/github-actions/README.md)
-
-### Experiment C-0 — Supabase Edge Function Deployment Lifecycle
-- Status: `Verified`
-- Record: [`../experiments/custom-api/README.md`](../experiments/custom-api/README.md)
-
----
-
-## Current Candidate Experiments
-
-- **Application UI Maintenance / Master → Detail Pattern**：F-QUERY-1 已完成 Read-only Query baseline；下一個真實 Requirement 若需要 Detail / Edit，研究 return-context restoration、stable row anchor、Validation、Toolbar/action hierarchy、Save/Cancel、Browser History、unsaved changes 與 iPad-first responsive behavior。
-- **Pure Compute / Longer-running**：等 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
-- **Explicit API Authorization / Business Contract**：目前優先視為 Platform Rule / Design；只有 provider semantics 真正成為決策疑義時才補 Experiment。
-- **Batch Retry / Idempotency**：先由 formal Business Specification / Platform Rule 定義 logical run、retry ownership、failure persistence；只有 chosen contract 需要 duplicate / concurrent / timeout-after-commit assurance 時才做 focused experiment。
-- **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
-- **A-SAFARI-LIFECYCLE Re-open**：historical explicit-logout Session restoration 為 intermittent Known Observation；只有 anomaly 再出現且能取得 diagnostic trace 時重開。
-- **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以 API key 額外計費、personal OAuth escrow 或 persistent runner 硬補。
+- Mermaid fenced code 可在 Textastic Preview render。
+- `<!-- pagebreak -->` 可在 Preview 顯示 marker、Print 時隱藏並強制 page break。
+- 明確 language fence 可由 Highlight.js 提供 syntax highlighting；未標 language 的 fenced code 保持 plain。
+- 這些能力已進入 Primary Agent Capability Inventory，成為後續 Markdown authoring 可直接利用的基礎能力。
