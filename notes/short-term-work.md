@@ -10,62 +10,39 @@ F-QUERY-1 已於 2026-09-17 完成第一輪 Read-only Query Pattern research cyc
 
 F-DETAIL-1 已於 2026-09-17 完成第一輪 Read-only General Master → Detail research cycle。Experiment Record：`experiments/feature-detail/README.md`；Consolidated Findings：`evidence/f-detail-1-findings.md`；Pattern Synthesis：`knowledge/platform/record-detail-pattern.md`。
 
-F-DETAIL-1 baseline candidate：
+F-MAINT-1 已於 2026-09-17 完成第一輪 Single-record Maintenance research cycle。Experiment Record：`experiments/feature-maintenance/README.md`；Consolidated Findings：`evidence/f-maint-1-findings.md`；Pattern Synthesis：`knowledge/platform/single-record-maintenance-pattern.md`。
+
+目前三層 Functional Pattern baseline 已形成：
 
 ```text
-Query Context
-→ Select Stable Record Identity
-→ General Read-only Detail
-→ Feature-defined Business Content
-+ Platform-standard Audit
-→ Return
-→ Re-resolve Stable Record against current result ordering
-→ Restore work context
+Query / Worklist
+→ Read-only Detail
+→ Create / Update Maintenance
 ```
 
-重要 conclusions：Requirement Carrier 不可滲漏成 General Pattern responsibility；Common Pattern 不等於 auto-generated page；Audit 是 Platform Standard sub-pattern candidate；Long Text 與普通短欄位 presentation 應區分但 `Long Text ≠ Rich Text`；Query Context 不等於舊 page number；Production bounded anchor resolution 仍是 Open Contract。
-
-### Current Pattern Challenge — F-MAINT-1 Single-record Maintenance
-
-F-MAINT-1 已於 2026-09-17 啟動，直接承接 Phase 1 Query 與 Phase 2 Read Detail，不重新養一套查詢／明細。這一輪研究完整單檔 Maintenance lifecycle：
+F-MAINT-1 收斂出的 Internal Enterprise Maintenance baseline：
 
 ```text
-Query
-→ Read Detail / Create / Update
-→ Effective Capability
-→ Editable Form State
-→ Validation
-→ Dirty State
-→ Save / Cancel
-→ Optimistic Concurrency Check
-→ Save Success / Conflict
-→ Read Detail / Return Query Context
+Query / Worklist Context
+├─ Read   → Return        → Query Context
+├─ Create → Save / Cancel → Query Context
+└─ Update → Save / Cancel → Query Context
 ```
 
-Prototype 目前採 logical surface-separated `Read / Create / Update` 以便觀察 lifecycle；這不是 Platform Rule。正式 Feature 仍可採 mode-based implementation，只要共享相同 semantic / operation contract。
+重要 conclusions：
 
-Claire 過去 enterprise system 的實務案例繼續作 architecture pressure：
+- Nook Works ordinary Maintenance 採 Worklist-centric，不採 customer-facing Guided Flow 作預設。
+- `Update → Save → Read Detail → Return Query` 已被 Claire functional review 否決，保留為 lifecycle negative evidence。
+- Common Pattern 不等於 common page implementation；mode-based / surface-separated 都可存在。
+- Effective Capability 應區分 User Capability、Record State 與 Feature / Business Rule input；Frontend capability 不等於 backend authorization。
+- Dirty State / Unsaved Changes Guard 是 Maintenance lifecycle responsibility。
+- Audit 延續 F-DETAIL-1 Platform Standard sub-pattern。
+- UI button placement / visual hierarchy 不是本輪 Platform Rule；Prototype UI 只負責把 operation 演出來。
+- Concurrency handling 是 Mutation Policy decision point，不是所有 Update 的預設 optimistic locking。
+- Ordinary Maintenance current default candidate 為 Last Write Wins；Feature 可明確升級為 stale-update detection 或 business-state-sensitive mutation。
+- Maintenance 與 Workflow / Approval 是不同 Pattern；一筆 Business Object 可以被維護，同時另外參與審批流程。
 
-```text
-ACCA01 → Create
-ACCU01 → Update
-ACCR01 → Read-only
-```
-
-本輪優先 pressure：
-
-- `canCreate / canView / canEdit` 與 Record State 分離，再形成 Effective Capability。
-- Frontend 不把單一 `status=Y/N` 當完整 Authorization proof。
-- Create / Update field behavior 與 immutable field。
-- required-field / unique business key validation。
-- Save / Cancel。
-- dirty state / unsaved changes guard。
-- Browser reload / leave guard；更完整 Browser History integration 仍需 review 後決定是否加深。
-- optimistic concurrency：loaded version vs current stored version。
-- Save success → Read Detail 目前為 candidate policy。
-- Audit 在 Read / Update lifecycle 中維持 Platform Standard semantics。
-
-目前 Prototype 刻意不加入 Delete / Void / Approval、Master-detail child collection、real API / DB mutation、production authorization enforcement、pessimistic locking、DB load/isolation test。先把單筆 Create / Update / Read 的責任邊界收乾淨，別讓「單檔」一夜之間長成 ERP 神獸。
+下一個 Research Front 尚未選定。不要因為剛收斂完 Maintenance 就立刻把 Delete、Approval、Master-detail 全部抓進來煮一鍋，這種衝動通常就是 ERP 神獸的出生證明。
 
 ---
 
@@ -105,6 +82,7 @@ Authorization / Transaction / Error / Lifecycle Contract
 - Feature state 與 Shell state 的 boundary。
 - Browser History、Save / Cancel、unsaved state、query-state restoration 的 lifecycle。
 - Error / validation / partial failure contract。
+- Mutation Policy：Last Write Wins、stale-update detection、business-state-sensitive mutation。
 
 既有 Verified Evidence 必須優先拿來支撐 pattern analysis；只有 mechanism 或 runtime behavior 仍有不確定性時才新增 Experiment。不要把 Architecture / Rule design 偽裝成實驗，否則 Playground 最後會變成「凡事都做個 demo」博物館。
 
@@ -112,15 +90,13 @@ Authorization / Transaction / Error / Lifecycle Contract
 
 UI / interaction 仍是 Platform research 的必要部分，但不是先建 Design System。
 
-F-QUERY-1 已建立 Read-only Query baseline；F-DETAIL-1 已建立 General Read-only Detail / Return Context baseline。F-MAINT-1 現在把 mutation lifecycle 疊上去，觀察相同 record semantics 在 Read / Create / Update 下如何保持一致，而不把 Prototype implementation 偷渡成 Platform architecture。
-
-視覺 component library 仍不是 current Research Front。
+F-QUERY-1、F-DETAIL-1、F-MAINT-1 已分別建立 Query、Read Detail、Single-record Maintenance baseline。這些 Prototype 的畫面用來承載 lifecycle / state / operation contract；按鈕位置、視覺 component library、正式 layout rule 仍不是 current Research Front。
 
 ---
 
 ## Graduated Baseline
 
-已完成並可作 Architecture input：Supabase Auth、Native Data API / View Read、GitHub Actions execution、Supabase / Netlify Custom API runtime、Database-centric Custom API、External API Orchestration、Backend Service Access / Transaction Ownership、Netlify Trigger Boundary、Supabase Cron / Scheduling、**Application Shell lifecycle / composition**、**Read-only Query Pattern baseline**、**General Read-only Detail / Return Context baseline**。
+已完成並可作 Architecture input：Supabase Auth、Native Data API / View Read、GitHub Actions execution、Supabase / Netlify Custom API runtime、Database-centric Custom API、External API Orchestration、Backend Service Access / Transaction Ownership、Netlify Trigger Boundary、Supabase Cron / Scheduling、**Application Shell lifecycle / composition**、**Read-only Query Pattern baseline**、**General Read-only Detail / Return Context baseline**、**Single-record Maintenance baseline**。
 
 S-SHELL-1 verified baseline：
 
@@ -159,13 +135,26 @@ Query Context
 → Current-result Re-location
 ```
 
+F-MAINT-1 candidate baseline：
+
+```text
+Query / Worklist Context
+→ Read / Create / Update
+→ Effective Capability
+→ Feature-defined Field State
+→ Validation + Dirty State
+→ Save / Cancel
+→ Selected Mutation Policy
+→ Restore Worklist Context
+```
+
 重要治理原則：
 
 ```text
 Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
 ```
 
-Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experiment Record；Short-term 不養 Completed 墓碑。
+Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experiment Record；Short-term 不養 Completed 墓碑。上述 graduated baseline 只保留目前前緣需要知道的銜接點。
 
 ---
 
@@ -175,7 +164,8 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 - Business Feature → Technical Platform Pattern taxonomy / contract。
 - Query Operation Contract 的正式 Nook Works adoption，包括 pagination / sorting / page-size / boundedness semantics。
 - Detail return-anchor production contract：position / cursor resolution。
-- Maintenance mutation / validation / concurrency / Save policy contract。
+- Maintenance mutation / validation / capability / Save policy contract。
+- Mutation Policy default / Specification decision guardrail。
 - Transaction Pattern Selection。
 - Authorization / Error Contract。
 - Batch Execution Contract / retry / idempotency ownership。
@@ -187,10 +177,12 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 
 - UI component / Design System / visual styling：等更多 representative interaction contract 穩定後再研究。
 - Advanced Query variants：Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort、generic saved-query / URL restoration，等 Requirement 真正需要。
-- Delete / Void / Approval / Master-detail Maintenance：等 F-MAINT-1 單筆 Create / Update / Read lifecycle 先收斂。
+- Delete / Void：等有 representative Business Requirement，再判斷是 Maintenance extension 或 Business Operation。
+- Approval / Workflow：獨立 Pattern candidate，不混入 ordinary Maintenance。
+- Master-detail Maintenance：等單檔 baseline 需要被真實 Requirement 延伸時再研究。
 - A-SAFARI-LIFECYCLE intermittent explicit-logout Session restoration：Known Observation / root cause Unknown；只有 anomaly 再出現時帶 diagnostic purpose 重開，不反覆逼 Safari 表演靈異現象。
 - P-CODEX-PHONE autonomous dispatch：Deferred by Provider Gap。
 - Pure Compute / Longer-running Processing：等 representative workload。
-- Concurrency / Isolation / Deadlock / Load：等 quantified correctness/load requirement；F-MAINT-1 optimistic concurrency 先研究 functional contract，不等於現在就做 DB load test。
+- Concurrency / Isolation / Deadlock / Load：等 quantified correctness/load requirement；F-MAINT-1 只建立 mutation-policy decision point，不等於完成 DB concurrency test。
 - Distributed Transaction / Compensation：等 external side effect + DB consistency requirement。
 - Advanced Workflow Orchestration：等 durable waits / branching / human approval requirement。
