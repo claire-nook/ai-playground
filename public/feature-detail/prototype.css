@@ -125,6 +125,14 @@
   font-weight:750;
 }
 .result-table tr.selected-row td { background:#f0f7f3; }
+
+/* Pattern 1's five-column widths are intentionally overridden: Pattern 2 replaces end-time with a compact selection action. */
+.detail-result-table th:nth-child(1),.detail-result-table td:nth-child(1) { width:21%; }
+.detail-result-table th:nth-child(2),.detail-result-table td:nth-child(2) { width:18%; }
+.detail-result-table th:nth-child(3),.detail-result-table td:nth-child(3) { width:14%; }
+.detail-result-table th:nth-child(4),.detail-result-table td:nth-child(4) { width:35%; }
+.detail-result-table th:nth-child(5),.detail-result-table td:nth-child(5) { width:12%; }
+
 .detail-action {
   min-height:2.3rem;
   padding:.4rem .7rem;
