@@ -154,27 +154,29 @@ Query List
 
 Export 即使 technically read-only，也可能具有更高的 data exfiltration risk。User 可以逐筆查閱資料，不代表 User 應自動取得大量下載能力。因此 Export 不能只是因為 Table 欄位塞不下就順手加一顆「匯出 Excel」按鈕；它需要獨立 Requirement，並視資料性質評估 Authorization、Scope、Masking、Volume Limit、Audit 等安全責任。
 
-### 4. Single-column Sorting：完整 Result Set 時由 Browser 負責
+### 4. Sorting Responsibility 取決於 Result Ownership，不以 Browser 為預設
 
-本輪討論的前提是：資料量足以在一次 Query 中完整載入 Browser。
+第二輪原本只討論「完整 Result Set 已一次載入 Browser」的情境，因此得到：完整且 bounded 的結果可以由 Browser 做 Single-column Sorting。這個判斷在該前提下仍成立，但不能擴寫成 Enterprise Query 的一般預設。
 
 ```text
+A. Complete-set Browser-owned
 Query
-→ API 使用 Requirement-defined Default Sort
-→ 完整 Result Set 載入 Browser
-→ Render
+→ Backend 回傳完整、明確 bounded 的 Result Set
+→ Browser 對完整集合做 Single-column Sort
+→ Browser 再呈現目前頁面 / 區段
 
-User 點可排序 Column Header
-→ 不重新 Call API
-→ Browser 對完整 Result Set 做 Single-column Sort
-→ ASC / DESC 切換
+B. Server-paged
+Query
+→ Backend 對完整符合條件集合 Filter / Sort
+→ Backend 只回傳目前 page
+→ User 改排序
+→ 重新送出 sort state
+→ Backend 對完整集合重新排序後再切 page
 ```
 
-這種排序是 User 對既有查詢結果的臨時閱讀需求，不取代 API Contract 中的 Default Sort。
+Server-side Pagination 存在時，不能只排序 Browser 手上的目前 page records，卻讓 User 以為排序的是完整結果。
 
-目前只需要 **Single-column Sorting**。不因 UI library 免費提供 Multi-column Sort 就自動擴張 capability。
-
-若未來資料量需要 Server-side Pagination，sorting responsibility 也會改變；那時應重新研究 Server-side Query State / Sorting / Pagination，不能只排序目前 page 的 records 卻讓 User 誤以為排序的是完整結果。
+目前仍不因 UI library 免費提供 Multi-column Sort 就自動擴張 capability；但「Single-column」與「由哪一層執行 Sort」是兩個不同問題。
 
 ### 5. Multi-select 是 Field Capability，不是所有 Dropdown 的 Default
 
@@ -188,11 +190,118 @@ status ∈ {SUCCESS, FAILED, RUNNING}
 
 理由除了 SQL / Query performance 必須依實際條件評估，也包含 Select All、Clear All、空集合語意、mobile interaction、query-state representation 等額外 complexity。技術可做，不等於免費，也不等於應該到處做。
 
-### 6. Pattern 的核心不是「有什麼元件」，而是 Responsibility Boundary
+## F-QUERY-1C — Enterprise Query Scale / Pagination Review
 
-目前收斂後，最單純 Query Pattern 不需要知道後端 schema，也不需要承載 Detail、Export、Server-side Pagination 或複雜 Data Grid capability。
+這一輪沒有新增 Browser prototype，而是用企業查詢的實務經驗重新挑戰「最小 Query Pattern」的尺度。主要修正是：**Minimal 不等於殘缺，也不能暗中假設資料量永遠小。**
 
-它的責任可以保持樸素：
+### 1. Business Query Boundary 與 Technical Result Boundary 必須分離
+
+SA / Requirement 應定義有業務意義的查詢範圍，例如：
+
+- 起訖日期預設值與最大區間；
+- 必填條件；
+- 哪些條件可以留空；
+- 哪些查詢範圍對 User 的工作情境才合理。
+
+但 Platform / Technical Design 不能把系統安全寄託在「SA 一定限制得很好」或「User 不會 key 錯」。Technical boundary 仍需讓單次 request / response 的成本保持可控。
+
+```text
+Business Query Boundary
+→ 控制「User 合理上應該查多少」
+
+Technical Result Boundary
+→ 控制「即使符合很多資料，單次操作也不能把系統拖垮」
+```
+
+Storage size、matching-row count、network payload 與 Browser rendering cost 是不同尺度。資料庫只有數萬筆不代表 Browser 應一次載入數萬筆。
+
+### 2. Enterprise-style Query Baseline 應納入 Server-side Pagination / Sorting
+
+對會持續累積資料的 business system，較安全的 baseline candidate 是：
+
+```text
+Criteria
++ Sort Field / Direction
++ Page Number
++ Page Size
+        ↓
+Validated Query Contract
+        ↓
+Server-side Filter
+→ Server-side Sort
+→ Server-side Page
+        ↓
+Bounded Rows
++ Total Count / Page Metadata
+```
+
+即使符合條件有 3,000、30,000 或更多 records，也不代表一次 response 要承載全部 records。
+
+因此 Server-side Pagination / Sorting 不再被視為「等未來資料大了才研究的附加能力」；對 enterprise-style query，它們是 baseline technical behavior candidate。真正仍可 deferred 的，是 Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort 等較進階策略。
+
+### 3. Page Navigation 與 Page Size Selector 是基本完整性
+
+一個合理的 paged Query Result，至少應考慮：
+
+- total result count；
+- current page；
+- previous / next；
+- page number navigation；
+- page size selector；
+- page-size change 後的 deterministic behavior。
+
+常見 page size options 例如 `10 / 20 / 50`，但數值本身不應被升格為 universal platform law。Platform 更適合提供一致的 pagination contract、page-size behavior 與 UI primitive；Feature / Product 可依資料密度與 Requirement 選擇 default / allowed options。
+
+候選 Query State 因此至少包含：
+
+```text
+criteria
+sortField
+sortDirection
+pageNumber
+pageSize
+```
+
+### 4. Complete-set Browser Processing 保留為明確受限的 Variant
+
+若某個 Feature 能證明完整 Result Set 小、bounded、成本合理，Browser-side sorting / pagination 仍可作為較簡單的 implementation variant。
+
+但 architecture 不再從「小資料完整載入」出發，然後等資料變大才翻修。對 General / Enterprise Query，更安全的預設是讓 query contract 從一開始就能表達 paging / sorting，而不是假設 Storage scale 小就等於 interaction scale 小。
+
+### 5. Known Pattern-2 Pressure：Master → Detail Return Context
+
+雖然 Master → Detail 尚未正式進入 Pattern 2 Experiment，但已知有一個不能忽略的 functional pressure：
+
+> User 從 Query Result 進入某筆 Detail，再返回 Result List 時，應回到原本工作的資料上下文，而不是無條件回 Page 1。
+
+而且真正的 return anchor 不一定是原本的 `pageNumber`。如果在 User 看 Detail 期間有新資料插入，原本那筆 record 可能從 Page 32 移到 Page 33。
+
+因此未來 Pattern 2 應研究的不是單純 `restore page = 32`，而是：
+
+```text
+Query Context
+- criteria
+- sortField / sortDirection
+- pageSize
+
+Return Anchor
+- selected stable row identity
+
+Return
+→ 重新取得最新 query state
+→ 找出 anchor record 在目前排序集合的位置
+→ 回到包含該 record 的 page
+```
+
+這目前是 **Known Design Pressure / Open Contract**，不是 F-QUERY-1 已驗證的 Pattern Rule，也不在本輪偷跑實作。
+
+Domain 若規定資料不可 physical delete、只能 Void / Cancel / Invalidate，stable row identity 的可追溯性會更強；是否允許 hard delete 仍屬正式 Business Domain Rule，不由 Generic Query Pattern 擅自發明。
+
+### 6. Pattern 的核心仍是 Responsibility Boundary，但 Baseline 必須完整
+
+目前收斂後，Read-only Query Pattern 仍不需要知道後端 schema，也不需要承載 Detail / Export 的完整 lifecycle。
+
+但「保持簡單」不再等於省略正常 Query 工作所需的基本 paging behavior。
 
 ```text
 Feature Identity
@@ -200,38 +309,45 @@ Feature Identity
 → Query Action
 → Query Result
    ├─ curated result columns
-   ├─ requirement-defined default ordering from API
-   └─ optional client-side single-column sorting
+   ├─ total count / page metadata
+   ├─ page navigation
+   ├─ page size
+   └─ single-column sorting
 ```
 
-Criteria field 可以依 Requirement 使用 text / date / single-select / multi-select 等 input capability，但 Pattern 不替每個 Feature 決定 field semantics。
+其中 criteria semantics 與欄位能力由 Requirement 定義；pagination / sorting 的 execution owner 則依 operation contract 決定，enterprise-style baseline 優先採 server-side bounded execution。
 
 ## Current Judgment
 
-F-QUERY-1 已足以證明一件比「Batch Log 畫面長什麼樣」更重要的事：**Generic Query Pattern 應該保持簡單，並用明確 responsibility boundary 阻止 Feature-specific、Data-access-specific 與 convenience-driven complexity 無限制滲入。**
+F-QUERY-1 現在形成的主要判斷不是「Query 越小越好」，而是：**Generic Query Pattern 應保持責任清楚、功能完整，並對資料成長保持技術上的防禦性。**
 
-Nook Works 目前的 Query Pattern Candidate：
+Nook Works / General Platform 目前的 Query Pattern Candidate：
 
 - 共通骨架為 Feature Identity / Query Criteria / Query Action / Query Result。
 - Result columns 由 Requirement 精準選擇，不把完整 record 當成 Result List。
-- Result Table 不以 horizontal scroll 作為正常能力。
-- 完整 Result Set 可支援 Browser-side single-column sorting。
+- Nook Works Result Table 不以 horizontal scroll 作為正常能力。
+- Enterprise-style baseline 納入 Server-side Pagination / Sorting、total count、page navigation 與 page size。
+- 完整且明確 bounded 的小型 Result Set 仍可採 Browser-side sorting / pagination 作為受限 variant。
 - Multi-select 是 Criteria Field capability，由 Requirement 指定。
-- Detail、Export、Server-side Pagination / Sorting 是獨立研究與 capability boundary。
+- Business Query Boundary 與 Technical Result Boundary 分離：SA 收斂合理查詢範圍，Technical Platform 保證單次 interaction cost 有界。
+- Detail / Export 仍是獨立 capability boundary。
+- Master → Detail 的 return-context / row-anchor semantics 已列為下一 Pattern 的 Known Design Pressure，不在本輪假裝解完。
 - Backend table/view/join complexity 屬 API / Data Contract，不滲入 Query Pattern。
 
 這些仍是 **Current Judgment / Pattern Candidate**，不是跨所有 Requirement 永久不可推翻的戒律。下一個真實 Requirement 可以重用它，也可以拿證據把它打壞。
 
 ## Evidence Boundary
 
-本 Prototype 的 Browser 行為形成 **Functional / Interaction Evidence**。它不證明正式 Data Access、Authorization、Detail Retrieval、Export Security、Server-side Pagination contract 或 Production UI Architecture。
+本 Prototype 的 Browser 行為形成 **Functional / Interaction Evidence**。F-QUERY-1C 的企業查詢尺度、pagination baseline 與 Master → Detail return-context 內容屬 **Design Review / Architecture Pressure**，不是新的 runtime Evidence。
+
+本 Experiment 仍不證明正式 Data Access、Authorization、Detail Retrieval、Export Security、Server-side Pagination implementation 或 Production UI Architecture。
 
 `Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule ≠ Production Implementation.`
 
 ## Next Step Boundary
 
-F-QUERY-1 不需要為了「讓 Experiment 看起來比較完整」繼續增加不存在於 Requirement 1 的功能。
+F-QUERY-1 不需要為了「讓 Experiment 看起來比較完整」直接把所有 future capability 寫進 Prototype。
 
-下一步應回到 Requirement-driven flow：把目前 Query Pattern Candidate 帶入正式 Nook Works 技術設計；若 Requirement 需要的 Data Access / Shell Integration 還有技術未知，再針對未知建立最小 Experiment。
+但下一步正式 Nook Works 技術設計若要實作 Query，不應再假設完整 Result Set 必然一次載入；應以可表達 criteria / sort / page / pageSize / total-count semantics 的 bounded operation contract 為起點。
 
-至於 Detail、Export、Server-side Pagination 等，等真的有 Requirement 來敲門再研究。Platform 不需要預先替不存在的 User 許三個願望。
+真正還需要由後續 Requirement 驅動的研究，包括 Master → Detail return context、Export、Cursor / Keyset Pagination、Multi-column Sort、Infinite Scroll 等。平台不需要預先替不存在的 User 許三個願望，但也不能把方向盤和煞車一起列成「以後再說」。
