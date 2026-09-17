@@ -1,0 +1,157 @@
+/* F-DETAIL-1 only: Detail interaction styles. Query/Shell baseline remains reused from Pattern 1. */
+
+.prototype-view[hidden] { display:none; }
+
+/* Returning from Detail is a business-workflow action, so make it explicit instead of relying on Browser Back alone. */
+.detail-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:1rem;
+}
+.back-button {
+  min-height:2.65rem;
+  padding:.55rem .85rem;
+  border:1px solid #b8c7bd;
+  border-radius:8px;
+  background:#fff;
+  color:#284a3b;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+}
+.back-button:hover,
+.back-button:focus-visible { background:#eef4f0; }
+.detail-context-label { color:#6e7781; font-size:.82rem; font-weight:750; }
+
+/* Detail hero exposes both business meaning and stable record identity without turning the title into a database dump. */
+.detail-hero {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1.5rem;
+  margin-bottom:1.25rem;
+  padding:1.2rem;
+  border:1px solid #d8dee4;
+  border-radius:14px;
+  background:#fff;
+}
+.detail-hero h1 { margin:.1rem 0 .35rem; }
+.detail-lead { max-width:62rem; margin:0; color:#59636e; }
+.detail-identity { display:flex; flex-direction:column; align-items:flex-end; gap:.55rem; }
+.detail-identity code {
+  padding:.35rem .6rem;
+  border:1px solid #d8dee4;
+  border-radius:7px;
+  background:#f6f8fa;
+  color:#59636e;
+  font-size:.78rem;
+  white-space:nowrap;
+}
+
+.detail-section {
+  margin-top:1rem;
+  padding:1.1rem;
+  border:1px solid #d8dee4;
+  border-radius:14px;
+  background:#fff;
+}
+.section-heading { margin-bottom:.8rem; }
+.section-heading h2 { margin:0; font-size:1.05rem; }
+.detail-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.85rem 1rem;
+  margin:0;
+}
+.detail-field {
+  min-width:0;
+  padding:.75rem;
+  border-radius:10px;
+  background:#f6f8fa;
+}
+.detail-field dt { margin-bottom:.25rem; color:#6e7781; font-size:.75rem; font-weight:800; }
+.detail-field dd { margin:0; color:#1f2328; font-weight:700; overflow-wrap:anywhere; }
+
+.detail-result-card {
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(220px,.5fr);
+  gap:1rem;
+}
+.result-copy { padding:.85rem; border-radius:10px; background:#f6f8fa; }
+.result-copy h3 { margin:0 0 .35rem; font-size:1rem; }
+.result-copy p { margin:0; color:#59636e; line-height:1.65; }
+.result-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
+.metric { padding:.8rem; border:1px solid #e1e6ea; border-radius:10px; }
+.metric strong { display:block; font-size:1.2rem; }
+.metric span { color:#6e7781; font-size:.75rem; }
+
+.trace-list { display:grid; gap:.65rem; margin:0; padding:0; list-style:none; counter-reset:trace; }
+.trace-list li {
+  position:relative;
+  padding:.75rem .8rem .75rem 2.8rem;
+  border-left:3px solid #b8c7bd;
+  background:#f6f8fa;
+  border-radius:0 9px 9px 0;
+  counter-increment:trace;
+}
+.trace-list li::before {
+  content:counter(trace);
+  position:absolute;
+  left:.7rem;
+  top:.7rem;
+  display:grid;
+  place-items:center;
+  width:1.45rem;
+  height:1.45rem;
+  border-radius:50%;
+  background:#284a3b;
+  color:#fff;
+  font-size:.72rem;
+  font-weight:800;
+}
+.trace-list strong { display:block; margin-bottom:.15rem; }
+.trace-list span { color:#59636e; font-size:.86rem; }
+
+/* The selected-row anchor is deliberately visible after return so review can judge whether context restoration feels useful. */
+.return-context {
+  margin:.2rem 0 .75rem;
+  padding:.65rem .8rem;
+  border-left:3px solid #284a3b;
+  background:#eef4f0;
+  color:#284a3b;
+  font-size:.84rem;
+  font-weight:750;
+}
+.result-table tr.selected-row td { background:#f0f7f3; }
+.detail-action {
+  min-height:2.3rem;
+  padding:.4rem .7rem;
+  border:1px solid #8aa596;
+  border-radius:7px;
+  background:#fff;
+  color:#284a3b;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+}
+.detail-action:hover,
+.detail-action:focus-visible { background:#eef4f0; }
+.record-card.selected-card { border-color:#8aa596; box-shadow:0 0 0 2px #eef4f0 inset; }
+.record-card .card-action-row { display:flex; justify-content:flex-end; margin-top:.85rem; }
+
+.detail-note { margin-top:1rem; }
+
+@media (max-width:900px) {
+  .detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .detail-result-card { grid-template-columns:minmax(0,1fr); }
+}
+
+@media (max-width:700px) {
+  .detail-toolbar,.detail-hero { align-items:flex-start; flex-direction:column; }
+  .detail-identity { align-items:flex-start; }
+  .back-button { width:100%; min-height:44px; font-size:16px; }
+  .detail-grid { grid-template-columns:minmax(0,1fr); }
+  .result-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
