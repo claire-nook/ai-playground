@@ -6,7 +6,11 @@
 
 S-SHELL-1 已於 2026-09-16 完成，Application Shell lifecycle 不再是 current technical blocking gap。Consolidated Findings：`evidence/s-shell-1-application-shell-findings.md`。
 
-下一個 Research Front 不是先做 UI Design System，也不是先決定 Table、按鈕、Dialog 等視覺 / component pattern。目標是從 Nook Works 可預期的 Business / Functional Requirement 出發，補上過去由 Technical Leader / Framework 承擔的 technical decomposition，形成可重用的 Technical Platform Pattern。
+F-QUERY-1 已於 2026-09-17 完成第一輪 Read-only Query Pattern research cycle。Experiment Record：`experiments/feature-query/README.md`；General Platform synthesis：`knowledge/platform/application-platform-architecture.md` v0.3。
+
+F-QUERY-1 收斂出的 baseline candidate 包含：curated result、Business Query Boundary / Technical Result Boundary separation、enterprise-style server-side pagination / sorting、total count、page navigation、page size，以及 complete-set Browser processing 只作明確 bounded variant。Master → Detail return-context / stable row anchor 已辨識為下一 Pattern 的 known design pressure，但尚未在 F-QUERY-1 偷跑定案。
+
+目前 Research Front 仍是從 Nook Works 可預期的 Business / Functional Requirement 出發，補上過去由 Technical Leader / Framework 承擔的 technical decomposition，形成可重用的 Technical Platform Pattern。
 
 ```text
 Business / Functional Requirement
@@ -18,7 +22,7 @@ Business / Functional Requirement
 → 必要時才開 Minimal Experiment
 ```
 
-Claire 可以繼續用企業系統 SA 熟悉的語言描述需求，例如單檔維護、主從維護、條件查詢、查詢後進明細、唯讀、修改存檔、刪除、批次操作、權限差異、回查詢頁保留條件；Primary Agent 的責任是把這些 Functional Pattern 對應到 technical layer，而不是要求 Business Specification 自己決定底層架構。
+Claire 可以繼續用企業系統 SA 熟悉的語言描述需求，例如單檔維護、主從維護、條件查詢、查詢後進明細、唯讀、修改存檔、作廢、批次操作、權限差異、回查詢頁保留工作上下文；Primary Agent 的責任是把這些 Functional Pattern 對應到 technical layer，而不是要求 Business Specification 自己決定底層架構。
 
 ### Business Specification ↔ Platform responsibility
 
@@ -61,13 +65,15 @@ Authorization / Transaction / Error / Lifecycle Contract
 
 ### UI research position
 
-UI / interaction 仍是 Platform research 的必要部分，但放在 technical responsibility / operation pattern 釐清之後。後續仍需研究：List / Table、Pagination、Sort、Filter / Search、Loading / Empty / Error、responsive presentation、Create / Edit / Delete / Save / Cancel、Validation、Dialog、Toolbar，以及 Query → Detail/Edit → Return lifecycle。
+UI / interaction 仍是 Platform research 的必要部分，但不是先建 Design System。F-QUERY-1 已證明最單純 Read-only Query 也需要一定程度的功能完整性，不能把 Pagination、Sort、Page Size 之類正常工作能力一律踢進「以後再說」。
 
-這些研究要回答的是：UI interaction 如何承載已定義的 Platform Contract，而不是先建立視覺規範或 Design System。按鈕大小、顏色、圓角不是 current Research Front。
+後續仍需由真實 Requirement 挑戰：Master → Detail、Create / Edit / Void、Save / Cancel、Validation、Dialog、Toolbar、unsaved state、Browser History 與 return-context restoration。
+
+這些研究要回答的是：UI interaction 如何承載已定義的 Platform Contract，而不是先建立視覺規範。按鈕大小、顏色、圓角仍不是 current Research Front。
 
 ## Graduated Baseline
 
-已完成並可作 Architecture input：Supabase Auth、Native Data API / View Read、GitHub Actions execution、Supabase / Netlify Custom API runtime、Database-centric Custom API、External API Orchestration、Backend Service Access / Transaction Ownership、Netlify Trigger Boundary、Supabase Cron / Scheduling、**Application Shell lifecycle / composition**。
+已完成並可作 Architecture input：Supabase Auth、Native Data API / View Read、GitHub Actions execution、Supabase / Netlify Custom API runtime、Database-centric Custom API、External API Orchestration、Backend Service Access / Transaction Ownership、Netlify Trigger Boundary、Supabase Cron / Scheduling、**Application Shell lifecycle / composition**、**Read-only Query Pattern first baseline**。
 
 S-SHELL-1 verified baseline：
 
@@ -84,9 +90,16 @@ Login / Session Restore
 → explicit Logout / Invalidation
 ```
 
-已驗證 deep link、reload、same-browser persisted Session、cross-browser unauthenticated entry、Back/Forward、explicit Logout、iPad/iPhone responsive behavior。Formal Nook Works 應把這些 Evidence 當 Platform Shell design input，不直接複製 Playground monolithic implementation。
+F-QUERY-1 candidate baseline：
 
-S-SHELL-1 另已建立 synthetic Feature Registry、Navigation Definition、`user_type → Feature Entry` mapping，驗證 metadata-driven Navigation / Feature Entry 的 conceptual separation；它不是 Production Role / Permission / RBAC schema。
+```text
+Feature Identity
+→ Query Criteria
+→ Query Action
+→ Server-side Filter / Sort / Page
+→ Bounded Result + Total / Page Metadata
+→ Result Interaction
+```
 
 重要治理原則：
 
@@ -94,7 +107,7 @@ S-SHELL-1 另已建立 synthetic Feature Registry、Navigation Definition、`use
 Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule
 ```
 
-Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experiment Record；Short-term 不養 Completed 墓碑。
+Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experiment Record；Short-term 不養 Completed 墓碑。上述 graduated baseline 只保存目前前緣需要知道的銜接點，不另追蹤已完成工作的細節。
 
 ## Platform Rule / Design Queue
 
@@ -102,6 +115,7 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 
 - Formal Nook Works Platform Shell design / module boundary extraction。
 - Business Feature → Technical Platform Pattern taxonomy / contract。
+- Query Operation Contract 的正式 Nook Works adoption，包括 pagination / sorting / page-size / boundedness semantics。
 - Transaction Pattern Selection。
 - Authorization / Error Contract。
 - Batch Execution Contract / retry / idempotency ownership。
@@ -111,7 +125,9 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 
 ## Deferred / Candidate
 
-- UI component / Design System / visual styling：等 Technical Platform Pattern 與 representative interaction contract 較清楚後再研究。
+- **Master → Detail / Maintenance Pattern**：由下一個真實 Requirement 啟動；已知壓力包含 return-context restoration、stable row anchor、Edit / Save / Cancel、unsaved changes 與 Browser History。
+- UI component / Design System / visual styling：等更多 representative interaction contract 穩定後再研究。
+- Advanced Query variants：Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort、generic saved-query / URL restoration，等 Requirement 真正需要。
 - A-SAFARI-LIFECYCLE intermittent explicit-logout Session restoration：Known Observation / root cause Unknown；只有 anomaly 再出現時帶 diagnostic purpose 重開，不反覆逼 Safari 表演靈異現象。
 - P-CODEX-PHONE autonomous dispatch：Deferred by Provider Gap。
 - Pure Compute / Longer-running Processing：等 representative workload。
