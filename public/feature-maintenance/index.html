@@ -73,7 +73,7 @@
             <label class="field-full">說明<textarea id="f-description" rows="7"></textarea></label>
           </div></section>
           <section id="form-audit-section" class="detail-section audit-section"><div class="section-heading"><div><p class="eyebrow">Platform Standard Pattern</p><h2>Audit</h2></div></div><dl id="form-audit" class="audit-grid"></dl></section>
-          <section id="concurrency-lab" class="detail-section interaction-lab"><div class="section-heading"><div><p class="eyebrow">Concurrency Probe</p><h2>模擬他人同時修改</h2></div></div><p>讓 stored version 前進，但保留目前表單的 loaded version。之後 Save 應產生 conflict，而不是默默覆寫。</p><button id="simulate-concurrent-update" class="action-button" type="button">模擬他人修改</button><p id="concurrency-state" class="mutation-state"></p></section>
+          <section id="concurrency-lab" class="detail-section interaction-lab"><div class="section-heading"><div><p class="eyebrow">Optional Concurrency Probe</p><h2>模擬需要 stale-update detection 的 Feature</h2></div></div><p>這不是 Standard Maintenance 的預設規則。只有 Feature / Requirement 選擇「拒絕舊版本覆寫」時，才需要比較 loaded version 與 current stored version。此按鈕只是保留該分支的互動證據。</p><button id="simulate-concurrent-update" class="action-button" type="button">模擬他人先修改</button><p id="concurrency-state" class="mutation-state"></p></section>
           <div class="maintenance-actions"><button id="form-cancel" class="action-button" type="button">取消</button><button class="action-button primary" type="submit">儲存</button></div>
         </form>
       </section>
