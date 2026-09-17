@@ -8,23 +8,37 @@
 
 ## 2026-09-17
 
-### F-DETAIL-1 — Master → Detail Interaction Prototype
+### F-DETAIL-1 — General Master → Detail Interaction Prototype
 
-- Status: `In Progress / Claire Functional Review`
+- Status: `Completed / Pattern Candidate Established`
+- Verification: `Partial — Functional / Interaction Evidence`
 - Card: [`../experiments/feature-detail/f-detail-1.catalog.json`](../experiments/feature-detail/f-detail-1.catalog.json)
 - Record: [`../experiments/feature-detail/README.md`](../experiments/feature-detail/README.md)
+- Findings: [`../evidence/f-detail-1-findings.md`](../evidence/f-detail-1-findings.md)
+- Pattern Synthesis: [`platform/record-detail-pattern.md`](platform/record-detail-pattern.md)
 - Predecessor: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md)
 - Live Demo: [`/feature-detail/`](/feature-detail/)
-- Primary Intent: `Nook Technical Platform / Query → Detail interaction lifecycle`
-- Tags: `nook-platform`, `feature-ui`, `master-detail`, `read-only-detail`, `query-context`, `browser-history`, `ipad-first`, `rwd`
+- Primary Intent: `General Record Detail / Query → Detail → Return lifecycle`
+- Tags: `nook-platform`, `feature-ui`, `master-detail`, `read-only-detail`, `query-context`, `stable-identity`, `audit-pattern`, `pagination`, `ipad-first`, `rwd`
 
-**Why it exists**
+**Why it existed**
 
-F-QUERY-1 已把 List-only Query 與 Master → Detail 明確拆開，並留下 stable row identity、return-context restoration 與 Browser History 作下一輪 design pressure。F-DETAIL-1 因此先不碰 Maintenance mutation，而是建立一個可被 Claire 推翻的 Dedicated Detail Surface，觀察 User 從 Query Result 選取單筆資料、閱讀完整資訊、再返回原工作上下文時，責任與 interaction 是否合理。
+F-QUERY-1 已把 List-only Query 與 Master → Detail 明確拆開，並留下 stable row identity、return-context restoration 與 Browser History 作下一輪 design pressure。F-DETAIL-1 研究 User 從 Query Result 選取單筆資料、閱讀完整資訊、再返回原工作上下文時，Platform 與 Feature 的責任如何拆分。
 
-**Current prototype question**
+**What was established**
 
-第一輪使用 representative mock fixture，重用 Pattern 1 Query visual baseline，只增加明確 Detail action、read-only Detail information hierarchy、stable record identity 與返回 Query Context 的 selected-record anchor。Edit / Save / Cancel / dirty-state 刻意 deferred，避免還沒搞懂 Detail lifecycle 就先養出一隻萬能表單怪獸。
+- v1 因 Requirement Carrier leakage 過度擬合 Batch-specific content，保留為 negative evidence。
+- v2 改用 Synthetic Business Object，收斂成 Feature-defined Business Content + Platform-standard Detail conventions。
+- Common Pattern 不等於 auto-generated page；正式 Feature 仍由 Specification 決定 business composition。
+- 固定一列三欄不是 Platform Rule；`normal / wide / full` 目前只作 layout capability / guideline candidate。
+- Long Text 應與普通短欄位區分，並保持 `Long Text ≠ Rich Text`。
+- Audit 應作 Platform Standard sub-pattern，普通 Record Detail 使用一致的 Created / Updated semantics 與 presentation。
+- Query Context 不等於舊 page number。返回時應以 stable record identity 在 current result ordering 重新定位，再衍生 current page / scroll anchor。
+- Browser prototype 的 full-fixture scan 不代表 Production Backend strategy；bounded anchor-position / cursor resolution 仍是 Open Contract。
+
+**What it unlocked**
+
+Read-only General Master → Detail 第一輪可以關閉，下一個 Pattern challenge 進入 Maintenance：Create / Update / Read 的共同 contract、separate surfaces vs mode-based implementation、capability / authorization、Save / Cancel / Dirty State、Browser History 與 concurrent update conflict。
 
 ### F-QUERY-1 — Representative Read-only Query Vertical Prototype
 
