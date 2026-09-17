@@ -102,21 +102,31 @@ Highlight.js 有自動猜語言的能力，但這套 Preview 刻意不用。
 
 原因很簡單：技術文件的作者既然知道自己貼的是 SQL、JSON 或 Bash，就應該在 Markdown fence 明確寫出來。
 
+這裡真正重要的差異不是 SQL 內容，而是 **Markdown source 裡 opening fence 有沒有寫 `sql`**。所以直接把 source syntax 攤開來看：
+
+**有明確標示語言：**
+
+````text
 ```sql
 SELECT *
 FROM comm_code
 WHERE enabled = true;
 ```
+````
 
-而不是：
+**沒有標示語言：**
 
+````text
 ```
 SELECT *
 FROM comm_code
 WHERE enabled = true;
 ```
+````
 
-然後要求 renderer 猜。
+兩段 SQL 本身一模一樣；差別只有第一行多了 `sql`。在我們的 Textastic Preview 裡，前者會進入 Highlight.js syntax-highlighting pipeline，後者則刻意保持 plain code block。
+
+如果把這兩段都先 render 成最終 code block 再拿來比較，網站上很可能只會得到兩個長得一模一樣的黑框，然後要求讀者憑信仰找不同。這種教學方式我們已經替人類實測過，不推薦。
 
 Auto-detect 在 demo 裡很聰明，在長期 authoring contract 裡卻會增加不必要的不確定性。Plain code block 可能是 pseudo code、log、sample output、奇怪 DSL，甚至只是人類暫時不想分類的一坨文字。
 
