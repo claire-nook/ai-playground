@@ -6,6 +6,36 @@
 
 ---
 
+## 2026-09-17
+
+### F-QUERY-1 — Representative Read-only Query Vertical Prototype
+
+- Status: `Completed / Pattern Candidate Established`
+- Card: [`../experiments/feature-query/f-query-1.catalog.json`](../experiments/feature-query/f-query-1.catalog.json)
+- Record: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md)
+- Architecture Synthesis: [`platform/application-platform-architecture.md`](platform/application-platform-architecture.md)
+- Live Demo: [`/feature-query/`](/feature-query/)
+- Primary Intent: `Nook Technical Platform / Business Feature → Technical Platform Pattern`
+- Tags: `nook-platform`, `feature-ui`, `read-only-query`, `pagination`, `sorting`, `ipad-first`, `rwd`
+
+**Why it existed**
+
+S-SHELL-1 已回答 Feature 如何進入 Application Runtime，但不回答一個最基本的 Business Feature 應承載哪些 interaction / operation responsibilities。F-QUERY-1 以 Daily Weather Batch 執行紀錄作 requirement carrier，先用 representative mock 建立可推翻的 Functional Prototype，再逐輪把 Batch-specific content、Query Pattern、Data Contract 與 Platform responsibility 拆開。
+
+**What was established**
+
+- Query 共通骨架收斂為 Feature Identity / Query Criteria / Query Action / Query Result。
+- Result List 應是 curated business view，不等於 physical record / API payload dump。
+- Nook Works 目前不把 horizontal scroll 當 Result Table 的正常設計能力；這是 Pattern-specific candidate，不是 general platform law。
+- Business Query Boundary 與 Technical Result Boundary 必須分離：SA / Requirement 收斂合理查詢範圍，Technical Platform 仍需保證單次 interaction cost 有界。
+- Enterprise-style Query baseline candidate 納入 server-side Filter / Sort / Pagination、total count、page navigation 與 page size；完整且明確 bounded 的小型 Result Set 才保留 Browser-side processing variant。
+- Multi-select 是 field capability，不是所有 dropdown 的預設。
+- Master → Detail return context 已辨識為下一 Pattern 的 known design pressure：User 返回時應恢復工作資料上下文，不能只機械還原舊 page number；stable row identity 是重要 anchor candidate。
+
+**What it unlocked**
+
+Read-only Query 第一輪 research cycle 可以關閉，Current Judgment 已進入 `knowledge/platform/application-platform-architecture.md` v0.3。下一個真實 Requirement 可以重用、延伸或打壞這個 Candidate；Master → Detail、Maintenance、Export、Cursor / Keyset Pagination、Multi-column Sort 等不在 F-QUERY-1 假裝完成。
+
 ## 2026-09-16
 
 ### S-SHELL-1 — Nook Works Application Shell Integration Probe
@@ -230,16 +260,10 @@ Git source → Deploy Preview → invoke / logs → Production → source delete
 
 ## Current Candidate Experiments
 
-- **Application UI Maintenance Pattern**：研究 List / Detail / Edit、Validation、Toolbar/action hierarchy、Save/Cancel、Browser History、unsaved changes、query-state restoration 與 iPad-first responsive behavior。Application Shell lifecycle 已由 S-SHELL-1 完成，不再列 Candidate。
+- **Application UI Maintenance / Master → Detail Pattern**：F-QUERY-1 已完成 Read-only Query baseline；下一個真實 Requirement 若需要 Detail / Edit，研究 return-context restoration、stable row anchor、Validation、Toolbar/action hierarchy、Save/Cancel、Browser History、unsaved changes 與 iPad-first responsive behavior。
 - **Pure Compute / Longer-running**：等 representative workload 再驗證 duration、CPU / memory、timeout、concurrency、cost。
 - **Explicit API Authorization / Business Contract**：目前優先視為 Platform Rule / Design；只有 provider semantics 真正成為決策疑義時才補 Experiment。
 - **Batch Retry / Idempotency**：先由 formal Business Specification / Platform Rule 定義 logical run、retry ownership、failure persistence；只有 chosen contract 需要 duplicate / concurrent / timeout-after-commit assurance 時才做 focused experiment。
 - **External Provider Secrets / Failure Policy**：只有當 credential、timeout / retry / rate-limit semantics 成為決策因素時再補。
 - **A-SAFARI-LIFECYCLE Re-open**：historical explicit-logout Session restoration 為 intermittent Known Observation；只有 anomaly 再出現且能取得 diagnostic trace 時重開。
 - **P-CODEX-PHONE Re-open**：只在 OpenAI 提供 stable subscription-backed unattended identity / task invocation 等 provider trigger 後重開，不以 API key 額外計費、personal OAuth escrow 或 persistent runner 硬補。
-
----
-
-## Maintenance Rule
-
-Catalog 維持短小，只回答「為什麼做、打開什麼下一步」。完整 Evidence 不在這裡再養一份分身。
