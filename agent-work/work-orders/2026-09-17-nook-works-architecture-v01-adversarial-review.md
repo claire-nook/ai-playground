@@ -55,7 +55,7 @@ Claire 特別希望 reviewer 從 **攻擊角度 / 實作者角度** 進行，不
 
 必讀：
 
-1. `playground.md`
+1. `README.md`
 2. `agent-work/README.md`
 3. `knowledge/platform/nook-works-application-architecture.md`
 4. `knowledge/platform/application-platform-architecture.md`
@@ -69,16 +69,18 @@ Claire 特別希望 reviewer 從 **攻擊角度 / 實作者角度** 進行，不
 12. `experiments/batch-scheduling/README.md`
 13. `evidence/c-bsa-1-consolidated-findings.md`
 
+`playground.md` 是 ChatGPT Project-level context，不是 repository file；Implementation Agent / Codex 不應被要求從 repository snapshot 讀取它。Repository-local governance / Playground identity 以 `README.md` 與 `agent-work/README.md` 為本次 executor context。
+
 若文件中引用的 Evidence / Implementation Guide 對某個 finding 是必要依據，可再按需閱讀；不要為儀式掃完整 repo。
 
 ## Context Preflight｜執行環境確認
 
 開始 Review 前確認：
 
-- 可讀到本 Work Order 與全部必讀文件。
+- 可讀到本 Work Order 與全部 repository-local 必讀文件。
 - `knowledge/platform/nook-works-application-architecture.md` 確實為 v0.1，且包含四個 baseline archetype：Scheduled / Batch、Query、Query + Detail、Maintenance。
 - Source snapshot 至少包含 commit `03406661aa30301a33755419f56f2a44599f710f`。
-- 若 workspace snapshot 缺少上述 architecture commit，停止並回報 `Cannot Complete`；不要 review 舊版並假裝沒差。
+- 若 workspace snapshot 缺少上述 architecture commit 或任一 repository-local 必讀文件，停止並回報 `Cannot Complete`；不要 review 舊版並假裝沒差。
 
 ## Must｜必須做到
 
@@ -205,7 +207,7 @@ Final response 只提供短 handoff，不重貼整份 Report。
 
 ### A. Cannot Complete｜無法完成
 
-若缺少 architecture v0.1 snapshot、必讀 context 或 execution surface 無法安全產出 durable report：停止，不猜測；回報 blocker、已完成步驟、workspace residue 與需要 Primary / Claire 處理的事項。
+若缺少 architecture v0.1 snapshot、任一 repository-local 必讀 context 或 execution surface 無法安全產出 durable report：停止，不猜測；回報 blocker、已完成步驟、workspace residue 與需要 Primary / Claire 處理的事項。
 
 ### B. Completed｜Executor Completion
 
