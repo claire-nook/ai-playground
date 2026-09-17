@@ -4,6 +4,43 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## General Master → Detail / Read-only Detail Pattern
+
+- Experiment: F-DETAIL-1
+- Date: 2026-09-17
+- Status: Completed / Pattern Candidate Established
+- Verification: Partial — Functional / Interaction Evidence
+- Record: `experiments/feature-detail/README.md`
+- Consolidated Findings: `evidence/f-detail-1-findings.md`
+- Pattern Synthesis: `knowledge/platform/record-detail-pattern.md`
+- Live Demo: `/feature-detail/`
+- Topics: Master Detail, Stable Record Identity, Query Context, Audit Pattern, Long Text, Pagination, iPad-first, RWD
+
+### Result
+
+Claire 已在 deployed desktop / iPhone prototype review v2。General Detail 已從 v1 Batch-specific overfit 修正為 Synthetic Business Object，並收斂出：Feature-defined Business Content、Platform-standard Audit、Long Text presentation boundary，以及 Query → Detail → Return 時以 stable record identity 作 work-context anchor。
+
+核心 lifecycle candidate：
+
+```text
+Query Context
+→ Select Stable Record Identity
+→ General Read-only Detail
+→ Feature-defined Business Content
++ Platform-standard Audit
+→ Return
+→ Re-resolve Stable Record against current result ordering
+→ Restore work context
+```
+
+重要 boundary：`Query Context ≠ Old Page Number`。若 Detail 停留期間 Result Set 改變，返回時應重新定位 selected record，而不是固定回原 page number。
+
+Browser prototype 可掃 synthetic fixture 找 current rank，但這不是 Production Backend strategy；bounded anchor-position / cursor resolution 仍是 Open Contract。
+
+v1 的 Batch `metrics / trace / lifecycle` 內容保留為 negative evidence：Requirement Carrier 可以讓 Pattern 落地，但不可滲漏成 General Pattern responsibility。
+
+---
+
 ## Nook Works Application Shell Integration / Lifecycle
 
 - Experiment: S-SHELL-1
@@ -100,7 +137,7 @@ Primary prepares bounded Work Order
 
 ### Re-open Triggers
 
-Re-run this research if OpenAI exposes a stable Cloud Task API/tool, subscription workload identity, GitHub OIDC federation, short-lived CI credential helper, direct ChatGPT→Codex task tool, or equivalent GitHub integration that avoids exporting user session credentials.
+Re-run this research if OpenAI exposes a stable Cloud Task API/tool, subscription workload identity, GitHub OIDC federation, short-lived CI credential helper, direct ChatGPT→Codex task tool, or equivalent GitHub integration that avoids exporting user session credentials。
 
 ---
 
