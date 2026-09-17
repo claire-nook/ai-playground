@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="F-DETAIL-1 Nook Works representative master detail interaction prototype">
+  <title>Nook Works · Batch 執行記錄 Master Detail Prototype</title>
+  <link rel="stylesheet" href="/application-shell/shell.css">
+  <link rel="stylesheet" href="/feature-query/prototype.css">
+  <link rel="stylesheet" href="/feature-detail/prototype.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <button id="menu-button" class="menu-button" type="button" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><span>選單</span></button>
+      <a class="brand" href="/feature-detail/">Nook Works <small>Functional Prototype</small></a>
+      <div class="account"><span>Claire · admin</span><button type="button" disabled title="Prototype 不執行真實 Session">登出</button></div>
+    </header>
+
+    <div class="shell-body">
+      <div id="nav-backdrop" class="backdrop" hidden></div>
+      <aside id="sidebar" class="sidebar" aria-label="Application Navigation">
+        <nav>
+          <a href="#">Home</a>
+          <section class="nav-group">
+            <h2>系統管理</h2>
+            <a href="/feature-detail/" aria-current="page">Batch 執行記錄</a>
+          </section>
+          <section class="nav-group"><h2>旅遊資料</h2><a href="#" aria-disabled="true">城市天氣查詢</a></section>
+        </nav>
+        <p class="nav-note">F-DETAIL-1 · Representative Mock，不是正式 Nook Works。</p>
+      </aside>
+
+      <main id="content" class="content" tabindex="-1">
+        <a class="playground-return" href="/" aria-label="返回 AI Playground">← 返回 AI Playground</a>
+
+        <section id="query-view" class="prototype-view">
+          <header class="page-heading">
+            <div class="feature-identity">
+              <div>
+                <p class="eyebrow">Master → Detail Prototype</p>
+                <h1>Batch 執行記錄</h1>
+                <p>先用 Query 找到工作目標，再進入 Dedicated Detail Surface 閱讀單筆完整資訊。</p>
+              </div>
+              <div class="identity-meta" aria-label="Prototype Feature Identity">
+                <span class="feature-code">FQ-BATCH-01</span>
+                <span class="prototype-badge">Pattern 2 Probe</span>
+              </div>
+            </div>
+          </header>
+
+          <form id="query-form" class="query-panel">
+            <div class="query-grid">
+              <label>Batch
+                <select id="batch-code"><option value="">全部</option><option value="DAILY_WEATHER" selected>Daily Weather</option><option value="PLACE_REFRESH">Place Refresh</option></select>
+              </label>
+              <label>執行狀態
+                <select id="status"><option value="">全部</option><option value="SUCCESS">成功</option><option value="WARNING">部分異常</option><option value="FAILED">失敗</option><option value="RUNNING">執行中</option></select>
+              </label>
+              <label>執行日起
+                <input id="date-from" type="date" value="2026-09-10">
+              </label>
+              <label>執行日訖
+                <input id="date-to" type="date" value="2026-09-17">
+              </label>
+            </div>
+            <div class="query-actions">
+              <label class="scenario-control">Prototype Scenario
+                <select id="scenario"><option value="mixed">Mixed</option><option value="normal">Normal</option><option value="empty">Empty</option></select>
+              </label>
+              <div class="button-row"><button id="clear-button" class="action-button" type="button">清除</button><button class="action-button primary" type="submit">查詢</button></div>
+            </div>
+          </form>
+
+          <section class="result-section" aria-labelledby="result-title">
+            <div class="result-heading"><div><p class="eyebrow">Query Result</p><h2 id="result-title">查詢結果</h2></div><p id="result-count" class="result-count"></p></div>
+            <p id="return-context" class="return-context" hidden></p>
+            <p id="result-message" class="feature-state" role="status" aria-live="polite" hidden></p>
+            <div id="desktop-result" class="table-wrap"></div>
+            <div id="mobile-result" class="mobile-cards"></div>
+            <p class="research-note">Result List 只保留辨識 / 比較 / 選擇所需資訊；完整資料由 Dedicated Detail Surface 承接。</p>
+          </section>
+        </section>
+
+        <section id="detail-view" class="prototype-view" hidden aria-labelledby="detail-title">
+          <div class="detail-toolbar">
+            <button id="back-to-query" class="back-button" type="button">← 返回查詢結果</button>
+            <span class="detail-context-label">Batch 執行記錄 / 明細</span>
+          </div>
+
+          <header class="detail-hero">
+            <div>
+              <p class="eyebrow">Record Detail</p>
+              <h1 id="detail-title">Batch 執行明細</h1>
+              <p id="detail-summary" class="detail-lead"></p>
+            </div>
+            <div class="detail-identity">
+              <span id="detail-status"></span>
+              <code id="detail-record-id"></code>
+            </div>
+          </header>
+
+          <section class="detail-section" aria-labelledby="overview-title">
+            <div class="section-heading"><div><p class="eyebrow">Overview</p><h2 id="overview-title">執行概況</h2></div></div>
+            <dl id="overview-grid" class="detail-grid"></dl>
+          </section>
+
+          <section class="detail-section" aria-labelledby="result-detail-title">
+            <div class="section-heading"><div><p class="eyebrow">Result</p><h2 id="result-detail-title">執行結果</h2></div></div>
+            <div id="detail-result-card" class="detail-result-card"></div>
+          </section>
+
+          <section class="detail-section" aria-labelledby="trace-title">
+            <div class="section-heading"><div><p class="eyebrow">Trace</p><h2 id="trace-title">處理紀錄</h2></div></div>
+            <ol id="detail-trace" class="trace-list"></ol>
+          </section>
+
+          <p class="research-note detail-note">本輪 Detail 為 read-only。Edit / Save / Cancel / unsaved changes 故意不偷渡進來，免得一張明細頁突然長成企業級章魚。</p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="/feature-detail/prototype.js"></script>
+</body>
+</html>
