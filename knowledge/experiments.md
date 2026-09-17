@@ -10,21 +10,26 @@
 
 ### F-MAINT-1 — Single-record Maintenance Lifecycle Prototype
 
-- Status: `In Progress / Claire Functional Review`
+- Status: `Completed / Pattern Candidate Established`
+- Verification: `Partial — Functional / Interaction Evidence`
 - Card: [`../experiments/feature-maintenance/f-maint-1.catalog.json`](../experiments/feature-maintenance/f-maint-1.catalog.json)
 - Record: [`../experiments/feature-maintenance/README.md`](../experiments/feature-maintenance/README.md)
+- Findings: [`../evidence/f-maint-1-findings.md`](../evidence/f-maint-1-findings.md)
+- Pattern Synthesis: [`platform/single-record-maintenance-pattern.md`](platform/single-record-maintenance-pattern.md)
 - Predecessors: [`../experiments/feature-query/README.md`](../experiments/feature-query/README.md) / [`../experiments/feature-detail/README.md`](../experiments/feature-detail/README.md)
 - Live Demo: [`/feature-maintenance/`](/feature-maintenance/)
-- Primary Intent: `Nook Technical Platform / Single-record Create + Update + Read mutation lifecycle`
-- Tags: `nook-platform`, `maintenance`, `create`, `update`, `read`, `dirty-state`, `validation`, `optimistic-concurrency`, `ipad-first`, `rwd`
+- Primary Intent: `Nook Technical Platform / Internal Enterprise Single-record Maintenance lifecycle`
+- Tags: `nook-platform`, `maintenance`, `create`, `update`, `read`, `worklist`, `dirty-state`, `validation`, `mutation-policy`, `last-write-wins`, `ipad-first`, `rwd`
 
-**Why it exists**
+**What was established**
 
-F-QUERY-1 與 F-DETAIL-1 已提供 Query / Read Detail / Return Context baseline，因此本輪不重新養一套查詢與明細，而是把壓力集中在單檔 Maintenance lifecycle：Create / Update / Read、effective capability、Validation、Save / Cancel、Dirty State、optimistic concurrency 與 Save success transition。
+F-MAINT-1 承接 Query / Read Detail baseline，將 Nook Works ordinary single-record maintenance 收斂為 Worklist-centric lifecycle：Read / Create / Update 都是由 Query Worklist 暫時進入的 operation，Read 返回、Create/Update Save 或 Cancel 後回到 Query Context。`Update → Save → Read Detail → Return Query` 在高頻 key 單情境下被否決並保留為 negative evidence。
 
-**Current prototype question**
+Concurrency 不再被當成所有 Update 的預設 optimistic locking。Current candidate 是 ordinary maintenance 預設 `Last Write Wins`，Feature 若有明確 Requirement 再升級 stale-update detection 或 business-state-sensitive mutation。Platform 應提供 decision guardrail，而不是假設每位 SA 都會主動想到這題。
 
-Prototype 採 logical surface-separated Read / Create / Update，以便直接觀察 lifecycle；這不是 Platform Rule。正式 Feature 可以採 mode-based 或 surface-separated implementation，只要共享相同 operation / state contract。Delete / Void / Approval 暫不混入，免得「單檔維護」三秒鐘膨脹成 Workflow ERP。
+**Boundary**
+
+Maintenance 與 Workflow / Approval 是不同 Pattern；Common Pattern 也不等於 common page implementation。Prototype UI 只承載 operation semantics，不把按鈕位置或 visual layout 升格成 Platform Rule。
 
 ### F-DETAIL-1 — Master → Detail Interaction Prototype
 
