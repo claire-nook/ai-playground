@@ -1,7 +1,7 @@
 {
   "id": "F-QUERY-1",
   "title": "Nook Works Read-only Batch Query Vertical Prototype",
-  "completedDate": "2026-09-17",
+  "completedDate": null,
   "recordPath": "experiments/feature-query/README.md",
   "summary": "以 Daily Weather Batch 真實需求作第一個 requirement-driven vertical slice；沿用 S-SHELL-1 interaction language，以 representative mock fixtures 先驗證 Batch 執行紀錄的 query / list / detail / responsive interaction，再決定正式 Data Access Pattern。",
   "tags": ["Nook Platform", "Feature UI", "Read-only Query", "Batch", "Functional Prototype", "iPad-first", "RWD"],
