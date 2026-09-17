@@ -1,5 +1,27 @@
 /* F-QUERY-1B only: Feature-level styles. Shell ownership remains in /application-shell/shell.css. */
 
+/* Explicit hierarchy navigation back to the Playground gallery; do not force users to rely on Browser Back. */
+.playground-return {
+  display:inline-flex;
+  align-items:center;
+  min-height:2.4rem;
+  margin:0 0 1rem;
+  padding:.45rem .7rem;
+  border:1px solid #b8c7bd;
+  border-radius:8px;
+  background:#fff;
+  color:#284a3b;
+  font-size:.88rem;
+  font-weight:800;
+  text-decoration:none;
+}
+.playground-return:hover,
+.playground-return:focus-visible {
+  background:#eef4f0;
+  text-decoration:underline;
+  text-underline-offset:.16em;
+}
+
 /* Candidate feature identity presentation. The identifier naming/model is intentionally not standardized yet. */
 .feature-identity { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
 .feature-identity h1 { margin-bottom:.3rem; }
