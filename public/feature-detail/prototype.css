@@ -6,7 +6,6 @@
 .back-button:hover,.back-button:focus-visible { background:#eef4f0; }
 .detail-context-label { color:#6e7781; font-size:.82rem; font-weight:750; }
 
-/* Detail identity stays generic: business title/content belongs to the Feature, stable record identity supports lifecycle operations. */
 .detail-hero { display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem; margin-bottom:1.25rem; padding:1.2rem; border:1px solid #d8dee4; border-radius:14px; background:#fff; }
 .detail-hero h1 { margin:.1rem 0 .35rem; }
 .detail-lead { max-width:62rem; margin:0; color:#59636e; }
@@ -16,23 +15,37 @@
 .detail-section { margin-top:1rem; padding:1.1rem; border:1px solid #d8dee4; border-radius:14px; background:#fff; }
 .section-heading { margin-bottom:.8rem; }
 .section-heading h2 { margin:0; font-size:1.05rem; }
-.detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.85rem 1rem; margin:0; }
-.detail-field { min-width:0; padding:.75rem; border-radius:10px; background:#f6f8fa; }
+
+/* Desktop uses a 6-track grid so semantic presentation hints can compose 1/3, 2/3 and full-width fields without exposing raw CSS spans to Feature specs. */
+.detail-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:.85rem 1rem; margin:0; }
+.detail-field { min-width:0; grid-column:span 2; padding:.75rem; border-radius:10px; background:#f6f8fa; }
+.detail-field.field-wide { grid-column:span 4; }
+.detail-field.field-full { grid-column:1 / -1; }
 .detail-field dt { margin-bottom:.25rem; color:#6e7781; font-size:.75rem; font-weight:800; }
 .detail-field dt small { display:inline-block; margin-left:.4rem; color:#8b949e; font-size:.68rem; font-weight:650; }
 .detail-field dd { margin:0; color:#1f2328; font-weight:700; overflow-wrap:anywhere; }
-.long-content { padding:.85rem; border-radius:10px; background:#f6f8fa; color:#3f4851; line-height:1.7; }
 
-/* Audit is a Platform Standard sub-pattern: every ordinary single-record Detail should render these semantics consistently. */
+/* Long Text is a distinct plain-text presentation: full reading width, preserved paragraphs/newlines, no Rich Text semantics. */
+.long-content {
+  max-width:72rem;
+  margin:0;
+  padding:1rem 1.05rem;
+  border-radius:10px;
+  background:#f6f8fa;
+  color:#3f4851;
+  line-height:1.75;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+/* Audit is a Platform Standard sub-pattern and does not inherit Feature-selected field span hints. */
 .audit-section { border-color:#b8c7bd; }
 .audit-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem; margin:0; }
-.audit-grid .detail-field { background:#eef4f0; }
+.audit-grid .detail-field { grid-column:auto; background:#eef4f0; }
 
 .interaction-lab { border-style:dashed; }
 .interaction-lab p { color:#59636e; line-height:1.6; }
 .mutation-state { margin:.75rem 0 0; padding:.65rem .8rem; border-radius:8px; background:#f6f8fa; font-size:.84rem; }
-
-/* Return context reports semantic relocation, not a fake promise that page numbers remain stable while data changes. */
 .return-context { margin:.2rem 0 .75rem; padding:.65rem .8rem; border-left:3px solid #284a3b; background:#eef4f0; color:#284a3b; font-size:.84rem; font-weight:750; }
 .result-table tr.selected-row td { background:#f0f7f3; }
 .record-card.selected-card { border-color:#8aa596; box-shadow:0 0 0 2px #eef4f0 inset; }
@@ -55,7 +68,10 @@
 .detail-note { margin-top:1rem; }
 
 @media (max-width:900px) {
+  /* Tablet moves to two tracks: normal=half, wide/full=full. */
   .detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .detail-field { grid-column:span 1; }
+  .detail-field.field-wide,.detail-field.field-full { grid-column:1 / -1; }
   .audit-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 
@@ -63,6 +79,8 @@
   .detail-toolbar,.detail-hero { align-items:flex-start; flex-direction:column; }
   .detail-identity { align-items:flex-start; }
   .back-button { width:100%; min-height:44px; font-size:16px; }
+  /* Mobile collapses every business and audit field to one readable column. */
   .detail-grid,.audit-grid { grid-template-columns:minmax(0,1fr); }
+  .detail-field,.detail-field.field-wide,.detail-field.field-full,.audit-grid .detail-field { grid-column:1 / -1; }
   .pagination { justify-content:flex-start; }
 }
