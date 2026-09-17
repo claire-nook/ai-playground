@@ -1,0 +1,12 @@
+{
+  "id": "F-DETAIL-1",
+  "title": "Nook Works Master → Detail Interaction Prototype",
+  "startedDate": "2026-09-17",
+  "recordPath": "experiments/feature-detail/README.md",
+  "summary": "承接 F-QUERY-1，研究 Query Result 選取單筆資料後的 Dedicated Detail Surface、stable record identity、資訊層級與返回 Query Context；第一輪刻意維持 read-only，Edit / Save / Cancel / dirty-state 留待後續 Maintenance challenge。",
+  "tags": ["Nook Platform", "Feature UI", "Master Detail", "Read-only Detail", "Query Context", "Browser History", "Functional Prototype", "iPad-first", "RWD"],
+  "demoStatus": "live",
+  "demoPath": "/feature-detail/",
+  "verificationStatus": "pending-review",
+  "flow": "Query Result → Select Record → Dedicated Detail Surface → Return Context → Claire Functional Review"
+}
