@@ -38,6 +38,12 @@ Formal Business Requirement
 
 ## F-QUERY-1A — First Functional Review Findings
 
+第一版 Prototype 值得留下，不是因為它是一個應被保存的舊版本，而是因為這張畫面讓後續幾個 Pattern 判斷有了可見的起點。當時頁面同時帶著 Daily Weather summary、Batch-specific result semantics、預先載入的 inline detail，以及尚未收斂的 Safari form-control behavior。若只閱讀修正後的結論，外部讀者很難知道這些判斷究竟是在反對什麼。
+
+![F-QUERY-1A 第一版 iPad Review 畫面：後續 Pattern 判斷的 Visual Evidence](../../public/images/wall/f-query-1-a1-initial-review-ipad.jpg)
+
+> **Visual Evidence boundary：**這張截圖保存的是「什麼畫面改變了判斷」，不是一份需要永久維護的舊版 Live Demo。Prototype 可以繼續演進；值得保存的是能解釋 Decision Rationale 的 Evidence。
+
 ### 1. Generic Query Page 與 Feature-specific Content 必須分離
 
 第一版把 `今日 Daily Weather` summary 放在 Query 上方，這是過度深入 Batch / Daily Weather business semantics 的設計。
