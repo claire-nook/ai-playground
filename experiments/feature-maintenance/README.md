@@ -48,7 +48,7 @@ Create / Update Entry
 → Save / Cancel
 → Optimistic Concurrency Check
 → Save Success / Conflict / Validation Failure
-→ Read Detail / Query Context
+→ Query Work Context
 ```
 
 ## Prototype Strategy
@@ -62,6 +62,43 @@ Prototype 刻意使用三個 logical surface：
 這是用來觀察 lifecycle 的 implementation choice，不是 Platform Rule。正式 Feature 仍可採 mode-based implementation，只要遵守相同 contract。
 
 Claire 過去 enterprise system 的 `ACCA01 / ACCU01 / ACCR01` 經驗因此被保留為 architecture pressure，而不是被貼上「舊式」標籤。
+
+## Internal Enterprise Maintenance Baseline
+
+本輪 review 辨識出一個重要 distinction：Nook Works 的一般單檔維護屬於 **internal enterprise maintenance**，不是 customer-facing guided flow。
+
+一般維護作業的主要工作上下文是 Query / Worklist：
+
+```text
+Query / Worklist
+├─ Create → Save / Cancel → Query
+├─ Update → Save / Cancel → Query
+└─ Read   → Return        → Query
+```
+
+Read → Update 可以存在，但 Update 完成後仍回 Query Worklist；Read Detail 不作為 Save success 的中繼站。
+
+早期 Prototype 曾採：
+
+```text
+Update → Save → Read Detail → Return Query
+```
+
+Claire review 以高頻企業 key 單情境指出，這會對每筆修改增加一個沒有 Business Value 的 interaction。此 candidate 因此被否決，保留為 lifecycle negative evidence。
+
+這裡的核心不是「guided flow 錯誤」，而是 interaction archetype 不同：
+
+```text
+Internal Maintenance
+→ 熟練內部人員 / 高頻重複作業
+→ Worklist-centric
+
+Guided Process
+→ 外部或低頻使用者 / 需要引導的 Business Process
+→ Flow-centric
+```
+
+Nook Works 一般單檔維護採前者。Approval / Claims Authorization 等 Workflow 屬另一種 Platform Pattern，不應混進單純 Maintenance lifecycle。
 
 ## Capability Boundary
 
@@ -82,11 +119,23 @@ Create / Update 都具有：
 - required-field validation；
 - dirty-state indicator；
 - Cancel 時若有未儲存變更則 guard；
-- Save success 後轉入 Read Detail；
+- Save success 後返回 Query Worklist；
+- Cancel 後返回 Query Worklist；
 - Update Save 進行 optimistic concurrency version check；
 - conflict 時拒絕覆寫並提供 reload-current-record candidate。
 
-Save success → Read Detail 是本輪 candidate，不是 general platform law；正式 Feature 仍可依 Requirement 選擇 return-to-query 或 stay-in-edit 等 policy。
+返回 Query 時沿用 Phase 2 的 Query Context / stable identity 思路。若修改後 record 仍在目前 Result Set，重新定位該 record；若已因欄位變更而不再符合 Criteria，保留 Query Context 並明確回報該 record 已離開目前結果。
+
+## Action Semantics vs UI Placement
+
+Prototype UI 只負責把動作演出來，不定義正式 UI Pattern。
+
+Claire review 指出「新增」若與查詢／清除混在同一 action group，容易暗示它是 Query form action。Prototype 因此將：
+
+- Query / Clear 視為 Query actions；
+- Create 視為 Feature-level maintenance action；
+
+並在畫面上分離。實際正式按鈕位置仍由 UI Specification / Design 決定，不在本 Experiment 宣稱為 Platform Rule。
 
 ## Concurrency Probe
 
@@ -112,14 +161,15 @@ loaded version != current version
 - pessimistic locking。
 - DB isolation / deadlock / load test。
 - generic Form Framework / auto-generated UI。
+- 正式 UI component placement / visual design system。
 
 ## Review Questions
 
 1. Query / Read Detail 是否可以自然承接 Create / Update，而不是變成四套互不相識的 Feature？
 2. 可修改 / 不可修改 record 的 entry behavior 是否符合工作直覺？
-3. Create / Update 的 field state、Validation、Audit 與 action hierarchy 是否合理？
-4. Dirty State / Cancel guard 是否足夠明確？
-5. Save success → Read Detail 是否自然？
+3. Worklist-centric 的 Save / Cancel → Query lifecycle 是否符合 internal maintenance 操作習慣？
+4. Create / Update 的 field state、Validation、Audit 與 action semantics 是否合理？
+5. Dirty State / Cancel guard 是否足夠明確？
 6. optimistic concurrency conflict 的呈現與 recovery 是否合理？
 7. surface-separated prototype 是否揭露了可共用的 Platform semantics，而沒有誤導成一定要三份程式？
 
