@@ -3,6 +3,10 @@
 .dirty-indicator { padding:.35rem .6rem; border-radius:999px; background:#f6f8fa; color:#59636e; font-size:.78rem; font-weight:800; }
 .dirty-indicator.is-dirty { background:#fff4d6; color:#7a5b00; }
 
+/* Query actions and Feature-level actions are visually separated so the mock does not imply one semantic group. */
+.result-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:.75rem; flex-wrap:wrap; }
+.result-heading-actions .result-count { margin:0; }
+
 .maintenance-grid {
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -42,4 +46,5 @@
   .maintenance-grid .field-full { grid-column:auto; }
   .maintenance-actions,.dialog-actions { justify-content:stretch; }
   .maintenance-actions .action-button,.dialog-actions .action-button { flex:1; min-height:44px; }
+  .result-heading-actions { width:100%; justify-content:space-between; }
 }
