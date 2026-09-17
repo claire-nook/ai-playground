@@ -3,10 +3,10 @@
   "title": "Single-record Maintenance Lifecycle Prototype",
   "startedDate": "2026-09-17",
   "recordPath": "experiments/feature-maintenance/README.md",
-  "summary": "承接 Query / Detail baseline，研究 Create / Update / Read 的 capability、validation、dirty state、Save / Cancel、optimistic concurrency 與返回工作上下文。",
-  "tags": ["Nook Platform", "Feature UI", "Maintenance", "Create", "Update", "Read", "Dirty State", "Validation", "Optimistic Concurrency", "Functional Prototype", "iPad-first", "RWD"],
+  "summary": "承接 Query / Detail baseline，收斂 Internal Enterprise Maintenance 的 Worklist-centric Create / Update / Read lifecycle、Capability、Validation、Dirty State、Save / Cancel 與 Mutation Policy decision point。",
+  "tags": ["Nook Platform", "Feature UI", "Maintenance", "Create", "Update", "Read", "Worklist", "Dirty State", "Validation", "Mutation Policy", "Last Write Wins", "Functional Prototype", "iPad-first", "RWD"],
   "demoStatus": "live",
   "demoPath": "/feature-maintenance/",
-  "verificationStatus": "candidate",
-  "flow": "Query → Read / Create / Update → Validate → Save / Cancel → Conflict handling → Read Detail / Return Context"
+  "verificationStatus": "partial",
+  "flow": "Query / Worklist → Read / Create / Update → Capability → Validation / Dirty State → Save / Cancel → Mutation Policy → Return Query Context"
 }
