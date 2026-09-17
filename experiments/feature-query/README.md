@@ -7,7 +7,7 @@
 - Type: `Representative Functional Prototype`
 - Business Requirement Source: `nook-works/docs/business/specifications/batch/daily-weather.md`
 - Shell Baseline: `S-SHELL-1`
-- Status: `In Research / Functional Shape Reviewed`
+- Status: `Completed / Current Judgment Established`
 - Data: `Representative Mock Fixture`
 
 ## Research Question
@@ -343,6 +343,17 @@ Nook Works / General Platform 目前的 Query Pattern Candidate：
 本 Experiment 仍不證明正式 Data Access、Authorization、Detail Retrieval、Export Security、Server-side Pagination implementation 或 Production UI Architecture。
 
 `Feasibility Evidence ≠ Preferred Pattern ≠ Platform Rule ≠ Production Implementation.`
+
+## Closure
+
+F-QUERY-1 於 2026-09-17 關閉本輪 research cycle。`Completed` 的意思是目前 Research Question 已形成可帶往下一個 Requirement 的 Current Judgment，不代表 Query Pattern 已成為不可修改的 Platform Rule，也不代表 deferred capability 已被實作。
+
+Durable outputs：
+
+- Experiment / rationale：本文件。
+- Catalog entry：`knowledge/experiments.md`。
+- General architecture synthesis：`knowledge/platform/application-platform-architecture.md` v0.3。
+- Research-front handoff：`knowledge/maps/nook-technical-platform.md` 與 `notes/short-term-work.md`。
 
 ## Next Step Boundary
 
