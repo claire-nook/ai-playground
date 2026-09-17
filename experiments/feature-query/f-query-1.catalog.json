@@ -1,12 +1,12 @@
 {
   "id": "F-QUERY-1",
-  "title": "Nook Works Read-only Batch Query Vertical Prototype",
-  "completedDate": null,
+  "title": "Nook Works Read-only Query Pattern Prototype",
+  "completedDate": "2026-09-17",
   "recordPath": "experiments/feature-query/README.md",
-  "summary": "以 Daily Weather Batch 真實需求作第一個 requirement-driven vertical slice；沿用 S-SHELL-1 interaction language，以 representative mock fixtures 先驗證 Batch 執行紀錄的 query / list / detail / responsive interaction，再決定正式 Data Access Pattern。",
-  "tags": ["Nook Platform", "Feature UI", "Read-only Query", "Batch", "Functional Prototype", "iPad-first", "RWD"],
+  "summary": "以 Daily Weather Batch 真實需求作 requirement carrier，完成 Read-only Query Pattern 第一輪 Functional / Architecture baseline；收斂 curated result、business/technical query boundary、enterprise-style server-side pagination/sorting、page navigation/page size，並留下 Master → Detail return-context 作下一 Pattern 的 known design pressure。",
+  "tags": ["Nook Platform", "Feature UI", "Read-only Query", "Pagination", "Sorting", "Functional Prototype", "iPad-first", "RWD"],
   "demoStatus": "live",
   "demoPath": "/feature-query/",
   "verificationStatus": "candidate",
-  "flow": "Business Requirement → Shell → Representative Mock → Query / List / Detail → Claire Functional Review → Technical Pattern"
+  "flow": "Business Requirement → Functional Prototype → Review → Enterprise Query Pressure → Pattern Candidate → Next Requirement Challenge"
 }
