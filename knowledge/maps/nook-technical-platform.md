@@ -13,6 +13,18 @@
 Responsibility → credible candidate → minimal experiment → evidence → later decision
 ```
 
+Platform research 在 core feasibility 足夠後，進一步從 Nook Works 的 Business / Functional Requirement 反推 Technical Responsibility。Claire 可用企業系統 SA 熟悉的 functional language 描述需求；Primary Agent 負責補上 technical decomposition，避免 Business Specification 被迫承擔 Technical Architecture。
+
+```text
+Business / Functional Requirement
+→ Interaction Semantics
+→ Technical Responsibility Decomposition
+→ Platform Pattern Candidate
+→ Existing Evidence Mapping
+→ Gap / Open Decision
+→ Minimal Experiment only when needed
+```
+
 ## Current Research Graph
 
 ```text
@@ -32,10 +44,14 @@ Nook Technical Platform
 │  │  ├─ deep link / reload / Back / Forward             [Verified]
 │  │  ├─ Session refresh / invalidation / explicit Logout[Verified]
 │  │  └─ iPad / iPhone responsive lifecycle              [Verified]
-│  └─ Feature UI / Maintenance Interaction               [Next Research Front]
-│     ├─ list / table / query interaction                 [To Research]
-│     ├─ CRUD / form lifecycle                            [To Research]
-│     └─ Browser History vs Business Action               [To Research]
+│  └─ Business Feature → Technical Platform Pattern      [Next Research Front]
+│     ├─ operation shape / responsibility decomposition   [To Research]
+│     ├─ authorization / token / transaction boundary     [To Research]
+│     ├─ feature state / Shell / Browser lifecycle        [To Research]
+│     └─ UI / maintenance interaction                     [Later Research]
+│        ├─ list / table / query interaction              [To Research]
+│        ├─ CRUD / form lifecycle                         [To Research]
+│        └─ Browser History vs Business Action            [To Research]
 │
 ├─ Custom API Runtime
 │  ├─ Supabase Edge Functions
@@ -113,19 +129,23 @@ Authentication Identity
 Browser Navigation ≠ Logout ≠ Business Action
 ```
 
+S-SHELL-1 的 synthetic metadata 已分開 Feature Registry、Navigation Definition 與 `user_type → Feature Entry` mapping；這只證明 coarse Feature Entry / metadata-driven Navigation 的 conceptual shape，不形成 Production Role / Permission / RBAC schema。
+
 Historical explicit-logout Session restoration anomaly 保留為 `A-SAFARI-LIFECYCLE` Known Observation，intermittent / root cause Unknown；它不再阻擋 S-SHELL-1 closure，也沒有被誤寫成已證實的 Shell/Safari/Supabase root cause。
 
 Formal Nook Works 應把 S-SHELL-1 的 verified contracts、portable logic 與 lifecycle traps 帶回 Platform Shell design，而不是直接把 disposable monolithic `app.js` 當 Production architecture。
 
 ### Architecture readiness checkpoint — 2026-09-16
 
-Backend / Data / Integration 與 Application Shell lifecycle 的 core feasibility Evidence 已足以進入 Platform Architecture / UI interaction design；目前沒有已識別的 technical Blocking Gap。
+Backend / Data / Integration 與 Application Shell lifecycle 的 core feasibility Evidence 已足以進入 Platform Architecture / Business Feature Pattern design；目前沒有已識別的 technical Blocking Gap。
 
 研究前緣從 broad capability probing 轉成：
 
 ```text
 Verified Capability
-→ Architecture Candidate
+→ Business / Functional Requirement
+→ Technical Responsibility Decomposition
+→ Architecture / Platform Pattern Candidate
 → Platform Rule / Open Decision
 → Production Implementation
 ```
@@ -136,11 +156,34 @@ Cross-cutting design queue：Transaction Pattern Selection、Authorization / Err
 
 Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation、Custom API orchestration與 Application Shell composition。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 已有多條 runtime chain 支持。
 
-### Next Research Front — Feature UI / Maintenance Interaction
+### Next Research Front — Business Feature → Technical Platform Pattern
 
-S-SHELL-1 回答「Feature 如何裝進 Application Runtime」，不回答 Feature 內的 CRUD / query interaction。
+S-SHELL-1 回答「Feature 如何裝進 Application Runtime」，但不回答 Business Feature 進入後，其 Business Operation 應如何映射到 Technical Platform responsibility。
 
-下一階段 candidate：List/Table、Pagination、Sort、Filter/Search、Loading/Empty/Error、responsive presentation、Create/Edit/Delete/Save/Cancel、Validation/Dialog/Toolbar，以及：
+下一階段先從 representative enterprise Feature / Operation pattern 分析：
+
+```text
+Business Specification
+→ Business Operation Contract
+→ Interaction Semantics
+→ Platform Pattern
+→ Native Data API / View / Custom API / RPC / DB
+→ Authorization / Transaction / Error / Lifecycle Contract
+```
+
+同一個 UI action 不代表同一種 technical operation。例如 `Save` 可能只是 single-object Native CRUD，也可能是 feature-specific Custom API，或是跨多個 object 且需要明確 Transaction Owner 的 Business Operation。Business Specification 可以描述 operation intent、必要 input / output contract，或引用 feature-specific Custom API；不需要因此承擔 Edge Function、PostgreSQL Client、RPC implementation 等 Technical Architecture detail。
+
+研究 representative pattern 時，至少檢查：
+
+- Native Data API / View Read Model / Custom API / RPC 的 responsibility boundary。
+- Authentication Identity / Application Context / Feature Entry / Feature Data Access / Business Authorization 的 separation。
+- current Session / JWT propagation 對 Feature invocation 的影響。
+- Transaction ownership 是否與完整 Business Operation boundary 一致。
+- Feature state 是否應留在 Feature，而非因畫面位於 Shell 就升格 global state。
+- Browser History、Business Action、Save / Cancel、unsaved state 的 lifecycle separation。
+- Validation、Error、partial failure 與 result contract。
+
+UI / Maintenance Interaction 是後續必要研究層，而不是被取消。待 operation / responsibility pattern 較清楚後，再研究 List/Table、Pagination、Sort、Filter/Search、Loading/Empty/Error、responsive presentation、Create/Edit/Delete/Save/Cancel、Validation/Dialog/Toolbar，以及：
 
 ```text
 Query
@@ -151,7 +194,9 @@ Query
 → unsaved changes / query-state restoration
 ```
 
-Browser History 不應隱性觸發 Business Mutation；實際 Save-success history replacement、unsaved-change guard 與 query-state restoration contract 留給 Platform UI research。
+這些 UI research 的目的，是確認 interaction 如何承載 Platform Contract；不是先制定 Design System、component styling、按鈕大小或顏色。
+
+Browser History 不應隱性觸發 Business Mutation；實際 Save-success history replacement、unsaved-change guard 與 query-state restoration contract 留給後續 interaction research。
 
 ### Supabase Custom API workload coverage
 
@@ -183,13 +228,14 @@ Evidence-backed Current Judgment：`Transaction boundary 應由擁有完整 Busi
 
 目前沒有已識別的 Backend / Data / Integration / Shell technical Blocking Gap。剩餘議題依性質分流：
 
-1. **Feature UI / Maintenance Interaction**：下一個 focused research front。
-2. **Explicit Business Authorization / Error Contract**：Platform Rule / Design；只有 mechanism 存疑才另做 Experiment。
-3. **Batch Idempotency / Retry / Run Identity**：先由 formal requirement 與 Platform Rule 定義。
-4. **Production Identity / Secrets / Connection Governance**：Platform Rule / Design。
-5. **Observability / Correlation Contract**：Platform Rule / Design；隨 representative workflow 驗收。
-6. **A-SAFARI-LIFECYCLE**：Known intermittent observation；只有 anomaly 再現且可取得 diagnostic Evidence 時重開。
-7. **Pure Compute / Longer-running、Concurrency / Isolation / Deadlock、Distributed Compensation、Advanced Workflow Orchestration**：保持 Deferred，直到 representative workload / correctness requirement 出現。
+1. **Business Feature → Technical Platform Pattern**：下一個 focused research front；從 Functional Requirement 補足 technical responsibility decomposition。
+2. **Feature UI / Maintenance Interaction**：必要的後續 research layer；在 operation / responsibility pattern 之後研究 interaction contract，不先做視覺 Design System。
+3. **Explicit Business Authorization / Error Contract**：Platform Rule / Design；只有 mechanism 存疑才另做 Experiment。
+4. **Batch Idempotency / Retry / Run Identity**：先由 formal requirement 與 Platform Rule 定義。
+5. **Production Identity / Secrets / Connection Governance**：Platform Rule / Design。
+6. **Observability / Correlation Contract**：Platform Rule / Design；隨 representative workflow 驗收。
+7. **A-SAFARI-LIFECYCLE**：Known intermittent observation；只有 anomaly 再現且可取得 diagnostic Evidence 時重開。
+8. **Pure Compute / Longer-running、Concurrency / Isolation / Deadlock、Distributed Compensation、Advanced Workflow Orchestration**：保持 Deferred，直到 representative workload / correctness requirement 出現。
 
 ## Decision Boundary
 
