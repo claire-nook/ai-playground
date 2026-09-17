@@ -1,12 +1,13 @@
 {
   "id": "F-DETAIL-1",
-  "title": "Nook Works Master → Detail Interaction Prototype",
+  "title": "General Master → Detail Interaction Prototype",
   "startedDate": "2026-09-17",
+  "completedDate": "2026-09-17",
   "recordPath": "experiments/feature-detail/README.md",
-  "summary": "v2 以 Synthetic Business Object 研究 General Detail Pattern、固定 Audit sub-pattern，以及 Query → Detail → Return 時以 stable record identity 在變動中的 current result set 重新定位工作上下文。",
+  "summary": "完成 Read-only General Master → Detail 第一輪收斂：Feature-defined Business Content、Platform-standard Audit、stable record identity 與 current-result return-context relocation；v1 Requirement Carrier leakage 保留為 negative evidence。",
   "tags": ["Nook Platform", "Feature UI", "Master Detail", "Read-only Detail", "Query Context", "Stable Identity", "Audit Pattern", "Pagination", "Functional Prototype", "iPad-first", "RWD"],
   "demoStatus": "live",
   "demoPath": "/feature-detail/",
-  "verificationStatus": "candidate",
+  "verificationStatus": "partial",
   "flow": "Paginated Query → Stable Record Selection → General Detail → Result-set Change → Record Re-location → Return Context"
 }
