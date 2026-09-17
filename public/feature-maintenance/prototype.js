@@ -58,7 +58,7 @@ function statusPill(status) {
 function field(label, value, presentation = "normal") {
   return `<div class="detail-field field-${presentation}"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value ?? "—")}</dd></div>`;
 }
-function nowLabel() { return "2026-09-17 19:30"; }
+function nowLabel() { return "2026-09-17 20:30"; }
 
 function filteredRows() {
   const keyword = el("keyword").value.trim().toLowerCase();
@@ -143,13 +143,14 @@ function clearInvalid() { ["f-code", "f-name", "f-category", "f-date"].forEach((
 
 function openCreate() {
   if (!userCapability.canCreate) return;
+  selectedOriginalPage = currentPage;
   formMode = "create";
   selectedRecordId = null;
   loadedVersion = null;
   el("form-mode-label").textContent = "Create Surface";
   el("form-title").textContent = "新增資料";
   el("form-record-id").textContent = "NEW";
-  el("form-version-note").textContent = "Create 不存在既有 record version；Save 成功後建立 stable identity，再進 Read Detail。";
+  el("form-version-note").textContent = "Create 是一個 maintenance operation；Save / Cancel 後回到 Query Worklist，而不是轉入另一個 operation surface。";
   el("f-code").disabled = false;
   el("f-code").value = ""; el("f-name").value = ""; el("f-category").value = ""; el("f-status").value = "ACTIVE"; el("f-date").value = "2026-09-17"; el("f-maintainable").value = "Y"; el("f-description").value = "";
   el("form-audit-section").hidden = true;
@@ -166,7 +167,7 @@ function openUpdate(recordId) {
   el("form-mode-label").textContent = "Update Surface";
   el("form-title").textContent = "修改資料";
   el("form-record-id").textContent = row.id;
-  el("form-version-note").textContent = `Loaded version = ${loadedVersion}。代碼在本 Prototype 視為建立後 immutable。`;
+  el("form-version-note").textContent = `Loaded version = ${loadedVersion}。Save / Cancel 後回到 Query Worklist；代碼在本 Prototype 視為建立後 immutable。`;
   el("f-code").disabled = true;
   el("f-code").value = row.code; el("f-name").value = row.name; el("f-category").value = row.category; el("f-status").value = row.status; el("f-date").value = row.effectiveDate; el("f-maintainable").value = row.maintainable; el("f-description").value = row.description;
   el("form-audit-section").hidden = false;
@@ -189,13 +190,20 @@ function validateForm() {
 function applyForm(row) {
   row.name = el("f-name").value.trim(); row.category = el("f-category").value; row.status = el("f-status").value; row.effectiveDate = el("f-date").value; row.maintainable = el("f-maintainable").value; row.description = el("f-description").value.trim();
 }
+
+// Worklist-centric maintenance: successful Create / Update returns to Query Context rather than detouring through Read Detail.
 function saveForm(event) {
   event.preventDefault();
   if (!validateForm()) return;
   if (formMode === "create") {
     const id = `NEW-${String(createdRows.length + 1).padStart(3, "0")}`;
     const row = { id, code: el("f-code").value.trim().toUpperCase(), name: "", category: "", status: "ACTIVE", effectiveDate: "", maintainable: "Y", description: "", createdAt: nowLabel(), createdBy: "Claire", updatedAt: nowLabel(), updatedBy: "Claire", version: 1 };
-    applyForm(row); createdRows.unshift(row); selectedRecordId = id; setDirty(false); openDetail(id); return;
+    applyForm(row);
+    createdRows.unshift(row);
+    selectedRecordId = id;
+    setDirty(false);
+    returnToQuery("新增完成");
+    return;
   }
   const row = recordById(selectedRecordId);
   if (!row) { showFormMessage("Record 已不存在，無法儲存。", "error"); return; }
@@ -204,7 +212,13 @@ function saveForm(event) {
     el("concurrency-state").innerHTML = `目前 stored version = ${row.version}。 <button type="button" class="detail-action" data-reload-current>重新載入目前資料</button>`;
     return;
   }
-  applyForm(row); row.version += 1; row.updatedAt = nowLabel(); row.updatedBy = "Claire"; loadedVersion = row.version; setDirty(false); openDetail(row.id);
+  applyForm(row);
+  row.version += 1;
+  row.updatedAt = nowLabel();
+  row.updatedBy = "Claire";
+  loadedVersion = row.version;
+  setDirty(false);
+  returnToQuery("修改完成");
 }
 
 function requestLeave(callback) {
@@ -215,25 +229,38 @@ function requestLeave(callback) {
 function cancelForm() {
   requestLeave(() => {
     setDirty(false);
-    if (formMode === "update" && selectedRecordId) openDetail(selectedRecordId);
-    else { showOnly("query-view"); renderQuery("新增已取消；保留原查詢工作上下文。"); }
+    returnToQuery(formMode === "create" ? "新增已取消" : "修改已取消");
   });
 }
-function returnToQuery() {
+
+// Query is the work context. Stable identity is used to re-locate the record when it still belongs to the current result set.
+function returnToQuery(actionMessage = "已返回查詢結果") {
   const rows = filteredRows();
   const index = selectedRecordId ? rows.findIndex((row) => row.id === selectedRecordId) : -1;
-  let message = "已返回查詢結果。";
-  if (index >= 0) { currentPage = Math.floor(index / pageSize()) + 1; message = `已返回並以 stable identity 重新定位 ${selectedRecordId}，目前位於第 ${currentPage} 頁。`; }
-  else if (selectedOriginalPage) currentPage = Math.min(selectedOriginalPage, totalPages(rows));
-  showOnly("query-view"); renderQuery(message);
-  requestAnimationFrame(() => document.querySelector(`[data-record-id="${CSS.escape(selectedRecordId ?? "")}"]`)?.scrollIntoView({ block: "center" }));
+  let message = `${actionMessage}。`;
+
+  if (index >= 0) {
+    currentPage = Math.floor(index / pageSize()) + 1;
+    message = `${actionMessage}；已以 stable identity 重新定位 ${selectedRecordId}，目前位於第 ${currentPage} 頁。`;
+  } else if (selectedOriginalPage) {
+    currentPage = Math.min(selectedOriginalPage, totalPages(rows));
+    if (selectedRecordId) message = `${actionMessage}；${selectedRecordId} 已不在目前查詢結果中，保留原 Query Context。`;
+    else message = `${actionMessage}；保留原 Query Context。`;
+  }
+
+  showOnly("query-view");
+  renderQuery(message);
+  requestAnimationFrame(() => {
+    if (!selectedRecordId) return;
+    document.querySelector(`[data-record-id="${CSS.escape(selectedRecordId)}"]`)?.scrollIntoView({ block: "center" });
+  });
 }
 
 el("query-form").addEventListener("submit", (event) => { event.preventDefault(); currentPage = 1; selectedRecordId = null; renderQuery(); });
 el("clear-button").addEventListener("click", () => { el("keyword").value = ""; el("status").value = ""; el("maintainable").value = ""; currentPage = 1; selectedRecordId = null; renderQuery(); });
 el("page-size").addEventListener("change", () => { currentPage = 1; renderQuery(); });
 el("create-button").addEventListener("click", openCreate);
-el("detail-back").addEventListener("click", returnToQuery);
+el("detail-back").addEventListener("click", () => returnToQuery("已離開唯讀明細"));
 el("detail-edit").addEventListener("click", () => openUpdate(selectedRecordId));
 el("maintenance-form").addEventListener("input", updateDirty);
 el("maintenance-form").addEventListener("change", updateDirty);
