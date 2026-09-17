@@ -4,6 +4,37 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Single-record Maintenance / Worklist-centric Lifecycle
+
+- Experiment: F-MAINT-1
+- Date: 2026-09-17
+- Status: Completed / Pattern Candidate Established
+- Verification: Partial — Functional / Interaction Evidence
+- Record: `experiments/feature-maintenance/README.md`
+- Consolidated Findings: `evidence/f-maint-1-findings.md`
+- Pattern Synthesis: `knowledge/platform/single-record-maintenance-pattern.md`
+- Live Demo: `/feature-maintenance/`
+- Topics: Single-record Maintenance, Worklist, Create, Update, Read, Dirty State, Validation, Mutation Policy, Last Write Wins, iPad-first, RWD
+
+### Result
+
+Claire 已完成 deployed functional prototype review。Nook Works ordinary internal maintenance 收斂為 Worklist-centric lifecycle：
+
+```text
+Query / Worklist
+├─ Read   → Return        → Query Context
+├─ Create → Save / Cancel → Query Context
+└─ Update → Save / Cancel → Query Context
+```
+
+早期 `Update → Save → Read Detail → Return Query` candidate 在高頻 key 單情境下被否決，保留為 lifecycle negative evidence。
+
+Concurrency review 亦修正了初版過度 generalize 的 optimistic-locking 假設。Current candidate 是 ordinary maintenance 預設 `Last Write Wins`；只有 Feature / Requirement 明確需要時，再升級 stale-update detection 或 business-state-sensitive mutation。Platform 應把 Mutation Policy 當 decision guardrail，而不是替所有 Feature 強制同一策略。
+
+重要 boundary：Maintenance ≠ Workflow / Approval；Prototype UI 只承載 action semantics，不宣稱 button placement / layout 為 Platform UI Rule。
+
+---
+
 ## General Master → Detail / Read-only Detail Pattern
 
 - Experiment: F-DETAIL-1
