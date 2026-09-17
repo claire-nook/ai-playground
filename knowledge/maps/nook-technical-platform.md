@@ -44,14 +44,17 @@ Nook Technical Platform
 │  │  ├─ deep link / reload / Back / Forward             [Verified]
 │  │  ├─ Session refresh / invalidation / explicit Logout[Verified]
 │  │  └─ iPad / iPhone responsive lifecycle              [Verified]
-│  └─ Business Feature → Technical Platform Pattern      [Next Research Front]
-│     ├─ operation shape / responsibility decomposition   [To Research]
-│     ├─ authorization / token / transaction boundary     [To Research]
-│     ├─ feature state / Shell / Browser lifecycle        [To Research]
-│     └─ UI / maintenance interaction                     [Later Research]
-│        ├─ list / table / query interaction              [To Research]
-│        ├─ CRUD / form lifecycle                         [To Research]
-│        └─ Browser History vs Business Action            [To Research]
+│  └─ Business Feature → Technical Platform Pattern      [Active Research Front]
+│     ├─ Read-only Query                                 [Completed F-QUERY-1]
+│     │  ├─ curated result / field semantics             [Candidate established]
+│     │  ├─ business vs technical query boundary         [Candidate established]
+│     │  ├─ server-side pagination / sorting baseline    [Candidate established]
+│     │  ├─ total / page navigation / page size          [Candidate established]
+│     │  └─ complete-set Browser variant                 [Bounded variant]
+│     ├─ Master → Detail return context                  [Known next pressure]
+│     ├─ CRUD / maintenance operation lifecycle          [To Research]
+│     ├─ authorization / token / transaction boundary    [Cross-cutting design]
+│     └─ Browser History / unsaved state                 [To Research]
 │
 ├─ Custom API Runtime
 │  ├─ Supabase Edge Functions
@@ -135,68 +138,70 @@ Historical explicit-logout Session restoration anomaly 保留為 `A-SAFARI-LIFEC
 
 Formal Nook Works 應把 S-SHELL-1 的 verified contracts、portable logic 與 lifecycle traps 帶回 Platform Shell design，而不是直接把 disposable monolithic `app.js` 當 Production architecture。
 
-### Architecture readiness checkpoint — 2026-09-16
+### Read-only Query — F-QUERY-1 completed 2026-09-17
 
-Backend / Data / Integration 與 Application Shell lifecycle 的 core feasibility Evidence 已足以進入 Platform Architecture / Business Feature Pattern design；目前沒有已識別的 technical Blocking Gap。
+F-QUERY-1 已完成第一輪 requirement-driven Read-only Query Pattern research cycle。Experiment Record：`experiments/feature-query/README.md`；General Architecture synthesis：`knowledge/platform/application-platform-architecture.md` v0.3。
 
-研究前緣從 broad capability probing 轉成：
+這一輪不是證明一套 Production Query framework，而是形成足以帶往下一個 Requirement 的 Current Judgment：
 
 ```text
-Verified Capability
-→ Business / Functional Requirement
-→ Technical Responsibility Decomposition
-→ Architecture / Platform Pattern Candidate
-→ Platform Rule / Open Decision
-→ Production Implementation
+Business Query Boundary
+→ Requirement / SA 定義合理查詢範圍
+
+Technical Result Boundary
+→ Platform / Technical Design 保證單次 interaction cost 有界
 ```
 
-Cross-cutting design queue：Transaction Pattern Selection、Authorization / Error Contract、Batch Execution Contract、Production Identity / Secret / Connection Governance、Observability Contract、Requirement-to-platform traceability。
+對 enterprise-style query，baseline candidate 為：
+
+```text
+criteria + sort + page + pageSize
+→ validated operation contract
+→ server-side filter
+→ server-side sort
+→ server-side page
+→ bounded rows + total / page metadata
+```
+
+Page navigation、previous / next、current page、total count 與 page-size selector 被視為 paged Query 的基本完整性，不再因「目前資料看起來不多」延後到不明未來。若某 Feature 能明確證明完整 Result Set 小且 bounded，Browser-side sort / pagination 仍可作受限 implementation variant。
+
+Nook Works 的 no-horizontal-scroll 決定仍只是 Pattern-specific candidate；它提供 design pressure，不升格為 general browser-platform law。
+
+Master → Detail 尚未進入正式 Pattern 2，但已知 return-context 不能只理解成 `restore pageNumber`。若資料在 User 看 Detail 期間插入，原 anchor record 可能移到另一頁；因此 stable row identity / work-context restoration 是下一 Pattern 必須正面處理的 design pressure。
+
+### Architecture readiness checkpoint — 2026-09-17
+
+Backend / Data / Integration、Application Shell lifecycle 與 Read-only Query first baseline 已足以支持下一輪 Business Feature Pattern research；目前沒有已識別的 technical Blocking Gap 要求先回頭做 broad capability probing。
+
+研究前緣現在是：
+
+```text
+Verified / Candidate Platform Baseline
+→ Next Real Business Requirement
+→ Reuse / Extend / Refactor / Replace
+→ Focused Experiment only when behavior is uncertain
+```
+
+Cross-cutting design queue：Transaction Pattern Selection、Authorization / Error Contract、Query Operation Contract adoption、Batch Execution Contract、Production Identity / Secret / Connection Governance、Observability Contract、Requirement-to-platform traceability。
 
 ### Browser / Backend baseline
 
 Netlify-hosted Browser 已實測 Supabase Auth、Native CRUD、View Read Model、authenticated cross-origin Custom API invocation、Custom API orchestration與 Application Shell composition。`Netlify = Web/UI delivery` 與 `Supabase = Auth/API/DB` 已有多條 runtime chain 支持。
 
-### Next Research Front — Business Feature → Technical Platform Pattern
+### Next Research Front — Master → Detail / Maintenance Challenge
 
-S-SHELL-1 回答「Feature 如何裝進 Application Runtime」，但不回答 Business Feature 進入後，其 Business Operation 應如何映射到 Technical Platform responsibility。
+下一階段不先宣布一套 Pattern 2 framework，也不先做 Design System。應等待或選擇下一個真實 Nook Works Requirement，讓它挑戰目前 Architecture v0.3。
 
-下一階段先從 representative enterprise Feature / Operation pattern 分析：
+若 Requirement 包含 Query → Detail / Edit，至少應檢查：
 
-```text
-Business Specification
-→ Business Operation Contract
-→ Interaction Semantics
-→ Platform Pattern
-→ Native Data API / View / Custom API / RPC / DB
-→ Authorization / Transaction / Error / Lifecycle Contract
-```
+- Query context restoration 是否以 stable row identity 而非死守舊 page number 為 anchor。
+- current criteria / sort / pageSize 與 Browser History 如何保存或重建。
+- Detail retrieval 是否仍能維持 Feature-facing Operation Contract。
+- Edit / Save / Cancel、validation、dirty state、unsaved-change guard 的 lifecycle。
+- Business Domain 若採 Void / Cancel / Invalidate 而非 physical delete，Technical Pattern 應尊重該 invariant，而不是替不存在的 hard-delete edge case 蓋宮殿。
+- Mutation operation 的 Transaction Owner、Authorization、Error mapping 是否挑戰目前 boundaries。
 
-同一個 UI action 不代表同一種 technical operation。例如 `Save` 可能只是 single-object Native CRUD，也可能是 feature-specific Custom API，或是跨多個 object 且需要明確 Transaction Owner 的 Business Operation。Business Specification 可以描述 operation intent、必要 input / output contract，或引用 feature-specific Custom API；不需要因此承擔 Edge Function、PostgreSQL Client、RPC implementation 等 Technical Architecture detail。
-
-研究 representative pattern 時，至少檢查：
-
-- Native Data API / View Read Model / Custom API / RPC 的 responsibility boundary。
-- Authentication Identity / Application Context / Feature Entry / Feature Data Access / Business Authorization 的 separation。
-- current Session / JWT propagation 對 Feature invocation 的影響。
-- Transaction ownership 是否與完整 Business Operation boundary 一致。
-- Feature state 是否應留在 Feature，而非因畫面位於 Shell 就升格 global state。
-- Browser History、Business Action、Save / Cancel、unsaved state 的 lifecycle separation。
-- Validation、Error、partial failure 與 result contract。
-
-UI / Maintenance Interaction 是後續必要研究層，而不是被取消。待 operation / responsibility pattern 較清楚後，再研究 List/Table、Pagination、Sort、Filter/Search、Loading/Empty/Error、responsive presentation、Create/Edit/Delete/Save/Cancel、Validation/Dialog/Toolbar，以及：
-
-```text
-Query
-→ Detail / Edit
-→ Save / Cancel
-→ Return
-→ Browser Back / Forward
-→ unsaved changes / query-state restoration
-```
-
-這些 UI research 的目的，是確認 interaction 如何承載 Platform Contract；不是先制定 Design System、component styling、按鈕大小或顏色。
-
-Browser History 不應隱性觸發 Business Mutation；實際 Save-success history replacement、unsaved-change guard 與 query-state restoration contract 留給後續 interaction research。
+UI research 的目的仍是確認 interaction 如何承載 Platform Contract；不是先制定 component styling、按鈕大小或顏色。
 
 ### Supabase Custom API workload coverage
 
@@ -226,17 +231,20 @@ Evidence-backed Current Judgment：`Transaction boundary 應由擁有完整 Busi
 
 ## Remaining Supabase-first / Platform Questions
 
-目前沒有已識別的 Backend / Data / Integration / Shell technical Blocking Gap。剩餘議題依性質分流：
+目前沒有已識別的 Backend / Data / Integration / Shell / basic Read-only Query technical Blocking Gap。剩餘議題依性質分流：
 
-1. **Business Feature → Technical Platform Pattern**：下一個 focused research front；從 Functional Requirement 補足 technical responsibility decomposition。
-2. **Feature UI / Maintenance Interaction**：必要的後續 research layer；在 operation / responsibility pattern 之後研究 interaction contract，不先做視覺 Design System。
+1. **Master → Detail / Maintenance Pattern**：下一個 focused feature-pattern front，由真實 Requirement 啟動；return-context / stable row anchor 已是 known pressure。
+2. **Formal Query Operation Contract adoption**：把 criteria / sort / page / pageSize / total-count / boundedness semantics 帶回 Nook Works technical design，不直接複製 Playground prototype。
 3. **Explicit Business Authorization / Error Contract**：Platform Rule / Design；只有 mechanism 存疑才另做 Experiment。
 4. **Batch Idempotency / Retry / Run Identity**：先由 formal requirement 與 Platform Rule 定義。
 5. **Production Identity / Secrets / Connection Governance**：Platform Rule / Design。
 6. **Observability / Correlation Contract**：Platform Rule / Design；隨 representative workflow 驗收。
 7. **A-SAFARI-LIFECYCLE**：Known intermittent observation；只有 anomaly 再現且可取得 diagnostic Evidence 時重開。
 8. **Pure Compute / Longer-running、Concurrency / Isolation / Deadlock、Distributed Compensation、Advanced Workflow Orchestration**：保持 Deferred，直到 representative workload / correctness requirement 出現。
+9. **Advanced Query variants**：Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort、generic saved-query / URL restoration，等 Requirement 真正需要，不因名字很像「平台能力」就先養起來。
 
 ## Decision Boundary
 
-`Verified` 表示「真的做過且留下 Evidence」，不是 Production Architecture Rule。正式 Technical Decision 仍應回到 Nook Works formal repository，結合 Specification、Security、Operations、Provider capability、Cost 與 Playground Evidence 再形成。
+`Verified` 表示「真的做過且留下 Evidence」，`Completed / Pattern Candidate` 表示該輪 Research Question 已形成可帶往下一 Requirement 的 Current Judgment。兩者都不是 Production Architecture Rule。
+
+正式 Technical Decision 仍應回到 Nook Works formal repository，結合 Specification、Security、Operations、Provider capability、Cost 與 Playground Evidence 再形成。
