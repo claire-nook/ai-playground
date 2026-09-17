@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="F-DETAIL-1 Nook Works representative master detail interaction prototype">
-  <title>Nook Works · Batch 執行記錄 Master Detail Prototype</title>
+  <meta name="description" content="F-DETAIL-1 v2 general master detail platform pattern prototype">
+  <title>Nook Works · General Master Detail Pattern v2</title>
   <link rel="stylesheet" href="/application-shell/shell.css">
   <link rel="stylesheet" href="/feature-query/prototype.css">
   <link rel="stylesheet" href="/feature-detail/prototype.css">
@@ -23,12 +23,11 @@
         <nav>
           <a href="#">Home</a>
           <section class="nav-group">
-            <h2>系統管理</h2>
-            <a href="/feature-detail/" aria-current="page">Batch 執行記錄</a>
+            <h2>Pattern Lab</h2>
+            <a href="/feature-detail/" aria-current="page">General Detail Pattern</a>
           </section>
-          <section class="nav-group"><h2>旅遊資料</h2><a href="#" aria-disabled="true">城市天氣查詢</a></section>
         </nav>
-        <p class="nav-note">F-DETAIL-1 · Representative Mock，不是正式 Nook Works。</p>
+        <p class="nav-note">F-DETAIL-1 v2 · Synthetic Mock，不代表任何正式 Business Feature。</p>
       </aside>
 
       <main id="content" class="content" tabindex="-1">
@@ -38,36 +37,26 @@
           <header class="page-heading">
             <div class="feature-identity">
               <div>
-                <p class="eyebrow">Master → Detail Prototype</p>
-                <h1>Batch 執行記錄</h1>
-                <p>先用 Query 找到工作目標，再進入 Dedicated Detail Surface 閱讀單筆完整資訊。</p>
+                <p class="eyebrow">General Master → Detail Pattern · v2</p>
+                <h1>參考資料查詢</h1>
+                <p>Synthetic Feature 只負責承載 Pattern：查詢、分頁、選取 Stable Record，再進入通用唯讀明細。</p>
               </div>
               <div class="identity-meta" aria-label="Prototype Feature Identity">
-                <span class="feature-code">FQ-BATCH-01</span>
-                <span class="prototype-badge">Pattern 2 Probe</span>
+                <span class="feature-code">F-DETAIL-1</span>
+                <span class="prototype-badge">Pattern 2 · v2</span>
               </div>
             </div>
           </header>
 
           <form id="query-form" class="query-panel">
             <div class="query-grid">
-              <label>Batch
-                <select id="batch-code"><option value="">全部</option><option value="DAILY_WEATHER" selected>Daily Weather</option><option value="PLACE_REFRESH">Place Refresh</option></select>
-              </label>
-              <label>執行狀態
-                <select id="status"><option value="">全部</option><option value="SUCCESS">成功</option><option value="WARNING">部分異常</option><option value="FAILED">失敗</option><option value="RUNNING">執行中</option></select>
-              </label>
-              <label>執行日起
-                <input id="date-from" type="date" value="2026-09-10">
-              </label>
-              <label>執行日訖
-                <input id="date-to" type="date" value="2026-09-17">
-              </label>
+              <label>關鍵字<input id="keyword" type="search" value="" placeholder="名稱或代碼"></label>
+              <label>狀態<select id="status"><option value="">全部</option><option value="ACTIVE">啟用</option><option value="PAUSED">暫停</option></select></label>
+              <label>資料分類<select id="category"><option value="">全部</option><option value="A">Category A</option><option value="B">Category B</option><option value="C">Category C</option></select></label>
+              <label>每頁筆數<select id="page-size"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select></label>
             </div>
             <div class="query-actions">
-              <label class="scenario-control">Prototype Scenario
-                <select id="scenario"><option value="mixed">Mixed</option><option value="normal">Normal</option><option value="empty">Empty</option></select>
-              </label>
+              <div class="scenario-note">Mock 共 760 筆，排序固定為「最近建立優先」。</div>
               <div class="button-row"><button id="clear-button" class="action-button" type="button">清除</button><button class="action-button primary" type="submit">查詢</button></div>
             </div>
           </form>
@@ -75,47 +64,51 @@
           <section class="result-section" aria-labelledby="result-title">
             <div class="result-heading"><div><p class="eyebrow">Query Result</p><h2 id="result-title">查詢結果</h2></div><p id="result-count" class="result-count"></p></div>
             <p id="return-context" class="return-context" hidden></p>
-            <p id="result-message" class="feature-state" role="status" aria-live="polite" hidden></p>
             <div id="desktop-result" class="table-wrap"></div>
             <div id="mobile-result" class="mobile-cards"></div>
-            <p class="research-note">Result List 只保留辨識 / 比較 / 選擇所需資訊；完整資料由 Dedicated Detail Surface 承接。</p>
+            <nav id="pagination" class="pagination" aria-label="查詢結果分頁"></nav>
+            <p class="research-note">返回不是「回到舊頁碼」。Pattern 以 stable record identity 重新定位目前資料集中的 record，再推導它現在所在的 page。</p>
           </section>
         </section>
 
         <section id="detail-view" class="prototype-view" hidden aria-labelledby="detail-title">
           <div class="detail-toolbar">
             <button id="back-to-query" class="back-button" type="button">← 返回查詢結果</button>
-            <span class="detail-context-label">Batch 執行記錄 / 明細</span>
+            <span class="detail-context-label">General Detail / Read-only</span>
           </div>
 
           <header class="detail-hero">
             <div>
               <p class="eyebrow">Record Detail</p>
-              <h1 id="detail-title">Batch 執行明細</h1>
-              <p id="detail-summary" class="detail-lead"></p>
+              <h1 id="detail-title">資料明細</h1>
+              <p class="detail-lead">Business Content 由 Feature 定義；Platform 只提供一致的欄位呈現、Detail lifecycle 與固定 Audit Pattern。</p>
             </div>
-            <div class="detail-identity">
-              <span id="detail-status"></span>
-              <code id="detail-record-id"></code>
-            </div>
+            <div class="detail-identity"><span id="detail-status"></span><code id="detail-record-id"></code></div>
           </header>
 
-          <section class="detail-section" aria-labelledby="overview-title">
-            <div class="section-heading"><div><p class="eyebrow">Overview</p><h2 id="overview-title">執行概況</h2></div></div>
-            <dl id="overview-grid" class="detail-grid"></dl>
+          <section class="detail-section" aria-labelledby="business-fields-title">
+            <div class="section-heading"><div><p class="eyebrow">Feature-defined Content</p><h2 id="business-fields-title">基本資料</h2></div></div>
+            <dl id="business-fields" class="detail-grid"></dl>
           </section>
 
-          <section class="detail-section" aria-labelledby="result-detail-title">
-            <div class="section-heading"><div><p class="eyebrow">Result</p><h2 id="result-detail-title">執行結果</h2></div></div>
-            <div id="detail-result-card" class="detail-result-card"></div>
+          <section class="detail-section" aria-labelledby="long-content-title">
+            <div class="section-heading"><div><p class="eyebrow">Long-form Content</p><h2 id="long-content-title">說明</h2></div></div>
+            <div id="long-content" class="long-content"></div>
           </section>
 
-          <section class="detail-section" aria-labelledby="trace-title">
-            <div class="section-heading"><div><p class="eyebrow">Trace</p><h2 id="trace-title">處理紀錄</h2></div></div>
-            <ol id="detail-trace" class="trace-list"></ol>
+          <section class="detail-section audit-section" aria-labelledby="audit-title">
+            <div class="section-heading"><div><p class="eyebrow">Platform Standard Pattern</p><h2 id="audit-title">Audit</h2></div></div>
+            <dl id="audit-grid" class="audit-grid"></dl>
           </section>
 
-          <p class="research-note detail-note">本輪 Detail 為 read-only。Edit / Save / Cancel / unsaved changes 故意不偷渡進來，免得一張明細頁突然長成企業級章魚。</p>
+          <section class="detail-section interaction-lab" aria-labelledby="interaction-title">
+            <div class="section-heading"><div><p class="eyebrow">Interaction Probe</p><h2 id="interaction-title">返回期間資料異動</h2></div></div>
+            <p>模擬你停留在明細頁期間，有 <strong>30 筆較新的資料</strong>被其他人新增。返回後 Pattern 應重新定位這筆 record，而不是固執地回到舊 page number。</p>
+            <button id="simulate-insert" class="action-button" type="button">模擬新增 30 筆資料</button>
+            <p id="mutation-state" class="mutation-state">目前尚未模擬外部新增。</p>
+          </section>
+
+          <p class="research-note detail-note">v2 刻意移除 Batch-specific result / metrics / trace。這裡研究的是 General Detail Pattern，不再替某張 Table 寫傳記。</p>
         </section>
       </main>
     </div>
