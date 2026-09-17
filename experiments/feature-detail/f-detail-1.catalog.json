@@ -7,6 +7,6 @@
   "tags": ["Nook Platform", "Feature UI", "Master Detail", "Read-only Detail", "Query Context", "Browser History", "Functional Prototype", "iPad-first", "RWD"],
   "demoStatus": "live",
   "demoPath": "/feature-detail/",
-  "verificationStatus": "pending-review",
+  "verificationStatus": "candidate",
   "flow": "Query Result → Select Record → Dedicated Detail Surface → Return Context → Claire Functional Review"
 }
