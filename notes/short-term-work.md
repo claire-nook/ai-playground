@@ -2,7 +2,7 @@
 
 > 無交期。這不是正式開發排程；只保存近期 Research Front 與 deliberate deferred branches。
 
-## Current Research Front — Business Feature → Technical Platform Pattern
+## Current Research Front — Architecture Synthesis
 
 S-SHELL-1 已於 2026-09-16 完成，Application Shell lifecycle 不再是 current technical blocking gap。Consolidated Findings：`evidence/s-shell-1-application-shell-findings.md`。
 
@@ -12,37 +12,26 @@ F-DETAIL-1 已於 2026-09-17 完成第一輪 Read-only General Master → Detail
 
 F-MAINT-1 已於 2026-09-17 完成第一輪 Single-record Maintenance research cycle。Experiment Record：`experiments/feature-maintenance/README.md`；Consolidated Findings：`evidence/f-maint-1-findings.md`；Pattern Synthesis：`knowledge/platform/single-record-maintenance-pattern.md`。
 
-目前三層 Functional Pattern baseline 已形成：
+加上既有 D-BATCH-1，Nook Works 目前四個常見 internal enterprise application archetype 已有第一輪 baseline：
 
 ```text
-Query / Worklist
-→ Read-only Detail
-→ Create / Update Maintenance
+Scheduled / Cron
+Query
+Query → Detail
+Single-record Maintenance
 ```
 
-F-MAINT-1 收斂出的 Internal Enterprise Maintenance baseline：
+因此 Research Front 已從「再做下一個 Feature Prototype」切換到 **Nook Works Application Architecture Synthesis**。
 
-```text
-Query / Worklist Context
-├─ Read   → Return        → Query Context
-├─ Create → Save / Cancel → Query Context
-└─ Update → Save / Cancel → Query Context
-```
+Primary 已建立：
 
-重要 conclusions：
+- `knowledge/platform/nook-works-application-architecture.md` — Architecture Baseline Candidate v0.1。
+- `agent-work/work-orders/2026-09-17-nook-works-architecture-v01-adversarial-review.md` — Codex High-Risk Review Work Order。
+- GitHub Issue `#44` — Review dispatch surface。
 
-- Nook Works ordinary Maintenance 採 Worklist-centric，不採 customer-facing Guided Flow 作預設。
-- `Update → Save → Read Detail → Return Query` 已被 Claire functional review 否決，保留為 lifecycle negative evidence。
-- Common Pattern 不等於 common page implementation；mode-based / surface-separated 都可存在。
-- Effective Capability 應區分 User Capability、Record State 與 Feature / Business Rule input；Frontend capability 不等於 backend authorization。
-- Dirty State / Unsaved Changes Guard 是 Maintenance lifecycle responsibility。
-- Audit 延續 F-DETAIL-1 Platform Standard sub-pattern。
-- UI button placement / visual hierarchy 不是本輪 Platform Rule；Prototype UI 只負責把 operation 演出來。
-- Concurrency handling 是 Mutation Policy decision point，不是所有 Update 的預設 optimistic locking。
-- Ordinary Maintenance current default candidate 為 Last Write Wins；Feature 可明確升級為 stale-update detection 或 business-state-sensitive mutation。
-- Maintenance 與 Workflow / Approval 是不同 Pattern；一筆 Business Object 可以被維護，同時另外參與審批流程。
+Review 要求 Codex 同時以 Architecture Reviewer / Implementer 視角攻擊 v0.1：責任邊界錯置、過早抽象、provider coupling、不可施工 contract、hidden assumption、deferred item 是否其實阻擋 baseline。
 
-下一個 Research Front 尚未選定。不要因為剛收斂完 Maintenance 就立刻把 Delete、Approval、Master-detail 全部抓進來煮一鍋，這種衝動通常就是 ERP 神獸的出生證明。
+v0.1 review 前不急著新增 Master-detail / One-to-many / Workflow Prototype。那些屬於 requirement-driven extension，不因為企業系統「可能會有」就現在先蓋 framework。人類很喜歡在還沒需求時先造萬用引擎，最後通常只得到一台很重的腳踏車。
 
 ---
 
@@ -158,20 +147,44 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 
 ---
 
+## Current Architecture Review Queue
+
+v0.1 已把目前 baseline 收斂成：
+
+```text
+Application Shell
+→ Feature Activation
+→ Business Feature / Interaction Pattern
+→ Feature-facing Operation Contract
+→ proportionate Execution Mechanism
+→ Trusted Backend / Data Source
+```
+
+並把 Scheduled / Batch 視為與 Browser Feature 平行的 execution entry surface。
+
+Codex adversarial review 完成後，Primary 要逐項判斷：
+
+- Keep。
+- Revise。
+- Downgrade to Open Contract。
+- Remove。
+- Need New Evidence。
+
+這一輪的目標是 Architecture v0.2，而不是再堆一個 Demo。
+
 ## Platform Rule / Design Queue
 
-- Formal Nook Works Platform Shell design / module boundary extraction。
-- Business Feature → Technical Platform Pattern taxonomy / contract。
-- Query Operation Contract 的正式 Nook Works adoption，包括 pagination / sorting / page-size / boundedness semantics。
-- Detail return-anchor production contract：position / cursor resolution。
-- Maintenance mutation / validation / capability / Save policy contract。
-- Mutation Policy default / Specification decision guardrail。
+- Business Authorization Contract。
+- Feature-facing Error Contract。
+- Validation ownership / error semantics。
+- Mutation Policy declaration / Specification decision guardrail。
 - Transaction Pattern Selection。
-- Authorization / Error Contract。
-- Batch Execution Contract / retry / idempotency ownership。
+- Detail return-anchor production contract：position / cursor resolution。
+- Browser History / unsaved-state route integration。
+- Batch Run Identity / retry / idempotency contract。
 - Production Identity / Secret / Connection Governance。
-- Observability Contract。
-- Requirement-to-platform traceability。
+- Observability / correlation contract。
+- Requirement → Pattern → Operation Contract traceability。
 
 ## Deferred / Candidate
 
@@ -179,7 +192,7 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 - Advanced Query variants：Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort、generic saved-query / URL restoration，等 Requirement 真正需要。
 - Delete / Void：等有 representative Business Requirement，再判斷是 Maintenance extension 或 Business Operation。
 - Approval / Workflow：獨立 Pattern candidate，不混入 ordinary Maintenance。
-- Master-detail Maintenance：等單檔 baseline 需要被真實 Requirement 延伸時再研究。
+- Master-detail / one-to-many / many-to-many Maintenance：等真實 Requirement 挑戰 current single-record baseline 時再研究。
 - A-SAFARI-LIFECYCLE intermittent explicit-logout Session restoration：Known Observation / root cause Unknown；只有 anomaly 再出現時帶 diagnostic purpose 重開，不反覆逼 Safari 表演靈異現象。
 - P-CODEX-PHONE autonomous dispatch：Deferred by Provider Gap。
 - Pure Compute / Longer-running Processing：等 representative workload。
