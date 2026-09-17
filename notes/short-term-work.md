@@ -8,7 +8,9 @@ S-SHELL-1 已於 2026-09-16 完成，Application Shell lifecycle 不再是 curre
 
 F-QUERY-1 已於 2026-09-17 完成第一輪 Read-only Query Pattern research cycle。Experiment Record：`experiments/feature-query/README.md`；General Platform synthesis：`knowledge/platform/application-platform-architecture.md` v0.3。
 
-F-QUERY-1 收斂出的 baseline candidate 包含：curated result、Business Query Boundary / Technical Result Boundary separation、enterprise-style server-side pagination / sorting、total count、page navigation、page size，以及 complete-set Browser processing 只作明確 bounded variant。Master → Detail return-context / stable row anchor 已辨識為下一 Pattern 的 known design pressure，但尚未在 F-QUERY-1 偷跑定案。
+F-QUERY-1 收斂出的 baseline candidate 包含：curated result、Business Query Boundary / Technical Result Boundary separation、enterprise-style server-side pagination / sorting、total count、page navigation、page size，以及 complete-set Browser processing 只作明確 bounded variant。Master → Detail return-context / stable row anchor 已辨識為下一 Pattern 的 known design pressure。
+
+**F-DETAIL-1 已於 2026-09-17 啟動。** 第一輪先研究 read-only Master → Detail interaction：Query Result → Select Record → Dedicated Detail Surface → Return Query Context。Prototype 重用 F-QUERY-1 visual baseline，刻意只新增 Detail action、stable record identity、Detail information hierarchy 與 selected-record return anchor；Edit / Save / Cancel / dirty-state 暫不混入第一輪 Claire Functional Review。
 
 目前 Research Front 仍是從 Nook Works 可預期的 Business / Functional Requirement 出發，補上過去由 Technical Leader / Framework 承擔的 technical decomposition，形成可重用的 Technical Platform Pattern。
 
@@ -67,7 +69,7 @@ Authorization / Transaction / Error / Lifecycle Contract
 
 UI / interaction 仍是 Platform research 的必要部分，但不是先建 Design System。F-QUERY-1 已證明最單純 Read-only Query 也需要一定程度的功能完整性，不能把 Pagination、Sort、Page Size 之類正常工作能力一律踢進「以後再說」。
 
-後續仍需由真實 Requirement 挑戰：Master → Detail、Create / Edit / Void、Save / Cancel、Validation、Dialog、Toolbar、unsaved state、Browser History 與 return-context restoration。
+F-DETAIL-1 現在用 Dedicated Detail Surface 挑戰 Query → Detail → Return lifecycle；第一輪先確認閱讀與工作上下文，再決定是否進一步把 Maintenance 的 Edit / Save / Cancel、Validation、unsaved state、Browser History 等壓力疊上來。
 
 這些研究要回答的是：UI interaction 如何承載已定義的 Platform Contract，而不是先建立視覺規範。按鈕大小、顏色、圓角仍不是 current Research Front。
 
@@ -125,7 +127,7 @@ Completed work 的 durable meaning 應留在 `knowledge/`、`evidence/`、Experi
 
 ## Deferred / Candidate
 
-- **Master → Detail / Maintenance Pattern**：由下一個真實 Requirement 啟動；已知壓力包含 return-context restoration、stable row anchor、Edit / Save / Cancel、unsaved changes 與 Browser History。
+- **Maintenance mutation extension after F-DETAIL-1 review**：Edit / Save / Cancel、unsaved changes、Validation、Browser History 與 mutation/transaction contract，待 read-only Detail lifecycle 先經 Claire review。
 - UI component / Design System / visual styling：等更多 representative interaction contract 穩定後再研究。
 - Advanced Query variants：Cursor / Keyset Pagination、Infinite Scroll、Multi-column Sort、generic saved-query / URL restoration，等 Requirement 真正需要。
 - A-SAFARI-LIFECYCLE intermittent explicit-logout Session restoration：Known Observation / root cause Unknown；只有 anomaly 再出現時帶 diagnostic purpose 重開，不反覆逼 Safari 表演靈異現象。
