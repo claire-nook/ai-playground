@@ -7,6 +7,6 @@
   "tags": ["Nook Platform", "Feature UI", "Read-only Query", "Pagination", "Sorting", "Functional Prototype", "iPad-first", "RWD"],
   "demoStatus": "live",
   "demoPath": "/feature-query/",
-  "verificationStatus": "candidate",
+  "verificationStatus": "partial",
   "flow": "Business Requirement → Functional Prototype → Review → Enterprise Query Pressure → Pattern Candidate → Next Requirement Challenge"
 }
