@@ -1,4 +1,4 @@
-/* F-QUERY-1A only: Feature-level styles. Shell ownership remains in /application-shell/shell.css. */
+/* F-QUERY-1B only: Feature-level styles. Shell ownership remains in /application-shell/shell.css. */
 
 /* Candidate feature identity presentation. The identifier naming/model is intentionally not standardized yet. */
 .feature-identity { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
@@ -56,12 +56,23 @@
 .result-heading { display:flex; align-items:end; justify-content:space-between; gap:1rem; margin-bottom:.7rem; }
 .result-heading h2 { margin:0; }
 .result-count { margin:0; color:#59636e; }
-.table-wrap { overflow-x:auto; border:1px solid #d8dee4; border-radius:12px; background:#fff; }
-.result-table { width:100%; border-collapse:collapse; min-width:680px; }
-.result-table th,.result-table td { padding:.8rem .75rem; border-bottom:1px solid #e7ebef; text-align:left; vertical-align:top; }
+
+/*
+ * F-QUERY-1B candidate decision: the result list is curated to fit its available width.
+ * Do not hide an oversized column set behind horizontal scrolling; excess information belongs in
+ * a separately designed Detail or Export capability unless a future requirement disproves this rule.
+ */
+.table-wrap { width:100%; overflow-x:hidden; border:1px solid #d8dee4; border-radius:12px; background:#fff; }
+.result-table { width:100%; table-layout:fixed; border-collapse:collapse; }
+.result-table th,.result-table td { padding:.8rem .75rem; border-bottom:1px solid #e7ebef; text-align:left; vertical-align:top; overflow-wrap:anywhere; }
 .result-table th { background:#f6f8fa; color:#59636e; font-size:.78rem; letter-spacing:.03em; }
 .result-table tr:last-child td { border-bottom:0; }
-.status-pill { display:inline-flex; align-items:center; min-height:1.8rem; padding:.2rem .65rem; border-radius:999px; font-size:.78rem; font-weight:800; white-space:nowrap; }
+.result-table th:nth-child(1),.result-table td:nth-child(1) { width:20%; }
+.result-table th:nth-child(2),.result-table td:nth-child(2) { width:16%; }
+.result-table th:nth-child(3),.result-table td:nth-child(3) { width:14%; }
+.result-table th:nth-child(4),.result-table td:nth-child(4) { width:30%; }
+.result-table th:nth-child(5),.result-table td:nth-child(5) { width:20%; }
+.status-pill { display:inline-flex; align-items:center; max-width:100%; min-height:1.8rem; padding:.2rem .65rem; border-radius:999px; font-size:.78rem; font-weight:800; white-space:nowrap; }
 .status-success { background:#dafbe1; color:#116329; }
 .status-warning { background:#fff8c5; color:#7d4e00; }
 .status-failed { background:#ffebe9; color:#82071e; }
