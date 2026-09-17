@@ -1,156 +1,223 @@
 # General Application Platform Architecture
 
-> Status: Architecture Baseline Candidate v0.1  
+> Status: Architecture Baseline Candidate v0.2  
 > Date: 2026-09-17  
 > Scope: General browser-based application platform  
-> Current challenge coverage: Application Shell + Read-only Query Feature  
-> Maturity: Evidence-backed where explicitly marked; otherwise Candidate / Open
+> Current challenge coverage: Application Shell + Read-only Query Feature + Implementation-agent adversarial review  
+> Maturity: Direct Evidence / Inference / Candidate Boundary / Pattern-specific Decision / Open Contract are distinguished explicitly
 
 ## 1. Purpose
 
-This document is the first architecture synthesis produced from Playground evidence. It is intentionally written as **general platform technical knowledge**, not as a Nook Works feature design and not as a disguised production specification.
+This document is a general platform architecture synthesis produced from Playground Experiment / Evidence and subsequent adversarial review. It is **not** a Nook Works production specification and it does not claim that one Query prototype has discovered the universal shape of browser applications.
 
-The current architecture asks a narrow but important question:
+The current question remains deliberately narrow:
 
-> Given an already verified Application Shell and the first representative Read-only Query Pattern, what technical responsibility boundaries are justified now, before CRUD / Master-Detail / Export / Server-side Pagination or other later patterns challenge them?
+> Given a verified Application Shell, a first representative Read-only Query Pattern, and an independent implementation-oriented review, which responsibility boundaries are justified now, and which must remain provisional until later patterns challenge them?
 
-The goal is not to predict every future feature. The goal is to establish the smallest architecture that can explain the responsibilities we already have evidence for, then allow later patterns and implementation review to attack it.
+The working loop is:
 
 ```text
 Real Requirement
 → Functional Pattern
 → Experiment / Evidence
 → Architecture Synthesis
-→ Architecture Challenge
-→ Revision
+→ Independent Review
+→ Architecture Revision
+→ Next Pattern Challenge
 ```
 
-A baseline becomes a foundation only after later requirements fail to break its important boundaries.
+A boundary becomes more trustworthy by surviving different kinds of pressure. A neat diagram is not evidence. Humans have produced enough neat diagrams already.
 
 ---
 
-## 2. Evidence and Provenance
+## 2. Evidence, Review and Claim Strength
 
-Current v0.1 is primarily supported by:
+v0.2 is primarily informed by:
 
 - `evidence/s-shell-1-application-shell-findings.md`
-  - Auth / Session lifecycle.
+  - Session restore / login lifecycle.
   - Application User Context bootstrap.
   - metadata-driven Navigation / Feature Entry.
-  - Route / deep-link / refresh / browser history behavior.
-  - separation between Shell responsibility and Feature data state.
+  - route / deep-link / refresh / browser history behavior.
+  - separation between Shell lifecycle and Feature-owned business state.
+  - separation between Feature Entry and downstream authorization.
 - `experiments/feature-query/README.md`
   - Functional shape of a simple Read-only Query Feature.
-  - Query Pattern responsibility boundary.
-  - curated Result List rather than record dumping.
-  - Browser-side single-column sorting only when the complete result set is already loaded.
+  - Query responsibility boundary.
+  - curated Result List.
+  - client-side sorting only when a complete result set is loaded.
   - Detail / Export / Server-side Pagination kept outside the simple Query Pattern.
-  - backend schema complexity kept outside UI interaction semantics.
-- Earlier Playground capability evidence for Native Data API, View Read Model, Custom API, backend service access, external API orchestration and browser integration.
+  - backend data complexity kept outside UI interaction semantics.
+- Earlier Playground capability evidence for Native Data API, View Read Model, authenticated Custom API, backend service access and external API orchestration.
+- `agent-work/reports/2026-09-17-general-platform-architecture-v01-review.md`
+  - independent reviewer + implementer challenge of v0.1.
+  - specific attacks on `Feature Runtime`, the five-layer pipeline, authorization obligations, boundedness, error taxonomy and construction ambiguity.
 
-This provenance matters because the architecture must not pretend that untested future patterns have already endorsed it.
+### 2.1 Claim-strength vocabulary
+
+v0.2 uses five labels:
+
+| Label | Meaning |
+| --- | --- |
+| **Direct Evidence** | Observed in a concrete runtime / browser / provider experiment under stated conditions |
+| **Inference from Evidence** | Reasoned conclusion supported by Evidence but not itself directly observed |
+| **Candidate Boundary** | Architecture responsibility split currently judged useful but still challengeable |
+| **Pattern-specific Decision** | Decision local to the current interaction/product context; not generalized into platform architecture |
+| **Open Contract** | Minimum responsibility is known, but exact interoperable contract still requires technical design or later Evidence |
+
+This distinction matters because capability evidence does not automatically prove a code-layer architecture. For example, multiple Data Access mechanisms have been demonstrated; that does **not** prove every Feature needs a browser-side repository class wearing a tiny suit and carrying no useful responsibility.
 
 ---
 
-## 3. Architecture Principle: Platform Owns Shared Technical Responsibilities
+## 3. Architecture Principle: Responsibility Before Abstraction
 
-A platform should not own a behavior merely because multiple screens contain similar HTML or because a framework can abstract it.
+A platform should centralize a responsibility when centralization materially reduces repeated lifecycle decisions, security inconsistency, integration ambiguity or cross-feature technical risk.
 
-A responsibility becomes a platform concern when centralizing it reduces repeated technical decisions, lifecycle risk, security inconsistency or integration ambiguity across features.
+It should **not** centralize behavior merely because:
 
-Conversely, a responsibility should remain Feature-owned when its meaning depends on the business operation or when centralizing it would require the platform to understand feature-specific semantics.
+- several screens contain similar markup;
+- a framework offers an abstraction;
+- a provider SDK feels untidy;
+- a diagram looks more architectural with another box.
 
 ```text
-Shared technical responsibility
+Shared technical lifecycle / invariant
 → Platform candidate
 
-Business / feature semantic responsibility
+Business-operation semantics
 → Feature
 
-Data-source implementation complexity
-→ Data Access / Backend contract
+Feature-facing operation contract
+→ explicit seam
 
-Convenience offered by a library
-→ not architecture by itself
+Execution / storage mechanism
+→ Data Access / Backend choice
+
+Library convenience
+→ implementation detail unless Evidence proves otherwise
 ```
 
-The platform is therefore a **responsibility system**, not a universal component library and not a configuration engine for all business behavior.
+The platform is therefore a responsibility system, not a universal component framework and not a configuration engine for all possible business behavior.
 
 ---
 
-## 4. Initial Responsibility Model
+## 4. Two Orthogonal Architecture Views
 
-v0.1 separates the browser application into five conceptual responsibility areas.
+v0.1 incorrectly mixed runtime owners, interaction patterns, contract seams and backend mechanisms into one five-step linear pipeline. The adversarial review was right to attack that shape.
+
+v0.2 separates two different questions.
+
+### 4.1 Lifecycle / Activation View
 
 ```mermaid
-graph TD
+graph LR
     A[Browser Entry] --> B[Application Shell]
-    B --> C[Feature Runtime]
-    C --> D[Feature Interaction Pattern]
-    D --> E[Data Access Boundary]
-    E --> F[Backend / Data Source]
+    B --> C[Feature Activation Contract]
+    C --> D[Active Feature]
 
-    G[Identity / Session] --> B
-    H[Application Context] --> B
-    I[Authorization] -. crosses boundaries .-> E
-    J[Error Contract] -. crosses boundaries .-> C
-    K[Observability] -. crosses boundaries .-> E
+    I[Identity / Session] --> B
+    U[Application User Context] --> B
+    D -. session invalidation signal .-> B
 ```
 
-These are responsibility boundaries, not a mandatory folder structure, framework hierarchy or deployment topology.
+This view answers:
 
-### 4.1 Application Shell
+> Who owns the application lifecycle, and how is control transferred to one active business Feature?
 
-**Evidence-backed responsibility candidate.**
+### 4.2 Feature Operation View
 
-The Shell owns application-level lifecycle that exists before and across individual business features:
+```mermaid
+graph LR
+    F[Feature Interaction Semantics] --> O[Feature-facing Operation Contract]
+    O --> M[Selected Data Access Mechanism]
+    M --> B[Backend / Data Source]
+
+    A[Authorization obligation] -. applies .-> O
+    C[Credential freshness] -. applies .-> M
+    E[Error classification] -. returns through .-> O
+    X[Cancellation / Supersession] -. operation lifecycle .-> O
+    V[Observability / Correlation] -. diagnostic path .-> M
+```
+
+This view answers:
+
+> How does an active Feature perform one business operation without becoming coupled to physical schema or provider mechanics?
+
+These views are related, but they are not layers of the same species. That distinction removes several opportunities for us to construct ceremonial adapters and then admire them like expensive houseplants.
+
+---
+
+## 5. Application Shell
+
+**Claim strength: Direct Evidence + Candidate Boundary.**
+
+The Shell owns application-level lifecycle that exists before and across individual Features:
 
 - Authentication / Session lifecycle.
-- Authentication Identity to active Application User Context bootstrap.
+- Authentication Identity → active Application User Context bootstrap.
 - Application eligibility handling.
 - metadata-derived Navigation / Feature Entry.
 - Route resolution, deep link, refresh and browser history integration.
-- Shell-level loading / failure / invalidation / explicit logout behavior.
+- Shell-level startup / failure / invalidation / explicit logout behavior.
 - browser-safe runtime configuration boundary.
 
 The Shell does **not** automatically own:
 
-- Feature query criteria.
-- Feature result data.
-- CRUD / Form state.
-- pagination / sorting / filtering state.
-- business validation.
-- Business Authorization.
-- server result cache merely because multiple Features use data.
+- query criteria or query results;
+- CRUD / Form state;
+- pagination / sorting / filtering state;
+- business validation;
+- Business Authorization decisions;
+- server result cache merely because multiple Features render inside the same application.
 
-The important rule is:
+Candidate rule:
 
-> Application-wide lifecycle belongs to the Shell; business-operation state does not become global merely because the Feature is rendered inside the Shell.
+> **Application-wide lifecycle belongs to the Shell; business-operation state does not become global merely because the Feature is rendered inside the Shell.**
 
-### 4.2 Feature Runtime
+---
 
-**Architecture candidate introduced in v0.1.**
+## 6. Feature Activation Contract
 
-Feature Runtime is the technical boundary where the Shell hands control to a selected Feature.
+**Claim strength: Candidate Boundary.**
 
-Its purpose is to give a Feature a stable execution context without forcing the Shell to understand the Feature's business semantics.
+v0.1 called this `Feature Runtime`. The review correctly identified that current Evidence does not justify an independent runtime owner, class, service, provider or framework.
 
-A Feature Runtime may receive or access:
+v0.2 therefore uses **Feature Activation Contract**: the seam where Shell hands control to an active Feature.
 
-- stable Feature identity / route context.
-- current Application User Context when required.
-- platform-provided invocation capability.
-- shared presentation/lifecycle primitives that are genuinely platform-level.
+It is not a mandatory code object.
 
-It then owns the lifecycle of the active Feature until control returns to Shell navigation.
+### 6.1 Minimum obligations
 
-This boundary is deliberately thin. v0.1 does **not** define a generic Feature framework, plugin system, component registry or dependency injection mechanism. Those would be implementation choices without current evidence.
+Before activating a Feature, the Shell side must have resolved the prerequisites required by that Feature entry, including the application lifecycle state needed to enter it.
 
-### 4.3 Feature Interaction Pattern
+The handoff must make these responsibilities unambiguous:
 
-**Pattern-specific responsibility.**
+- **Stable Feature identity / route context** has a canonical source.
+- **Application User Context access** must represent current application context when the Feature needs it; do not treat an uncontrolled bootstrap snapshot as eternally current.
+- **Authenticated invocation** must obtain a current credential/session at invocation time or through an equivalent freshness-preserving mechanism. A stale JWT carried around as convenient Feature props is not a platform pattern.
+- **Active Feature disposal / supersession** has an owner when navigation replaces the active Feature or an operation is abandoned.
+- **Session-invalid signal** can return to Shell so application lifecycle can be re-established or terminated.
 
-An Interaction Pattern describes how a class of Feature behaves from the user's perspective. It is not allowed to infer backend structure from UI shape.
+### 6.2 Explicit non-goals
+
+Current architecture does not justify:
+
+- Feature plugin registry;
+- generic `FeatureRuntime` class;
+- service locator;
+- dependency-injection framework;
+- global Feature context containing random shared utilities;
+- cross-feature state container.
+
+If later Patterns reveal an invariant that is shared across Features but belongs to neither Shell nor individual Feature, a real Runtime boundary may re-emerge. Until then, it remains an architectural ghost and does not get office space.
+
+---
+
+## 7. Feature Interaction Semantics
+
+**Claim strength: Pattern-specific Decision + Candidate Boundary.**
+
+An Interaction Pattern describes the user-visible behavior of a class of Feature. It is a design and responsibility vocabulary, not a mandatory runtime component.
 
 For Pattern 1, Read-only Query:
 
@@ -163,50 +230,101 @@ Feature Identity
 
 The Query Feature owns:
 
-- criteria values and validation required to issue the query.
-- query submission / reset interaction.
-- query-specific loading / empty / result / recoverable error state.
-- presentation of curated result columns.
-- optional Browser-side single-column sorting when the complete result set is already present.
+- criteria values;
+- functional validation needed to issue the query;
+- submit / reset interaction;
+- query-local loading / empty / result / recoverable error state;
+- presentation of curated result columns;
+- client-side single-column sorting only when the result set is known to be complete.
 
-The Query Pattern does not own:
+The simple Query Pattern does not own:
 
-- source table / view / join structure.
-- Detail retrieval.
-- Export.
-- Server-side Pagination / Sorting.
-- mutation / Save lifecycle.
-- business authorization policy.
+- physical table / view / join topology;
+- Detail retrieval;
+- Export;
+- Server-side Pagination / Sorting;
+- mutation / Save lifecycle;
+- Business Authorization policy.
 
-A future pattern may reuse some primitives while having a different lifecycle. Reuse must be demonstrated, not assumed from visual similarity.
+A future Pattern may reuse some behavior, but visual similarity is not evidence that the lifecycle is shared.
 
-### 4.4 Data Access Boundary
+---
 
-**Evidence-backed capability; architecture contract still evolving.**
+## 8. Feature-facing Operation Contract
 
-The browser Feature should consume a bounded data contract rather than depend on the physical data model.
+**Claim strength: Candidate Boundary + Open Contract.**
 
-Possible mechanisms already demonstrated in Playground include:
+The architecture requires a clear **operation contract** between a Feature and whichever mechanism fulfills the operation. It does **not** require a dedicated browser-side repository/service wrapper if the selected mechanism already satisfies that contract directly.
 
-- Native Data API.
-- View Read Model.
-- authenticated Custom API.
-- RPC / database function behind a server-side boundary.
-- backend composition involving external APIs.
+For an authenticated Read-only Query, the technical design must explicitly define at least:
 
-The architecture rule is not "always use one mechanism". The rule is:
+### 8.1 Criteria semantics
 
-> Feature Interaction depends on the contract it needs; Data Access / Backend architecture decides how that contract is fulfilled.
+- field representation;
+- omitted vs `null` vs empty string semantics where relevant;
+- empty set semantics for multi-select where relevant;
+- date/time/timezone encoding where relevant;
+- server-side validation expectations that differ from client functional validation.
 
-For a Read-only Query Feature, the contract should define at least the criteria representation, result shape, default ordering, boundedness and error semantics relevant to the Feature. It should not expose physical schema complexity merely because that complexity exists.
+### 8.2 Result semantics
 
-### 4.5 Backend / Data Source
+- result fields and data types;
+- nullability / unknown-value handling;
+- stable row identity when the Feature requires identity;
+- deterministic default ordering, including tie behavior when correctness requires it;
+- whether the result represents the complete matching set.
 
-**Mechanism layer, not UI semantics.**
+### 8.3 Boundedness / completeness
 
-Backend implementation may involve tables, views, joins, database functions, custom APIs, external providers or orchestration. Those choices must preserve the contract consumed by the Feature but do not automatically alter the Query Pattern.
+The contract must not silently confuse a provider default row cap with a complete result set.
 
-This prevents a common architecture leak:
+The technical design must state how the operation behaves when the result exceeds its supported bound, for example:
+
+- reject as too broad;
+- return an explicit boundedness outcome;
+- use another mechanism or Pattern.
+
+Silent truncation is not an acceptable basis for a UI that later claims to sort or compare the complete result.
+
+### 8.4 Authorization enforcement point
+
+The design must identify the trusted boundary that validates caller/session and enforces data/business scope for the operation.
+
+### 8.5 Operation lifecycle
+
+The design must state the policy for superseded or stale requests when multiple requests can overlap. Exact cancellation APIs are implementation details; allowing an old response to overwrite a newer query is a correctness problem, not a charming race-condition collectible.
+
+### 8.6 Error outcomes
+
+The contract must expose enough classification for Feature and Shell to respond consistently without displaying raw provider diagnostics.
+
+---
+
+## 9. Data Access Mechanism and Backend
+
+### 9.1 Data Access Mechanism
+
+**Claim strength: Direct capability Evidence; mechanism selection remains technical design.**
+
+Playground has demonstrated multiple ways to fulfill operations:
+
+- Native Data API;
+- View Read Model;
+- authenticated Custom API;
+- RPC / database function behind a suitable boundary;
+- backend composition involving external providers.
+
+The architectural rule is:
+
+> **Feature depends on the operation contract it needs. The technical design selects the simplest mechanism that can satisfy that contract, including its authorization, boundedness and failure semantics.**
+
+A direct Native Data API call can satisfy this architecture if it directly fulfills the Feature-facing contract. There is no current Evidence requiring a one-to-one repository wrapper whose main job is forwarding parameters with great dignity.
+
+### 9.2 Backend / Data Source
+
+**Claim strength: Candidate Boundary.**
+
+Backend implementation may involve tables, views, joins, functions, custom APIs, external providers or orchestration.
 
 ```text
 Backend became complicated
@@ -214,72 +332,81 @@ Backend became complicated
 UI must become complicated
 ```
 
-If backend complexity changes the actual user-visible behavior, latency model, authorization boundary or failure semantics, then the contract and possibly the Feature Pattern must be revisited explicitly.
+But mechanism changes are not automatically transparent. If a different mechanism changes authorization, latency, completeness, partial-failure behavior, cancellation or error semantics, the Feature-facing contract must be revisited.
 
 ---
 
-## 5. Runtime Flow for Pattern 1
+## 10. Pattern 1 Runtime Trace
 
-The initial runtime model for a simple authenticated Read-only Query Feature is:
+The current authenticated Read-only Query trace is:
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant S as Application Shell
     participant F as Query Feature
-    participant D as Data Access Boundary
+    participant O as Operation Contract
+    participant M as Data Access Mechanism
     participant B as Backend / Data Source
 
     U->>S: Enter application / feature route
-    S->>S: Restore or establish Session
-    S->>S: Resolve Application Context
+    S->>S: Restore or establish current Session
+    S->>S: Resolve Application User Context
     S->>S: Validate Feature Entry
-    S->>F: Activate Feature
+    S->>F: Activate via Feature Activation Contract
     U->>F: Set criteria and query
-    F->>D: Request bounded result contract
-    D->>B: Execute selected data mechanism
-    B-->>D: Result / controlled failure
-    D-->>F: Feature-facing contract
+    F->>O: Invoke query operation
+    O->>M: Execute using current auth context
+    M->>B: Provider / database / API work
+    B-->>M: Result or technical failure
+    M-->>O: Contract result / classified failure
+    O-->>F: Feature-facing outcome
     F-->>U: Loading / Empty / Error / Result
     U->>F: Optional single-column sort
-    F->>F: Sort complete loaded result set
+    F->>F: Sort only a known-complete loaded result set
 ```
 
 Important separations:
 
-- Shell Feature Entry does not prove Feature Data Access authorization.
-- Query submission is a Feature action, not a Browser navigation event.
-- Browser-side sorting does not change API default ordering or backend state.
-- Data Access implementation is replaceable only to the extent that the Feature-facing contract remains valid.
+- Feature Entry is not proof of Feature Data Access authorization.
+- Query submission is a Feature action, not automatically Browser navigation.
+- Feature criteria semantics remain Feature-owned even if a future implementation represents some criteria in the URL; Shell may transport URL/route state without interpreting business criteria.
+- client-side sorting correctness depends on an explicit completeness guarantee.
+- mechanism replaceability ends where contract semantics change.
 
 ---
 
-## 6. State Ownership
+## 11. State Ownership
 
-State should live at the narrowest lifecycle that owns its meaning.
+**Claim strength: Candidate Boundary with strong support from Shell Evidence.**
 
-| State | v0.1 Owner | Reason |
+State should live at the narrowest semantic lifecycle that owns it.
+
+| State | Owner | Reason |
 | --- | --- | --- |
 | Authentication Session | Shell / Auth lifecycle | Exists across Features |
-| Application User Context | Shell-level Application Context | Needed to establish application identity/context |
+| Application User Context | Shell-level Application Context | Application identity/context lifecycle |
 | Current Route / Feature Entry | Shell | Application navigation lifecycle |
-| Query Criteria | Query Feature | Meaning belongs to active Feature |
+| Query Criteria | Query Feature | Meaning belongs to active business operation |
 | Query Result | Query Feature | Result belongs to one query lifecycle |
 | Client-side Sort State | Query Feature | Presentation of current loaded result |
-| Physical DB query plan / joins | Backend / Data Access | Not browser interaction state |
-| Business Authorization decision | Appropriate backend / authorization boundary | Must not be inferred from navigation visibility |
+| Operation correlation / supersession state | Feature operation lifecycle or mechanism as appropriate | Prevent stale outcome from replacing current operation |
+| Physical DB query plan / joins | Backend / Data mechanism | Not browser interaction state |
+| Business Authorization decision | Trusted authorization boundary | Must not be inferred from visibility metadata |
 
-This is a strong v0.1 rule candidate:
+Strong candidate rule:
 
 > **State ownership follows semantic lifecycle, not visual containment.**
 
-A component being rendered inside the Shell is not evidence that its state belongs in Shell-global state.
+If query criteria later appear in a URL, that does not make the Shell the semantic owner of those criteria. Transport and meaning are different jobs. Apparently this also needed to be written down, because architecture diagrams enjoy stealing things left unattended.
 
 ---
 
-## 7. Authorization Boundaries
+## 12. Authorization Boundaries and Minimum Obligations
 
-Current evidence supports keeping these concepts separate:
+**Claim strength: Direct Evidence for separation; Candidate Boundary for minimum obligations.**
+
+Keep these distinct:
 
 ```text
 Authentication Identity
@@ -290,118 +417,135 @@ Authentication Identity
 ≠ Business Authorization
 ```
 
-The architecture must therefore avoid two shortcuts:
+v0.2 does not define a universal RBAC (Role-Based Access Control) schema. It does establish minimum obligations:
 
-1. "The menu item is hidden, therefore the backend is protected."
-2. "The user entered the Feature, therefore every query result is authorized."
+1. **A data operation must validate caller/session at a trusted boundary appropriate to the mechanism.**
+2. **Browser-supplied eligibility, navigation metadata, user type or other client context is not by itself proof of data authorization.**
+3. **Feature Entry denied, Data Access forbidden and Session invalid are different outcomes.**
+4. **Session invalidation must be able to escalate back to Shell lifecycle handling.**
+5. **The selected mechanism may use RLS, grants, server authorization or another suitable approach; v0.2 does not prematurely standardize the provider-specific mechanism.**
 
-v0.1 does not yet define the general Business Authorization model. It only establishes that authorization is a distinct responsibility and cannot be collapsed into Shell navigation.
+The architecture therefore rejects two shortcuts:
 
----
-
-## 8. Query Pattern Technical Decisions in v0.1
-
-These are current candidates, not universal laws.
-
-### 8.1 Curated Result List
-
-A Result List is an interaction surface for identification, comparison and selection. It is not a raw representation of a database record.
-
-Result columns should therefore be selected by requirement semantics. The platform should not normalize "show every available field" as a query capability.
-
-### 8.2 No Normal Horizontal-scroll Dependency
-
-For the current target class of business applications, v0.1 treats a horizontally scrolling result grid as an exception rather than a default platform capability.
-
-The purpose is architectural pressure: if the result cannot be understood without exposing many columns, first question whether the interaction is actually a List, Detail or Export problem.
-
-This rule is expected to be challenged by future real requirements.
-
-### 8.3 Browser-side Sorting Only for Complete Loaded Result Sets
-
-When the entire result set is already loaded and bounded, single-column sorting may remain Browser-owned because it changes only the user's temporary reading order.
-
-If future requirements introduce server-side pagination or result sets too large to load completely, this responsibility must be revisited. Sorting only the current page while implying global ordering would violate the interaction contract.
-
-### 8.4 Multi-select Is Field Semantics
-
-A criteria field may support multi-select when the requirement needs set membership semantics. Multi-select is not a default property of every dropdown and is not a reason to make the whole Query Pattern more complex.
+- hidden menu = protected data;
+- successful Feature activation = authorized result set.
 
 ---
 
-## 9. Error Responsibility: Initial Boundary
+## 13. Minimum Error Taxonomy
 
-v0.1 can establish ownership direction but not yet a final cross-platform Error Contract.
+**Claim strength: Candidate Boundary / minimum interoperability obligation.**
+
+v0.2 still does not define a final enterprise Error Contract. It does require enough discrimination to preserve lifecycle boundaries.
+
+Minimum categories:
+
+| Category | Default owner / consequence |
+| --- | --- |
+| `validation` | Feature handles user-correctable criteria/input issue |
+| `session-invalid` | Escalates to Shell application lifecycle |
+| `forbidden` | Feature operation denied; does not automatically mean logout |
+| `boundedness` | Query cannot honestly return the requested complete set under current contract |
+| `transient/unavailable` | Feature may offer retry according to Feature requirement |
+| `internal/unknown` | Feature presents controlled failure; diagnostics remain technical |
+| `cancelled/superseded` | Operation-control outcome, normally not a user-facing error |
+
+Principle:
 
 ```text
 Provider / DB / API failure
-→ Data Access translates technical failure into bounded contract
-→ Feature decides interaction state / user-facing recovery
-→ Shell intervenes only when failure invalidates application-level lifecycle
+→ mechanism captures technical diagnostics
+→ operation contract maps to bounded outcome
+→ Feature decides interaction/recovery
+→ Shell intervenes only for application-lifecycle invalidation
 ```
 
-Examples:
-
-- expired / invalid Session that destroys Application Context: Shell concern.
-- one Query request fails while Session remains valid: Feature concern, using platform error semantics when available.
-- raw database/provider diagnostics: must not be treated as the user-facing contract by default.
-
-A later pattern should challenge whether common Error primitives deserve stronger platform standardization.
+Raw provider diagnostics are not the user-facing contract by default.
 
 ---
 
-## 10. What v0.1 Deliberately Does Not Design
+## 14. Pattern 1 Decisions vs General Platform Architecture
 
-The following are outside the current architecture baseline because Pattern 1 does not require them or existing evidence is insufficient:
+The review correctly identified one place where v0.1 generalized too aggressively.
 
-- CRUD / Create / Edit / Delete lifecycle.
-- Form dirty-state and unsaved-change handling.
-- Master → Detail navigation and Detail retrieval.
-- Export / download authorization and audit.
-- Server-side Pagination / Sorting / Filtering contract.
-- reusable Data Grid framework.
-- generalized component library / Design System.
-- generic workflow engine.
-- production Role / Permission / RBAC model.
-- final Business Authorization architecture.
-- final Error Contract.
-- framework/router/state-management library selection.
-- generic cache layer.
-- generic repository/service abstraction merely to hide provider SDKs.
+### 14.1 General candidate: Curated Result Contract
 
-These omissions are intentional. A platform does not become mature by naming every future problem in advance and surrounding it with interfaces.
+A Result List is for identification, comparison and selection. It should expose requirement-relevant information rather than blindly dump a physical record or API payload.
+
+This is useful as a general responsibility principle.
+
+### 14.2 Pattern-specific: No Normal Horizontal Scroll
+
+The decision to avoid horizontal scrolling as the normal Nook Works Query result behavior remains valuable design pressure, but it is **not** a general browser-platform architecture rule.
+
+It remains documented in `experiments/feature-query/README.md` as a Nook Works Pattern-1 candidate and can be challenged by future Requirements.
+
+General platform architecture therefore keeps the curated-result principle and leaves viewport/layout policy to the relevant Pattern / formal system.
+
+### 14.3 Browser-side Sorting
+
+Client-side single-column sorting is valid only when the loaded result is explicitly known to be complete for the operation contract.
+
+If future Requirements introduce Server-side Pagination or an unbounded result space, sorting responsibility must be redesigned. Sorting one page while implying global order remains wrong no matter how attractive the arrow icon is.
+
+### 14.4 Multi-select
+
+Multi-select remains field semantics chosen by Requirement, not a universal property of dropdowns and not a platform architecture concern by itself.
 
 ---
 
-## 11. Architecture Challenge Protocol
+## 15. What v0.2 Deliberately Does Not Design
 
-v0.1 should now be attacked from two directions before being treated as a stronger foundation.
+Current architecture still refuses to pre-build answers for problems not yet required by Evidence:
 
-### 11.1 Implementation-agent Review
+- CRUD / Create / Edit / Delete lifecycle;
+- Form dirty-state / unsaved changes;
+- Master → Detail navigation and retrieval;
+- Export / download authorization, masking and audit;
+- Server-side Pagination / Sorting / Filtering;
+- reusable Data Grid framework;
+- generalized component library / Design System;
+- generic workflow engine;
+- production RBAC / permission schema;
+- final Business Authorization architecture;
+- final Error Contract / universal error UI;
+- framework/router/state-management library selection;
+- generic cache layer;
+- universal retry policy;
+- cross-feature shared state;
+- generic repository/service abstraction merely to hide provider SDKs;
+- generic query-state restoration;
+- dedicated Feature Runtime / plugin framework;
+- full observability standard beyond the diagnostics/correlation needed by the current operation.
 
-An independent implementation/review agent should inspect the architecture from two perspectives:
+These are not forgotten. They are deliberately unemployed until a real Requirement hires them.
 
-**Reviewer perspective**
+---
 
-- Are responsibility boundaries internally consistent?
-- Does any claim exceed its Evidence?
-- Are there hidden contradictions between Shell, Feature, Data Access and Authorization?
-- Has the architecture accidentally generalized a Pattern-1-specific decision?
+## 16. Review Disposition: What v0.2 Accepted
 
-**Implementer perspective**
+The Implementation Agent review is preserved as an independent report rather than silently blended into architecture truth. Primary architecture judgment accepted these challenges as follows:
 
-- Could an engineer implement Pattern 1 without guessing where major responsibilities belong?
-- Which contracts are too vague to construct safely?
-- Which boundaries would create unnecessary ceremony or duplication?
-- Where would real code pressure tempt the implementation to violate the proposed ownership model?
+| Review finding | v0.2 disposition |
+| --- | --- |
+| R1 Feature Runtime unproven | **Accepted.** Replaced with Feature Activation Contract; no independent runtime framework required. |
+| R2 five-layer pipeline mixes unlike concepts | **Accepted.** Replaced with lifecycle view + operation view. |
+| R3 generalization / Evidence labels too broad | **Accepted.** Added claim-strength vocabulary and narrowed mechanism-vs-layer claims. |
+| R4 no-horizontal-scroll over-generalized | **Accepted.** Returned to Pattern-specific / Nook Works candidate status. |
+| R5 authorization separation lacks enforceable minimum | **Accepted.** Added trusted-boundary and outcome obligations without inventing RBAC. |
+| R6 error direction lacks taxonomy | **Accepted.** Added minimum categories and Shell escalation rule. |
+| R7 Data contract not constructible enough | **Accepted.** Reframed as mandatory operation-contract checklist. |
+| R8 route/query state seam unclear | **Accepted narrowly.** Clarified semantic ownership; generic restoration remains deferred. |
 
-The reviewer is explicitly allowed to challenge the architecture. Review feedback is input to Primary Architecture Judgment, not automatic Architecture Decision authority.
+The review did not become authority merely because it was thorough. It earned influence by finding concrete contradictions and implementation traps that survived Primary re-evaluation. This is considerably healthier than architecture by parental decree.
 
-### 11.2 Pattern 2 Challenge
+---
 
-After review/revision, the next representative Feature Pattern should test v0.1.
+## 17. Next Challenge Protocol
 
-The desired outcome is not "v0.1 survives unchanged". The desired outcome is to classify each change:
+The architecture is now ready for the next **real Pattern**, not for speculative framework expansion.
+
+The next representative Requirement should challenge v0.2 using:
 
 ```text
 Reuse
@@ -411,24 +555,52 @@ Replace
 New independent capability
 ```
 
-Boundaries that repeatedly survive unrelated patterns gain confidence as platform foundations.
+Questions for the next challenge include:
+
+- Does Feature Activation Contract remain thin?
+- Does state ownership by semantic lifecycle survive mutation-oriented behavior?
+- Is the operation-contract concept still sufficient when operations mutate data or involve multi-step interaction?
+- Which Error / Authorization obligations survive unchanged?
+- Does any responsibility emerge that genuinely belongs between Shell and Feature?
+
+A boundary that survives unrelated Patterns gains confidence. A boundary that fails cheaply in Playground is doing exactly what Playground is for.
 
 ---
 
-## 12. Current Architecture Judgment
+## 18. Current Architecture Judgment
 
-At Pattern 1, the strongest emerging foundation is not a particular framework or API mechanism. It is the separation of **lifecycles and responsibilities**:
+At Pattern 1 plus independent implementation review, the strongest emerging foundation is now:
 
 ```text
-Application lifecycle        → Shell
-Active business feature      → Feature Runtime
-User interaction semantics   → Feature Pattern
-Feature-facing data contract → Data Access Boundary
-Execution / storage detail   → Backend / Data Source
+Application lifecycle
+→ Application Shell
+
+Shell-to-feature control transfer
+→ Feature Activation Contract
+
+Business interaction meaning and local state
+→ Active Feature / Interaction Semantics
+
+Feature-visible operation meaning
+→ Feature-facing Operation Contract
+
+Execution choice
+→ Selected Data Access Mechanism
+
+Physical query / orchestration / storage
+→ Backend / Data Source
 ```
 
-Cross-cutting concerns such as Authorization, Error Contract and Observability must connect these layers without collapsing them.
+Cross-cutting responsibilities are not decorative arrows. They carry minimum obligations:
 
-The first architecture baseline therefore favors **thin shared boundaries and explicit ownership** over early generic frameworks.
+- current identity / credential freshness;
+- trusted authorization enforcement;
+- explicit completeness / boundedness;
+- stale-operation control;
+- classified errors;
+- session-invalid escalation;
+- technical diagnostics / correlation without leaking provider internals to users.
 
-This is intentionally modest. If Pattern 2 destroys it, that is useful evidence obtained while demolition is still cheap.
+The architecture still favors **thin seams, explicit ownership and evidence-backed restraint** over generic frameworks.
+
+v0.2 is stronger than v0.1 precisely because one of its prettiest boxes got demoted before anyone had time to build a shrine around it.
