@@ -134,6 +134,26 @@ Evidence 可包含 Source / Diff、Test Result、Runtime Output、Provider Resul
 
 GitHub-visible state 是 Primary Technical QC 的 handoff surface。Workspace/local commit SHA 不必等於 GitHub PR head SHA。
 
+### Durable Report Handoff Rule｜長篇回報不得丟給 Human Relay 搬運
+
+若 executor 的 substantive output 本身就是主要交付物，例如 `Review`、`Investigation`、Architecture analysis、Experiment analysis，且內容長到 Primary 需要逐段閱讀、引用、QC 或後續保存，**不得預設只存在 executor response / chat UI**。
+
+此類 Work Order 預設應指定 repository report artifact，例如：
+
+`agent-work/reports/<work-order-id>.md`
+
+並要求：
+
+1. executor 將完整 substantive report 寫入指定 repository path；
+2. final diff 僅包含 Work Order 授權的 artifact / changes；
+3. 建立可追溯 commit identity；
+4. 依 Execution Profile 形成 GitHub-visible handoff surface；
+5. executor response 只保留短 handoff summary：Result、Report path、Commit SHA / change identity、publication state、External Gates Remaining。
+
+Human Relay 的責任是傳遞 dispatch / publication gate，不是人工複製長篇 Report。若 Primary 需要完整內容才能 QC，就應讓內容存在可直接讀取的 durable surface。
+
+例外：短小、一次性、沒有後續 QC / Knowledge value 的回報可只留在 executor response；若因 execution surface 無法寫 repository，Work Order 必須事先指定替代 durable artifact / handoff mechanism，而不是默認由 Claire 手動搬運。
+
 ## Report Contract｜執行後回報
 
 Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight 應與 `Type` / `Work Weight` 成正比，不要把同一件事在 Source、commit、PR、Report 重寫四遍。
@@ -150,9 +170,13 @@ Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight �
 
 除上述外，保留 Evidence、alternatives、failure、unknown、reproduction、candidate conclusion；Experiment 的 durable truth 應進 Experiment Record / Evidence，而不是只躺在 Agent Report。
 
+若 Investigation / Experiment 的主要交付物是 substantive analysis report，套用 `Durable Report Handoff Rule`；不要把完整分析只留在 executor chat response。
+
 ### Review 預設
 
 保留 findings、severity / impact、supporting evidence、required rework / recommendation；不要把 reviewer opinion 偽裝成 provider evidence。
+
+`Standard` / `High-Risk` Review 原則上套用 `Durable Report Handoff Rule`：完整 Review 寫入 repository report artifact，executor response 只做短 handoff。只有明確判定為短小且不需後續逐段 QC 的 Review 才可例外。
 
 ### Cannot Complete 預設
 
@@ -180,7 +204,8 @@ Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight �
 3. 檢查 final diff / changed files。
 4. 依 `Execution Profile` 建立可追溯 commit，並完成該 runtime 支援的 publication handoff。
 5. 回報 Result、changed files、validation、known limitations / unknowns、commit identity、GitHub publication state、External Gates Remaining。
-6. 完成後停止擴張工作，進入 Primary Technical QC / External Gate。
+6. 若 Work Order 套用 `Durable Report Handoff Rule`，確認完整 report 已存在指定 durable artifact；不得以 chat response 取代。
+7. 完成後停止擴張工作，進入 Primary Technical QC / External Gate。
 
 `Completed` 表示 **Executor Completion**，不自動等於 Technical QC PASS、Deployment PASS、Human Acceptance PASS、Provider Verification PASS 或 Experiment Verified。
 
