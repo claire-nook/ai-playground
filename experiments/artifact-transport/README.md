@@ -1,7 +1,7 @@
 # A-ARTIFACT-1 — AI-assisted Artifact Collaboration Workflow
 
 - Date: 2026-09-18
-- Status: In Progress / Core Image Publication Workflow Operational
+- Status: Completed / Operational Workflow + Known Boundaries
 - Primary Intent: Claire × Primary Agent / Private Artifact Intake / Processing / Delivery / Repository Handoff
 - Tags: agent-collaboration, artifact-workflow, dropbox, github, ipad-first, binary-transport, privacy-boundary, human-middleware
 
@@ -24,7 +24,7 @@ Human Intake
 → Human Output
 ~~~
 
-Experiment 目前仍保留 broader artifact / large-file lifecycle research；但 **Claire × Primary 的日常 artifact collaboration workflow 已升格為 operational capability**。日常操作請優先讀 `knowledge/implementation/artifact-collaboration-workflow.md`，本文件保留 Evidence / failure modes / design history。
+Experiment 已完成日常協作流程、Primary workspace lifecycle，以及 Dropbox PDF reading boundary 的收斂。**Claire × Primary 的日常 artifact collaboration workflow 已升格為 operational capability**。日常操作請優先讀 `knowledge/implementation/artifact-collaboration-workflow.md`；PDF 閱讀限制請讀 `knowledge/implementation/dropbox-pdf-reading-boundary.md`。本文件保留 Evidence / failure modes / design history。
 
 ---
 
@@ -84,7 +84,7 @@ Canonical collaboration tool：
 | Primary local workspace → Human Output | **Verified / Operational** | finished artifact 可直接上傳 `/AI Output`，由 iOS Files / Preview 取用 |
 | GitHub text/source → Primary → Dropbox | **Verified / Operational** | Markdown / text source 可處理、render 後交付 `/AI Output` |
 | GitHub repository binary → Primary local workspace | **Blocked / Not established** | general binary materialization 仍是獨立 transport boundary |
-| Large PDF materialization / split / merge lifecycle | **Open / Partial** | metadata / preview / small-text fetch 有 Evidence；general binary lifecycle 未完成 |
+| Dropbox PDF reading boundary | **Verified / Closed** | <=5 MiB full text fetch；95.15 MB real PDF 驗證 metadata / preview / temp URL 可用、full fetch 受 5 MiB hard limit、無 page-range primitive |
 | Primary workspace lifecycle / cleanup | **Verified / Operational** | `/AI 工作區` 由 Primary 自主管理；task staging → rename → verify → cleanup 已實測 |
 | Rollback / recovery | **Open** | wrong destination / revision / partial failure recovery 尚未完整驗證 |
 
@@ -111,20 +111,26 @@ resize
 
 Primary 應自行處理 Repository navigation、加工、命名、Dropbox staging、temporary URL、canonical `batch_json` 與 publication 後 QC。
 
-### 尚未達成的 Experiment Stop Condition
+### Experiment Stop Condition
 
-A-ARTIFACT-1 **不能因為 image publication tool 已 operational 就宣告 Completed**。母實驗仍在研究 broader artifact collaboration lifecycle。
+A-ARTIFACT-1 到此收斂。
 
-目前真正 remaining gaps：
+Claire 指定要主動處理的兩個剩餘主題已完成：
 
-1. Dropbox 既有 binary 如何可靠 materialize 到 Primary local processing workspace。
-2. Primary autonomous dispatch 是否有 supported execution surface，可移除每批 manual Run。
-3. Large PDF / multi-part document lifecycle。
-4. General repository binary materialization，若未來 runtime / connector surface 改變再 reopen。
+1. **Dropbox PDF reading boundary**：已用真實 2.66 MB / 95.15 MB PDF 驗證，5 MiB full-text fetch limit、preview / metadata / temporary-link 能力與缺少 page-range primitive 均已確認。
+2. **Primary workspace lifecycle**：`/AI 工作區` 已形成 autonomous housekeeping policy，並完成 create → stage → rename → verify → cleanup 真實 probe。
 
-因此目前最準確的狀態是：
+以下不阻擋結案：
 
-> **Daily Claire × Primary artifact collaboration is operational; broader large-file and general binary materialization research remains open.**
+- Dropbox existing binary → Primary local：Known limitation / Deferred。
+- GitHub repository binary → Primary local：Known limitation / Deferred。
+- Primary autonomous workflow dispatch：等待 future Connector surface；Claire 目前每批一次 Run。
+- rollback / recovery：Problem-triggered only，有真實痛點再研究。
+- specialized PDF / academic connector：未來有真實讀書需求再另開實驗。
+
+Current Judgment：
+
+> **Daily artifact collaboration is operational; known platform boundaries are documented; no active workaround research remains in scope.**
 
 ---
 
@@ -406,29 +412,39 @@ Current note：
 - `Dropbox existing binary → Primary → GitHub`：仍受 Dropbox → Primary local materialization boundary 阻擋
 - `GitHub → Primary → Dropbox`：仍 Open
 
-### D. PDF lifecycle
+### D. Dropbox PDF reading boundary
 
-待驗證：
+**Closed / Boundary Verified.**
 
-- large PDF local materialization
-- semantic split into AI-readable chunks
-- chunk storage in AI working area
-- merge into Human-facing complete PDF
-- working artifact vs delivery artifact ownership
-
-候選 shape：
+Canonical operational reference：
 
 ~~~text
-AI Working Area
-├── part-01.pdf
-├── part-02.pdf
-└── part-03.pdf
-
-Human Output
-└── complete.pdf
+knowledge/implementation/dropbox-pdf-reading-boundary.md
 ~~~
 
-AI-readable working representation 不必等於 Human delivery representation。
+Real controls：
+
+~~~text
+/英文學習/旋元佑文法.pdf
+2.66 MB
+→ full extracted text
+✅
+
+/英文學習/旋元祐字源大挪移.pdf
+95.15 MB
+→ metadata / preview / temporary download link
+✅
+→ full extracted text
+❌ FILE_TOO_LARGE / 5 MiB limit
+~~~
+
+Current Dropbox Connector exposes no page-range / partial text fetch primitive.
+
+Search queries using known small-file terms and likely large-file terms did not establish PDF content search as a reliable page/section reader.
+
+Current Judgment：
+
+> Dropbox-native PDF reading is clean for supported whole-file fetches <= 5 MiB. Above that boundary, record the limit and choose another reading surface only when a real use case requires it. This Experiment does not build a workaround stack for the sixth megabyte.
 
 ### E. Workspace lifecycle
 
@@ -962,3 +978,53 @@ knowledge/implementation/primary-workspace-housekeeping.md
 ~~~
 
 這代表 Workspace Lifecycle 不需要 Claire 共同維運；它已屬 Primary operational responsibility。
+
+
+---
+
+## Dropbox PDF Reading Boundary Probe｜2026-09-18
+
+Claire 指定真實測試範圍：`/英文學習`。
+
+### Small control
+
+~~~text
+/英文學習/旋元佑文法.pdf
+2,784,964 bytes / 2.66 MB
+~~~
+
+Result：
+
+- metadata：Verified
+- preview：Verified
+- full extracted text fetch：Verified
+- extracted text：約 360,763 characters
+
+### Large control
+
+~~~text
+/英文學習/旋元祐字源大挪移.pdf
+99,768,096 bytes / 95.15 MB
+~~~
+
+Result：
+
+- metadata：Verified
+- preview：Verified
+- temporary direct download link：Verified
+- full extracted text fetch：Blocked
+- exact observed error：`FILE_TOO_LARGE`
+- exact observed ceiling：`5MB (5242880 bytes)`
+- page-range / partial fetch：No current Dropbox Connector primitive
+
+Content-search probes using terms known to exist in the small PDF and likely terms for the large PDF did not return results, so Dropbox search is **not promoted** as a PDF section-reading substitute.
+
+Canonical reference：
+
+~~~text
+knowledge/implementation/dropbox-pdf-reading-boundary.md
+~~~
+
+Non-goal reaffirmed：
+
+> This experiment records the Dropbox boundary. It does not solve >5 MiB reading with custom Actions, splitters, chunkers, or eight heroic programs nobody asked for.
