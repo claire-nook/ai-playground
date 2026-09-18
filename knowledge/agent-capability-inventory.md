@@ -86,7 +86,29 @@ Status：**Partial / Under Active Experiment**
 
 已觀察到可搜尋 / 列出指定檔案與資料夾、讀 metadata、preview image / PDF、對支援範圍內的文字檔案取得 extracted content、將 Conversation file 上傳至指定 Dropbox path、move / rename，以及產生短效 single-use binary download URL。
 
-目前已驗證 Dropbox 可作為 private intake / staging / relay surface；但 **Dropbox binary → Primary local processing workspace 尚未建立可靠 direct path**。不要因為能 preview、取得 metadata 或 temporary URL，就假設 Primary 已持有可直接 resize / edit / split 的 local binary。
+目前已驗證 Dropbox 可作為 private intake / staging / relay surface。
+
+**方向性限制要分清楚：**
+
+```text
+尚未建立可靠 direct path：
+Dropbox existing binary
+→ Primary local processing workspace
+```
+
+這表示：不要因為 Primary 能 preview、取得 metadata 或 temporary URL，就假設已持有可直接 resize / edit / split 的 Dropbox binary。
+
+**但這個限制不代表反方向也不成立。以下路徑已可使用：**
+
+```text
+Primary local / generated / Conversation artifact
+→ Dropbox upload_file
+→ Dropbox staged file
+→ Dropbox download_link
+→ short-lived single-use binary URL
+```
+
+因此，**「Dropbox binary → Primary local processing 尚未可靠」不得被泛化成「Primary 無法把 processed artifact 經 Dropbox relay 給其他 runtime」**。這兩條資料流方向不同，capability boundary 也不同。
 
 A-ARTIFACT-1 仍在進行中；涉及 Dropbox capability 時，先讀 [`../experiments/artifact-transport/README.md`](../experiments/artifact-transport/README.md) 的 Current Judgment，再依當前 session 重新確認 Connector surface。
 
@@ -138,6 +160,32 @@ Workflow input：`batch_json`
 1 image  = 1-item batch
 N images = N-item batch
 Human Gate = one Run per batch
+~~~
+
+**Canonical execution path：**
+
+~~~text
+Conversation / generated artifact
+→ Primary local processing
+→ Dropbox upload_file
+→ Dropbox staging
+→ Dropbox download_link
+→ short-lived single-use sourceUrl
+→ batch_json
+→ Claire runs [COLLAB] Artifact Batch Publish once
+→ GitHub Action downloads + verifies
+→ Repository output
+→ Primary verifies output / report / integrity
+~~~
+
+這條 workflow **不依賴** `Dropbox existing binary → Primary local processing workspace` 能力。也就是說，就算 Dropbox 裡既有 binary 尚不能可靠直接進 Primary local workspace，Primary 仍然可以把自己已處理完成的 local / Conversation artifact 上傳到 Dropbox，取得 temporary URL，再交由 GitHub Action publication。
+
+執行 collaboration tool 時，先恢復這條 **validated workflow**，不要只看單一 Provider capability 後自行推論整體 transport 是否可行。Provider Capability 與 Validated Workflow 是不同層級：
+
+~~~text
+Provider capability may be Partial
+while
+Validated workflow can still be Operational
 ~~~
 
 Primary 應：
