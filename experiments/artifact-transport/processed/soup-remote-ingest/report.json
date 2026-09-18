@@ -1,0 +1,14 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url",
+  "outputPath": "experiments/artifact-transport/publisher-output/soup-remote-ingest.jpg",
+  "bytes": 221676,
+  "sha256": "58b6e8211abae2119bd870613ee6c8ccc74c32fc4832e9515bc7952c342a4cd9",
+  "decodedFormat": "JPEG",
+  "decodedDimensions": [
+    1152,
+    1536
+  ],
+  "exifEntries": 0,
+  "sourceUrlPersisted": false
+}
