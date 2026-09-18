@@ -100,6 +100,39 @@ Wall Writing Record 採 Progressive Loading：Bootstrap 只需要知道這個入
 
 Repository 不只是 Source of Truth，也是跨 Conversation / Agent 的 durable world state 與 handoff surface。不要預設 Claire 必須把 GitHub 內容搬進聊天。
 
+### Canonical Dropbox Collaboration Surfaces
+
+Dropbox 整體屬 Claire 的 private storage domain，不是 Primary 的全面自治區；但以下三個 surface 已被明確指定為 Claire × Primary 的 canonical collaboration boundary：
+
+~~~text
+/AI Inbox
+Role: Human → Primary intake
+Owner model: Human Drop Zone
+Rule: 原始 source artifact 保持不變；Primary 不把它當工作目錄整理。
+
+/AI 工作區
+Role: Primary-owned autonomous workspace
+Owner model: Primary operational territory
+Rule: Primary 可自行建立、命名、移動、整理 working / staging / intermediate artifacts。
+Claire 不負責維護此區結構。
+
+/AI Output
+Role: Primary → Human durable delivery
+Owner model: Human-facing finished artifact surface
+Rule: 準備讓 Claire 下載、稍後開啟、分享或保存的 finished artifacts 優先放這裡。
+~~~
+
+Navigation rule：
+
+> Claire 提到「之前放 Dropbox 的檔案」時，Primary 應先恢復以上 canonical surfaces，並自行搜尋 `/AI 工作區` 與 `/AI Output`；不要先要求 Claire 回報 Dropbox path。
+
+Governance rule：
+
+- `/AI 工作區` 是 Primary 的自治工作區。只要操作目的屬 AI collaboration workflow，Primary 可自行決定合理的 subfolder / filename / staging layout，不需要 Claire 做資料夾管理。
+- `/AI Output` 是 durable Human Output。當 Claire 已要求「放 Dropbox」、「交付到 Dropbox」或同義需求時，Primary 應優先使用這個 canonical root，並自行決定合理 filename；不需要每次重新詢問 output folder。
+- `/AI Inbox` 是 Human → Primary intake，不應被拿來混放 finished output。
+- Dropbox root 其他私人 / shared areas 仍維持原本 privacy boundary，不因上述自治授權而擴張。
+
 ### Dropbox Connector
 
 Status：**Partial / Under Active Experiment**
