@@ -660,3 +660,44 @@ A-ARTIFACT-1 尚未完成，但已得到幾個穩定判斷：
 > 如何把 Connector、Conversation、local processing workspace、Dropbox 與 GitHub 組成一條讓 Human 不再充當檔案 middleware 的 Artifact Collaboration Workflow？
 
 > Capability checkbox ≠ usable workflow.
+
+
+---
+
+### Formal Wall Image Repair Probe
+
+2026-09-18 首次將已升格的 `[COLLAB] Artifact Batch Publish` 用於實際 Wall article image repair。
+
+Context：
+
+~~~text
+Article:
+knowledge/wall/claire-is-hungry-future-agent-life.md
+
+Broken image:
+public/images/wall/future-agent-life-soup.jpg
+~~~
+
+原 repository image 約 10 KiB，browser 實際呈現為 partial decode / gray remainder。Claire 提供原圖後，Primary 重新處理為 metadata-stripped JPEG，並將 collaboration publication boundary 從 Experiment-only 收斂為 explicit allowlist：
+
+~~~text
+experiments/artifact-transport/publisher-output/**
+public/images/wall/**
+~~~
+
+這不是任意 repository write。新增 publication surface 必須明確加入 allowlist 與 canonical contract。
+
+本 probe 同時驗證一條更接近日常工作的 collaboration path：
+
+~~~text
+Existing Wall article
+→ Primary locates article + broken asset from Repository
+→ Conversation original image
+→ Primary image processing
+→ Dropbox staging
+→ [COLLAB] Artifact Batch Publish
+→ same-path binary replacement
+→ Primary QC
+~~~
+
+這個案例也修正操作原則：若 artifact 已存在於 Repository，Primary 應先自行定位 article reference 與 current asset path，不應把 repository navigation 轉嫁給 Claire。
