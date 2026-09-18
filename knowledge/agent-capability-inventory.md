@@ -141,6 +141,29 @@ Status：**Operational collaboration surface / Partial direct binary intake**
 
 已觀察到可搜尋 / 列出指定檔案與資料夾、讀 metadata、preview image / PDF、對支援範圍內的文字檔案取得 extracted content、將 Conversation file 上傳至指定 Dropbox path、move / rename，以及產生短效 single-use binary download URL。
 
+PDF reading boundary 已用真實檔案驗證：
+
+~~~text
+PDF <= 5 MiB
+→ full extracted-text fetch
+✅ Verified
+
+PDF > 5 MiB
+→ metadata / preview / temporary download link
+✅
+
+PDF > 5 MiB
+→ full extracted-text fetch
+❌ FILE_TOO_LARGE
+
+page-range / partial PDF fetch
+❌ no current Dropbox primitive
+~~~
+
+Canonical reference：[`implementation/dropbox-pdf-reading-boundary.md`](implementation/dropbox-pdf-reading-boundary.md)。
+
+遇到「Dropbox 有個 PDF，你去看看」時，先讀這份 boundary，不要把 Claire 變成限制記憶體，也不要為了第 6 MiB 立刻開始蓋 GitHub Actions 工業園區。
+
 目前已驗證 Dropbox 可作為 private intake / staging / relay surface。
 
 **方向性限制要分清楚：**
