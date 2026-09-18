@@ -10,22 +10,6 @@ on:
         description: "Temporary binary download URL"
         required: true
         type: string
-      expected_bytes:
-        description: "Expected decoded byte length"
-        required: true
-        type: string
-      expected_sha256:
-        description: "Expected SHA-256"
-        required: true
-        type: string
-      output_path:
-        description: "Repository output path"
-        required: true
-        type: string
-      request_id:
-        description: "Evidence/report identifier"
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -52,20 +36,15 @@ jobs:
         shell: bash
         env:
           SOURCE_URL: ${{ inputs.source_url }}
-          EXPECTED_BYTES: ${{ inputs.expected_bytes }}
-          EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
-          OUTPUT_PATH: ${{ inputs.output_path }}
-          REQUEST_ID: ${{ inputs.request_id }}
         run: |
           set -euo pipefail
-          report="experiments/artifact-transport/processed/${REQUEST_ID}/report.json"
 
           python scripts/ingest-image-from-url.py \
             --source-url "$SOURCE_URL" \
-            --destination "$OUTPUT_PATH" \
-            --expected-bytes "$EXPECTED_BYTES" \
-            --expected-sha256 "$EXPECTED_SHA256" \
-            --report "$report"
+            --destination "experiments/artifact-transport/publisher-output/soup-remote-ingest.jpg" \
+            --expected-bytes "221676" \
+            --expected-sha256 "58b6e8211abae2119bd870613ee6c8ccc74c32fc4832e9515bc7952c342a4cd9" \
+            --report "experiments/artifact-transport/processed/soup-remote-ingest/report.json"
 
       - name: Commit verified artifact
         shell: bash
@@ -80,5 +59,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add experiments/artifact-transport
-          git commit -m "experiment: ingest verified remote image artifact"
+          git commit -m "experiment: ingest verified remote soup image artifact"
           git push
