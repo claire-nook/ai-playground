@@ -46,6 +46,14 @@ Primary 應自行導航 Repository。對既有 Wall / Knowledge / Experiment / s
 = Claire 從 iOS Files / Dropbox provider 取用
 ~~~
 
+Workspace housekeeping policy：
+
+~~~text
+knowledge/implementation/primary-workspace-housekeeping.md
+~~~
+
+`/AI 工作區` 不只是 staging location，也是 Git scratch-space buffer：不值得成為 durable canonical state 的 temporary render / probe / intermediate artifact 優先留在這裡，完成用途後由 Primary 自行 cleanup。
+
 Dropbox 整體不是 Primary 的私人領地；以上三個 root 才是 canonical collaboration boundary。
 
 Claire 提到「之前放 Dropbox 的檔案」時，Primary 應先自行搜尋 `/AI 工作區` / `/AI Output`，不要把 path discovery 丟回 Human。
