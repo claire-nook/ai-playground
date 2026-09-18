@@ -1,0 +1,77 @@
+name: Artifact Text Ingest
+
+# AI 可透過 commit UTF-8 Base64 chunk request 喚醒 Runner。
+# 這條路徑刻意避開直接 binary blob upload。
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "experiments/artifact-transport/queue/**"
+
+permissions:
+  contents: write
+
+jobs:
+  assemble-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install image validation dependency
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Find ingest requests
+        id: requests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t manifests < <(find experiments/artifact-transport/queue -type f -name manifest.json 2>/dev/null | sort || true)
+
+          if [ "${#manifests[@]}" -eq 0 ]; then
+            echo "No artifact ingest request found."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf '%s\n' "${manifests[@]}"
+          printf '%s\n' "${manifests[@]}" > /tmp/artifact-manifests.txt
+          echo "found=true" >> "$GITHUB_OUTPUT"
+
+      - name: Assemble and verify requests
+        if: steps.requests.outputs.found == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          while IFS= read -r manifest; do
+            request_dir="$(dirname "$manifest")"
+            request_id="$(basename "$request_dir")"
+            report="experiments/artifact-transport/processed/${request_id}/report.json"
+
+            echo "Processing ${request_id}"
+            python scripts/assemble-image-artifact.py "$manifest" --report "$report"
+
+            mkdir -p "experiments/artifact-transport/processed/${request_id}"
+            cp "$manifest" "experiments/artifact-transport/processed/${request_id}/manifest.json"
+            rm -rf "$request_dir"
+          done < /tmp/artifact-manifests.txt
+
+      - name: Commit verified artifacts
+        if: steps.requests.outputs.found == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "No repository changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/artifact-transport
+          git commit -m "experiment: assemble verified image artifact"
+          git push
