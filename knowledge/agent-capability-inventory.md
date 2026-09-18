@@ -153,7 +153,7 @@ Claire 目前只保留必要 Human Gate：提供缺少素材、做公開 / funct
 已知限制：
 
 - 當前 GitHub Connector **沒有 autonomous new `workflow_dispatch` write primitive**，所以 Primary 不能自行按下這個 Run。
-- 目前 implementation 仍只允許寫入 Experiment-owned artifact output prefix；正式文章圖片的 durable publication path 尚未擴權。不要自行把 write boundary 放大成任意 repository path。
+- 目前 implementation 採明確 allowlist，只允許寫入 Experiment-owned artifact output prefix 與 `public/images/wall/**`。這不等於可寫任意 repository path；新的 publication surface 必須另外收斂後再擴權。
 - Dropbox temporary URL 為短效 single-use bearer-style access value；不要以裸 clickable link 作為 Claire 的預設交付格式，優先放在 JSON / code block 中避免 UI 誤觸。
 - 這個 workflow 是 collaboration tool，不代表 A-ARTIFACT-1 整體研究已完成。
 
