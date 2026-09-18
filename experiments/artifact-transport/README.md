@@ -571,6 +571,61 @@ status:               verified
 
 這條 Evidence 也取代了先前「大 binary 必須走 text-chunk assembly」的方向性假設。Text-chunk Action 仍是有效 assembly primitive，但不再是 real-image transport 的首選。
 
+### Batch-first Publication Verification
+
+在 remote-binary path 成立後，workflow 進一步收斂成同一套 Batch-first contract：
+
+~~~text
+1 image  → 1-item batch → 1 Human Run
+N images → N-item batch → 1 Human Run
+~~~
+
+已完成兩組 control：
+
+~~~text
+3-item batch
+requestId: soup-batch-3-control
+itemCount: 3
+atomicPublication: true
+result: verified
+
+1-item batch
+requestId: soup-batch-1-control
+itemCount: 1
+atomicPublication: true
+result: verified
+~~~
+
+因此單張不再是另一套 special case；一張只是 batch size = 1。
+
+目前 Human collaboration contract 可收斂為：
+
+~~~text
+Claire
+→ 提供一張或多張 artifact
+→ 做公開 / 使用判斷
+→ 每批按一次 Run workflow
+
+Primary Agent
+→ 處理 / 命名 / resize / convert / metadata strip
+→ Dropbox staging
+→ 為整批建立 temporary download URLs
+→ 產生 batch_json
+→ 驗證 GitHub 最終結果
+
+GitHub Actions Runner
+→ 一次抓取整批 binary
+→ 每一項驗 bytes / SHA-256 / full decode
+→ 全部成功後才 publication
+→ 一次 commit
+~~~
+
+目前主要未解缺口已不再是 single vs multi-file transport，而是：
+
+> Primary Agent 目前無法自主觸發新的 workflow_dispatch，因此 Human Gate 仍保留為 Claire 每批按一次 Run。
+
+
+
 ---
 
 ## Current Judgment
