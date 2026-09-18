@@ -86,6 +86,18 @@ B --> C[PDF]
 
 ## Image Materialization Boundary
 
+Local image embedding 已由 Conversation-uploaded JPEG control case 正式驗證：
+
+~~~text
+Conversation upload
+→ Primary local workspace
+→ Markdown relative image
+→ PDF embed
+✅ Verified
+~~~
+
+因此，**renderer 本身支援圖片**。如果 PDF 出現 missing-image placeholder，應先判斷 referenced binary 是否真的已 materialize 到 renderer workspace，不要先怪 CSS / Markdown / WeasyPrint。
+
 Markdown source 可由 GitHub Connector 直接讀取，但 Repository binary image 與 Primary local filesystem 是不同 execution surface。
 
 如果 referenced image bytes 尚未 materialize 到 renderer workspace：
@@ -154,3 +166,29 @@ Capability Inventory
 ~~~
 
 不要每次從零重新發明 PDF CSS。人類已經付過一次排版稅。
+
+
+## Durable Delivery Pattern
+
+Human-facing PDF 不應只依賴 Conversation temporary download。
+
+Current verified delivery：
+
+~~~text
+Primary renders PDF
+→ Dropbox /AI Output/<reasonable-name>.pdf
+→ Dropbox sync
+→ Claire opens iOS Files
+→ Dropbox
+→ AI Output
+→ native iOS Preview
+✅ Verified
+~~~
+
+Dropbox 在這條路主要是 durable storage + sync layer；Claire 的日常 discovery surface 是 iOS Files，PDF reading surface 是 iOS Preview。
+
+Canonical collaboration guide：
+
+~~~text
+knowledge/implementation/artifact-collaboration-workflow.md
+~~~
