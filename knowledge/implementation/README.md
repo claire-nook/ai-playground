@@ -38,6 +38,13 @@ Implementation Guide 不是 Production Specification，也不是直接 copy 到�
   - search-before-asking-human rule
   - verified Workspace Lifecycle Probe
 
+- [`Dropbox PDF Reading Boundary`](dropbox-pdf-reading-boundary.md)
+  - <= 5 MiB full extracted-text fetch
+  - > 5 MiB metadata / preview / temporary download link
+  - no current page-range / partial-text primitive
+  - real 2.66 MB and 95.15 MB PDF controls
+  - stop rule: record boundary, do not engineer around it without a real use case
+
 - [`Supabase Cron Implementation Guide`](supabase-cron.md)
   - Cron → PostgreSQL Database Function
   - Cron → `pg_net` → Supabase Edge Function
