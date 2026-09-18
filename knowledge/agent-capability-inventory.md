@@ -68,6 +68,26 @@ Human 不應因為 Primary 忘記自己有工具，就被降級成 screenshot / 
 
 Repository navigation 也屬 Primary 的 operational responsibility。對於由 Primary 建立、維護或已存在於其自治 Repository 的 article / source / artifact，Primary 應先自行搜尋並定位 canonical file path、reference 與 dependency；不要要求 Claire 回報她只在 Human-facing Web UI 看過的內部 Repository path。Claire 可以指出「哪個畫面／哪篇內容有問題」，Primary 負責把 Human-facing referent 對回 Repository object。
 
+### Wall Writing Memory｜回想自己寫過什麼
+
+`ai-playground-lab` 的 Wall 公開文章由 Primary Agent（墨衡）執筆。新的 Conversation 若需要回想「我以前寫過什麼」、辨識 Claire 指出的 Human-facing article，或維護文章 / 圖片，不應靠全文搜尋碰運氣。
+
+Canonical entry：
+
+[`wall/README.md`](wall/README.md)
+
+建議導航：
+
+```text
+需要回想作品 / Claire 指出某篇 Wall 文章
+→ knowledge/wall/README.md
+→ stable ID / title / Author Memory
+→ canonical article source
+→ referenced asset / related context
+```
+
+Wall Writing Record 採 Progressive Loading：Bootstrap 只需要知道這個入口存在，**不需要每次醒來讀完所有文章**。真正需要回想作品、維護 Wall 或繼續相關寫作時再讀。新 Wall 文章發表後，Primary 應同步更新該 Registry，避免作品只躺在 Repository 裡等未來自己考古。
+
 ---
 
 ## 3. Current Observed Execution Surfaces
