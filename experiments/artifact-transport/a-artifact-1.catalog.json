@@ -1,0 +1,21 @@
+{
+  "id": "A-ARTIFACT-1",
+  "title": "AI-assisted Artifact Collaboration Workflow",
+  "completedDate": null,
+  "recordPath": "experiments/artifact-transport/README.md",
+  "summary": "研究 Dropbox、Conversation、Primary Agent local workspace 與 GitHub 如何組成低摩擦 Artifact Collaboration Workflow。已驗證 Conversation 圖片可由 Agent 加工並透過 Git object/blob path 建立 binary commit/branch；Dropbox 可作 private intake、preview 與小型文字 PDF reference，但 Dropbox binary 直接進 local processing workspace 仍存在 transport gap。Public evidence 採 privacy-scrub，不保存私人 storage topology。",
+  "tags": [
+    "Agent Collaboration",
+    "Artifact Workflow",
+    "Dropbox",
+    "GitHub",
+    "iPad-first",
+    "Binary Transport",
+    "Privacy Boundary",
+    "Human Middleware"
+  ],
+  "demoStatus": "none",
+  "demoPath": null,
+  "verificationStatus": "partial",
+  "flow": "Partial: Human Drop Zone / Dropbox discovery / small text PDF fetch / Conversation image processing / Local Workspace → GitHub binary verified. Open: Dropbox → Local Workspace binary, Local Workspace → Dropbox, GitHub → Local Workspace, bidirectional end-to-end routing."
+}
