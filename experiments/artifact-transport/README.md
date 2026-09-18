@@ -24,7 +24,7 @@ Human Intake
 → Human Output
 ~~~
 
-Experiment 目前仍在進行中；核心 image publication workflow 已 operational，但 general artifact lifecycle 尚未形成完整雙向閉環。
+Experiment 目前仍保留 broader artifact / large-file lifecycle research；但 **Claire × Primary 的日常 artifact collaboration workflow 已升格為 operational capability**。日常操作請優先讀 `knowledge/implementation/artifact-collaboration-workflow.md`，本文件保留 Evidence / failure modes / design history。
 
 ---
 
@@ -81,8 +81,9 @@ Canonical collaboration tool：
 | Primary autonomous `workflow_dispatch` | **Unavailable in current GitHub Connector** | Claire 仍保留每批一次 manual Run human gate |
 | Dropbox existing binary → Primary local workspace | **Blocked / Not established** | 不得與反方向 Primary → Dropbox 混為一談 |
 | GitHub repository binary → Primary local workspace | **Open** | 尚未建立 general materialization path |
-| Primary local workspace → Human Output | **Open** | finished-artifact delivery contract 尚未收斂 |
-| GitHub → Primary → Dropbox | **Open** | general reverse routing 尚未驗證 |
+| Primary local workspace → Human Output | **Verified / Operational** | finished artifact 可直接上傳 `/AI Output`，由 iOS Files / Preview 取用 |
+| GitHub text/source → Primary → Dropbox | **Verified / Operational** | Markdown / text source 可處理、render 後交付 `/AI Output` |
+| GitHub repository binary → Primary local workspace | **Blocked / Not established** | general binary materialization 仍是獨立 transport boundary |
 | Large PDF materialization / split / merge lifecycle | **Open / Partial** | metadata / preview / small-text fetch 有 Evidence；general binary lifecycle 未完成 |
 | Inbox lifecycle / cleanup / retry / duplicate handling | **Open** | 尚未收斂 operational policy |
 | Rollback / recovery | **Open** | wrong destination / revision / partial failure recovery 尚未完整驗證 |
@@ -118,14 +119,13 @@ A-ARTIFACT-1 **不能因為 image publication tool 已 operational 就宣告 Com
 
 1. Dropbox 既有 binary 如何可靠 materialize 到 Primary local processing workspace。
 2. Primary autonomous dispatch 是否有 supported execution surface，可移除每批 manual Run。
-3. Human-facing finished artifact delivery / Dropbox output lifecycle。
-4. GitHub / Dropbox reverse routing 與 general bidirectional closure。
-5. Large PDF / multi-part document lifecycle。
-6. Inbox cleanup、retry、duplicate、rollback / recovery policy。
+3. Large PDF / multi-part document lifecycle。
+4. Inbox cleanup、retry、duplicate、rollback / recovery policy。
+5. General repository binary materialization，若未來 runtime / connector surface 改變再 reopen。
 
 因此目前最準確的狀態是：
 
-> **Core image publication workflow operational; general bidirectional artifact collaboration remains in progress.**
+> **Daily Claire × Primary artifact collaboration is operational; broader large-file and general binary materialization research remains open.**
 
 ---
 
@@ -202,23 +202,6 @@ Responsibility：
 
 這三個 root 是明確 collaboration boundary；Dropbox 其他 private / family / shared storage 不因本授權變成 Primary 自治範圍。
 
-
-
-~~~text
-Dropbox
-├── AI Inbox        # Human Drop Zone / raw source stays unchanged
-└── AI 工作區        # Agent-owned working area
-~~~
-
-AI Inbox 的命名是 iPadOS / Dropbox picker UX evidence 的結果。通用 Inbox 比特定「圖片暫存區」更能承擔未來 image / PDF / other artifact intake，而且排序較容易被 Human 快速選取。
-
-候選但尚未建立：
-
-~~~text
-AI Output           # Human-facing finished artifacts
-~~~
-
-不預先建立大量空 folder。Folder taxonomy 應由真實 workflow pressure 產生，不進行「資料夾寶可夢蒐集」。
 
 ---
 
@@ -874,3 +857,41 @@ Current Judgment：
 
 > Markdown → Human-facing PDF 已可升格為 reusable Primary capability；Repository binary asset materialization 與 Dropbox durable Human Output delivery 應分開驗證。
 
+
+
+---
+
+## Operational Promotion｜Daily Collaboration Workflow
+
+2026-09-18，A-ARTIFACT-1 的日常協作成果正式 promotion：
+
+~~~text
+knowledge/implementation/artifact-collaboration-workflow.md
+~~~
+
+已成立：
+
+~~~text
+Human / Conversation artifact
+→ Primary local processing
+→ GitHub
+✅ Operational
+
+GitHub text/source
+→ Primary processing / Markdown → PDF renderer
+→ Dropbox /AI Output
+→ iOS Files
+→ iOS Preview
+✅ Operational
+~~~
+
+Conversation-uploaded image → local → PDF image embed 已用 2 張 JPEG control case 驗證成功；因此 PDF 缺 repo 圖片時，Current Judgment 是 **GitHub repository binary materialization boundary**，不是 Markdown → PDF renderer failure。
+
+Canonical reusable renderer：
+
+~~~text
+scripts/render-markdown-pdf.py
+knowledge/implementation/markdown-to-pdf.md
+~~~
+
+日常工作不應要求 Claire 從本 Experiment 自行推導操作方式。未來 Primary 應先使用 Operating Guide；本 README 留作研究脈絡與 Evidence。
