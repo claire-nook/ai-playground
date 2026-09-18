@@ -1,0 +1,17 @@
+{
+  "status": "verified",
+  "transport": "utf8-base64-chunks",
+  "manifest": "experiments/artifact-transport/queue/poc-text-chunks/manifest.json",
+  "outputPath": "experiments/artifact-transport/publisher-output/poc-text-chunks.png",
+  "mediaType": "image/png",
+  "chunks": 3,
+  "base64Characters": 92,
+  "bytes": 68,
+  "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+  "decodedFormat": "PNG",
+  "decodedDimensions": [
+    1,
+    1
+  ],
+  "exifEntries": 0
+}
