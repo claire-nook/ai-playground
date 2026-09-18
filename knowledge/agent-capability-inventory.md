@@ -4,7 +4,7 @@
 >
 > 這不是永久能力保證，也不是等到「需要工具時」才查的附錄。新的 Conversation 完成 Repository orientation 時就應讀取，先知道自己可能有哪些手腳，再以當前 Tool Discovery 確認今天哪些真的存在。
 
-- Last reviewed: 2026-09-17
+- Last reviewed: 2026-09-18
 - Scope: `實驗室` / AI Playground Primary Agent
 - Status: Living operational guide
 
@@ -78,6 +78,16 @@ Human 不應因為 Primary 忘記自己有工具，就被降級成 screenshot / 
 
 Repository 不只是 Source of Truth，也是跨 Conversation / Agent 的 durable world state 與 handoff surface。不要預設 Claire 必須把 GitHub 內容搬進聊天。
 
+### Dropbox Connector
+
+Status：**Partial / Under Active Experiment**
+
+已觀察到可搜尋 / 列出指定檔案與資料夾、讀 metadata、preview image / PDF、對支援範圍內的文字檔案取得 extracted content、將 Conversation file 上傳至指定 Dropbox path、move / rename，以及產生短效 single-use binary download URL。
+
+目前已驗證 Dropbox 可作為 private intake / staging / relay surface；但 **Dropbox binary → Primary local processing workspace 尚未建立可靠 direct path**。不要因為能 preview、取得 metadata 或 temporary URL，就假設 Primary 已持有可直接 resize / edit / split 的 local binary。
+
+A-ARTIFACT-1 仍在進行中；涉及 Dropbox capability 時，先讀 [`../experiments/artifact-transport/README.md`](../experiments/artifact-transport/README.md) 的 Current Judgment，再依當前 session 重新確認 Connector surface。
+
 ### Netlify Connector
 
 已觀察到可找 Project / Site、讀 deploy metadata / summary、確認 `commit_ref`、branch、deploy state、production context、deploy time、error、manual / automatic deploy，並有部分 write surface。
@@ -98,7 +108,60 @@ Codex 是重要 Implementation Agent / execution surface，但「Codex 存在」
 
 ---
 
-## 4. Authoring Surface｜寫文件時可以直接用什麼
+## 4. Validated Collaboration Tools｜已升格的協作工具
+
+這一層不是 Connector feature checklist，而是已經通過實驗、可以直接改變 Claire × Primary 日常作業方式的 collaboration infrastructure。
+
+### [COLLAB] Artifact Batch Publish
+
+用途：將 Primary 已處理完成、準備公開 / 進 Repository 的一張或多張 image artifact，以同一套 batch contract 發佈。
+
+Canonical Workflow：
+
+~~~text
+.github/workflows/collab-artifact-batch-publish.yml
+~~~
+
+Canonical Input Contract：
+
+~~~text
+.github/workflow-contracts/artifact-batch-publish.schema.json
+~~~
+
+Workflow input：`batch_json`
+
+操作原則：
+
+~~~text
+1 image  = 1-item batch
+N images = N-item batch
+Human Gate = one Run per batch
+~~~
+
+Primary 應：
+
+- 先規劃文章 / artifact 用途，再決定 canonical filename 與 repository path。
+- 先盤點當前 Conversation 已存在且仍可取用的素材，只向 Claire 索取真正缺少的 artifact。
+- 處理 resize / convert / metadata stripping / naming。
+- 將 processed artifact staging 至可產生 temporary binary URL 的 surface。
+- 依 canonical schema 產生 `batch_json`，不要靠前世記憶手刻格式。
+- temporary URL 屬 runtime access value：可以出現在 dispatch input，但不得寫入 Repository file / report / example。
+- publication 後由 Primary 自行檢查 repository output / report / integrity evidence。
+
+Claire 目前只保留必要 Human Gate：提供缺少素材、做公開 / functional judgment，以及每批手動執行一次此 Action。
+
+已知限制：
+
+- 當前 GitHub Connector **沒有 autonomous new `workflow_dispatch` write primitive**，所以 Primary 不能自行按下這個 Run。
+- 目前 implementation 仍只允許寫入 Experiment-owned artifact output prefix；正式文章圖片的 durable publication path 尚未擴權。不要自行把 write boundary 放大成任意 repository path。
+- Dropbox temporary URL 為短效 single-use bearer-style access value；不要以裸 clickable link 作為 Claire 的預設交付格式，優先放在 JSON / code block 中避免 UI 誤觸。
+- 這個 workflow 是 collaboration tool，不代表 A-ARTIFACT-1 整體研究已完成。
+
+Evidence / design history：[`../experiments/artifact-transport/README.md`](../experiments/artifact-transport/README.md)。
+
+---
+
+## 5. Authoring Surface｜寫文件時可以直接用什麼
 
 這是 **Primary 的基礎協作能力**，不是只有做 Textastic Experiment 時才需要知道的冷知識。
 
@@ -139,7 +202,7 @@ Implementation / Evidence：[`../experiments/textastic-markdown/README.md`](../e
 
 ---
 
-## 5. Capability Dimensions｜不要只問「有沒有工具」
+## 6. Capability Dimensions｜不要只問「有沒有工具」
 
 | Dimension | 要確認什麼 |
 | --- | --- |
@@ -158,7 +221,7 @@ Implementation / Evidence：[`../experiments/textastic-markdown/README.md`](../e
 
 ---
 
-## 6. When Capability Changes｜能力變動就更新
+## 7. When Capability Changes｜能力變動就更新
 
 以下變化應在 context 尚新鮮時更新這份 Inventory，必要時同步 Experiment / Evidence / Agent guide：
 
@@ -173,7 +236,7 @@ Implementation / Evidence：[`../experiments/textastic-markdown/README.md`](../e
 
 ---
 
-## 7. Working Principle
+## 8. Working Principle
 
 ```text
 Reasoning
