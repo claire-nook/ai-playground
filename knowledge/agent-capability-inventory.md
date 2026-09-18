@@ -270,6 +270,40 @@ Preview 顯示淡色 `PAGE BREAK` marker；Print 時 marker 隱藏並強制從�
 
 Implementation / Evidence：[`../experiments/textastic-markdown/README.md`](../experiments/textastic-markdown/README.md)。
 
+### Markdown → Human-facing PDF
+
+Primary 已有可重複使用的 Markdown → PDF rendering capability，不需要每次產 PDF 都重新手刻 layout。
+
+Canonical implementation：
+
+~~~text
+scripts/render-markdown-pdf.py
+knowledge/implementation/markdown-to-pdf.md
+~~~
+
+Current verified capability：
+
+- Traditional Chinese / mixed English typography
+- headings / lists / blockquote / table
+- explicit fenced-language syntax highlighting
+- `<!-- pagebreak -->` manual print break
+- bounded Mermaid flowchart subset → vector diagram
+- local image embedding when referenced binary 已 materialize
+- missing-image visible fallback
+- PDF render-to-PNG visual QC
+
+Recommended navigation：
+
+~~~text
+需要產 Human-facing PDF
+→ knowledge/implementation/markdown-to-pdf.md
+→ scripts/render-markdown-pdf.py
+→ local render / verify
+→ requested delivery surface
+~~~
+
+這項 capability 是從 Textastic authoring contract 抽出的 portable subset，不是 Textastic runtime 的 1:1 複製。GitHub referenced binary image 是否能 materialize 到 Primary local workspace，仍屬 Artifact Transport boundary，不能跟 PDF renderer capability 混成同一件事。
+
 ---
 
 ## 6. Capability Dimensions｜不要只問「有沒有工具」
