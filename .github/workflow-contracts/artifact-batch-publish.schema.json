@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/claire-nook/ai-playground/.github/workflow-contracts/artifact-batch-publish.schema.json",
+  "title": "[COLLAB] Artifact Batch Publish Input",
+  "description": "Canonical batch_json contract for one-item or multi-item artifact publication.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "requestId",
+    "items"
+  ],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceUrl",
+          "expectedBytes",
+          "expectedSha256",
+          "outputPath",
+          "mediaType"
+        ],
+        "properties": {
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Short-lived binary download URL. Runtime value; never commit an actual URL into repository files."
+          },
+          "expectedBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expectedSha256": {
+            "type": "string",
+            "pattern": "^[A-Fa-f0-9]{64}$"
+          },
+          "outputPath": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Current implementation restricts publication to the experiment-owned artifact output prefix."
+          },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
