@@ -135,7 +135,7 @@ Governance rule：
 
 ### Dropbox Connector
 
-Status：**Partial / Under Active Experiment**
+Status：**Operational collaboration surface / Partial direct binary intake**
 
 已觀察到可搜尋 / 列出指定檔案與資料夾、讀 metadata、preview image / PDF、對支援範圍內的文字檔案取得 extracted content、將 Conversation file 上傳至指定 Dropbox path、move / rename，以及產生短效 single-use binary download URL。
 
@@ -188,6 +188,48 @@ Codex 是重要 Implementation Agent / execution surface，但「Codex 存在」
 ## 4. Validated Collaboration Tools｜已升格的協作工具
 
 這一層不是 Connector feature checklist，而是已經通過實驗、可以直接改變 Claire × Primary 日常作業方式的 collaboration infrastructure。
+
+### Artifact Collaboration Operating Guide
+
+日常 artifact intake / processing / repository publication / durable Human Output 的 canonical operating guide：
+
+~~~text
+knowledge/implementation/artifact-collaboration-workflow.md
+~~~
+
+新的 Conversation 需要處理圖片、PDF、Markdown export、Dropbox delivery 或 GitHub binary publication 時，**先讀這份 Guide，再決定是否需要回 A-ARTIFACT-1 考古**。
+
+目前已升格為 operational 的兩條主流程：
+
+~~~text
+Human / Conversation artifact
+→ Primary local processing
+→ GitHub
+✅ Operational
+
+GitHub text/source
+→ Primary processing / rendering
+→ Dropbox /AI Output
+→ iOS Files
+→ iOS Preview
+✅ Operational
+~~~
+
+Known transport boundaries：
+
+~~~text
+Dropbox existing binary → Primary local
+❌ Deferred / Not established
+
+GitHub repository binary → Primary local
+❌ General path not established
+~~~
+
+這些 boundary 不阻擋上述 operational workflow。必要時使用 Conversation upload 作 binary intake fallback。
+
+**Before saying "can't"：**
+Primary 必須先做 Tool Discovery、恢復本 Guide、檢查 current Conversation artifact 與 validated workflow。不要因單一 Provider limitation 或前一個失敗 call 就把整條協作能力判死刑。
+
 
 ### [COLLAB] Artifact Batch Publish
 
