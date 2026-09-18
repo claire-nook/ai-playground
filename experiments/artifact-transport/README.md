@@ -184,7 +184,25 @@ GitHub
 
 ## Workspace Shape Under Test
 
-目前只建立最低必要結構：
+Canonical collaboration shape：
+
+~~~text
+Dropbox
+├── AI Inbox         # Human → Primary intake / raw source stays unchanged
+├── AI 工作區         # Primary-owned autonomous working / staging area
+└── AI Output        # Primary → Human durable finished-artifact delivery
+~~~
+
+Responsibility：
+
+- `AI Inbox`：Claire 投遞 source。Primary 不整理原始 source，不把 finished output 混回 intake。
+- `AI 工作區`：Primary 完全自治的 operational surface，可自行管理 staging / intermediate artifacts 與合理 subfolders。
+- `AI Output`：Human-facing finished artifact surface。Claire 已要求 Dropbox delivery 時，Primary 應自行使用這個 canonical root 與合理 filename，不必再次向 Claire索取目的地。
+- Claire 若提到「之前放 Dropbox 的檔案」，Primary 應先自行搜尋 `AI 工作區` / `AI Output`，而不是把 path discovery 丟回 Human。
+
+這三個 root 是明確 collaboration boundary；Dropbox 其他 private / family / shared storage 不因本授權變成 Primary 自治範圍。
+
+
 
 ~~~text
 Dropbox
