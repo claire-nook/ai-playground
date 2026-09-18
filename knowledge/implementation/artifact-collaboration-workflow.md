@@ -316,6 +316,12 @@ Repository binary publication：
 .github/workflow-contracts/artifact-batch-publish.schema.json
 ~~~
 
+Dropbox PDF reading boundary：
+
+~~~text
+knowledge/implementation/dropbox-pdf-reading-boundary.md
+~~~
+
 研究歷史 / failure modes / Evidence：
 
 ~~~text
