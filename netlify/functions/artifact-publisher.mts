@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 const TARGET_REPOSITORY = "claire-nook/ai-playground";
 const ALLOWED_PATH_PREFIX = "experiments/artifact-transport/publisher-output/";
-const MAX_BINARY_BYTES = 2 * 1024 * 1024;
+const MAX_BINARY_BYTES = 4 * 1024 * 1024;
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data, null, 2), {
