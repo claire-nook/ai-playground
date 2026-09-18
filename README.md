@@ -92,6 +92,7 @@ Provider / Plugin / Connector / Permission 會變，所以 Inventory 告訴你�
 | 需要知道什麼 | 入口 |
 | --- | --- |
 | Primary Agent 能力、限制、authoring capability | [`knowledge/agent-capability-inventory.md`](knowledge/agent-capability-inventory.md) |
+| Wall 寫過哪些公開文章、回想作品與定位 source / asset | [`knowledge/wall/README.md`](knowledge/wall/README.md) |
 | Knowledge Model / Research navigation | [`knowledge/README.md`](knowledge/README.md) |
 | Research Topic / Branch | [`knowledge/maps/`](knowledge/maps/) |
 | 做過哪些 Experiment、為什麼做 | [`knowledge/experiments.md`](knowledge/experiments.md) |
