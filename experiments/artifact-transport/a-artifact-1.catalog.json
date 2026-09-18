@@ -3,7 +3,7 @@
   "title": "AI-assisted Artifact Collaboration Workflow",
   "completedDate": null,
   "recordPath": "experiments/artifact-transport/README.md",
-  "summary": "研究 Dropbox、Conversation、Primary Agent local workspace 與 GitHub 如何組成低摩擦 Artifact Collaboration Workflow。已驗證 Conversation 圖片可由 Agent 加工並透過 Git object/blob path 建立 binary commit/branch；Dropbox 可作 private intake、preview 與小型文字 PDF reference，但 Dropbox binary 直接進 local processing workspace 仍存在 transport gap。Public evidence 採 privacy-scrub，不保存私人 storage topology。",
+  "summary": "研究 Dropbox、Conversation、Primary Agent local workspace 與 GitHub 如何組成低摩擦 Artifact Collaboration Workflow。已用真實 processed JPEG 驗證 Conversation/local processing → Dropbox staging → temporary download URL → GitHub Actions Runner direct binary fetch → byte/SHA-256/Pillow verification → repository binary commit。Large binary payload 不需經 LLM Base64 transport；目前主要缺口是 Primary 缺 autonomous workflow_dispatch write primitive，因此仍保留 Claire 手動 Run workflow 作為 Human Gate。Public evidence 採 privacy-scrub。",
   "tags": [
     "Agent Collaboration",
     "Artifact Workflow",
@@ -17,5 +17,5 @@
   "demoStatus": "none",
   "demoPath": null,
   "verificationStatus": "candidate",
-  "flow": "Partial: Human Drop Zone / Dropbox discovery / small text PDF fetch / Conversation image processing / Local Workspace → GitHub binary verified. Open: Dropbox → Local Workspace binary, Local Workspace → Dropbox, GitHub → Local Workspace, bidirectional end-to-end routing."
+  "flow": "Partial but strong evidence: Conversation image processing / Dropbox staging / temporary binary URL / GitHub Runner direct binary ingest / integrity verification / repository commit verified. Remaining execution gap: Primary cannot autonomously workflow_dispatch with current GitHub Connector; manual Run workflow is fallback Human Gate. Other open directions: Dropbox → Local Workspace binary, GitHub → Local Workspace, bidirectional delivery lifecycle."
 }
