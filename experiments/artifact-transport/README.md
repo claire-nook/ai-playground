@@ -85,7 +85,7 @@ Canonical collaboration tool：
 | GitHub text/source → Primary → Dropbox | **Verified / Operational** | Markdown / text source 可處理、render 後交付 `/AI Output` |
 | GitHub repository binary → Primary local workspace | **Blocked / Not established** | general binary materialization 仍是獨立 transport boundary |
 | Large PDF materialization / split / merge lifecycle | **Open / Partial** | metadata / preview / small-text fetch 有 Evidence；general binary lifecycle 未完成 |
-| Inbox lifecycle / cleanup / retry / duplicate handling | **Open** | 尚未收斂 operational policy |
+| Primary workspace lifecycle / cleanup | **Verified / Operational** | `/AI 工作區` 由 Primary 自主管理；task staging → rename → verify → cleanup 已實測 |
 | Rollback / recovery | **Open** | wrong destination / revision / partial failure recovery 尚未完整驗證 |
 
 ### Human Responsibility Today
@@ -120,8 +120,7 @@ A-ARTIFACT-1 **不能因為 image publication tool 已 operational 就宣告 Com
 1. Dropbox 既有 binary 如何可靠 materialize 到 Primary local processing workspace。
 2. Primary autonomous dispatch 是否有 supported execution surface，可移除每批 manual Run。
 3. Large PDF / multi-part document lifecycle。
-4. Inbox cleanup、retry、duplicate、rollback / recovery policy。
-5. General repository binary materialization，若未來 runtime / connector surface 改變再 reopen。
+4. General repository binary materialization，若未來 runtime / connector surface 改變再 reopen。
 
 因此目前最準確的狀態是：
 
@@ -431,19 +430,32 @@ Human Output
 
 AI-readable working representation 不必等於 Human delivery representation。
 
-### E. Inbox lifecycle
+### E. Workspace lifecycle
 
-仍需收斂：
+**Superseded / Operational.**
 
-- raw source 是否永久保留於 Inbox
-- processed artifact 是否搬出
-- cleanup timing
-- archive 是否真的需要
-- duplicate / retry / failed-processing handling
+`/AI Inbox` 與 `/AI Output` 由 Claire 依 Human workflow 使用；真正需要 lifecycle governance 的是 `/AI 工作區`。
 
-目前原則：
+Canonical policy：
 
-> Inbox 是 Human Drop Zone，不把它變成 Agent 內部 taxonomy。
+~~~text
+knowledge/implementation/primary-workspace-housekeeping.md
+~~~
+
+Verified probe：
+
+~~~text
+create task folder
+→ copy working artifact from /AI Output
+→ rename inside /AI 工作區
+→ list / verify
+→ delete entire task folder
+→ verify no residual probe folder
+~~~
+
+Current Judgment：
+
+> `/AI 工作區` 是 Primary autonomous scratch / staging surface，可吸收 temporary artifacts，降低不必要 Git commit pollution；housekeeping 由 Primary 自行負責。
 
 ### F. Rollback / recovery
 
@@ -895,3 +907,58 @@ knowledge/implementation/markdown-to-pdf.md
 ~~~
 
 日常工作不應要求 Claire 從本 Experiment 自行推導操作方式。未來 Primary 應先使用 Operating Guide；本 README 留作研究脈絡與 Evidence。
+
+
+---
+
+## Workspace Lifecycle Probe｜2026-09-18
+
+為驗證 `/AI 工作區` 不只是名義上的自治區，而能由 Primary 自行完成完整 working lifecycle，執行真實 Dropbox probe。
+
+Source：
+
+~~~text
+/AI Output/case-b-conversation-images.pdf
+size: 1,111,109 bytes
+~~~
+
+Probe：
+
+~~~text
+create
+/AI 工作區/workspace-lifecycle-probe-20260918/
+
+copy source
+→ staging-case-b.pdf
+
+rename
+→ reviewed-case-b.pdf
+
+list / verify
+→ one expected file
+
+cleanup
+→ delete entire probe task folder
+
+final list
+→ probe folder absent
+~~~
+
+Result：
+
+- create task folder：Verified
+- copy into workspace：Verified
+- rename / move：Verified
+- same file identity preserved across rename：Verified
+- inspection / listing：Verified
+- whole-task cleanup：Verified
+- source in `/AI Output` remained untouched
+- no probe residue remained in `/AI 工作區`
+
+Promotion：
+
+~~~text
+knowledge/implementation/primary-workspace-housekeeping.md
+~~~
+
+這代表 Workspace Lifecycle 不需要 Claire 共同維運；它已屬 Primary operational responsibility。
