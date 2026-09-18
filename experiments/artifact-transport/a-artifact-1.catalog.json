@@ -1,9 +1,9 @@
 {
   "id": "A-ARTIFACT-1",
   "title": "AI-assisted Artifact Collaboration Workflow",
-  "completedDate": null,
+  "completedDate": "2026-09-18",
   "recordPath": "experiments/artifact-transport/README.md",
-  "summary": "研究 Dropbox、Conversation、Primary Agent local workspace 與 GitHub 的低摩擦 Artifact Collaboration Workflow。已驗證同一套 Batch-first publication contract 同時支援 1 張與多張圖片：Primary 處理並放入 Dropbox staging，建立 temporary URLs 與 batch_json；Claire 每批只需按一次 GitHub Actions Run；Runner 一次抓取整批、逐項驗 bytes/SHA-256/full decode，全部成功才一次 commit。主要剩餘缺口是 Primary 缺 autonomous workflow_dispatch write primitive。",
+  "summary": "已完成 Claire × Primary Artifact Collaboration Workflow 收斂：Human/Conversation artifact → Primary → GitHub publication、GitHub text/source → Primary → Dropbox /AI Output、Primary-owned /AI 工作區 housekeeping，以及 Dropbox PDF reading boundary。Dropbox PDF <=5 MiB 可 full extracted-text fetch；95.15 MB real PDF 驗證 metadata/preview/temp link 可用、full text 受 5 MiB hard limit，且目前無 page-range/partial fetch。Direct binary materialization、autonomous workflow_dispatch、rollback/recovery 均列為 Deferred / problem-triggered，不阻擋結案。",
   "tags": [
     "Agent Collaboration",
     "Artifact Workflow",
@@ -16,6 +16,6 @@
   ],
   "demoStatus": "none",
   "demoPath": null,
-  "verificationStatus": "candidate",
-  "flow": "Verified major path: 1 image = 1-item batch; N images = N-item batch; one Human Run per batch. Conversation/local processing → Dropbox staging → temporary URLs → GitHub Runner batch ingest → per-item integrity verification → atomic publication → one commit. Remaining main gap: Primary cannot autonomously workflow_dispatch with current GitHub Connector."
+  "verificationStatus": "verified",
+  "flow": "Operational: Human/Conversation artifact → Primary local processing → Dropbox staging → [COLLAB] Artifact Batch Publish → GitHub; GitHub text/source → Primary processing/rendering → Dropbox /AI Output → iOS Files/Preview. /AI 工作區 is Primary autonomous scratch/staging with verified cleanup lifecycle. Dropbox PDF reading: <=5 MiB full extracted text; >5 MiB metadata/preview/temp link only, no current page-range primitive."
 }
