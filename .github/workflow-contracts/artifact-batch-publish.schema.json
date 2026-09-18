@@ -45,7 +45,8 @@
           "outputPath": {
             "type": "string",
             "minLength": 1,
-            "description": "Current implementation restricts publication to the experiment-owned artifact output prefix."
+            "description": "Repository-relative publication path. Current allowlist: experiments/artifact-transport/publisher-output/** or public/images/wall/**.",
+            "pattern": "^(?:experiments/artifact-transport/publisher-output|public/images/wall)/[^/].*$"
           },
           "mediaType": {
             "type": "string",
