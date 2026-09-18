@@ -445,6 +445,75 @@ Conversation/local artifact
 
 ---
 
+### GitHub Actions Text-Chunk Transport Probe
+
+為了避開 direct binary blob upload，新增：
+
+~~~text
+scripts/assemble-image-artifact.py
+.github/workflows/artifact-text-ingest.yml
+~~~
+
+流程：
+
+~~~text
+Agent
+→ UTF-8 Base64 chunks
+→ GitHub text files
+→ manifest.json
+→ push-triggered GitHub Action
+→ chunk reassembly
+→ expected byte length verification
+→ expected SHA-256 verification
+→ Pillow full image decode
+→ binary artifact commit
+~~~
+
+Synthetic multi-chunk probe 已成功：
+
+~~~text
+chunks:             3
+base64 characters:  92
+decoded bytes:      68
+SHA-256:            431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460
+decoded format:     PNG
+decoded dimensions: 1 x 1
+EXIF entries:       0
+workflow result:    success
+~~~
+
+GitHub 產生的 binary output：
+
+~~~text
+experiments/artifact-transport/publisher-output/poc-text-chunks.png
+~~~
+
+size 與 expected bytes 同為 68 bytes。
+
+第二輪將 workflow trigger 收窄為只監看：
+
+~~~text
+experiments/artifact-transport/queue/**/manifest.json
+~~~
+
+因此 chunks 可以先逐一 stage，只有最後 manifest arrival 會觸發一次 Action。第二個 probe `poc-trigger-gate` 成功，證明 manifest-as-commit-gate 可避免每個 chunk 都喚醒 Runner。
+
+這個結果代表：
+
+> Agent 可以用可靠的 UTF-8 GitHub write path 間接建立真正 binary artifact，而且不需要 Claire 手動按 GitHub Actions Run。
+
+但 scale 尚未驗證。嘗試把現有 136 KB JPEG 直接經由模型上下文搬運成約 48K-character chunk 時，人工／模型中介的 payload construction 本身就變得笨重且容易失真。該次不完整 staging chunk 已立即刪除，且沒有 manifest，因此沒有觸發 assembly。
+
+這不是 GitHub text write 的失敗證據，而是新的架構限制：
+
+> 「模型把大量 Base64 字串搬進 tool arguments」不應成為正式 transport implementation。
+
+因此 text-chunk Action 是有價值的 **binary assembly primitive**，但仍需要一個不依賴 LLM token/context 搬運大 payload 的 chunk producer / transport adapter。
+
+Claire 手動按 `Run workflow` 可以保留成 fallback human gate，但目前 push-triggered manifest gate 已證明 AI 可以自行喚醒 Runner；真正剩下的缺口仍是大 binary payload 如何從 Conversation/local workspace 可靠進入 staging。
+
+---
+
 ## Current Judgment
 
 A-ARTIFACT-1 尚未完成，但已得到幾個穩定判斷：
