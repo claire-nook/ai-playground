@@ -30,6 +30,14 @@ Implementation Guide 不是 Production Specification，也不是直接 copy 到�
   - local image embedding / missing-image fallback
   - durable delivery to Dropbox `/AI Output`
 
+- [`Primary Workspace Housekeeping Policy`](primary-workspace-housekeeping.md)
+  - `/AI 工作區` = Primary autonomous operational workspace
+  - ephemeral artifact absorbs Git scratch pollution
+  - task-scoped staging / rename / cleanup
+  - GitHub durable-state decision rule
+  - search-before-asking-human rule
+  - verified Workspace Lifecycle Probe
+
 - [`Supabase Cron Implementation Guide`](supabase-cron.md)
   - Cron → PostgreSQL Database Function
   - Cron → `pg_net` → Supabase Edge Function
