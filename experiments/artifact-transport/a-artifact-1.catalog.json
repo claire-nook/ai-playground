@@ -3,7 +3,7 @@
   "title": "AI-assisted Artifact Collaboration Workflow",
   "completedDate": null,
   "recordPath": "experiments/artifact-transport/README.md",
-  "summary": "研究 Dropbox、Conversation、Primary Agent local workspace 與 GitHub 如何組成低摩擦 Artifact Collaboration Workflow。已用真實 processed JPEG 驗證 Conversation/local processing → Dropbox staging → temporary download URL → GitHub Actions Runner direct binary fetch → byte/SHA-256/Pillow verification → repository binary commit。Large binary payload 不需經 LLM Base64 transport；目前主要缺口是 Primary 缺 autonomous workflow_dispatch write primitive，因此仍保留 Claire 手動 Run workflow 作為 Human Gate。Public evidence 採 privacy-scrub。",
+  "summary": "研究 Dropbox、Conversation、Primary Agent local workspace 與 GitHub 的低摩擦 Artifact Collaboration Workflow。已驗證同一套 Batch-first publication contract 同時支援 1 張與多張圖片：Primary 處理並放入 Dropbox staging，建立 temporary URLs 與 batch_json；Claire 每批只需按一次 GitHub Actions Run；Runner 一次抓取整批、逐項驗 bytes/SHA-256/full decode，全部成功才一次 commit。主要剩餘缺口是 Primary 缺 autonomous workflow_dispatch write primitive。",
   "tags": [
     "Agent Collaboration",
     "Artifact Workflow",
@@ -17,5 +17,5 @@
   "demoStatus": "none",
   "demoPath": null,
   "verificationStatus": "candidate",
-  "flow": "Partial but strong evidence: Conversation image processing / Dropbox staging / temporary binary URL / GitHub Runner direct binary ingest / integrity verification / repository commit verified. Remaining execution gap: Primary cannot autonomously workflow_dispatch with current GitHub Connector; manual Run workflow is fallback Human Gate. Other open directions: Dropbox → Local Workspace binary, GitHub → Local Workspace, bidirectional delivery lifecycle."
+  "flow": "Verified major path: 1 image = 1-item batch; N images = N-item batch; one Human Run per batch. Conversation/local processing → Dropbox staging → temporary URLs → GitHub Runner batch ingest → per-item integrity verification → atomic publication → one commit. Remaining main gap: Primary cannot autonomously workflow_dispatch with current GitHub Connector."
 }
