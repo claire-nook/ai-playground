@@ -364,7 +364,7 @@ netlify/functions/artifact-publisher.mts
 - GitHub destination：固定 `claire-nook/ai-playground`
 - Allowed prefix：固定 `experiments/artifact-transport/publisher-output/`
 - Allowed MIME：JPEG / PNG / WebP
-- Size limit：2 MiB
+- Size limit：4 MiB processed artifact（不是 raw source 上限；Netlify synchronous Function 的 buffered request/response payload 為 6 MB，binary upload 經 Base64 後有效 binary ceiling 約 4.5 MB，因此 PoC 保守採 4 MiB）
 - Round-trip verification：source SHA-256 + byte length vs GitHub read-back
 - GitHub credential：**not configured**
 - Publisher request key：**not configured**
@@ -388,6 +388,60 @@ Conversation/local artifact → Function POST      Agent transport path not yet 
 > Netlify managed runtime 可以承擔 binary publisher 的 execution responsibility；真正剩下的是 runtime GitHub identity 與 Agent → Function request transport，而不是 image processing 本身。
 
 這個 PoC 沒有把 Public Wall 當測試寫入區。第一個可寫 destination 被限制在 Experiment-owned path，避免用真正公開素材驗證 credential / transport。
+
+---
+
+### Local Image Artifact Processor
+
+新增：
+
+~~~text
+scripts/process-image-artifact.py
+~~~
+
+用途不是取代 Conversation 私密圖片處理，而是把「準備進 Repository 的公開／研究圖片」先標準化為可驗證 artifact。
+
+目前功能：
+
+- EXIF orientation normalize
+- longest-edge resize
+- JPEG / PNG / WebP output
+- metadata stripping
+- output reopen / decode verification
+- source + output byte size
+- source + output SHA-256
+- dimensions / format / EXIF-entry evidence
+
+第一個實測使用既有 soup image：
+
+~~~text
+source bytes:   140598
+output bytes:   136302
+output size:    1024 x 768
+output format:  JPEG
+output EXIF:    0 entries
+output SHA-256: 0f09e106f7ad077ce075b74daadeb957d49c9de7e8acff3def8530909cd193eb
+status:         verified
+~~~
+
+這表示 image processing / validation 本身可以收斂成 reusable batch。真正尚未解決的是 validated local artifact 如何可靠進入遠端 publisher。
+
+### Transport Reassessment
+
+進一步查核 Netlify Functions 平台限制後，10 MiB synchronous upload 並不可行。Netlify buffered request / response payload 上限為 6 MB，而 binary payload 經 Base64 transport 後官方給出的有效 binary ceiling 約為 4.5 MB。
+
+因此 publisher 的 4 MiB 限制是「processed artifact transport limit」，不是 Claire 原始截圖／相片大小限制。原始來源可以大於 4 MiB；在 Conversation/local runtime 先 resize / re-encode 後，再進 publisher 才合理。
+
+另外，目前 Primary Agent 的可用工具沒有 generic arbitrary HTTP POST capability。也就是：
+
+~~~text
+Conversation/local artifact
+→ Netlify custom POST endpoint
+~~~
+
+目前沒有直接、穩定的 Agent transport primitive。
+
+因此 Netlify Publisher PoC 現階段證明的是 managed runtime feasibility，而不是完整 Agent publication path。若要正式採用，仍需 connector/plugin/MCP 類 integration，否則只是在 GitHub binary 手工鏈旁邊多蓋一座漂亮但 Agent 進不去的收費站。
 
 ---
 
