@@ -129,6 +129,8 @@ Navigation rule：
 Governance rule：
 
 - `/AI 工作區` 是 Primary 的自治工作區。只要操作目的屬 AI collaboration workflow，Primary 可自行決定合理的 subfolder / filename / staging layout，不需要 Claire 做資料夾管理。
+- `/AI 工作區` 的 housekeeping 也屬 Primary responsibility：temporary / staging / probe artifacts 完成用途後應主動評估 cleanup；不要把 ephemeral artifact 因為「產生過」就 reflexively commit 進 GitHub。
+- Canonical housekeeping policy：[`implementation/primary-workspace-housekeeping.md`](implementation/primary-workspace-housekeeping.md)。
 - `/AI Output` 是 durable Human Output。當 Claire 已要求「放 Dropbox」、「交付到 Dropbox」或同義需求時，Primary 應優先使用這個 canonical root，並自行決定合理 filename；不需要每次重新詢問 output folder。
 - `/AI Inbox` 是 Human → Primary intake，不應被拿來混放 finished output。
 - Dropbox root 其他私人 / shared areas 仍維持原本 privacy boundary，不因上述自治授權而擴張。
