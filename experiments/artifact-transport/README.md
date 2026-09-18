@@ -514,16 +514,76 @@ Claire 手動按 `Run workflow` 可以保留成 fallback human gate，但目前 
 
 ---
 
+### GitHub Actions Remote-Binary Transport Probe
+
+為了避開 LLM context 搬運大量 Base64，新增：
+
+~~~text
+scripts/ingest-image-from-url.py
+.github/workflows/artifact-remote-ingest.yml
+~~~
+
+候選流程：
+
+~~~text
+Conversation attachment
+→ Primary Agent local processing
+→ Dropbox AI Inbox staging
+→ single-use temporary download URL
+→ GitHub Actions Runner
+→ direct binary download
+→ expected byte length verification
+→ expected SHA-256 verification
+→ Pillow full image decode
+→ binary artifact commit
+~~~
+
+Real-image probe 使用 processed JPEG，已由 Claire 進行必要的 manual `workflow_dispatch` gate。
+
+驗證結果：
+
+~~~text
+Dropbox staged bytes: 221676
+output bytes:         221676
+SHA-256:              58b6e8211abae2119bd870613ee6c8ccc74c32fc4832e9515bc7952c342a4cd9
+decoded format:       JPEG
+decoded dimensions:   1152 x 1536
+EXIF entries:         0
+source URL persisted: false
+repository output:    experiments/artifact-transport/publisher-output/soup-remote-ingest.jpg
+status:               verified
+~~~
+
+這證明：
+
+> 大 binary payload 不需要經過 LLM text/context，也不需要 Base64 chunk transport。若 Primary 能先把 local artifact 放進 Dropbox，GitHub Runner 可以用短效 download URL 直接抓 binary，並以 bytes / SHA-256 / full decode 做 integrity verification。
+
+目前剩餘限制是 execution gate，而不是 binary transport 本身：
+
+- Dropbox upload from Conversation/local artifact：Verified
+- Dropbox temporary single-use URL：Verified
+- GitHub Runner direct binary fetch：Verified
+- Runner verify + commit：Verified
+- Primary autonomous `workflow_dispatch`：Not available in current GitHub Connector
+- Claire manual Run workflow：Verified fallback human gate
+
+因此這條 path 的 Human responsibility 已縮小為一次 manual dispatch，而不是 resize / rename / upload / commit / push 的整串搬運。
+
+這條 Evidence 也取代了先前「大 binary 必須走 text-chunk assembly」的方向性假設。Text-chunk Action 仍是有效 assembly primitive，但不再是 real-image transport 的首選。
+
+---
+
 ## Current Judgment
 
 A-ARTIFACT-1 尚未完成，但已得到幾個穩定判斷：
 
 1. Dropbox Connector 的價值不能用 feature checklist 評估。真正要看它能否降低 Claire 的人工 middleware responsibility。
-2. Conversation attachment 已是有效的 binary intake surface。即使 connector direct binary path 受限，Human fallback 仍可保持低摩擦。
-3. Primary Agent local processing 已驗證可處理圖片。
-4. Primary Agent → GitHub binary 已驗證可行。Git blob path 可以承擔一般 text-file API 不支援的 binary artifact。
-5. Dropbox direct binary → local workspace 仍是目前主要 transport gap。
-6. Private storage experiments 必須 privacy-scrub。Public Evidence 保存技術結論，不保存私人 storage topology。
+2. Conversation attachment 已是有效的 binary intake surface，Primary Agent local processing 也已驗證可處理圖片。
+3. Direct binary Git object path 曾成功，但 reliability / tooling ergonomics 不足，不應作為目前首選 publication workflow。
+4. UTF-8 text-chunk → Runner reconstruction 已驗證是有效 binary assembly primitive，但大量 Base64 經 LLM context 搬運不具可持續性。
+5. Dropbox staging → temporary URL → GitHub Runner direct binary fetch → integrity verification → repository commit 已用真實 processed JPEG 驗證成功，且 payload 不經 LLM text/context。
+6. 目前主要缺口已從 binary transport 轉為 execution gate：Primary 當前 GitHub Connector 缺 autonomous workflow_dispatch write primitive，因此仍需 Claire 手動按一次 Run workflow。
+7. Private storage experiments 必須 privacy-scrub。Public Evidence 保存 capability / constraint / transport shape，不保存私人 storage topology。
 
 目前 Research Question 已從：
 
