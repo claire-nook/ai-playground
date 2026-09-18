@@ -811,3 +811,48 @@ Existing Wall article
 ~~~
 
 這個案例也修正操作原則：若 artifact 已存在於 Repository，Primary 應先自行定位 article reference 與 current asset path，不應把 repository navigation 轉嫁給 Claire。
+
+---
+
+### Markdown → PDF → Human Output Probe
+
+2026-09-18 進一步把 A-ARTIFACT-1 的 reverse / output routing 轉成真實工作案例：從 GitHub Wall source 產生 Human-facing PDF，預備交付 Dropbox，而不是把階段性 PDF commit 回 Repository。
+
+使用 source：
+
+~~~text
+knowledge/wall/day-7-ipados-27-developer-love.md
+~~~
+
+同時建立 reusable renderer：
+
+~~~text
+scripts/render-markdown-pdf.py
+knowledge/implementation/markdown-to-pdf.md
+~~~
+
+Probe working copy 額外加入 Mermaid、SQL fenced code、table、blockquote 與 `<!-- pagebreak -->`，用來驗證複雜 Markdown rendering。
+
+已驗證：
+
+- GitHub Markdown text → Primary working context：Verified
+- Markdown → 7-page A4 PDF：Verified
+- Traditional Chinese embedded fonts：Verified
+- SQL syntax highlighting：Verified
+- table / blockquote / manual page break：Verified
+- bounded Mermaid flowchart subset → vector diagram：Verified
+- PDF render-to-PNG visual QC：Verified
+
+同時得到一個重要 boundary：
+
+~~~text
+GitHub Markdown text → Primary local render          Verified
+GitHub referenced repository image → local binary   Not established
+~~~
+
+因此第一份 PDF 對 GitHub-referenced PNG 使用 visible placeholder，而不是 silently drop。這不是 renderer 失敗，而是 A-ARTIFACT-1 原本就尚未關閉的 `GitHub repository binary → Primary local workspace` transport boundary。
+
+Current Judgment：
+
+> Markdown → Human-facing PDF 已可升格為 reusable Primary capability；Repository binary asset materialization 與 Dropbox durable Human Output delivery 應分開驗證。
+
