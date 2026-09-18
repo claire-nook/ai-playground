@@ -1,0 +1,23 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url-batch",
+  "requestId": "wall-future-agent-life-soup-rotate-fix-20260918",
+  "itemCount": 1,
+  "atomicPublication": true,
+  "items": [
+    {
+      "index": 1,
+      "outputPath": "public/images/wall/future-agent-life-soup.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 59651,
+      "sha256": "8cc69a211d33e2971b5eb8cad9c15aff2595993eb8c9586376726f9cef7a3908",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        640,
+        480
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    }
+  ]
+}
