@@ -346,6 +346,51 @@ AI-readable working representation 不必等於 Human delivery representation。
 
 ---
 
+## Netlify Publisher Probe — Phase C
+
+為了避免 Primary Agent 每次手工執行 Base64 → Git blob → tree → commit → ref，建立了一個極窄的 Netlify Function PoC：
+
+~~~text
+netlify/functions/artifact-publisher.mts
+~~~
+
+部署狀態：
+
+- Netlify production deploy：Verified
+- Function route：`/artifact-publisher`
+- Runtime：Node.js 24
+- Public GET health / deterministic Base64 round-trip probe：implemented
+- POST publish path：implemented
+- GitHub destination：固定 `claire-nook/ai-playground`
+- Allowed prefix：固定 `experiments/artifact-transport/publisher-output/`
+- Allowed MIME：JPEG / PNG / WebP
+- Size limit：2 MiB
+- Round-trip verification：source SHA-256 + byte length vs GitHub read-back
+- GitHub credential：**not configured**
+- Publisher request key：**not configured**
+
+POST publish 目前刻意停在 credential boundary。Netlify project 尚未配置任何 environment variable，而 GitHub write token 不應寫進 source code，也不能從 ChatGPT GitHub Connector 匯出成 Runtime secret。
+
+因此目前 Evidence 是：
+
+~~~text
+Repository code
+→ Netlify deploy
+→ Serverless Function available                 Verified
+
+Netlify runtime binary/Base64 implementation     Implemented
+Netlify Function → GitHub write                  Blocked by missing explicit runtime credential
+Conversation/local artifact → Function POST      Agent transport path not yet established
+~~~
+
+這個結果把問題拆得更精確：
+
+> Netlify managed runtime 可以承擔 binary publisher 的 execution responsibility；真正剩下的是 runtime GitHub identity 與 Agent → Function request transport，而不是 image processing 本身。
+
+這個 PoC 沒有把 Public Wall 當測試寫入區。第一個可寫 destination 被限制在 Experiment-owned path，避免用真正公開素材驗證 credential / transport。
+
+---
+
 ## Current Judgment
 
 A-ARTIFACT-1 尚未完成，但已得到幾個穩定判斷：
