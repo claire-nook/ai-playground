@@ -1,0 +1,12 @@
+{
+  "encoding": "base64-chunks",
+  "expectedBytes": 68,
+  "expectedSha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+  "chunks": [
+    "chunk-0001.txt",
+    "chunk-0002.txt",
+    "chunk-0003.txt"
+  ],
+  "outputPath": "experiments/artifact-transport/publisher-output/poc-trigger-gate.png",
+  "mediaType": "image/png"
+}
