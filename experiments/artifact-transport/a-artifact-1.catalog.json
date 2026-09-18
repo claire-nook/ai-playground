@@ -16,6 +16,6 @@
   ],
   "demoStatus": "none",
   "demoPath": null,
-  "verificationStatus": "partial",
+  "verificationStatus": "candidate",
   "flow": "Partial: Human Drop Zone / Dropbox discovery / small text PDF fetch / Conversation image processing / Local Workspace → GitHub binary verified. Open: Dropbox → Local Workspace binary, Local Workspace → Dropbox, GitHub → Local Workspace, bidirectional end-to-end routing."
 }
