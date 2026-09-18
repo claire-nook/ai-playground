@@ -10,28 +10,34 @@
 
 ### A-ARTIFACT-1 — AI-assisted Artifact Collaboration Workflow
 
-- Status: In Progress / Partial Evidence Established
+- Status: Completed / Operational Workflow + Known Boundaries
 - Card: [../experiments/artifact-transport/a-artifact-1.catalog.json](../experiments/artifact-transport/a-artifact-1.catalog.json)
 - Record: [../experiments/artifact-transport/README.md](../experiments/artifact-transport/README.md)
+- Operating Guide: [implementation/artifact-collaboration-workflow.md](implementation/artifact-collaboration-workflow.md)
+- Workspace Policy: [implementation/primary-workspace-housekeeping.md](implementation/primary-workspace-housekeeping.md)
+- Dropbox PDF Boundary: [implementation/dropbox-pdf-reading-boundary.md](implementation/dropbox-pdf-reading-boundary.md)
 - Primary Intent: Claire × Primary Agent / Artifact Intake → Processing → Routing → Delivery
 - Tags: agent-collaboration, artifact-workflow, dropbox, github, ipad-first, binary-transport, privacy-boundary, human-middleware
 
-**Why it exists**
+**What was established**
 
-研究問題不是「Dropbox Connector 有哪些按鈕」，而是 Connector、Conversation、Primary Agent local workspace、Dropbox 與 GitHub 能否共同形成低摩擦 Artifact Collaboration Workflow，讓 Human 只保留有判斷價值的投遞 / 授權 / 接收，而不再承擔 resize、rename、manual upload、commit、push 等人工 middleware 工作。
+- Human / Conversation artifact → Primary local processing → GitHub publication 已 operational。
+- GitHub text/source → Primary processing / rendering → Dropbox `/AI Output` → iOS Files / Preview 已 operational。
+- `/AI 工作區` 已定義為 Primary autonomous scratch / staging surface，並完成 create → stage → rename → verify → cleanup 真實 lifecycle probe。
+- Markdown → Human-facing PDF 已有 reusable renderer：`scripts/render-markdown-pdf.py`。
+- Dropbox PDF reading boundary 已用真實 2.66 MB 與 95.15 MB PDF 驗證：<=5 MiB 可 full extracted-text fetch；>5 MiB 保留 metadata / preview / temporary download link，但 full fetch 受 5 MiB hard limit，且目前沒有 page-range / partial fetch primitive。
 
-**Current evidence**
+**Known boundaries / deferred**
 
-- AI Inbox / AI-owned working area 的建立、列舉與 rename / move 已驗證。
-- 小於 fetch boundary 的文字 PDF 可作 private AI-readable reference；大型 PDF 暴露 5 MiB whole-file fetch boundary。
-- Dropbox temporary download link 可建立，但 direct binary handoff into local processing workspace 尚未打通。
-- Conversation-provided image → local processing → rotate / resize / re-encode 已驗證。
-- Local Workspace → GitHub binary 已透過 Git blob / tree / commit / branch 路徑驗證。
-- Public Record 採 privacy-scrub，只保留技術邊界，不保存私人 storage topology。
+- Dropbox existing binary → Primary local：Deferred / not established。
+- GitHub repository binary → Primary local：Deferred / not established。
+- Primary autonomous workflow_dispatch：等待 future Connector surface；Claire 目前每批一次 Run。
+- rollback / recovery：只在真實痛點出現時重開。
+- specialized PDF / academic connector：未來有實際讀書 / research 需求時另開實驗。
 
-**Open matrix**
+**Current judgment**
 
-Dropbox → Local Workspace、Local Workspace → Dropbox、GitHub → Local Workspace，以及 GitHub ↔ Primary ↔ Dropbox 的雙向 end-to-end workflow 尚待完成。
+日常 Artifact Collaboration 已可用；剩餘限制均已被隔離成 platform boundary 或 problem-triggered research，不再阻擋 A-ARTIFACT-1 結案。
 
 ---
 
