@@ -14,6 +14,22 @@ Implementation Guide 不是 Production Specification，也不是直接 copy 到�
 
 ## Current Guides
 
+- [`Artifact Collaboration Operating Guide`](artifact-collaboration-workflow.md)
+  - Human / Conversation artifact → Primary → GitHub
+  - GitHub text/source → Primary → Dropbox `/AI Output`
+  - canonical Dropbox surfaces：`/AI Inbox` / `/AI 工作區` / `/AI Output`
+  - [COLLAB] Artifact Batch Publish
+  - binary materialization boundaries / fallback
+  - Before saying "can't" self-check
+
+- [`Markdown → Human-facing PDF Rendering Pattern`](markdown-to-pdf.md)
+  - reusable renderer：`../../scripts/render-markdown-pdf.py`
+  - Traditional Chinese / table / blockquote / syntax highlighting
+  - bounded Mermaid flowchart subset
+  - manual `<!-- pagebreak -->`
+  - local image embedding / missing-image fallback
+  - durable delivery to Dropbox `/AI Output`
+
 - [`Supabase Cron Implementation Guide`](supabase-cron.md)
   - Cron → PostgreSQL Database Function
   - Cron → `pg_net` → Supabase Edge Function
