@@ -4,6 +4,62 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Artifact Collaboration / Dropbox PDF Reading Boundary
+
+- Experiment: A-ARTIFACT-1
+- Date: 2026-09-18
+- Status: Completed / Operational Workflow + Known Boundaries
+- Record: `experiments/artifact-transport/README.md`
+- Operating Guide: `knowledge/implementation/artifact-collaboration-workflow.md`
+- Workspace Policy: `knowledge/implementation/primary-workspace-housekeeping.md`
+- Dropbox PDF Boundary: `knowledge/implementation/dropbox-pdf-reading-boundary.md`
+- Renderer: `scripts/render-markdown-pdf.py`
+- Topics: Dropbox, GitHub, Artifact Transport, Human Output, Primary Workspace, PDF Reading, iPad-first
+
+### Result
+
+日常協作主路徑已 operational：
+
+~~~text
+Human / Conversation artifact
+→ Primary local processing
+→ Dropbox staging
+→ [COLLAB] Artifact Batch Publish
+→ GitHub
+~~~
+
+以及：
+
+~~~text
+GitHub text/source
+→ Primary processing / rendering
+→ Dropbox /AI Output
+→ iOS Files
+→ iOS Preview
+~~~
+
+`/AI 工作區` 已驗證可由 Primary 自主 create / stage / rename / inspect / cleanup，用來吸收 ephemeral artifact，避免不必要 Git commit pollution。
+
+Dropbox PDF reading boundary 以真實教材驗證：
+
+~~~text
+2.66 MB PDF
+→ full extracted text
+✅
+
+95.15 MB PDF
+→ metadata / preview / temporary link
+✅
+→ full extracted text
+❌ 5 MiB hard limit
+→ page-range / partial fetch
+❌ current primitive not exposed
+~~~
+
+因此 Dropbox 可作小型 PDF 的直接 AI reading surface；超過 current fetch boundary 時，本 Experiment 只記錄限制，不主動建 workaround stack。未來若有大型教材 / academic reading 的真實需求，再評估當時的 specialized document connector。
+
+---
+
 ## Single-record Maintenance / Worklist-centric Lifecycle
 
 - Experiment: F-MAINT-1
