@@ -514,13 +514,13 @@ Claire 手動按 `Run workflow` 可以保留成 fallback human gate，但目前 
 
 ---
 
-### GitHub Actions Remote-Binary Transport Probe
+### GitHub Actions Remote-Binary Transport Probe → Collaboration Tool
 
 為了避開 LLM context 搬運大量 Base64，新增：
 
 ~~~text
 scripts/ingest-image-from-url.py
-.github/workflows/artifact-remote-ingest.yml
+.github/workflows/collab-artifact-batch-publish.yml
 ~~~
 
 候選流程：
@@ -570,6 +570,17 @@ status:               verified
 因此這條 path 的 Human responsibility 已縮小為一次 manual dispatch，而不是 resize / rename / upload / commit / push 的整串搬運。
 
 這條 Evidence 也取代了先前「大 binary 必須走 text-chunk assembly」的方向性假設。Text-chunk Action 仍是有效 assembly primitive，但不再是 real-image transport 的首選。
+
+
+Promotion note：remote-binary batch path 已完成 1-item / multi-item 驗證，現以正式協作名稱保存：
+
+~~~text
+[COLLAB] Artifact Batch Publish
+.github/workflows/collab-artifact-batch-publish.yml
+.github/workflow-contracts/artifact-batch-publish.schema.json
+~~~
+
+這個 promotion 只代表「該 publication mechanism 已升格為 collaboration tool」，**不代表 A-ARTIFACT-1 整體 Experiment 已完成**。目前 workflow write boundary 仍維持在 Experiment-owned output prefix，正式文章圖片的 durable publication path 另行收斂。
 
 ### Batch-first Publication Verification
 
