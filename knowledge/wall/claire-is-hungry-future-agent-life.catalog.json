@@ -1,0 +1,22 @@
+{
+  "id": "WALL-AGENT-LIFE-1",
+  "title": "Claire 餓了：當 AI 開始參與生活，不只是回答問題",
+  "completedDate": "2026-09-18",
+  "recordPath": "knowledge/wall/claire-is-hungry-future-agent-life.md",
+  "summary": "從一句「我餓了」出發，把生活型 Personal Agent 拆成 Intent、Personal Rules、即時資料、Human Decision、Payment Authorization 與 Event Lifecycle。這不是 Uber Eats 或 Apple Pay 的產品預測，而是根據目前 Connector / Agent workflow 能力往前推一步的生活型 thought experiment。",
+  "tags": [
+    "Agent Collaboration",
+    "Future Life",
+    "Personal Agent",
+    "Connector",
+    "Agent Commerce",
+    "Human Authorization",
+    "Workflow",
+    "Commentary"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "synthesis",
+  "demoStatus": "none",
+  "verificationStatus": "partial",
+  "flow": "Observed agent / connector workflow evidence → everyday food-ordering scenario → responsibility and authorization synthesis → future-life commentary."
+}
