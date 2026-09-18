@@ -6,6 +6,35 @@
 
 ---
 
+## 2026-09-18
+
+### A-ARTIFACT-1 — AI-assisted Artifact Collaboration Workflow
+
+- Status: In Progress / Partial Evidence Established
+- Card: [../experiments/artifact-transport/a-artifact-1.catalog.json](../experiments/artifact-transport/a-artifact-1.catalog.json)
+- Record: [../experiments/artifact-transport/README.md](../experiments/artifact-transport/README.md)
+- Primary Intent: Claire × Primary Agent / Artifact Intake → Processing → Routing → Delivery
+- Tags: agent-collaboration, artifact-workflow, dropbox, github, ipad-first, binary-transport, privacy-boundary, human-middleware
+
+**Why it exists**
+
+研究問題不是「Dropbox Connector 有哪些按鈕」，而是 Connector、Conversation、Primary Agent local workspace、Dropbox 與 GitHub 能否共同形成低摩擦 Artifact Collaboration Workflow，讓 Human 只保留有判斷價值的投遞 / 授權 / 接收，而不再承擔 resize、rename、manual upload、commit、push 等人工 middleware 工作。
+
+**Current evidence**
+
+- AI Inbox / AI-owned working area 的建立、列舉與 rename / move 已驗證。
+- 小於 fetch boundary 的文字 PDF 可作 private AI-readable reference；大型 PDF 暴露 5 MiB whole-file fetch boundary。
+- Dropbox temporary download link 可建立，但 direct binary handoff into local processing workspace 尚未打通。
+- Conversation-provided image → local processing → rotate / resize / re-encode 已驗證。
+- Local Workspace → GitHub binary 已透過 Git blob / tree / commit / branch 路徑驗證。
+- Public Record 採 privacy-scrub，只保留技術邊界，不保存私人 storage topology。
+
+**Open matrix**
+
+Dropbox → Local Workspace、Local Workspace → Dropbox、GitHub → Local Workspace，以及 GitHub ↔ Primary ↔ Dropbox 的雙向 end-to-end workflow 尚待完成。
+
+---
+
 ## 2026-09-17
 
 ### F-MAINT-1 — Single-record Maintenance Lifecycle Prototype
