@@ -392,7 +392,7 @@ select / share source artifact
 | --- | --- | --- |
 | Local Workspace → GitHub | Verified | Verified；另已有更低摩擦的 Dropbox staging → GitHub Actions publication path |
 | Local Workspace → Dropbox | Open | **Superseded：現已 Verified** via Dropbox `upload_file` |
-| Local Workspace → Human Output | Open | 仍 Open |
+| Local Workspace → Human Output | Open | **Superseded：後續已 Verified / Operational via Dropbox /AI Output** |
 
 ### C. End-to-end workflow
 
@@ -410,7 +410,8 @@ Current note：
 - `Conversation → Primary → Dropbox`：**Verified**
 - `Conversation → Primary → Dropbox staging → GitHub Actions → GitHub`：**Verified / Operational**
 - `Dropbox existing binary → Primary → GitHub`：仍受 Dropbox → Primary local materialization boundary 阻擋
-- `GitHub → Primary → Dropbox`：仍 Open
+- `GitHub text/source → Primary → Dropbox`：**Verified / Operational**
+- `GitHub repository binary → Primary local`：Deferred / Not established
 
 ### D. Dropbox PDF reading boundary
 
@@ -475,13 +476,9 @@ Current Judgment：
 
 ### F. Rollback / recovery
 
-待驗證：
+**Deferred / Problem-triggered only.**
 
-- rename / move rollback
-- wrong-destination recovery
-- Dropbox revision / restore behavior
-- GitHub binary cleanup / branch cleanup
-- partial failure 時如何保留 provenance
+Connector capability 存在不等於現在需要先研究 recovery taxonomy。只有真實錯誤情境造成 operational pain 時才 reopen，例如 wrong destination、revision recovery 或 partial failure。A-ARTIFACT-1 不因未預演所有災難情境而保持 Open。
 
 ---
 
