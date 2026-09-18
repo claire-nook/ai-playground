@@ -4,7 +4,7 @@
 >
 > 這不是永久能力保證，也不是等到「需要工具時」才查的附錄。新的 Conversation 完成 Repository orientation 時就應讀取，先知道自己可能有哪些手腳，再以當前 Tool Discovery 確認今天哪些真的存在。
 
-- Last reviewed: 2026-09-18
+- Last reviewed: 2026-09-19
 - Scope: `實驗室` / AI Playground Primary Agent
 - Status: Living operational guide
 
@@ -122,9 +122,26 @@ Owner model: Human-facing finished artifact surface
 Rule: 準備讓 Claire 下載、稍後開啟、分享或保存的 finished artifacts 優先放這裡。
 ~~~
 
-Navigation rule：
+Navigation / human-language rule：
 
 > Claire 提到「之前放 Dropbox 的檔案」時，Primary 應先恢復以上 canonical surfaces，並自行搜尋 `/AI 工作區` 與 `/AI Output`；不要先要求 Claire 回報 Dropbox path。
+
+Claire **不需要**精確輸入 canonical folder 的大小寫、空格、完整名稱或完整 Dropbox path。自然語言 referent 應由 Primary 自行解析，再透過 Dropbox Connector 搜尋 / list root / metadata 定位實際 object。已知同義指涉包括但不限於：
+
+~~~text
+「Inbox / 收件匣 / 我丟給你的東西」
+→ /AI Inbox
+
+「自治區 / 工作區 / 你自己的資料夾 / 丟你那邊 / 你自己收好」
+→ /AI 工作區
+
+「Output / 成品 / 交付區 / 你做好的東西」
+→ /AI Output
+~~~
+
+如果自然語言足以辨識 responsibility，**不得把 connector 所需的 exact path 反向變成人類輸入要求**。先自行查 root / canonical surfaces；只有確實存在多個合理 target、且 connector evidence 無法消歧時，才向 Claire 詢問。
+
+Canonical collaboration surfaces 目前固定為上述三個。若未來需要第四個或更多協作目錄，**不得由 Primary 單方面猜用途或把新資料夾偷偷升格成 canonical surface**；Claire × Primary 先共同討論 responsibility / owner model / data flow / governance，再更新本 Inventory，讓後續 Conversation 以新定義為準。
 
 Governance rule：
 
