@@ -165,7 +165,7 @@ def ingest_batch(batch_path: Path, *, timeout: int) -> dict[str, Any]:
                     "bytes": actual_bytes,
                     "sha256": actual_sha256,
                     **image_evidence,
-                    "sourceUrlPersisted": False,
+                    "sourceUrlWrittenToRepository": False,
                 }
             )
 
