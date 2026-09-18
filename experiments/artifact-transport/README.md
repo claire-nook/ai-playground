@@ -1,7 +1,7 @@
 # A-ARTIFACT-1 — AI-assisted Artifact Collaboration Workflow
 
 - Date: 2026-09-18
-- Status: In Progress / Partial Evidence Established
+- Status: In Progress / Core Image Publication Workflow Operational
 - Primary Intent: Claire × Primary Agent / Private Artifact Intake / Processing / Delivery / Repository Handoff
 - Tags: agent-collaboration, artifact-workflow, dropbox, github, ipad-first, binary-transport, privacy-boundary, human-middleware
 
@@ -24,7 +24,108 @@ Human Intake
 → Human Output
 ~~~
 
-Experiment 目前仍在進行中；已建立部分 transport evidence，但尚未形成完整雙向閉環。
+Experiment 目前仍在進行中；核心 image publication workflow 已 operational，但 general artifact lifecycle 尚未形成完整雙向閉環。
+
+---
+
+## Current State Snapshot｜2026-09-18
+
+先讀這一節，再決定是否需要往下考古。下方 Completed Evidence / Probe 記錄保留研究過程與被取代的假設；**本節代表目前最新 operational judgment**。
+
+### 已成立的主要協作路徑
+
+~~~text
+Conversation attachment
+→ Primary local processing
+→ resize / convert / EXIF normalize / metadata strip
+→ output reopen + bytes / SHA-256 validation
+→ Dropbox upload_file staging
+→ Dropbox download_link
+→ short-lived single-use binary URL
+→ batch_json
+→ Claire 每批執行一次 [COLLAB] Artifact Batch Publish
+→ GitHub Actions Runner direct binary fetch
+→ bytes / SHA-256 / full decode verification
+→ atomic repository commit
+→ Primary repository / visual QC
+~~~
+
+這條路徑已完成：
+
+- real processed JPEG transport verification；
+- 1-item batch verification；
+- multi-item batch verification；
+- formal Wall image same-path replacement；
+- explicit publication allowlist 擴充至 `public/images/wall/**`；
+- temporary source URL 不落入 Repository。
+
+Canonical collaboration tool：
+
+~~~text
+[COLLAB] Artifact Batch Publish
+.github/workflows/collab-artifact-batch-publish.yml
+.github/workflow-contracts/artifact-batch-publish.schema.json
+~~~
+
+### Current Capability Matrix
+
+| Direction / Capability | Current Status | Current Judgment |
+| --- | --- | --- |
+| Conversation → Primary local workspace | **Verified** | 目前最可靠的 binary intake / processing surface |
+| Primary local image processing | **Verified** | resize / re-encode / EXIF normalize / metadata strip / decode / hash 可做 |
+| Primary local artifact → Dropbox | **Verified** | 可用 `upload_file` staging processed artifact |
+| Dropbox staged file → temporary binary URL | **Verified** | `download_link` 可產生短效 single-use URL |
+| temporary URL → GitHub Actions → Repository | **Verified / Operational** | real-image direct binary fetch + integrity verification + commit 已成立 |
+| 1-item / N-item batch publication | **Verified / Operational** | 單張不是 special case；皆走 batch contract |
+| Wall image publication / replacement | **Verified / Operational** | allowlist 已包含 `public/images/wall/**` |
+| Primary autonomous `workflow_dispatch` | **Unavailable in current GitHub Connector** | Claire 仍保留每批一次 manual Run human gate |
+| Dropbox existing binary → Primary local workspace | **Blocked / Not established** | 不得與反方向 Primary → Dropbox 混為一談 |
+| GitHub repository binary → Primary local workspace | **Open** | 尚未建立 general materialization path |
+| Primary local workspace → Human Output | **Open** | finished-artifact delivery contract 尚未收斂 |
+| GitHub → Primary → Dropbox | **Open** | general reverse routing 尚未驗證 |
+| Large PDF materialization / split / merge lifecycle | **Open / Partial** | metadata / preview / small-text fetch 有 Evidence；general binary lifecycle 未完成 |
+| Inbox lifecycle / cleanup / retry / duplicate handling | **Open** | 尚未收斂 operational policy |
+| Rollback / recovery | **Open** | wrong destination / revision / partial failure recovery 尚未完整驗證 |
+
+### Human Responsibility Today
+
+圖片進 Repository 的日常協作，Claire 的 responsibility 已從：
+
+~~~text
+resize
+→ save
+→ rename
+→ Working Copy upload
+→ commit
+→ push
+~~~
+
+縮小為：
+
+~~~text
+提供 / 選定 source artifact
+→ 做必要的公開 / functional judgment
+→ 每批按一次 Run
+~~~
+
+Primary 應自行處理 Repository navigation、加工、命名、Dropbox staging、temporary URL、canonical `batch_json` 與 publication 後 QC。
+
+### 尚未達成的 Experiment Stop Condition
+
+A-ARTIFACT-1 **不能因為 image publication tool 已 operational 就宣告 Completed**。母實驗仍在研究 broader artifact collaboration lifecycle。
+
+目前真正 remaining gaps：
+
+1. Dropbox 既有 binary 如何可靠 materialize 到 Primary local processing workspace。
+2. Primary autonomous dispatch 是否有 supported execution surface，可移除每批 manual Run。
+3. Human-facing finished artifact delivery / Dropbox output lifecycle。
+4. GitHub / Dropbox reverse routing 與 general bidirectional closure。
+5. Large PDF / multi-part document lifecycle。
+6. Inbox cleanup、retry、duplicate、rollback / recovery policy。
+
+因此目前最準確的狀態是：
+
+> **Core image publication workflow operational; general bidirectional artifact collaboration remains in progress.**
 
 ---
 
@@ -267,34 +368,43 @@ select / share source artifact
 
 ---
 
-## Planned Experiment Matrix
+## Historical Planned Experiment Matrix
+
+> **Historical note:** 這是 Experiment 中途建立的 planning matrix，保留作研究演進紀錄。部分 `Open` 已被後續 Evidence 關閉或改寫；**判讀現在狀態請以文件前方 Current State Snapshot 為準。**
 
 ### A. Source → Primary Agent workspace
 
-| Path | Status | Question |
+| Path | Historical Status | Current Note |
 | --- | --- | --- |
-| Conversation → Local Workspace | Verified | attachment 是否可直接加工 |
-| Dropbox → Local Workspace | Open / blocked | connector binary 能否直接 materialize |
-| GitHub → Local Workspace | Open | repository binary 能否直接 materialize |
+| Conversation → Local Workspace | Verified | 仍為 Verified / preferred binary intake |
+| Dropbox → Local Workspace | Open / blocked | 仍 Blocked / Not established |
+| GitHub → Local Workspace | Open | 仍 Open |
 
 ### B. Primary Agent workspace → Destination
 
-| Path | Status | Question |
+| Path | Historical Status | Current Note |
 | --- | --- | --- |
-| Local Workspace → GitHub | Verified | binary artifact 是否可 version / commit |
-| Local Workspace → Dropbox | Open | generated local artifact 是否可 upload 回 AI 工作區 |
-| Local Workspace → Human Output | Open | finished artifact delivery contract |
+| Local Workspace → GitHub | Verified | Verified；另已有更低摩擦的 Dropbox staging → GitHub Actions publication path |
+| Local Workspace → Dropbox | Open | **Superseded：現已 Verified** via Dropbox `upload_file` |
+| Local Workspace → Human Output | Open | 仍 Open |
 
 ### C. End-to-end workflow
 
-後續至少要驗證：
+原始 planning targets：
 
 ~~~text
 Dropbox → Primary → GitHub
 GitHub → Primary → Dropbox
 Conversation → Primary → Dropbox
-Conversation → Primary → GitHub        Verified in major path
+Conversation → Primary → GitHub
 ~~~
+
+Current note：
+
+- `Conversation → Primary → Dropbox`：**Verified**
+- `Conversation → Primary → Dropbox staging → GitHub Actions → GitHub`：**Verified / Operational**
+- `Dropbox existing binary → Primary → GitHub`：仍受 Dropbox → Primary local materialization boundary 阻擋
+- `GitHub → Primary → Dropbox`：仍 Open
 
 ### D. PDF lifecycle
 
