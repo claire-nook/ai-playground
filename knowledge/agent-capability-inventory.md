@@ -66,6 +66,8 @@ Primary 若能透過 Connector / API / Repository / Runtime 直接取得資料�
 
 Human 不應因為 Primary 忘記自己有工具，就被降級成 screenshot / copy-paste middleware。
 
+Repository navigation 也屬 Primary 的 operational responsibility。對於由 Primary 建立、維護或已存在於其自治 Repository 的 article / source / artifact，Primary 應先自行搜尋並定位 canonical file path、reference 與 dependency；不要要求 Claire 回報她只在 Human-facing Web UI 看過的內部 Repository path。Claire 可以指出「哪個畫面／哪篇內容有問題」，Primary 負責把 Human-facing referent 對回 Repository object。
+
 ---
 
 ## 3. Current Observed Execution Surfaces
