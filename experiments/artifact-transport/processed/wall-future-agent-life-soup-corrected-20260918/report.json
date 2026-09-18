@@ -1,0 +1,23 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url-batch",
+  "requestId": "wall-future-agent-life-soup-corrected-20260918",
+  "itemCount": 1,
+  "atomicPublication": true,
+  "items": [
+    {
+      "index": 1,
+      "outputPath": "public/images/wall/future-agent-life-soup.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 67898,
+      "sha256": "67faf0fe9d9e9f6f979c00f3b32ca13476bdcf12869e3dcb68eecda7db153ee9",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        640,
+        480
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    }
+  ]
+}
