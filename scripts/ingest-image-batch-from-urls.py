@@ -25,7 +25,10 @@ from urllib.request import Request, urlopen
 from PIL import Image
 
 
-ALLOWED_OUTPUT_PREFIX = Path("experiments/artifact-transport/publisher-output")
+ALLOWED_OUTPUT_PREFIXES = (
+    Path("experiments/artifact-transport/publisher-output"),
+    Path("public/images/wall"),
+)
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
 REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
@@ -65,20 +68,23 @@ def load_batch(path: Path) -> dict[str, Any]:
 
 
 def validate_output_path(raw_path: str) -> Path:
-    """Restrict outputs to the experiment-owned publisher directory."""
+    """Restrict outputs to explicit collaboration publication prefixes."""
     output_path = Path(raw_path)
 
     if output_path.is_absolute() or ".." in output_path.parts:
         raise ValueError(f"Unsafe outputPath: {raw_path}")
 
-    try:
-        output_path.relative_to(ALLOWED_OUTPUT_PREFIX)
-    except ValueError as exc:
-        raise ValueError(
-            f"outputPath must stay under {ALLOWED_OUTPUT_PREFIX}: {raw_path}"
-        ) from exc
+    for allowed_prefix in ALLOWED_OUTPUT_PREFIXES:
+        try:
+            output_path.relative_to(allowed_prefix)
+            return output_path
+        except ValueError:
+            continue
 
-    return output_path
+    allowed = ", ".join(str(path) for path in ALLOWED_OUTPUT_PREFIXES)
+    raise ValueError(
+        f"outputPath must stay under one of [{allowed}]: {raw_path}"
+    )
 
 
 def verify_image(binary: bytes, temp_path: Path) -> dict[str, Any]:
