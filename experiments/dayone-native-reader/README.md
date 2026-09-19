@@ -1,7 +1,7 @@
 # D1-NATIVE-1 — Day One Native Reader
 
 - Date: 2026-09-19
-- Status: In Progress / M1 Verified
+- Status: In Progress / M2 Verified
 - Primary Intent: Open Exploration / Local-first Personal Archive
 - Supports: iPad-first Development
 - Tags: `day-one`, `swift`, `swiftui`, `swift-playgrounds`, `json`, `rich-text`, `photokit`, `ipad-first`, `local-first`, `data-portability`
@@ -115,7 +115,7 @@ Important boundary:
 
 ### M2 — Rich Text Reconstruction
 
-Status: **Next / In Progress target**
+Status: **Verified — Claire Environment Evidence (2026-09-20)**
 
 Research target：
 
@@ -129,6 +129,45 @@ Day One richText.contents
 至少需要重新檢視 Browser Reader 已驗證的 mapping，並在 Native renderer 中處理 Claire fixture 真正使用到的 heading、paragraph、inline formatting、list / checklist、quote / embedded position 等語意。
 
 M2 不把 Day One `text` fallback 誤認成 Markdown rendering。Canonical input 仍是 structured `richText`。
+
+#### M2 verified result
+
+Claire iPad Human Environment 已完成 M2 實機驗證。Native Reader 不再把 `richText` 攤平成單一 String，而是先轉成 semantic block / inline model，再由 SwiftUI / `AttributedString` 呈現。
+
+目前已實際形成可閱讀結果的語意包括：
+
+- heading / paragraph；
+- bold / italic / strikethrough / inline code / link；
+- quote；
+- bullet list / contiguous numbered list / checklist；
+- horizontal rule；
+- embedded photo position placeholder；
+- embedded PDF position placeholder；
+- weather metadata；
+- zh_TW date presentation。
+
+Day One 第一個與 entry title 相同的 H1 會避免在 Detail 重複顯示。Numbered list 採 Claire fixture 的實際閱讀規則：**連續 numbered blocks 由 1 起算；被一般 paragraph 等 block 中斷後，後續 numbered list 重新由 1 起算**，不追求跨非 list block 延續編號。
+
+PDF 仍不進入 Native physical rendering scope。M2 只保留 PDF 在原文中的 semantic position，顯示「此處有 PDF 附件」與可取得的檔名；這是 position preservation，不是 PDF support。
+
+M2 同時補上 Claire 實際需要的輕量閱讀 UX：
+
+- 原生 SwiftUI `.searchable` 文字搜尋；
+- 單一 Tag 下拉篩選；
+- Search + Tag 採 AND；
+- Tag 清單由目前 JSON 實際 tags 動態產生；
+- 沒有日期 / 國家 filter，也沒有 multi-tag filter。
+
+這些 UX 是 Claire 自用 Reader 的必要閱讀能力，不代表 Native Reader 要追求 Browser Reader advanced filter parity。
+
+#### M2 implementation / environment lessons
+
+M2 在 Swift Playgrounds 暴露兩個重要環境坑：
+
+1. **SwiftUI type-check complexity 要小步切割。** Search 初次加入既有大型 `ContentView` modifier chain 時，Swift Playgrounds compiler 出現「unable to type-check this expression in reasonable time」。只抽出 list row / list 還不足；把 search state、filtering 與 `.searchable` 一起隔離到 dedicated sidebar view 後才恢復 compile。這支持 apple-lab 採「一個小功能 → compile → iPad 驗證 → checkpoint → 下一步」的開發節奏。
+2. **Magic Keyboard text input 是目前 Playgrounds execution environment 的已知限制。** 同一 Search 使用螢幕鍵盤可正常輸入與 filter；Magic Keyboard 無法在 `.searchable` 輸入。改成普通 SwiftUI `TextField` 後 Magic Keyboard 仍無法輸入，因此 Evidence 不支持把問題歸因於 Reader filtering 或 `.searchable`。Native Reader 最終保留標準 `.searchable`，不為 Playgrounds-only observation 犧牲 App UI。
+
+第二點目前只適用於這次 Claire iPad + Swift Playgrounds Human Environment；**不能推論正式安裝的 iPadOS App 或 Xcode-built App 也有相同行為**。跨 project operational rule 已整理在 private `apple-lab/knowledge/ipad-native-development.md`。
 
 ### M3 — PhotoKit Media Resolution
 
@@ -203,22 +242,20 @@ Private earlier PhotoKit probe 曾以 hardcoded real identifier 成功取得一�
 
 ### Unknown / Not Tested
 
-- Native rich-text semantic fidelity。
+- 尚未遇到的 Day One richText construct / future schema edge case。
 - JSON-derived local identifier → PhotoKit integration。
 - 多張照片 / iCloud-only photo 的 bounded loading。
 - 大型 Journal Native performance。
-- Native search / advanced filter 是否值得做。
 - PDF：刻意不測。
 
 ## Result｜目前結果
 
-M1 已回答：**Day One JSON 可以在 iPad Native SwiftUI App 中完成 import、decode、entry list / detail 與基本 flattened reading。**
+M1 已回答 Native JSON ingestion / basic reading；M2 進一步回答：**Day One structured richText 可以在 iPad Native SwiftUI App 中重建成 Claire 可接受的 semantic reading presentation，並搭配文字搜尋與單一 Tag 篩選。**
 
-它還不能回答：
+它仍不能回答：
 
-- Native Reader 已具備 rich-text 閱讀品質；
 - JSON photo reference 已能顯示 Photos / iCloud 實體照片；
-- Native Reader 已達成 Browser Reader parity。
+- Native Reader 已達成 Browser Reader parity，而 parity 本來也不是本 Experiment 的成功標準。
 
 因此 Experiment 狀態維持 **In Progress / M1 Verified**。
 
@@ -232,14 +269,14 @@ M1 已回答：**Day One JSON 可以在 iPad Native SwiftUI App 中完成 import
 
 ## What this unlocks｜它打開了什麼下一步
 
-Immediate next target：**M2 Rich Text Reconstruction**。
+Immediate next target：**M3 PhotoKit Media Resolution**。
 
-M2 若形成可接受閱讀品質，再以 M3 驗證 JSON-derived PhotoKit media resolution。M2 / M3 可依 implementation dependency 調整先後，但各自 Evidence 必須分開，不互相借功勞。
+M2 已形成 Claire 可接受的閱讀品質；下一階段只驗證 JSON-derived PhotoKit media resolution。M2 與 M3 Evidence 必須分開，不互相借功勞。
 
 ## Current Judgment｜目前判斷
 
 - Native JSON ingestion / basic reading：**Verified in Claire iPad environment**。
-- Native rich-text reconstruction：**Not yet verified**。
+- Native rich-text reconstruction：**Verified in Claire iPad environment (M2)**。
 - JSON-derived PhotoKit image integration：**Not yet verified**。
 - PDF support：**Out of scope by explicit product choice**。
 
