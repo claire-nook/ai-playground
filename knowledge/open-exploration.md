@@ -57,6 +57,18 @@
 
 ---
 
+## Exploration — Local-first Personal Archive / Day One Reader
+
+- Experiment: [D1-READER-1](../experiments/dayone-reader/README.md)
+- Status: Active Candidate
+- Why it is interesting now: Day One structured export 已足以啟動「資料可攜之後，閱讀體驗能否也脫離原 App」的實驗；同時可驗證 iPad-first local Browser 對私人 archive 的實際能力。
+- Tags: `day-one`, `local-first`, `browser`, `json`, `privacy`, `ipad-first`, `photo-rendering`
+- Related cluster: iPad-first Development
+
+目前不建立獨立 Research Map。先完成 Browser renderer 與真實 export acceptance；若後續 Browser / PhotoKit / archive portability Evidence 累積成清楚的長期 Research Question，再 Promote。不要因為一碗叻沙已經成功進 SwiftUI，就立刻成立個人數位保存研究院。
+
+---
+
 ## Potential Cluster — AI Engineering / Autonomous Experimentation
 
 ### Existing Evidence
