@@ -1,9 +1,8 @@
 {
   "id": "D1-READER-1",
   "title": "Day One JSON Local Reader",
-  "startedDate": "2026-09-19",
   "recordPath": "experiments/dayone-reader/README.md",
-  "summary": "驗證 Day One JSON 是否能在不轉換 canonical data、不上傳私人日記的前提下，由純 Browser local-first renderer 重建 rich text、metadata 與原始照片位置；並以 Day One 原生 photos/ export 作可選 media input。",
+  "summary": "驗證 Day One structured JSON export 可在不轉換 canonical data、不上傳私人日記的前提下，由純 Browser local-first Reader 重建 rich text、metadata、原始照片位置與 PDF attachment；JSON-only、photos/、pdfs/ 均有明確 fallback / local media contract，並完成 iPad Human Environment Acceptance。",
   "tags": [
     "Day One",
     "Local-first",
@@ -11,12 +10,15 @@
     "JSON",
     "Privacy",
     "iPad-first",
-    "Photo Rendering"
+    "Photo Rendering",
+    "PDF Attachment",
+    "Data Portability"
   ],
   "outputType": "experiment",
   "researchMethod": "controlled-experiment",
   "demoStatus": "live",
   "demoPath": "/dayone-reader/",
-  "verificationStatus": "candidate",
-  "flow": "Day One Export → Local JSON / optional photos/ → Browser Adapter → Renderer → Read-only Journal"
+  "verificationStatus": "verified",
+  "flow": "Day One Export → Local JSON + optional photos/ / pdfs/ → Browser Adapter → Rich Text / Media Renderer → Read-only Journal",
+  "completedDate": "2026-09-19"
 }
