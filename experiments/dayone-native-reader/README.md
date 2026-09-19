@@ -1,7 +1,7 @@
 # D1-NATIVE-1 — Day One Native Reader
 
 - Date: 2026-09-19
-- Status: In Progress / M2 Verified
+- Status: Verified / Completed
 - Primary Intent: Open Exploration / Local-first Personal Archive
 - Supports: iPad-first Development
 - Tags: `day-one`, `swift`, `swiftui`, `swift-playgrounds`, `json`, `rich-text`, `photokit`, `ipad-first`, `local-first`, `data-portability`
@@ -171,7 +171,7 @@ M2 在 Swift Playgrounds 暴露兩個重要環境坑：
 
 ### M3 — PhotoKit Media Resolution
 
-Status: **Feasibility Verified / Reader Integration Ready (2026-09-20)**
+Status: **Verified — Reader Integration + Human Environment Acceptance (2026-09-20)**
 
 Research target：
 
@@ -214,35 +214,70 @@ Day One photo object 同時存在多種 identifier-like metadata。不能因為�
 
 未來 Agent 實作或除錯 PhotoKit mapping 時，應先確認 identifier namespace，再檢查 asset 是否存在。不要把「PhotoKit 找不到」第一時間誤判成照片已刪除、權限失效或 iCloud 問題。欄位名字看起來很無辜，實際上非常會把人帶去撞牆。
 
-#### Reader integration contract unlocked by M3-A
+#### M3-B Native Reader integration — Verified
 
-M3-A 通過代表正式 Native Reader 可以開始 PhotoKit integration，但 **不代表 M3 Reader integration 已完成**。
-
-Reader 應採 per-photo resolution，而不是讓單張照片失敗拖垮整篇 entry：
+M3-A 的 identifier mapping 已整合進正式 `DayOneNativeReader.swiftpm`，並由 Claire iPad Human Environment 驗證：
 
 ```text
-richText photo embedded position
-→ match Day One photos[] metadata
-→ appleLocalIdentifier available?
-   ├─ Yes → PhotoKit resolve
-   │        ├─ asset found → render image
-   │        └─ asset unavailable → preserve position + unavailable placeholder
-   └─ No  → preserve position + missing-Apple-identifier placeholder
+richText photo embedded identifier
+→ match entry.photos[].identifier
+→ matched photo.appleLocalIdentifier
+→ PHAsset
+→ PHImageManager
+→ inline image at original article position
 ```
 
-Claire 的真實使用情境包含「Day One JSON 仍保留 photo reference，但該照片後來已從 Photos 刪除」。因此 asset-not-found 必須視為 Reader 的正常資料狀態，而不是 whole-entry exception。
+Reader 採 per-photo degradation。缺少 `appleLocalIdentifier`、找不到 PHAsset、或 Photos 找到 asset 但影像暫時無法取得時，都只影響該張照片，原文章與 semantic position 保持可閱讀；UI 不武斷宣稱照片已刪除。
 
-Fallback wording也不能武斷宣告「照片已刪除」：PhotoKit 查不到可能來自刪除、library state、identifier 失效或其他尚未驗證因素。Reader 應描述為「目前無法從 Photos 取得」並保留可取得的 filename / semantic position。
+實機亦驗證多張真實旅遊照片可在正文原位置載入。Claire 測試 fixture 中已不存在 Photos 的 screenshot references 則以 unavailable placeholder 呈現，沒有拖垮整篇 entry。
 
-後續 Reader integration 仍需驗證：
+#### M3-C Reading layout / full-screen browsing — Verified
 
-- richText 中多張照片依原始 embedded position 呈現；
-- individual photo lazy / bounded loading；
-- asset-not-found / missing `appleLocalIdentifier` fallback；
-- iCloud-only asset 在 `isNetworkAccessAllowed = true` 時的 Human Environment behavior；
-- 大型 Journal 下的 loading / memory behavior。
+第一輪曾嘗試將多張 inline photos 改為 SwiftUI `LazyVGrid` 兩欄 photo wall。Human Environment 出現可重現的 reverse-scroll failure：文章可一路向下滑至照片區，但在多圖區域無法正常向上返回。
 
-不以一次載入整個 Journal 所有照片為目標。
+Isolation probes：
+
+- photo wall `.allowsHitTesting(false)` 後問題仍存在；
+- 暫時移除 parent rich-text `.textSelection(.enabled)` 後問題仍存在；
+- 移除 `LazyVGrid` photo wall、改回 bounded inline images 後，Claire 驗證 article scrolling 恢復正常。
+
+因此 Evidence **沒有證明 LazyVGrid 本身是 SwiftUI 的普遍 bug**，只證明這個 photo-wall composition 在目前 Reader + Swift Playgrounds Human Environment 造成實際閱讀問題。由於本 Reader 的目標是資料自主 / archival readability，而不是 Day One UI parity，沒有繼續投入圖片牆 root-cause research。
+
+Current reading layout：
+
+- 照片維持 richText 原始位置與順序；
+- 保持 aspect ratio；
+- bounded inline presentation，避免單張照片吞掉整個閱讀畫面；
+- 多張照片採直向排列，不再建立 gallery grid。
+
+這也留下了一個很人類的產品心得：**Day One 的圖片牆看起來理所當然，實際重做才知道一點也不理所當然。** Native Reader 不需要為了模仿它，把 data-sovereignty 工具養成另一套 Day One。
+
+第二階段加入 full-screen photo viewer，Claire iPad Human Environment 已驗證：
+
+```text
+inline loaded photo
+→ tap
+→ full-screen dark viewer
+→ open at tapped photo
+→ swipe previous / next within the same entry
+→ current / total counter
+→ close
+→ return to article
+```
+
+Viewer 的照片順序依 **richText 實際出現順序**，不是直接假設 `entry.photos` array order。每頁各自透過 PhotoKit resolve image，避免開啟 viewer 時一次 preload 整篇所有原圖。Unavailable photo 仍保留對應資料狀態，不因 viewer 而被當成不存在。
+
+Claire 實機驗證 full-screen viewer 可正確顯示真實照片並左右翻頁；測試畫面已到達 `5 / 5`。有輕微切換卡頓的 Human Environment observation，但目前沒有 Evidence 可把 root cause 歸給 Reader、PhotoKit 或 Swift Playgrounds，因此不為這項 observation 提前加入 cache / prefetch complexity。
+
+#### Explicitly not required for completion
+
+- Day One-style photo wall parity；
+- pinch-to-zoom；
+- PDF physical rendering；
+- 大型 Journal performance optimization；
+- 尚未取得 Human Environment Evidence 的 iCloud-only asset 行為。
+
+這些項目若未來成為 Claire 的真實使用痛點，再 problem-triggered reopen；不作為本輪 completion blocker。
 
 ## Method / Artifact｜怎麼驗證
 
@@ -298,16 +333,31 @@ Private M3-A probe 已完成 hardcoded Control 與 JSON-derived mapping 對照�
 - 大型 Journal Native performance。
 - PDF：刻意不測。
 
-## Result｜目前結果
+## Result｜最終結果
 
-M1 已回答 Native JSON ingestion / basic reading；M2 進一步回答：**Day One structured richText 可以在 iPad Native SwiftUI App 中重建成 Claire 可接受的 semantic reading presentation，並搭配文字搜尋與單一 Tag 篩選。**
+D1-NATIVE-1 的核心 Research Question 已回答 **Yes**。
 
-它仍不能回答：
+Claire 自用 iPad Native Reader 已在 Human Environment 驗證：
 
-- 正式 Native Reader 已把 JSON photo reference 整合成 Photos / iCloud 實體照片；
-- Native Reader 已達成 Browser Reader parity，而 parity 本來也不是本 Experiment 的成功標準。
+```text
+Day One JSON
+→ Native decode / navigation
+→ structured richText semantic reconstruction
+→ Search + single Tag filter
+→ richText photo position
+→ Day One generic identifier mapping
+→ appleLocalIdentifier
+→ PhotoKit / Photos
+→ bounded inline image
+→ tap full-screen viewer
+→ same-entry previous / next browsing
+```
 
-因此 Experiment 狀態維持 **In Progress / M2 Verified / M3-A Feasibility Verified**。
+因此 Native route 已證明可以在**不建立第二套 canonical archive、不另存一份照片庫**的前提下，利用 Day One export + Apple Photos 建立 Claire 真正需要的 archival Reader。
+
+本 Experiment 不宣稱取代 Day One。Day One 仍是日常 journal product；Native Reader 的角色是 **data sovereignty / archival readability fallback**：確保資料離開 Day One 後仍有一條 Claire 自己掌握、可理解且可閱讀的路。
+
+Status：**Verified / Completed — 2026-09-20**。
 
 ## Constraints / Pitfalls｜限制與踩坑
 
@@ -319,21 +369,21 @@ M1 已回答 Native JSON ingestion / basic reading；M2 進一步回答：**Day 
 - private identifier / journal fixture 不進 public repo。
 - Native package / Working Copy / Swift Playgrounds operational traps 由 `apple-lab/knowledge/ipad-native-development.md` 管理，不在本 Experiment 重複維護。
 
-## What this unlocks｜它打開了什麼下一步
+## Final Judgment｜最終判斷
 
-Immediate next target：**M3 PhotoKit Reader Integration**。
+- Native JSON ingestion / basic reading：**Verified**。
+- Native structured richText reconstruction：**Verified**。
+- Search + single Tag reading UX：**Verified**。
+- Day One `appleLocalIdentifier` → PhotoKit mapping：**Verified**。
+- Formal Native Reader PhotoKit integration：**Verified**。
+- Missing / unavailable photo per-item fallback：**Verified in current fixture**。
+- Bounded inline photo layout / article scrolling：**Verified**。
+- Full-screen same-entry photo browsing：**Verified**。
+- Day One-style photo wall：**Attempted, produced a repeatable scroll regression, intentionally abandoned as non-essential parity**。
+- PDF physical rendering：**Explicitly out of scope**。
+- Large Journal performance / iCloud-only edge behavior：**Unknown / deferred until real need**。
 
-M2 已形成 Claire 可接受的閱讀品質；M3-A 已把 JSON-derived PhotoKit feasibility 打通。下一階段才把已驗證的 `appleLocalIdentifier → PHAsset → image` contract 整合進正式 Reader，並驗證多照片、unavailable placeholder 與 iCloud-only behavior。M2、M3-A feasibility 與 M3 Reader integration Evidence 必須分開，不互相借功勞。
-
-## Current Judgment｜目前判斷
-
-- Native JSON ingestion / basic reading：**Verified in Claire iPad environment**。
-- Native rich-text reconstruction：**Verified in Claire iPad environment (M2)**。
-- JSON-derived PhotoKit feasibility：**Verified in Claire iPad environment (M3-A)**。
-- Native Reader PhotoKit integration：**Not yet implemented / verified**。
-- PDF support：**Out of scope by explicit product choice**。
-
-目前 Evidence 支持 Native Reader 路線具有高可行性，但本 Experiment 的 completion 必須以 Claire 真正需要的 Reader 核心能力為準，而不是「App 能打開」就提早畢業。
+Stop condition 已滿足。後續不因「還能再漂亮一點」維持 Experiment 永遠 In Progress。這是 archival Reader，不是第二家 Day One 公司。
 
 ## Re-test / Re-open Trigger
 
