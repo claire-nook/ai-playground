@@ -116,7 +116,12 @@ function parseRichText(e){
   };
   contents.forEach(part=>{
    if(Array.isArray(part.embeddedObjects)){
-    flushParagraph();part.embeddedObjects.filter(o=>o&&o.type==='photo'&&o.identifier).forEach(o=>photoRun.push(o.identifier));return;
+    flushParagraph();flushPhotos();
+    part.embeddedObjects.forEach(o=>{
+     if(o&&o.type==='photo'&&o.identifier)photoRun.push(o.identifier);
+     else if(o&&o.type==='horizontalRuleLine')blocks.push({type:'horizontalRule'});
+    });
+    return;
    }
    flushPhotos();if(typeof part.text!=='string')return;
    const attr=part.attributes||{},line=attr.line||{},text=part.text.replace(/\n$/,'');
@@ -141,15 +146,17 @@ function renderArticle(e){
  art.querySelectorAll('img[data-full-image]').forEach(img=>img.addEventListener('click',()=>openImageModal(img.src,img.alt)));
 }
 function renderBlocks(blocks,e){
- let out='',listType=null;
- const closeList=()=>{if(listType){out+='</'+listType+'>';listType=null}};
+ let out='',listType=null,listTag=null;
+ const closeList=()=>{if(listType){out+='</'+listTag+'>';listType=null;listTag=null}};
  blocks.forEach(b=>{
   if(b.type==='line'&&b.line.listStyle){
-   const wanted=b.line.listStyle==='numbered'?'ol':'ul';if(listType!==wanted){closeList();out+='<'+wanted+(b.line.listStyle==='checkbox'?' class="check-list"':'')+'>';listType=wanted}
-   if(b.line.listStyle==='checkbox')out+='<li class="check"><input type="checkbox" disabled '+(b.line.checked?'checked':'')+'>'+inlineText(b.text,b.attr)+'</li>';
+   const wanted=b.line.listStyle,tag=wanted==='numbered'?'ol':'ul';
+   if(listType!==wanted){closeList();out+='<'+tag+(wanted==='checkbox'?' class="check-list"':'')+'>';listType=wanted;listTag=tag}
+   if(wanted==='checkbox')out+='<li class="check"><input type="checkbox" disabled '+(b.line.checked?'checked':'')+'>'+inlineText(b.text,b.attr)+'</li>';
    else out+='<li>'+inlineText(b.text,b.attr)+'</li>';return;
   }
   closeList();
+  if(b.type==='horizontalRule'){out+='<hr>';return}
   if(b.type==='photos'){out+=renderPhotos(b.ids,e);return}
   if(b.type==='plain'){out+=renderPlain(b.text);return}
   if(b.type==='paragraph'){out+='<p>'+b.runs.map(r=>inlineText(r.text,r.attr)).join('')+'</p>';return}
