@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Day One Reader Lab</title>
+<style>
+:root{--bg:#f4f1eb;--paper:#fffdf9;--ink:#292824;--muted:#77736b;--line:#e8e1d7;--accent:#287f78;--accent-soft:#e5f1ee;--warn:#fff7dc;--shadow:0 12px 34px rgba(50,43,34,.08);--radius:18px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-serif,"Noto Serif TC","PingFang TC",serif;line-height:1.85}
+button,input{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:9px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(244,241,235,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.brand{font-family:system-ui,-apple-system,sans-serif;font-weight:750}.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px}.spacer{flex:1}.btn{border:1px solid var(--line);background:var(--paper);padding:9px 13px;border-radius:999px;cursor:pointer;color:var(--ink)}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
+.shell{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:calc(100svh - 66px)}.sidebar{border-right:1px solid var(--line);background:#f8f5ef;position:sticky;top:66px;height:calc(100svh - 66px);overflow:auto}.side-top{position:sticky;top:0;background:#f8f5ef;padding:18px 16px 12px;border-bottom:1px solid var(--line);z-index:2}
+.journal-name{font-weight:800;font-size:18px}.stats,.media-status{font-family:system-ui,-apple-system,sans-serif;color:var(--muted);font-size:12px;margin-top:4px}.media-status.ready{color:var(--accent)}.search{width:100%;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:white;padding:10px 12px}
+.entry-list{padding:8px}.entry-item{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:12px;padding:11px 12px;cursor:pointer;color:inherit}.entry-item:hover,.entry-item.active{background:var(--accent-soft)}.entry-date{font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:var(--muted);letter-spacing:.04em}.entry-title{font-weight:700;line-height:1.45;margin-top:2px}
+.main{min-width:0;padding:28px 24px 80px}.article{max-width:860px;margin:auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(24px,5vw,64px)}
+.empty{max-width:700px;margin:12vh auto;text-align:center;color:var(--muted)}.empty h1{color:var(--ink);font-size:30px}.eyebrow{font-family:system-ui,-apple-system,sans-serif;color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.article h1{font-size:clamp(30px,5vw,48px);line-height:1.25;margin:.15em 0 .35em}.meta{display:flex;flex-wrap:wrap;gap:7px 14px;padding-bottom:24px;margin-bottom:28px;border-bottom:1px solid var(--line);font-family:system-ui,-apple-system,sans-serif;color:var(--muted);font-size:13px}.tags{display:flex;flex-wrap:wrap;gap:6px;margin:-12px 0 26px}.tag{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:var(--accent-soft);color:#24645f;padding:3px 9px;border-radius:999px}
+.content p{margin:0 0 1.25em}.content h2,.content h3,.content h4{line-height:1.35;margin:1.7em 0 .65em}.content blockquote{margin:1.4em 0;padding:.2em 0 .2em 18px;border-left:3px solid var(--accent);color:#5e5a53}.content a{color:var(--accent);overflow-wrap:anywhere}.content ul,.content ol{padding-left:1.5em;margin:0 0 1.25em}.content li+li{margin-top:.25em}.check-list{list-style:none;padding-left:0!important}.check input{margin-right:8px}.content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eee9e1;border-radius:5px;padding:.08em .3em;font-size:.9em}
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:1.5em 0}.gallery.single{grid-template-columns:1fr}.photo{margin:0;border-radius:14px;overflow:hidden;background:#eee8de;min-height:120px;display:flex;align-items:center;justify-content:center}.photo img{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;background:#f2eee7}.photo-missing{min-height:170px;border:1px dashed #b8b0a5;border-radius:14px;background:linear-gradient(135deg,#f5f1ea,#ece6dc);display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:#8b8379;font-family:system-ui,-apple-system,sans-serif;font-size:12px;overflow-wrap:anywhere}.photo-missing b{display:block;font-size:22px;margin-bottom:5px}
+.notice{font-family:system-ui,-apple-system,sans-serif;background:var(--warn);border:1px solid #ead9a0;border-radius:12px;padding:10px 12px;margin-bottom:24px;font-size:13px;color:#6e5c24}.drawer-btn,.backdrop{display:none}
+@media(max-width:760px){.drawer-btn{display:inline-block}.app-header{flex-wrap:wrap}.brand{max-width:150px}.shell{grid-template-columns:1fr}.sidebar{position:fixed;z-index:30;top:calc(62px + env(safe-area-inset-top));bottom:0;left:0;width:min(88vw,360px);height:auto;transform:translateX(-102%);transition:.2s;box-shadow:var(--shadow)}.sidebar.open{transform:none}.backdrop{display:block;position:fixed;z-index:25;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:.2s}.backdrop.show{opacity:1;pointer-events:auto}.main{padding:12px 8px 60px}.article{border-radius:14px;padding:24px 18px}.gallery{grid-template-columns:1fr 1fr}.photo-missing{min-height:120px}}
+</style>
+</head>
+<body>
+<header class="app-header">
+<button class="btn drawer-btn" id="drawerBtn">☰ 目錄</button>
+<div class="brand">📖 Day One Reader<small>local-first renderer lab</small></div>
+<div class="spacer"></div>
+<label class="btn primary">開啟 JSON<input id="jsonInput" type="file" accept=".json,application/json" hidden></label>
+<label class="btn">加入 photos/<input id="photoInput" type="file" accept="image/*" multiple webkitdirectory directory hidden></label>
+</header>
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+<div class="side-top">
+<div class="journal-name" id="journalName">尚未載入日記</div>
+<div class="stats" id="stats">Day One JSON 保持原樣，Reader 只負責閱讀。</div>
+<div class="media-status" id="mediaStatus">尚未提供 photos/，照片會保留位置並顯示 placeholder。</div>
+<input class="search" id="search" type="search" placeholder="搜尋標題或正文…" disabled>
+</div>
+<nav class="entry-list" id="entryList"></nav>
+</aside>
+<div class="backdrop" id="backdrop"></div>
+<main class="main">
+<section class="empty" id="empty">
+<div class="eyebrow">Experiment</div>
+<h1>直接閱讀 Day One JSON</h1>
+<p>先選 Day One 匯出的 JSON。若你另外匯出了照片，再選原生的 <code>photos/</code> 資料夾；沒有照片也完全合法，Reader 會在原本的位置留下 placeholder。</p>
+<p>檔案只在這個瀏覽器頁面處理，不需要先把日記上傳到網站。</p>
+</section>
+<article class="article" id="article" hidden></article>
+</main>
+</div>
+<script>
+let entries=[],filtered=[],currentUuid=null,mediaByName=new Map(),objectUrls=[];
+const $=id=>document.getElementById(id),sidebar=$('sidebar'),backdrop=$('backdrop');
+$('drawerBtn').addEventListener('click',()=>toggleDrawer(!sidebar.classList.contains('open')));
+backdrop.addEventListener('click',()=>toggleDrawer(false));
+function toggleDrawer(open){sidebar.classList.toggle('open',open);backdrop.classList.toggle('show',open)}
+
+$('jsonInput').addEventListener('change',async ev=>{
+ const file=ev.target.files[0];if(!file)return;
+ try{
+  const json=JSON.parse(await file.text());if(!Array.isArray(json.entries))throw new Error('找不到 entries[]');
+  entries=json.entries.slice().sort((a,b)=>new Date(a.creationDate||0)-new Date(b.creationDate||0));filtered=entries.slice();
+  $('search').disabled=false;$('search').value='';$('journalName').textContent=file.name.replace(/\.json$/i,'');
+  updateStats();renderList();if(entries.length)selectEntry(entries[0].uuid||'idx-0');
+ }catch(err){alert('這份檔案目前無法讀取：'+err.message)}
+});
+$('photoInput').addEventListener('change',ev=>{
+ revokeObjectUrls();mediaByName.clear();
+ [...ev.target.files].forEach(file=>mediaByName.set(file.name.toLowerCase(),file));
+ const status=$('mediaStatus');status.textContent=mediaByName.size?('已讀取 '+mediaByName.size+' 個 photos/ 本機檔案。'):'沒有讀到照片檔。';
+ status.classList.toggle('ready',mediaByName.size>0);if(currentUuid)renderArticle(currentEntry());updateStats();
+});
+$('search').addEventListener('input',ev=>{
+ const q=ev.target.value.trim().toLowerCase();filtered=!q?entries.slice():entries.filter(e=>(getTitle(e)+'\n'+(e.text||'')).toLowerCase().includes(q));renderList();
+});
+window.addEventListener('beforeunload',revokeObjectUrls);
+function revokeObjectUrls(){objectUrls.forEach(URL.revokeObjectURL);objectUrls=[]}
+function countPhotos(list){return list.reduce((n,e)=>n+(Array.isArray(e.photos)?e.photos.length:0),0)}
+function updateStats(){if(entries.length)$('stats').textContent=entries.length+' 篇日記 · '+countPhotos(entries)+' 個照片紀錄'}
+
+function renderList(){
+ const box=$('entryList');box.innerHTML='';
+ if(!filtered.length){box.innerHTML='<div class="stats" style="padding:18px">沒有符合的文章。</div>';return}
+ filtered.forEach(e=>{const id=e.uuid||'idx-'+entries.indexOf(e),btn=document.createElement('button');btn.className='entry-item'+(id===currentUuid?' active':'');btn.innerHTML='<div class="entry-date">'+esc(formatDate(e.creationDate,e.timeZone))+'</div><div class="entry-title">'+esc(getTitle(e))+'</div>';btn.onclick=()=>selectEntry(id);box.appendChild(btn)});
+}
+function currentEntry(){return entries.find((x,i)=>(x.uuid||'idx-'+i)===currentUuid)}
+function selectEntry(id){const e=entries.find((x,i)=>(x.uuid||'idx-'+i)===id);if(!e)return;currentUuid=id;renderList();renderArticle(e);toggleDrawer(false);window.scrollTo({top:0,behavior:'smooth'})}
+
+/* Adapter: preserve richText sequence and inline attributes. */
+function parseRichText(e){
+ if(!e.richText)return fallbackBlocks(e.text||'');
+ try{
+  const rich=typeof e.richText==='string'?JSON.parse(e.richText):e.richText,contents=Array.isArray(rich.contents)?rich.contents:[];
+  const blocks=[];let paragraph=null,photoRun=[];
+  const flushParagraph=()=>{if(paragraph&&paragraph.runs.length)blocks.push(paragraph);paragraph=null};
+  const flushPhotos=()=>{if(photoRun.length){blocks.push({type:'photos',ids:photoRun});photoRun=[]}};
+  const addParagraphPieces=(text,attr)=>{
+   const pieces=String(text).split(/(\n\n+)/);
+   pieces.forEach(piece=>{
+    if(!piece)return;
+    if(/^\n\n+$/.test(piece)){flushParagraph();return}
+    if(!paragraph)paragraph={type:'paragraph',runs:[]};
+    const cleaned=piece.replace(/\n$/,'');if(cleaned)paragraph.runs.push({text:cleaned,attr:attr||{}});
+   });
+  };
+  contents.forEach(part=>{
+   if(Array.isArray(part.embeddedObjects)){
+    flushParagraph();part.embeddedObjects.filter(o=>o&&o.type==='photo'&&o.identifier).forEach(o=>photoRun.push(o.identifier));return;
+   }
+   flushPhotos();if(typeof part.text!=='string')return;
+   const attr=part.attributes||{},line=attr.line||{},text=part.text.replace(/\n$/,'');
+   if(line.header||line.quote||line.listStyle){flushParagraph();blocks.push({type:'line',text,line,attr});return}
+   addParagraphPieces(part.text,attr);
+  });
+  flushParagraph();flushPhotos();return blocks.length?blocks:fallbackBlocks(e.text||'');
+ }catch(_){return fallbackBlocks(e.text||'')}
+}
+function fallbackBlocks(text){
+ const blocks=[],re=/!\[[^\]]*\]\(dayone-moment:\/\/([^\s)"]+)\)/g;let last=0,m;
+ while((m=re.exec(text))){if(m.index>last)blocks.push({type:'plain',text:text.slice(last,m.index)});blocks.push({type:'photos',ids:[m[1]]});last=re.lastIndex}
+ if(last<text.length)blocks.push({type:'plain',text:text.slice(last)});return blocks;
+}
+
+function renderArticle(e){
+ $('empty').hidden=true;const art=$('article');art.hidden=false;revokeObjectUrls();
+ const blocks=parseRichText(e),meta=buildMeta(e),tags=Array.isArray(e.tags)?e.tags:[];
+ const matched=countMatchedPhotos(e),total=Array.isArray(e.photos)?e.photos.length:0;
+ let notice=total?(matched?('這篇有 '+total+' 張照片紀錄，目前從本機 photos/ 對應到 '+matched+' 張；其餘位置維持 placeholder。'):'這篇知道照片原本在哪裡，但目前沒有對應的本機 photos/ 檔案，所以保留 placeholder。'):'這篇沒有照片紀錄。';
+ art.innerHTML='<div class="eyebrow">'+esc(formatDate(e.creationDate,e.timeZone))+'</div><h1>'+esc(getTitle(e))+'</h1><div class="meta">'+meta.map(esc).join('<span> · </span>')+'</div>'+(tags.length?'<div class="tags">'+tags.map(t=>'<span class="tag"># '+esc(t)+'</span>').join('')+'</div>':'')+'<div class="notice">'+esc(notice)+'</div><div class="content">'+renderBlocks(blocks,e)+'</div>';
+}
+function renderBlocks(blocks,e){
+ let out='',listType=null;
+ const closeList=()=>{if(listType){out+='</'+listType+'>';listType=null}};
+ blocks.forEach(b=>{
+  if(b.type==='line'&&b.line.listStyle){
+   const wanted=b.line.listStyle==='numbered'?'ol':'ul';if(listType!==wanted){closeList();out+='<'+wanted+(b.line.listStyle==='checkbox'?' class="check-list"':'')+'>';listType=wanted}
+   if(b.line.listStyle==='checkbox')out+='<li class="check"><input type="checkbox" disabled '+(b.line.checked?'checked':'')+'>'+inlineText(b.text,b.attr)+'</li>';
+   else out+='<li>'+inlineText(b.text,b.attr)+'</li>';return;
+  }
+  closeList();
+  if(b.type==='photos'){out+=renderPhotos(b.ids,e);return}
+  if(b.type==='plain'){out+=renderPlain(b.text);return}
+  if(b.type==='paragraph'){out+='<p>'+b.runs.map(r=>inlineText(r.text,r.attr)).join('')+'</p>';return}
+  if(b.type==='line'){
+   if(b.line.header){const level=Math.min(4,Math.max(2,Number(b.line.header)+1));out+='<h'+level+'>'+inlineText(b.text,b.attr)+'</h'+level+'>';return}
+   if(b.line.quote){out+='<blockquote>'+inlineText(b.text,b.attr)+'</blockquote>';return}
+   out+='<p>'+inlineText(b.text,b.attr)+'</p>';
+  }
+ });closeList();return out;
+}
+function inlineText(text,attr={}){
+ let safe=linkify(text);if(attr.inlineCode)safe='<code>'+safe+'</code>';if(attr.bold)safe='<strong>'+safe+'</strong>';if(attr.italic)safe='<em>'+safe+'</em>';if(attr.strikethrough)safe='<s>'+safe+'</s>';return safe.replace(/\n/g,'<br>');
+}
+function renderPhotos(ids,e){
+ const cls=ids.length===1?'gallery single':'gallery';
+ return '<div class="'+cls+'">'+ids.map(id=>{
+  const p=(e.photos||[]).find(x=>x.identifier===id),file=p&&findMediaFile(p);
+  if(file){const url=URL.createObjectURL(file);objectUrls.push(url);return '<figure class="photo"><img src="'+esc(url)+'" alt="'+esc(p.filename||'Day One photo')+'" loading="lazy"></figure>'}
+  const label=p?(p.filename||id):id;return '<div class="photo-missing"><div><b>🖼</b>此處應有圖片，可惜你看不到<br>'+esc(label)+'</div></div>';
+ }).join('')+'</div>';
+}
+function findMediaFile(p){
+ if(!p)return null;const md5=String(p.md5||'').toLowerCase(),type=String(p.type||'').toLowerCase();
+ const candidates=[p.filename,md5+(type?'.'+type:''),md5+'.jpeg',md5+'.jpg',md5+'.png',md5+'.heic'].filter(Boolean).map(x=>String(x).toLowerCase());
+ for(const name of candidates)if(mediaByName.has(name))return mediaByName.get(name);return null;
+}
+function countMatchedPhotos(e){return (e.photos||[]).filter(p=>findMediaFile(p)).length}
+function renderPlain(text){return text.split(/\n{2,}/).map(s=>s.trim()).filter(Boolean).map(s=>'<p>'+linkify(s.replace(/^#\s+/,'' )).replace(/\n/g,'<br>')+'</p>').join('')}
+
+function getTitle(e){
+ if(e.richText){try{const r=typeof e.richText==='string'?JSON.parse(e.richText):e.richText,c=(r.contents||[]).find(x=>x&&typeof x.text==='string'&&x.text.trim()&&x.attributes&&x.attributes.line&&x.attributes.line.header===1);if(c)return c.text.trim()}catch(_){}}
+ const text=e.text||'';return ((text.match(/^#\s*(.+)$/m)||[])[1]||text.split('\n').find(x=>x.trim())||'無標題').replace(/\\([+\-().])/g,'$1').trim();
+}
+function buildMeta(e){const out=[],loc=e.location||{},w=e.weather||{};if(loc.placeName)out.push(loc.placeName);else if(loc.localityName)out.push(loc.localityName);if(loc.country&&loc.country!==loc.placeName)out.push(loc.country);if(w.conditionsDescription)out.push(w.conditionsDescription);if(typeof w.temperatureCelsius==='number')out.push(Math.round(w.temperatureCelsius)+'°C');if(e.timeZone)out.push(e.timeZone);return out}
+function formatDate(iso,tz){if(!iso)return'日期不明';try{return new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',timeZone:tz||undefined}).format(new Date(iso))}catch(_){return new Date(iso).toLocaleDateString('zh-TW')}}
+function linkify(s){const safe=esc(s);return safe.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body>
+</html>
