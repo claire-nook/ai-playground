@@ -18,7 +18,7 @@
   "outputType": "experiment",
   "researchMethod": "controlled-experiment",
   "demoStatus": "none",
-  "verificationStatus": "partial",
+  "verificationStatus": "candidate",
   "flow": "Day One JSON → Swift Native Model → Rich Text Renderer + PhotoKit Media Resolution → Read-only Native Journal",
   "startedDate": "2026-09-19"
 }
