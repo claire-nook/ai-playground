@@ -17,6 +17,8 @@ button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;di
 .article h1{font-size:clamp(30px,5vw,48px);line-height:1.25;margin:.15em 0 .35em}.meta{display:flex;flex-wrap:wrap;gap:7px 14px;padding-bottom:24px;margin-bottom:28px;border-bottom:1px solid var(--line);font-family:system-ui,-apple-system,sans-serif;color:var(--muted);font-size:13px}.tags{display:flex;flex-wrap:wrap;gap:6px;margin:-12px 0 26px}.tag{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:var(--accent-soft);color:#24645f;padding:3px 9px;border-radius:999px}
 .content p{margin:0 0 1.25em}.content h2,.content h3,.content h4{line-height:1.35;margin:1.7em 0 .65em}.content blockquote{margin:1.4em 0;padding:.2em 0 .2em 18px;border-left:3px solid var(--accent);color:#5e5a53}.content a{color:var(--accent);overflow-wrap:anywhere}.content ul,.content ol{padding-left:1.5em;margin:0 0 1.25em}.content li+li{margin-top:.25em}.check-list{list-style:none;padding-left:0!important}.check input{margin-right:8px}.content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eee9e1;border-radius:5px;padding:.08em .3em;font-size:.9em}
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:1.5em 0}.gallery.single{grid-template-columns:1fr}.photo{margin:0;border-radius:14px;overflow:hidden;background:#eee8de;min-height:120px;display:flex;align-items:center;justify-content:center}.photo img{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;background:#f2eee7}.photo-missing{min-height:170px;border:1px dashed #b8b0a5;border-radius:14px;background:linear-gradient(135deg,#f5f1ea,#ece6dc);display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:#8b8379;font-family:system-ui,-apple-system,sans-serif;font-size:12px;overflow-wrap:anywhere}.photo-missing b{display:block;font-size:22px;margin-bottom:5px}
+/* PDF attachments are local files too: show a compact document card and open via a temporary object URL. */
+.pdf-attachment{margin:1.5em 0;border:1px solid var(--line);border-radius:14px;background:#f8f5ef;padding:16px;font-family:system-ui,-apple-system,sans-serif}.pdf-attachment.ready{background:#f2f8f6;border-color:#cfe0da}.pdf-attachment-head{display:flex;gap:12px;align-items:flex-start}.pdf-icon{font-size:28px;line-height:1}.pdf-info{min-width:0;flex:1}.pdf-name{font-weight:750;overflow-wrap:anywhere}.pdf-meta{font-size:12px;color:var(--muted);margin-top:2px}.pdf-actions{margin-top:10px}.pdf-missing{color:#8b8379}
 .notice{font-family:system-ui,-apple-system,sans-serif;background:var(--warn);border:1px solid #ead9a0;border-radius:12px;padding:10px 12px;margin-bottom:24px;font-size:13px;color:#6e5c24}.photo img[data-full-image]{cursor:zoom-in}.image-modal{position:fixed;z-index:100;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:56px 18px 18px}.image-modal[hidden]{display:none}.image-modal img{display:block;max-width:100%;max-height:100%;object-fit:contain}.image-modal-close{position:absolute;top:max(14px,env(safe-area-inset-top));right:16px;width:44px;height:44px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:white;font:30px/1 system-ui,-apple-system,sans-serif;cursor:pointer}.drawer-btn,.backdrop{display:none}
 @media(max-width:760px){.drawer-btn{display:inline-block}.app-header{flex-wrap:wrap}.brand{max-width:150px}.shell{grid-template-columns:1fr}.sidebar{position:fixed;z-index:30;top:calc(62px + env(safe-area-inset-top));bottom:0;left:0;width:min(88vw,360px);height:auto;transform:translateX(-102%);transition:.2s;box-shadow:var(--shadow)}.sidebar.open{transform:none}.backdrop{display:block;position:fixed;z-index:25;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:.2s}.backdrop.show{opacity:1;pointer-events:auto}.main{padding:12px 8px 60px}.article{border-radius:14px;padding:24px 18px}.gallery{grid-template-columns:1fr 1fr}.photo-missing{min-height:120px}}
 </style>
@@ -28,6 +30,7 @@ button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;di
 <div class="spacer"></div>
 <label class="btn primary">開啟 JSON<input id="jsonInput" type="file" accept=".json,application/json" hidden></label>
 <label class="btn">加入 photos/<input id="photoInput" type="file" accept="image/*" multiple webkitdirectory directory hidden></label>
+<label class="btn">加入 pdfs/<input id="pdfInput" type="file" accept="application/pdf,.pdf" multiple webkitdirectory directory hidden></label>
 </header>
 <div class="shell">
 <aside class="sidebar" id="sidebar">
@@ -46,7 +49,7 @@ button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;di
 <section class="empty" id="empty">
 <div class="eyebrow">Experiment</div>
 <h1>直接閱讀 Day One JSON</h1>
-<p>先選 Day One 匯出的 JSON。若你另外匯出了照片，再選原生的 <code>photos/</code> 資料夾；沒有照片也完全合法，Reader 會在原本的位置留下 placeholder。</p>
+<p>先選 Day One 匯出的 JSON。若有 media，再選原生的 <code>photos/</code> 與 <code>pdfs/</code> 資料夾；沒有提供附件也完全合法，Reader 會在原本的位置留下 placeholder。</p>
 <p>檔案只在這個瀏覽器頁面處理，不需要先把日記上傳到網站。</p>
 </section>
 <article class="article" id="article" hidden></article>
@@ -69,7 +72,7 @@ button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;di
 <img id="imageModalImg" alt="">
 </div>
 <script>
-let entries=[],filtered=[],currentUuid=null,mediaByName=new Map(),objectUrls=[];
+let entries=[],filtered=[],currentUuid=null,mediaByName=new Map(),pdfByName=new Map(),objectUrls=[];
 const $=id=>document.getElementById(id),sidebar=$('sidebar'),backdrop=$('backdrop'),imageModal=$('imageModal'),imageModalImg=$('imageModalImg'),filterModal=$('filterModal');
 $('drawerBtn').addEventListener('click',()=>toggleDrawer(!sidebar.classList.contains('open')));
 backdrop.addEventListener('click',()=>toggleDrawer(false));
@@ -105,9 +108,20 @@ $('jsonInput').addEventListener('change',async ev=>{
 $('photoInput').addEventListener('change',ev=>{
  revokeObjectUrls();mediaByName.clear();
  [...ev.target.files].forEach(file=>mediaByName.set(file.name.toLowerCase(),file));
- const status=$('mediaStatus');status.textContent=mediaByName.size?('已讀取 '+mediaByName.size+' 個 photos/ 本機檔案。'):'沒有讀到照片檔。';
- status.classList.toggle('ready',mediaByName.size>0);if(currentUuid)renderArticle(currentEntry());updateStats();
+ updateMediaStatus();if(currentUuid)renderArticle(currentEntry());updateStats();
 });
+$('pdfInput').addEventListener('change',ev=>{
+ revokeObjectUrls();pdfByName.clear();
+ [...ev.target.files].forEach(file=>pdfByName.set(file.name.toLowerCase(),file));
+ updateMediaStatus();if(currentUuid)renderArticle(currentEntry());updateStats();
+});
+function updateMediaStatus(){
+ const status=$('mediaStatus'),parts=[];
+ if(mediaByName.size)parts.push(mediaByName.size+' 個 photos/ 檔案');
+ if(pdfByName.size)parts.push(pdfByName.size+' 個 pdfs/ 檔案');
+ status.textContent=parts.length?('已讀取 '+parts.join('、')+'。'):'尚未提供 photos/ 或 pdfs/，附件會保留位置並顯示 placeholder。';
+ status.classList.toggle('ready',parts.length>0);
+}
 $('search').addEventListener('input',applyFilters);
 function populateTags(){
  const select=$('tagFilter'),tags=[...new Set(entries.flatMap(e=>Array.isArray(e.tags)?e.tags:[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
@@ -136,7 +150,8 @@ function applyFilters(){
 window.addEventListener('beforeunload',revokeObjectUrls);
 function revokeObjectUrls(){closeImageModal();objectUrls.forEach(URL.revokeObjectURL);objectUrls=[]}
 function countPhotos(list){return list.reduce((n,e)=>n+(Array.isArray(e.photos)?e.photos.length:0),0)}
-function updateStats(){if(entries.length)$('stats').textContent=entries.length+' 篇日記 · '+countPhotos(entries)+' 個照片紀錄'}
+function countPdfs(list){return list.reduce((n,e)=>n+(Array.isArray(e.pdfAttachments)?e.pdfAttachments.length:0),0)}
+function updateStats(){if(entries.length)$('stats').textContent=entries.length+' 篇日記 · '+countPhotos(entries)+' 個照片紀錄 · '+countPdfs(entries)+' 個 PDF 附件'}
 
 function renderList(){
  const box=$('entryList');box.innerHTML='';
@@ -168,6 +183,7 @@ function parseRichText(e){
     flushParagraph();flushPhotos();
     part.embeddedObjects.forEach(o=>{
      if(o&&o.type==='photo'&&o.identifier)photoRun.push(o.identifier);
+     else if(o&&o.type==='pdfAttachment'&&o.identifier){flushPhotos();blocks.push({type:'pdfAttachment',id:o.identifier});}
      else if(o&&o.type==='horizontalRuleLine')blocks.push({type:'horizontalRule'});
     });
     return;
@@ -218,6 +234,7 @@ function renderBlocks(blocks,e){
   closeList();
   if(b.type==='horizontalRule'){out+='<hr>';return}
   if(b.type==='photos'){out+=renderPhotos(b.ids,e);return}
+  if(b.type==='pdfAttachment'){out+=renderPdfAttachment(b.id,e);return}
   if(b.type==='plain'){out+=renderPlain(b.text);return}
   if(b.type==='paragraph'){out+='<p>'+b.runs.map(r=>inlineText(r.text,r.attr)).join('')+'</p>';return}
   if(b.type==='line'){
@@ -238,6 +255,21 @@ function renderPhotos(ids,e){
   const label=p?(p.filename||id):id;return '<div class="photo-missing"><div><b>🖼</b>此處應有圖片，可惜你看不到<br>'+esc(label)+'</div></div>';
  }).join('')+'</div>';
 }
+function renderPdfAttachment(id,e){
+ const p=(e.pdfAttachments||[]).find(x=>x.identifier===id),file=p&&findPdfFile(p);
+ const name=p?.pdfName||p?.filename||id,size=p?.fileSize?formatBytes(p.fileSize):'';
+ if(file){
+  const url=URL.createObjectURL(file);objectUrls.push(url);
+  return '<div class="pdf-attachment ready"><div class="pdf-attachment-head"><div class="pdf-icon">📄</div><div class="pdf-info"><div class="pdf-name">'+esc(name)+'</div><div class="pdf-meta">PDF'+(size?' · '+esc(size):'')+'</div><div class="pdf-actions"><a class="btn primary" href="'+esc(url)+'" target="_blank" rel="noopener">開啟 PDF</a></div></div></div></div>';
+ }
+ return '<div class="pdf-attachment pdf-missing"><div class="pdf-attachment-head"><div class="pdf-icon">📄</div><div class="pdf-info"><div class="pdf-name">'+esc(name)+'</div><div class="pdf-meta">此處有 PDF 附件'+(size?' · '+esc(size):'')+'；加入 Day One 匯出的 pdfs/ 後即可開啟。</div></div></div></div>';
+}
+function findPdfFile(p){
+ if(!p)return null;const md5=String(p.md5||'').toLowerCase();
+ const candidates=[p.filename,md5+'.pdf'].filter(Boolean).map(x=>String(x).toLowerCase());
+ for(const name of candidates)if(pdfByName.has(name))return pdfByName.get(name);return null;
+}
+function formatBytes(bytes){const n=Number(bytes)||0;if(n<1024)return n+' B';if(n<1024*1024)return (n/1024).toFixed(1)+' KB';return (n/1024/1024).toFixed(1)+' MB'}
 function findMediaFile(p){
  if(!p)return null;const md5=String(p.md5||'').toLowerCase(),type=String(p.type||'').toLowerCase();
  const candidates=[p.filename,md5+(type?'.'+type:''),md5+'.jpeg',md5+'.jpg',md5+'.png',md5+'.heic'].filter(Boolean).map(x=>String(x).toLowerCase());
