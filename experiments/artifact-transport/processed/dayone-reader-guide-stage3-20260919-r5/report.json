@@ -1,0 +1,51 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url-batch",
+  "requestId": "dayone-reader-guide-stage3-20260919-r5",
+  "itemCount": 3,
+  "atomicPublication": true,
+  "items": [
+    {
+      "index": 1,
+      "outputPath": "public/images/wall/dayone-reader-guide/web-reader-open-json.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 205915,
+      "sha256": "eb8717962abf353af97a7f5a1b91f707b923cea10cc198fb625584d4b83c2b05",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 2,
+      "outputPath": "public/images/wall/dayone-reader-guide/web-reader-file-picker.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 272435,
+      "sha256": "39a2b4818bcd49b70d8058eaefa54d218bc3ba62ae1808b543c9010cb2be4aa2",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 3,
+      "outputPath": "public/images/wall/dayone-reader-guide/web-reader-loaded.png",
+      "mediaType": "image/png",
+      "bytes": 751720,
+      "sha256": "aa12fec128c6681e4b2263254481c7b206805f45b9666d56bf8291c54a41c0ed",
+      "decodedFormat": "PNG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    }
+  ]
+}
