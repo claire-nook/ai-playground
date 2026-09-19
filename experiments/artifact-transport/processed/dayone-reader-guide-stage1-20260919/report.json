@@ -1,0 +1,121 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url-batch",
+  "requestId": "dayone-reader-guide-stage1-20260919",
+  "itemCount": 8,
+  "atomicPublication": true,
+  "items": [
+    {
+      "index": 1,
+      "outputPath": "public/images/wall/dayone-reader-guide/dayone-journal-menu.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 449839,
+      "sha256": "5b42151d41aeba78c03b8abf4a34ef7f6097145e6300fe12be545d107973740f",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 2,
+      "outputPath": "public/images/wall/dayone-reader-guide/dayone-export-menu.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 467926,
+      "sha256": "137d85f1832c13dc76b2b834d4dce9f3d41f4b3ba06035b337743333fab2ea7e",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 3,
+      "outputPath": "public/images/wall/dayone-reader-guide/dayone-json-export-option.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 136877,
+      "sha256": "1e96aa934410230dd45da678f7dc44ff5fc19d1160dbc30cec7d5b9418385ee0",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1160,
+        1288
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 4,
+      "outputPath": "public/images/wall/dayone-reader-guide/dayone-json-media-choice.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 158464,
+      "sha256": "42720ab46b92e9029b3ecb1ac117822342d5c67e067d07d984396ca1e71d58d0",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1160,
+        1284
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 5,
+      "outputPath": "public/images/wall/dayone-reader-guide/ios-save-export-destination.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 113989,
+      "sha256": "d29290846c2499b6eee77c3513219edbdb0834d9fb7092a34eb3e72357d79b00",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        750,
+        1073
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 6,
+      "outputPath": "public/images/wall/dayone-reader-guide/files-json-and-zip.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 227581,
+      "sha256": "fb0d1a326469942479c94e121db27b6371893424e68cfe59ddfebb55565d1512",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 7,
+      "outputPath": "public/images/wall/dayone-reader-guide/files-unzipped-export-folder.jpeg",
+      "mediaType": "image/jpeg",
+      "bytes": 268896,
+      "sha256": "43de96932d66e9c5de333c99eb93f50fa383e492bbfa1495de73e667f9db8409",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 8,
+      "outputPath": "public/images/wall/dayone-reader-guide/dayone-unzipped-photos-json.png",
+      "mediaType": "image/png",
+      "bytes": 487545,
+      "sha256": "fcaafdee12c3c54797405e1f2bef5fabcf52c92e741b7606c54fab10c5b4f05c",
+      "decodedFormat": "PNG",
+      "decodedDimensions": [
+        2420,
+        1668
+      ],
+      "exifEntries": 7,
+      "sourceUrlWrittenToRepository": false
+    }
+  ]
+}
