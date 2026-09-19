@@ -10,7 +10,7 @@
 
 ### D1-NATIVE-1 — Day One Native Reader
 
-- Status: In Progress / M1 Verified
+- Status: In Progress / M2 Verified
 - Card: [../experiments/dayone-native-reader/d1-native-1.catalog.json](../experiments/dayone-native-reader/d1-native-1.catalog.json)
 - Record: [../experiments/dayone-native-reader/README.md](../experiments/dayone-native-reader/README.md)
 - Extends: [D1-READER-1](../experiments/dayone-reader/README.md)
@@ -24,15 +24,17 @@ Browser Reader 已回答 Day One export 能否 local-first 閱讀；Native 路�
 
 **Current evidence / scope**
 
-- M1 已由 Claire iPad Human Environment 驗證：Files 選取 JSON → JSONDecoder → Swift model → 3 篇 entry List / Detail → flattened readable text。
-- attachment metadata / count 可被 model 辨識不等於 physical media rendering；目前沒有 15 張照片或 PDF 的 Native 顯示 Evidence。
-- 下一個核心 milestone 是 M2 richText semantic reconstruction。
+- M1 已由 Claire iPad Human Environment 驗證：Files 選取 JSON → JSONDecoder → Swift model → 3 篇 entry List / Detail。
+- M2 已由 Claire iPad Human Environment 驗證：structured richText → semantic blocks / inline runs → SwiftUI / AttributedString 閱讀呈現，包含 heading、inline formatting、quote、list / checklist、embedded position 等 Claire fixture 實際語意。
+- Native Reader 已加入原生文字搜尋與單一 Tag 下拉篩選；Search + Tag 採 AND，不擴張成 Browser Reader advanced filter parity。
+- PDF physical rendering 仍 Out of Scope；M2 只在原文位置顯示 PDF attachment placeholder / filename。
+- attachment metadata / placeholder 不等於 physical media rendering；目前照片仍未透過 PhotoKit 載入。
 - M3 目標是 JSON-derived photo identifier → PhotoKit → Photos / iCloud → Native Reader image。
 - PDF 明確 Out of Scope；Native Reader 不追求 Browser Reader 全功能 parity。
 
 **Current judgment**
 
-Native JSON ingestion / basic reading 已 Verified；richText reconstruction 與 JSON-derived PhotoKit integration 尚未驗證。Experiment 維持 In Progress。
+Native JSON ingestion / basic reading 與 M2 richText reconstruction 已 Verified；JSON-derived PhotoKit integration 尚未驗證。Experiment 維持 In Progress，下一核心 milestone 為 M3。
 
 ---
 
