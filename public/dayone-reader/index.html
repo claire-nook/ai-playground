@@ -102,7 +102,7 @@ function parseRichText(e){
     if(!piece)return;
     if(/^\n\n+$/.test(piece)){flushParagraph();return}
     if(!paragraph)paragraph={type:'paragraph',runs:[]};
-    const cleaned=piece.replace(/\n$/,'');if(cleaned)paragraph.runs.push({text:cleaned,attr:attr||{}});
+    const cleaned=piece;if(cleaned)paragraph.runs.push({text:cleaned,attr:attr||{}});
    });
   };
   contents.forEach(part=>{
