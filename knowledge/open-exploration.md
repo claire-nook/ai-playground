@@ -69,13 +69,17 @@
 
 目前不因單一完成 Experiment 建立獨立 Research Map。大型 Journal performance、未遇到的 export edge cases 採 problem-triggered reopening；已啟動的 Native Swift / PhotoKit Reader 另立 [D1-NATIVE-1](../experiments/dayone-native-reader/README.md)，不把不同 runtime 的問題塞回已結案的 Browser Reader。
 
-### Active Extension — D1-NATIVE-1
+### Closed Extension — D1-NATIVE-1
 
-- Status: In Progress / M1 Verified
-- Question: Claire 自用的 iPad Native Reader 能否直接讀 Day One JSON、重建 structured richText，並以 JSON photo identifier 透過 PhotoKit 取得 Photos / iCloud 實體照片？
-- Explicit exclusion: PDF rendering / attachment integration。
-- M1: Native JSON ingestion + 3-entry basic List / Detail verified。
-- Next: M2 Rich Text Reconstruction；M3 JSON-derived PhotoKit Media Resolution。
+- Status: Verified / Completed
+- Closed: 2026-09-20
+- Question answered: Claire 自用 iPad Native Reader 可直接讀 Day One JSON、重建 structured richText，並以 `photos[].appleLocalIdentifier` 透過 PhotoKit 取得 Photos 實體照片。
+- Reading UX verified: Search、single Tag filter、bounded inline photos、full-screen same-entry photo browsing。
+- Explicit exclusion: PDF physical rendering / attachment integration。
+- Negative evidence: Day One-style photo wall prototype 在目前 SwiftUI / Playgrounds composition 造成 reverse-scroll regression；因非 data-sovereignty 核心需求而停止追查。
+- Re-open only when a real archive need appears，例如 Day One schema change、new richText construct、iCloud-only failure、large-journal performance pain 或 PhotoKit identifier behavior change。
+
+D1-NATIVE-1 與 D1-READER-1 現在共同回答「Day One export 是否具有實際資料自主性」：Browser route 與 Apple-native route 都已有可閱讀的 Human Environment Evidence。後續不因 UI parity 願望維持常駐 Open Exploration。
 
 
 ---
