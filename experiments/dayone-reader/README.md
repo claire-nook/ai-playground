@@ -40,7 +40,6 @@ Claire 從 2018 年開始使用 Day One，目前已有大量長期日記。Day O
 - 不重新設計 Day One 的 media directory。
 - 不要求把私人日記上傳到 GitHub、Netlify 或 backend。
 - 不在這一輪處理 Native PhotoKit Reader。
-- `dev-maybe` 不參與目前 implementation；成熟的 standalone HTML 之後才可能移入。
 
 ## Input Contract｜輸入契約
 
