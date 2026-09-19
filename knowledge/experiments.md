@@ -10,34 +10,33 @@
 
 ### D1-NATIVE-1 — Day One Native Reader
 
-- Status: In Progress / M2 Verified / M3-A Feasibility Verified
-- Card: [../experiments/dayone-native-reader/d1-native-1.catalog.json](../experiments/dayone-native-reader/d1-native-1.catalog.json)
-- Record: [../experiments/dayone-native-reader/README.md](../experiments/dayone-native-reader/README.md)
-- Extends: [D1-READER-1](../experiments/dayone-reader/README.md)
-- Private Execution: `claire-nook/apple-lab/projects/DayOneNativeReader.swiftpm/`
-- Primary Intent: Open Exploration / Local-first Personal Archive
-- Tags: day-one, swift, swiftui, swift-playgrounds, json, rich-text, photokit, ipad-first, local-first, data-portability
+- Status: Verified / Completed
+- Closed: 2026-09-20
+- Card: [../experiments/dayone-native-reader/README.md](../experiments/dayone-native-reader/README.md)
+- Tags: `day-one`, `swift`, `swiftui`, `swift-playgrounds`, `json`, `rich-text`, `photokit`, `ipad-first`, `local-first`, `data-portability`, `search`, `tag-filter`
 
-**Why it exists**
+Claire iPad Human Environment 已驗證完整 archival Reader core：
 
-Browser Reader 已回答 Day One export 能否 local-first 閱讀；Native 路線改問 Claire 自用 iPad Reader 是否能保留 structured richText，並直接利用 Photos / iCloud 作既有照片來源，而不是維護第二份大量 exported photos。
+```text
+Day One JSON
+→ Native decode / navigation
+→ structured richText
+→ Search + single Tag
+→ richText photo identifier
+→ photos[].appleLocalIdentifier
+→ PhotoKit / Photos
+→ bounded inline image
+→ full-screen same-entry photo browsing
+```
 
-**Current evidence / scope**
+關鍵 schema evidence：Day One generic `photos[].identifier` 不是 `PHAsset.localIdentifier`；PhotoKit lookup 必須使用 `photos[].appleLocalIdentifier`。
 
-- M1 已由 Claire iPad Human Environment 驗證：Files 選取 JSON → JSONDecoder → Swift model → 3 篇 entry List / Detail。
-- M2 已由 Claire iPad Human Environment 驗證：structured richText → semantic blocks / inline runs → SwiftUI / AttributedString 閱讀呈現，包含 heading、inline formatting、quote、list / checklist、embedded position 等 Claire fixture 實際語意。
-- Native Reader 已加入原生文字搜尋與單一 Tag 下拉篩選；Search + Tag 採 AND，不擴張成 Browser Reader advanced filter parity。
-- PDF physical rendering 仍 Out of Scope；M2 只在原文位置顯示 PDF attachment placeholder / filename。
-- M3-A 已由 Claire iPad Human Environment 驗證：Day One `photos[].appleLocalIdentifier` → `PHAsset.fetchAssets(withLocalIdentifiers:)` → image 可行。
-- 同一張仍存在 Photos 的照片若錯用 `photos[].identifier` 則查不到 PHAsset；這是 identifier namespace trap，不是照片存在性證據。
-- 正式 Native Reader 尚未整合 PhotoKit；下一步才處理 richText 原位置、多照片與 unavailable placeholder。
-- PDF 明確 Out of Scope；Native Reader 不追求 Browser Reader 全功能 parity。
+M3 曾嘗試 `LazyVGrid` photo wall，但在目前 Reader + Swift Playgrounds Human Environment 產生可重現 reverse-scroll regression；hit-testing 與 text-selection isolation 都未消除，改回 bounded inline images 後 scrolling 恢復。因本 Reader 的成功標準是 data sovereignty / archival readability，不是 Day One UI parity，圖片牆 root cause 不再追查。
 
-**Current judgment**
+Full-screen viewer 已驗證點擊正文照片、從正確照片開啟、同篇左右翻頁、current/total counter 與關閉回文章。輕微切換卡頓只記為 Human Environment observation，root cause 未知，不因此加入 cache / preload complexity。
 
-Native JSON ingestion / basic reading、M2 richText reconstruction，以及 M3-A JSON-derived PhotoKit feasibility 已 Verified。Experiment 維持 In Progress；下一核心 milestone 是把已驗證的 `appleLocalIdentifier → PHAsset → image` contract 整合進正式 Native Reader，並把 Photos 中已不存在 / unavailable 的照片當成 per-photo fallback，而不是 whole-entry failure。
+PDF physical rendering 明確 out of scope；大型 Journal performance、iCloud-only edge behavior採 problem-triggered reopening。
 
----
 
 ### D1-READER-1 — Day One JSON Local Reader
 
