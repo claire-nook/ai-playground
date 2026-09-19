@@ -7,10 +7,10 @@
 <style>
 :root{--bg:#f4f1eb;--paper:#fffdf9;--ink:#292824;--muted:#77736b;--line:#e8e1d7;--accent:#287f78;--accent-soft:#e5f1ee;--warn:#fff7dc;--shadow:0 12px 34px rgba(50,43,34,.08);--radius:18px}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-serif,"Noto Serif TC","PingFang TC",serif;line-height:1.85}
-button,input{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:9px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(244,241,235,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:9px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(244,241,235,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
 .brand{font-family:system-ui,-apple-system,sans-serif;font-weight:750}.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px}.spacer{flex:1}.btn{border:1px solid var(--line);background:var(--paper);padding:9px 13px;border-radius:999px;cursor:pointer;color:var(--ink)}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
 .shell{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:calc(100svh - 66px)}.sidebar{border-right:1px solid var(--line);background:#f8f5ef;position:sticky;top:66px;height:calc(100svh - 66px);overflow:auto}.side-top{position:sticky;top:0;background:#f8f5ef;padding:18px 16px 12px;border-bottom:1px solid var(--line);z-index:2}
-.journal-name{font-weight:800;font-size:18px}.stats,.media-status{font-family:system-ui,-apple-system,sans-serif;color:var(--muted);font-size:12px;margin-top:4px}.media-status.ready{color:var(--accent)}.search{width:100%;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:white;padding:10px 12px}
+.journal-name{font-weight:800;font-size:18px}.stats,.media-status{font-family:system-ui,-apple-system,sans-serif;color:var(--muted);font-size:12px;margin-top:4px}.media-status.ready{color:var(--accent)}.search,.filter-control{width:100%;border:1px solid var(--line);border-radius:12px;background:white;padding:10px 12px}.search{margin-top:12px}.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.filter-grid .country{grid-column:1/-1}.filter-control:disabled{opacity:.55}.filter-label{font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:var(--muted);display:block;margin:0 0 3px 2px}
 .entry-list{padding:8px}.entry-item{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:12px;padding:11px 12px;cursor:pointer;color:inherit}.entry-item:hover,.entry-item.active{background:var(--accent-soft)}.entry-date{font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:var(--muted);letter-spacing:.04em}.entry-title{font-weight:700;line-height:1.45;margin-top:2px}
 .main{min-width:0;padding:28px 24px 80px}.article{max-width:860px;margin:auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(24px,5vw,64px)}
 .empty{max-width:700px;margin:12vh auto;text-align:center;color:var(--muted)}.empty h1{color:var(--ink);font-size:30px}.eyebrow{font-family:system-ui,-apple-system,sans-serif;color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
@@ -36,6 +36,11 @@ button,input{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:f
 <div class="stats" id="stats">Day One JSON 保持原樣，Reader 只負責閱讀。</div>
 <div class="media-status" id="mediaStatus">尚未提供 photos/，照片會保留位置並顯示 placeholder。</div>
 <input class="search" id="search" type="search" placeholder="搜尋標題或正文…" disabled>
+<div class="filter-grid">
+<label class="country"><span class="filter-label">國家</span><select class="filter-control" id="countryFilter" disabled><option value="">所有國家</option></select></label>
+<label><span class="filter-label">開始日期</span><input class="filter-control" id="dateFrom" type="date" disabled></label>
+<label><span class="filter-label">結束日期</span><input class="filter-control" id="dateTo" type="date" disabled></label>
+</div>
 </div>
 <nav class="entry-list" id="entryList"></nav>
 </aside>
@@ -71,8 +76,9 @@ $('jsonInput').addEventListener('change',async ev=>{
  try{
   const json=JSON.parse(await file.text());if(!Array.isArray(json.entries))throw new Error('找不到 entries[]');
   entries=json.entries.slice().sort((a,b)=>new Date(a.creationDate||0)-new Date(b.creationDate||0));filtered=entries.slice();
-  $('search').disabled=false;$('search').value='';$('journalName').textContent=file.name.replace(/\.json$/i,'');
-  updateStats();renderList();if(entries.length)selectEntry(entries[0].uuid||'idx-0');
+  $('search').disabled=false;$('search').value='';$('countryFilter').disabled=false;$('dateFrom').disabled=false;$('dateTo').disabled=false;
+  $('dateFrom').value='';$('dateTo').value='';populateCountries();$('journalName').textContent=file.name.replace(/\.json$/i,'');
+  applyFilters();updateStats();if(entries.length)selectEntry(entries[0].uuid||'idx-0');
  }catch(err){alert('這份檔案目前無法讀取：'+err.message)}
 });
 $('photoInput').addEventListener('change',ev=>{
@@ -81,9 +87,30 @@ $('photoInput').addEventListener('change',ev=>{
  const status=$('mediaStatus');status.textContent=mediaByName.size?('已讀取 '+mediaByName.size+' 個 photos/ 本機檔案。'):'沒有讀到照片檔。';
  status.classList.toggle('ready',mediaByName.size>0);if(currentUuid)renderArticle(currentEntry());updateStats();
 });
-$('search').addEventListener('input',ev=>{
- const q=ev.target.value.trim().toLowerCase();filtered=!q?entries.slice():entries.filter(e=>(getTitle(e)+'\n'+(e.text||'')).toLowerCase().includes(q));renderList();
-});
+$('search').addEventListener('input',applyFilters);
+$('countryFilter').addEventListener('change',applyFilters);
+$('dateFrom').addEventListener('change',applyFilters);
+$('dateTo').addEventListener('change',applyFilters);
+function populateCountries(){
+ const select=$('countryFilter'),countries=[...new Set(entries.map(e=>e.location?.country).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+ select.innerHTML='<option value="">所有國家</option>'+countries.map(country=>'<option value="'+esc(country)+'">'+esc(country)+'</option>').join('');
+}
+function entryLocalDate(e){
+ if(!e.creationDate)return '';
+ try{
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:e.timeZone||'UTC',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(e.creationDate));
+  const get=type=>parts.find(p=>p.type===type)?.value||'';
+  return get('year')+'-'+get('month')+'-'+get('day');
+ }catch{return String(e.creationDate).slice(0,10)}
+}
+function applyFilters(){
+ const q=$('search').value.trim().toLowerCase(),country=$('countryFilter').value,from=$('dateFrom').value,to=$('dateTo').value;
+ filtered=entries.filter(e=>{
+  const text=(getTitle(e)+'\n'+(e.text||'')).toLowerCase(),date=entryLocalDate(e);
+  return (!q||text.includes(q))&&(!country||e.location?.country===country)&&(!from||date>=from)&&(!to||date<=to);
+ });
+ renderList();
+}
 window.addEventListener('beforeunload',revokeObjectUrls);
 function revokeObjectUrls(){closeImageModal();objectUrls.forEach(URL.revokeObjectURL);objectUrls=[]}
 function countPhotos(list){return list.reduce((n,e)=>n+(Array.isArray(e.photos)?e.photos.length:0),0)}
