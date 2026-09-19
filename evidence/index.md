@@ -33,6 +33,39 @@ Day One JSON
 
 ---
 
+
+## Day One Native Reader / M2 Rich Text & Reading UX
+
+- Experiment: D1-NATIVE-1
+- Date: 2026-09-20
+- Status: In Progress / M2 Verified
+- Record: `experiments/dayone-native-reader/README.md`
+- Private Execution: `claire-nook/apple-lab/projects/DayOneNativeReader.swiftpm/`
+- Topics: Day One, SwiftUI, Swift Playgrounds, Rich Text, Search, Tag Filter, iPad-first
+
+### Result
+
+Claire iPad Human Environment 已驗證：
+
+```text
+Day One richText.contents
+→ semantic block / inline model
+→ SwiftUI / AttributedString
+→ readable Native Detail
+```
+
+目前 fixture 已形成可接受閱讀結果的 heading、paragraph、inline formatting、quote、bullet / numbered list、checklist、horizontal rule、embedded photo position placeholder、PDF position placeholder、weather metadata 與 zh_TW date presentation。
+
+Native reading UX 另驗證原生文字搜尋與單一 Tag 下拉篩選；Search + Tag 可組合作 AND。日期、國家、multi-tag 與 Browser advanced filter parity 不在本 milestone scope。
+
+### Important environment evidence
+
+- Search 初次加入大型 `ContentView` 時觸發 Swift Playgrounds compiler type-check timeout；將 search state / filtering / `.searchable` 隔離到 dedicated sidebar view 後可 compile / run。
+- Magic Keyboard 無法在 running Playgrounds App 的 `.searchable` 輸入；plain SwiftUI `TextField` probe 亦相同。螢幕鍵盤則可正常搜尋，因此目前將它記為 tested Playgrounds execution-environment limitation，而非 Reader search defect。
+- 此 keyboard observation 不外推到 installed iPadOS / Xcode-built app。
+
+M2 不證明 PhotoKit media integration；M3 仍需獨立 Evidence。
+
 ## Artifact Collaboration / Dropbox PDF Reading Boundary
 
 - Experiment: A-ARTIFACT-1
