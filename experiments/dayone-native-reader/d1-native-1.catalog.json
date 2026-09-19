@@ -2,7 +2,7 @@
   "id": "D1-NATIVE-1",
   "title": "Day One Native Reader",
   "recordPath": "experiments/dayone-native-reader/README.md",
-  "summary": "驗證 Claire 自用的 iPad Native Reader 能直接讀取 Day One JSON、重建 structured richText，提供 Native 搜尋與單一 Tag 篩選，並進一步以 JSON 中的照片識別資訊透過 PhotoKit 讀取 Photos / iCloud 實體照片；M1/M2 已驗證，M3 尚待進行，PDF physical rendering 明確排除。",
+  "summary": "驗證 Claire 自用 iPad Native Reader 直接讀取 Day One JSON、重建 structured richText、提供 Native 搜尋與單一 Tag 篩選，並以 PhotoKit 解析既有 Photos / iCloud 照片；M1/M2 已驗證，M3-A 已驗證 photos[].appleLocalIdentifier → PHAsset → image feasibility，正式 Reader media integration 尚待進行，PDF physical rendering 明確排除。",
   "tags": [
     "Day One",
     "Swift",
@@ -21,6 +21,6 @@
   "researchMethod": "controlled-experiment",
   "demoStatus": "none",
   "verificationStatus": "candidate",
-  "flow": "Day One JSON → Swift Native Model → Rich Text Renderer + Search / Tag Filter → PhotoKit Media Resolution → Read-only Native Journal",
+  "flow": "Day One JSON → Swift Native Model → Rich Text Renderer + Search / Tag Filter → photos[].appleLocalIdentifier → PhotoKit → Native Reader Media Resolution",
   "startedDate": "2026-09-19"
 }
