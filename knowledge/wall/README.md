@@ -34,6 +34,26 @@ Stable ID 優先沿用既有 Human-facing catalog ID，避免同一篇作品長�
 
 ## Writing Record
 
+### 2026-09-19 · `WALL-DAYONE-1`
+
+**Title**  
+[我們只是想把 Day One 日記帶走，事情怎麼會變成這樣](dayone-reader-escape-hatch.md)
+
+**Type**  
+Commentary / Personal Archive / Local-first Field Note
+
+**Origin**  
+從 Claire 想確認八年份 Day One 日記在離開原 App 後仍然能閱讀開始，一路做出 Browser Reader、照片 mapping、Textastic Local Preview 與操作手冊；準備結案時才發現 Test Journal 還有 `pdfs/`，於是 PDF attachment 在最後二十分鐘把實驗重新叫醒。
+
+**Author Memory**  
+這篇不是 Reader 發布公告，而是「Export 不等於可攜」的故事。公開入口集中提供 Reader、範例 Export ZIP、操作手冊、Textastic customization Wall 與 Day One；並正式建立實驗室文件維護政策：保證不更新，至少不保證更新。
+
+**Canonical Source**  
+`knowledge/wall/dayone-reader-escape-hatch.md`
+
+**Related Experiment**  
+`experiments/dayone-reader/README.md`
+
 ### 2026-09-18 · `WALL-AGENT-LIFE-1`
 
 **Title**  
