@@ -17,7 +17,7 @@ button,input{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:f
 .article h1{font-size:clamp(30px,5vw,48px);line-height:1.25;margin:.15em 0 .35em}.meta{display:flex;flex-wrap:wrap;gap:7px 14px;padding-bottom:24px;margin-bottom:28px;border-bottom:1px solid var(--line);font-family:system-ui,-apple-system,sans-serif;color:var(--muted);font-size:13px}.tags{display:flex;flex-wrap:wrap;gap:6px;margin:-12px 0 26px}.tag{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:var(--accent-soft);color:#24645f;padding:3px 9px;border-radius:999px}
 .content p{margin:0 0 1.25em}.content h2,.content h3,.content h4{line-height:1.35;margin:1.7em 0 .65em}.content blockquote{margin:1.4em 0;padding:.2em 0 .2em 18px;border-left:3px solid var(--accent);color:#5e5a53}.content a{color:var(--accent);overflow-wrap:anywhere}.content ul,.content ol{padding-left:1.5em;margin:0 0 1.25em}.content li+li{margin-top:.25em}.check-list{list-style:none;padding-left:0!important}.check input{margin-right:8px}.content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eee9e1;border-radius:5px;padding:.08em .3em;font-size:.9em}
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:1.5em 0}.gallery.single{grid-template-columns:1fr}.photo{margin:0;border-radius:14px;overflow:hidden;background:#eee8de;min-height:120px;display:flex;align-items:center;justify-content:center}.photo img{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;background:#f2eee7}.photo-missing{min-height:170px;border:1px dashed #b8b0a5;border-radius:14px;background:linear-gradient(135deg,#f5f1ea,#ece6dc);display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:#8b8379;font-family:system-ui,-apple-system,sans-serif;font-size:12px;overflow-wrap:anywhere}.photo-missing b{display:block;font-size:22px;margin-bottom:5px}
-.notice{font-family:system-ui,-apple-system,sans-serif;background:var(--warn);border:1px solid #ead9a0;border-radius:12px;padding:10px 12px;margin-bottom:24px;font-size:13px;color:#6e5c24}.drawer-btn,.backdrop{display:none}
+.notice{font-family:system-ui,-apple-system,sans-serif;background:var(--warn);border:1px solid #ead9a0;border-radius:12px;padding:10px 12px;margin-bottom:24px;font-size:13px;color:#6e5c24}.photo img[data-full-image]{cursor:zoom-in}.image-modal{position:fixed;z-index:100;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:56px 18px 18px}.image-modal[hidden]{display:none}.image-modal img{display:block;max-width:100%;max-height:100%;object-fit:contain}.image-modal-close{position:absolute;top:max(14px,env(safe-area-inset-top));right:16px;width:44px;height:44px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:white;font:30px/1 system-ui,-apple-system,sans-serif;cursor:pointer}.drawer-btn,.backdrop{display:none}
 @media(max-width:760px){.drawer-btn{display:inline-block}.app-header{flex-wrap:wrap}.brand{max-width:150px}.shell{grid-template-columns:1fr}.sidebar{position:fixed;z-index:30;top:calc(62px + env(safe-area-inset-top));bottom:0;left:0;width:min(88vw,360px);height:auto;transform:translateX(-102%);transition:.2s;box-shadow:var(--shadow)}.sidebar.open{transform:none}.backdrop{display:block;position:fixed;z-index:25;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:.2s}.backdrop.show{opacity:1;pointer-events:auto}.main{padding:12px 8px 60px}.article{border-radius:14px;padding:24px 18px}.gallery{grid-template-columns:1fr 1fr}.photo-missing{min-height:120px}}
 </style>
 </head>
@@ -50,12 +50,21 @@ button,input{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:f
 <article class="article" id="article" hidden></article>
 </main>
 </div>
+<div class="image-modal" id="imageModal" hidden role="dialog" aria-modal="true" aria-label="圖片原圖檢視">
+<button class="image-modal-close" id="imageModalClose" type="button" aria-label="關閉圖片">×</button>
+<img id="imageModalImg" alt="">
+</div>
 <script>
 let entries=[],filtered=[],currentUuid=null,mediaByName=new Map(),objectUrls=[];
-const $=id=>document.getElementById(id),sidebar=$('sidebar'),backdrop=$('backdrop');
+const $=id=>document.getElementById(id),sidebar=$('sidebar'),backdrop=$('backdrop'),imageModal=$('imageModal'),imageModalImg=$('imageModalImg');
 $('drawerBtn').addEventListener('click',()=>toggleDrawer(!sidebar.classList.contains('open')));
 backdrop.addEventListener('click',()=>toggleDrawer(false));
+$('imageModalClose').addEventListener('click',closeImageModal);
+imageModal.addEventListener('click',ev=>{if(ev.target===imageModal)closeImageModal()});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!imageModal.hidden)closeImageModal()});
 function toggleDrawer(open){sidebar.classList.toggle('open',open);backdrop.classList.toggle('show',open)}
+function openImageModal(src,alt=''){imageModalImg.src=src;imageModalImg.alt=alt;imageModal.hidden=false;document.body.style.overflow='hidden'}
+function closeImageModal(){imageModal.hidden=true;imageModalImg.removeAttribute('src');imageModalImg.alt='';document.body.style.overflow=''}
 
 $('jsonInput').addEventListener('change',async ev=>{
  const file=ev.target.files[0];if(!file)return;
@@ -76,7 +85,7 @@ $('search').addEventListener('input',ev=>{
  const q=ev.target.value.trim().toLowerCase();filtered=!q?entries.slice():entries.filter(e=>(getTitle(e)+'\n'+(e.text||'')).toLowerCase().includes(q));renderList();
 });
 window.addEventListener('beforeunload',revokeObjectUrls);
-function revokeObjectUrls(){objectUrls.forEach(URL.revokeObjectURL);objectUrls=[]}
+function revokeObjectUrls(){closeImageModal();objectUrls.forEach(URL.revokeObjectURL);objectUrls=[]}
 function countPhotos(list){return list.reduce((n,e)=>n+(Array.isArray(e.photos)?e.photos.length:0),0)}
 function updateStats(){if(entries.length)$('stats').textContent=entries.length+' 篇日記 · '+countPhotos(entries)+' 個照片紀錄'}
 
@@ -129,6 +138,7 @@ function renderArticle(e){
  const matched=countMatchedPhotos(e),total=Array.isArray(e.photos)?e.photos.length:0;
  let notice=total?(matched?('這篇有 '+total+' 張照片紀錄，目前從本機 photos/ 對應到 '+matched+' 張；其餘位置維持 placeholder。'):'這篇知道照片原本在哪裡，但目前沒有對應的本機 photos/ 檔案，所以保留 placeholder。'):'這篇沒有照片紀錄。';
  art.innerHTML='<div class="eyebrow">'+esc(formatDate(e.creationDate,e.timeZone))+'</div><h1>'+esc(getTitle(e))+'</h1><div class="meta">'+meta.map(esc).join('<span> · </span>')+'</div>'+(tags.length?'<div class="tags">'+tags.map(t=>'<span class="tag"># '+esc(t)+'</span>').join('')+'</div>':'')+'<div class="notice">'+esc(notice)+'</div><div class="content">'+renderBlocks(blocks,e)+'</div>';
+ art.querySelectorAll('img[data-full-image]').forEach(img=>img.addEventListener('click',()=>openImageModal(img.src,img.alt)));
 }
 function renderBlocks(blocks,e){
  let out='',listType=null;
@@ -157,7 +167,7 @@ function renderPhotos(ids,e){
  const cls=ids.length===1?'gallery single':'gallery';
  return '<div class="'+cls+'">'+ids.map(id=>{
   const p=(e.photos||[]).find(x=>x.identifier===id),file=p&&findMediaFile(p);
-  if(file){const url=URL.createObjectURL(file);objectUrls.push(url);return '<figure class="photo"><img src="'+esc(url)+'" alt="'+esc(p.filename||'Day One photo')+'" loading="lazy"></figure>'}
+  if(file){const url=URL.createObjectURL(file);objectUrls.push(url);return '<figure class="photo"><img src="'+esc(url)+'" alt="'+esc(p.filename||'Day One photo')+'" loading="lazy" data-full-image></figure>'}
   const label=p?(p.filename||id):id;return '<div class="photo-missing"><div><b>🖼</b>此處應有圖片，可惜你看不到<br>'+esc(label)+'</div></div>';
  }).join('')+'</div>';
 }
