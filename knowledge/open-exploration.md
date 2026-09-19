@@ -67,7 +67,15 @@
 
 這條 Open Exploration 已完成第一輪 Browser Reader Research Question：Day One structured export 可以在不轉換 canonical archive、也不把私人日記上傳 backend 的前提下，支撐實際可閱讀的 local-first Browser Reader；照片與 PDF attachment 都已形成 native export mapping / fallback contract 與 iPad Human Environment Evidence。
 
-目前不因單一完成 Experiment 建立獨立 Research Map。大型 Journal performance、未遇到的 export edge cases 採 problem-triggered reopening；Native Swift / PhotoKit Reader 若啟動，另開 Experiment，不把不同 runtime 的問題塞回已結案的 Browser Reader。
+目前不因單一完成 Experiment 建立獨立 Research Map。大型 Journal performance、未遇到的 export edge cases 採 problem-triggered reopening；已啟動的 Native Swift / PhotoKit Reader 另立 [D1-NATIVE-1](../experiments/dayone-native-reader/README.md)，不把不同 runtime 的問題塞回已結案的 Browser Reader。
+
+### Active Extension — D1-NATIVE-1
+
+- Status: In Progress / M1 Verified
+- Question: Claire 自用的 iPad Native Reader 能否直接讀 Day One JSON、重建 structured richText，並以 JSON photo identifier 透過 PhotoKit 取得 Photos / iCloud 實體照片？
+- Explicit exclusion: PDF rendering / attachment integration。
+- M1: Native JSON ingestion + 3-entry basic List / Detail verified。
+- Next: M2 Rich Text Reconstruction；M3 JSON-derived PhotoKit Media Resolution。
 
 
 ---
