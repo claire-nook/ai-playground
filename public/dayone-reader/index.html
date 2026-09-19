@@ -37,6 +37,7 @@ button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;di
 <div class="media-status" id="mediaStatus">尚未提供 photos/，照片會保留位置並顯示 placeholder。</div>
 <input class="search" id="search" type="search" placeholder="搜尋標題或正文…" disabled>
 <div class="filter-grid">
+<label class="country"><span class="filter-label">Tag</span><select class="filter-control" id="tagFilter" disabled><option value="">所有 Tag</option></select></label>
 <label class="country"><span class="filter-label">國家</span><select class="filter-control" id="countryFilter" disabled><option value="">所有國家</option></select></label>
 <label><span class="filter-label">開始日期</span><input class="filter-control" id="dateFrom" type="date" disabled></label>
 <label><span class="filter-label">結束日期</span><input class="filter-control" id="dateTo" type="date" disabled></label>
@@ -76,8 +77,8 @@ $('jsonInput').addEventListener('change',async ev=>{
  try{
   const json=JSON.parse(await file.text());if(!Array.isArray(json.entries))throw new Error('找不到 entries[]');
   entries=json.entries.slice().sort((a,b)=>new Date(a.creationDate||0)-new Date(b.creationDate||0));filtered=entries.slice();
-  $('search').disabled=false;$('search').value='';$('countryFilter').disabled=false;$('dateFrom').disabled=false;$('dateTo').disabled=false;
-  $('dateFrom').value='';$('dateTo').value='';populateCountries();$('journalName').textContent=file.name.replace(/\.json$/i,'');
+  $('search').disabled=false;$('search').value='';$('tagFilter').disabled=false;$('countryFilter').disabled=false;$('dateFrom').disabled=false;$('dateTo').disabled=false;
+  $('tagFilter').value='';$('countryFilter').value='';$('dateFrom').value='';$('dateTo').value='';populateTags();populateCountries();$('journalName').textContent=file.name.replace(/\.json$/i,'');
   applyFilters();updateStats();if(entries.length)selectEntry(entries[0].uuid||'idx-0');
  }catch(err){alert('這份檔案目前無法讀取：'+err.message)}
 });
@@ -88,9 +89,14 @@ $('photoInput').addEventListener('change',ev=>{
  status.classList.toggle('ready',mediaByName.size>0);if(currentUuid)renderArticle(currentEntry());updateStats();
 });
 $('search').addEventListener('input',applyFilters);
+$('tagFilter').addEventListener('change',applyFilters);
 $('countryFilter').addEventListener('change',applyFilters);
 $('dateFrom').addEventListener('change',applyFilters);
 $('dateTo').addEventListener('change',applyFilters);
+function populateTags(){
+ const select=$('tagFilter'),tags=[...new Set(entries.flatMap(e=>Array.isArray(e.tags)?e.tags:[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+ select.innerHTML='<option value="">所有 Tag</option>'+tags.map(tag=>'<option value="'+esc(tag)+'">'+esc(tag)+'</option>').join('');
+}
 function populateCountries(){
  const select=$('countryFilter'),countries=[...new Set(entries.map(e=>e.location?.country).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
  select.innerHTML='<option value="">所有國家</option>'+countries.map(country=>'<option value="'+esc(country)+'">'+esc(country)+'</option>').join('');
@@ -104,10 +110,10 @@ function entryLocalDate(e){
  }catch{return String(e.creationDate).slice(0,10)}
 }
 function applyFilters(){
- const q=$('search').value.trim().toLowerCase(),country=$('countryFilter').value,from=$('dateFrom').value,to=$('dateTo').value;
+ const q=$('search').value.trim().toLowerCase(),tag=$('tagFilter').value,country=$('countryFilter').value,from=$('dateFrom').value,to=$('dateTo').value;
  filtered=entries.filter(e=>{
-  const text=(getTitle(e)+'\n'+(e.text||'')).toLowerCase(),date=entryLocalDate(e);
-  return (!q||text.includes(q))&&(!country||e.location?.country===country)&&(!from||date>=from)&&(!to||date<=to);
+  const text=(getTitle(e)+'\n'+(e.text||'')).toLowerCase(),date=entryLocalDate(e),tags=Array.isArray(e.tags)?e.tags:[];
+  return (!q||text.includes(q))&&(!tag||tags.includes(tag))&&(!country||e.location?.country===country)&&(!from||date>=from)&&(!to||date<=to);
  });
  renderList();
 }
