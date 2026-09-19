@@ -45,15 +45,17 @@
           "outputPath": {
             "type": "string",
             "minLength": 1,
-            "description": "Repository-relative publication path. Current allowlist: experiments/artifact-transport/publisher-output/** or public/images/wall/**.",
-            "pattern": "^(?:experiments/artifact-transport/publisher-output|public/images/wall)/[^/].*$"
+            "description": "Repository-relative publication path. Allowlist: experiments/artifact-transport/publisher-output/**, public/images/wall/**, or public/downloads/**.",
+            "pattern": "^(?:experiments/artifact-transport/publisher-output|public/images/wall|public/downloads)/[^/].*$"
           },
           "mediaType": {
             "type": "string",
             "enum": [
               "image/jpeg",
               "image/png",
-              "image/webp"
+              "image/webp",
+              "application/pdf",
+              "application/zip"
             ]
           }
         }
