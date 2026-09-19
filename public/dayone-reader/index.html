@@ -174,7 +174,17 @@ function parseRichText(e){
    }
    flushPhotos();if(typeof part.text!=='string')return;
    const attr=part.attributes||{},line=attr.line||{},text=part.text.replace(/\n$/,'');
-   if(line.header||line.quote||line.listStyle){flushParagraph();blocks.push({type:'line',text,line,attr});return}
+   if(line.listStyle){
+    flushParagraph();
+    const previous=blocks[blocks.length-1],identifier=line.identifier||null;
+    if(previous&&previous.type==='line'&&previous.line.listStyle===line.listStyle&&identifier&&previous.line.identifier===identifier){
+     previous.runs.push({text,attr});
+    }else{
+     blocks.push({type:'line',text:'',runs:[{text,attr}],line,attr});
+    }
+    return;
+   }
+   if(line.header||line.quote){flushParagraph();blocks.push({type:'line',text,line,attr});return}
    addParagraphPieces(part.text,attr);
   });
   flushParagraph();flushPhotos();return blocks.length?blocks:fallbackBlocks(e.text||'');
@@ -201,8 +211,9 @@ function renderBlocks(blocks,e){
   if(b.type==='line'&&b.line.listStyle){
    const wanted=b.line.listStyle,tag=wanted==='numbered'?'ol':'ul';
    if(listType!==wanted){closeList();out+='<'+tag+(wanted==='checkbox'?' class="check-list"':'')+'>';listType=wanted;listTag=tag}
-   if(wanted==='checkbox')out+='<li class="check"><input type="checkbox" disabled '+(b.line.checked?'checked':'')+'>'+inlineText(b.text,b.attr)+'</li>';
-   else out+='<li>'+inlineText(b.text,b.attr)+'</li>';return;
+   const lineHtml=b.runs?b.runs.map(r=>inlineText(r.text,r.attr)).join(''):inlineText(b.text,b.attr);
+   if(wanted==='checkbox')out+='<li class="check"><input type="checkbox" disabled '+(b.line.checked?'checked':'')+'>'+lineHtml+'</li>';
+   else out+='<li>'+lineHtml+'</li>';return;
   }
   closeList();
   if(b.type==='horizontalRule'){out+='<hr>';return}
