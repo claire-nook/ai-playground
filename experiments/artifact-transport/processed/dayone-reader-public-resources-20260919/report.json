@@ -1,0 +1,28 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url-batch",
+  "requestId": "dayone-reader-public-resources-20260919",
+  "itemCount": 2,
+  "atomicPublication": true,
+  "items": [
+    {
+      "index": 1,
+      "outputPath": "public/downloads/dayone-reader/dayone-reader-sample-export.zip",
+      "mediaType": "application/zip",
+      "bytes": 70867704,
+      "sha256": "cc26d38058017f94f22be4ef551f2552c2de25c0da5bd912e086b65e66f93f86",
+      "validatedAs": "zip-integrity",
+      "zipEntryCount": 17,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 2,
+      "outputPath": "public/downloads/dayone-reader/dayone-reader-guide-v0.5.pdf",
+      "mediaType": "application/pdf",
+      "bytes": 3378305,
+      "sha256": "b13405b94d7417ccc0012910f0b66cf14da3ea5274e9a9af5f2db3361a140a79",
+      "validatedAs": "pdf-signature",
+      "sourceUrlWrittenToRepository": false
+    }
+  ]
+}
