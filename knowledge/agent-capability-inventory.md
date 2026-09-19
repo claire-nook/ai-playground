@@ -100,6 +100,40 @@ Wall Writing Record 採 Progressive Loading：Bootstrap 只需要知道這個入
 
 Repository 不只是 Source of Truth，也是跨 Conversation / Agent 的 durable world state 與 handoff surface。不要預設 Claire 必須把 GitHub 內容搬進聊天。
 
+### Apple-native Private Execution Surface
+
+Status：**Verified operational environment / task-specific progressive loading**
+
+實驗室已有 private repository `claire-nook/apple-lab`，作為 Swift / Swift Playgrounds / PhotoKit / iPadOS native framework / device-specific research 的 execution surface。
+
+這不是另一個 Agent 的 scope；Primary Agent（墨衡）的 responsibility 橫跨實驗室各 Repository。`ai-playground` 是 Primary Base，而 `apple-lab` 是 Apple-native private execution / durable state boundary。
+
+Apple-native task 的固定 navigation：
+
+```text
+current task is Apple-native
+→ access claire-nook/apple-lab
+→ read apple-lab root README.md
+→ follow apple-lab knowledge/README.md routing
+→ load relevant operational guide / project only
+```
+
+Last-known verified collaboration path：
+
+```text
+GitHub
+↕ Working Copy Pull / Commit / Push
+Working Copy working tree
+↕ iPadOS Files Provider
+Swift Playgrounds
+↕ build / Preview / run / edit
+iPad Runtime
+```
+
+完整操作細節、已撞過的 manifest / package / structural Git / Playgrounds metadata 陷阱，以 private `apple-lab/knowledge/ipad-native-development.md` 為 canonical source。不要把 private operational guide 全文複製回 public Playground；這裡只保存「這項能力存在、何時應去哪裡讀」的 startup-level routing。
+
+Tool / permission 仍屬 runtime state。未來 Conversation 若 GitHub connection 無法存取 private Repo，應明確揭露 access limitation，不得靠舊記憶假裝已讀取最新 operational state。
+
 ### Canonical Dropbox Collaboration Surfaces
 
 Dropbox 整體屬 Claire 的 private storage domain，不是 Primary 的全面自治區；但以下三個 surface 已被明確指定為 Claire × Primary 的 canonical collaboration boundary：
