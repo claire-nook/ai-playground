@@ -8,6 +8,34 @@
 
 ## 2026-09-19
 
+### D1-NATIVE-1 — Day One Native Reader
+
+- Status: In Progress / M1 Verified
+- Card: [../experiments/dayone-native-reader/d1-native-1.catalog.json](../experiments/dayone-native-reader/d1-native-1.catalog.json)
+- Record: [../experiments/dayone-native-reader/README.md](../experiments/dayone-native-reader/README.md)
+- Extends: [D1-READER-1](../experiments/dayone-reader/README.md)
+- Private Execution: `claire-nook/apple-lab/projects/DayOneNativeReader.swiftpm/`
+- Primary Intent: Open Exploration / Local-first Personal Archive
+- Tags: day-one, swift, swiftui, swift-playgrounds, json, rich-text, photokit, ipad-first, local-first, data-portability
+
+**Why it exists**
+
+Browser Reader 已回答 Day One export 能否 local-first 閱讀；Native 路線改問 Claire 自用 iPad Reader 是否能保留 structured richText，並直接利用 Photos / iCloud 作既有照片來源，而不是維護第二份大量 exported photos。
+
+**Current evidence / scope**
+
+- M1 已由 Claire iPad Human Environment 驗證：Files 選取 JSON → JSONDecoder → Swift model → 3 篇 entry List / Detail → flattened readable text。
+- attachment metadata / count 可被 model 辨識不等於 physical media rendering；目前沒有 15 張照片或 PDF 的 Native 顯示 Evidence。
+- 下一個核心 milestone 是 M2 richText semantic reconstruction。
+- M3 目標是 JSON-derived photo identifier → PhotoKit → Photos / iCloud → Native Reader image。
+- PDF 明確 Out of Scope；Native Reader 不追求 Browser Reader 全功能 parity。
+
+**Current judgment**
+
+Native JSON ingestion / basic reading 已 Verified；richText reconstruction 與 JSON-derived PhotoKit integration 尚未驗證。Experiment 維持 In Progress。
+
+---
+
 ### D1-READER-1 — Day One JSON Local Reader
 
 - Status: Verified / Completed
