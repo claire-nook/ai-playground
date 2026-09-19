@@ -1,9 +1,9 @@
 # D1-READER-1 — Day One JSON Local Reader
 
 - Date: 2026-09-19
-- Status: Candidate / Active
+- Status: Verified / Completed
 - Primary Intent: Open Exploration / Local-first Personal Archive
-- Tags: `day-one`, `local-first`, `browser`, `json`, `privacy`, `ipad-first`, `photo-rendering`
+- Tags: `day-one`, `local-first`, `browser`, `json`, `privacy`, `ipad-first`, `photo-rendering`, `pdf-attachment`, `data-portability`
 
 ## Why this experiment exists｜為什麼做
 
@@ -31,7 +31,7 @@ Claire 從 2018 年開始使用 Day One，目前已有大量長期日記。Day O
 - Day One JSON 是 source of truth。
 - Browser 直接讀取使用者本機選取的檔案。
 - Day One 原生 media export 結構是 authoritative input。
-- JSON-only 與 JSON + photos 都是正式使用模式。
+- JSON-only、JSON + photos、JSON + pdfs，以及 JSON + photos + pdfs 都是正式使用模式。
 - Reader 只負責 read-only rendering。
 
 ### Excluded
@@ -334,3 +334,66 @@ PDF / larger journal / more export edge cases
 ```
 
 現在可以開始第三篇蹂躪 Renderer。至少下一世不用重新拿 `box-sizing: border-box` 去敲同一堵牆。
+
+
+## Final Consolidation｜結案（2026-09-19）
+
+D1-READER-1 已完成原始 Research Question 所需的 Browser local-first Evidence，狀態由 **Candidate / Active** 收斂為 **Verified / Completed**。
+
+### Final verified contract
+
+Reader 目前已用 Day One Test Journal 與 Claire iPad Human Environment 驗證以下責任：
+
+- Day One structured JSON 直接作為 source of truth，不先轉換另一套 canonical data format；
+- richText 作主要 reconstruction source，`text` 作 fallback / compatibility source；
+- title、paragraph、heading、inline formatting、quote、list、checklist、horizontal rule 與 line structure 可重建；
+- tags、location、weather、date 等 metadata 可作閱讀與搜尋／篩選資訊；
+- JSON-only 是正式模式，缺少 local media 時保留原文章位置與 placeholder；
+- Day One 原生 `photos/` 可依 identifier → md5/type mapping 在文章原位置顯示；
+- Day One 原生 `pdfs/` 可依 `pdfAttachment` identifier → `entry.pdfAttachments[]` → md5 mapping 在文章原位置建立 attachment card，缺少 local PDF 時保留 placeholder；
+- Browser Reader 不要求把私人 Journal 上傳到 backend；local file selection 與 object URL 留在目前 Browser runtime；
+- Search 與 Advanced Filter 的 interaction contract 已在 iPad 實機驗證；
+- iOS WebKit native form control 的 layout / disabled presentation 問題已留下實機 Evidence 與修正；
+- 公開 Sample Export 已形成 JSON + 15 photos + 1 PDF 的 regression / learning fixture，Artifact publication 驗證 ZIP integrity 與 media reference completeness。
+
+PDF attachment 是結案前最後補上的 export capability。Fixture 中的 mapping 已確認為：
+
+```text
+richText.embeddedObjects[]
+  type = pdfAttachment
+  identifier
+      ↓
+entry.pdfAttachments[].identifier
+      ↓
+md5
+      ↓
+pdfs/<md5>.pdf
+```
+
+### Graduation judgment
+
+本 Experiment 的 Research Question 不是「窮舉 Day One 永遠可能出現的每一種資料型態」，而是：
+
+> Day One structured export 能否在不建立另一套 canonical archive、也不把私人日記交給 backend 的前提下，支撐一個實際可閱讀的 local-first Browser Reader？
+
+目前 Evidence 足以回答 **可以**。
+
+因此以下項目不再阻擋 D1-READER-1 結案：
+
+- 更大型 Journal 的 performance / lazy rendering；
+- 尚未遇到的 Day One richText / media edge cases；
+- 未來 Day One export schema / capability 變化；
+- Native Swift / PhotoKit Reader。
+
+前三項改列為 **Known Boundaries / problem-triggered reopening**：未來真實 Journal 若撞到新的 export capability，再以新 Evidence 重開或延伸，不為了證明「宇宙沒有下一個 PDF」而無限維持 Active。
+
+Native Swift / PhotoKit Reader 則明確屬於**另一個 Experiment**。它研究 native runtime / PhotoKit / local archive integration，不納入本次 Browser Reader 的完成條件，也不因 D1-READER-1 結案而被視為已驗證。
+
+### Public artifacts
+
+- Live Reader: `/dayone-reader/`
+- Sample Export: `/downloads/dayone-reader/dayone-reader-sample-export.zip`
+- Human-facing Guide: `/downloads/dayone-reader/dayone-reader-guide-v0.5.pdf`
+- Wall Commentary: `knowledge/wall/dayone-reader-escape-hatch.md`
+
+D1-READER-1 到此關閉。Reader 可以繼續存在、被使用、被未來的真實資料打臉；Experiment 不需要為了等待下一次打臉而永遠掛著 Active。這才叫結案，不是向宇宙申請永久保固。
