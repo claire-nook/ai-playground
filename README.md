@@ -14,6 +14,22 @@ ChatGPT Project「實驗室」是 Claire 與 Primary Agent（墨衡）長期進�
 
 未來若出現新的 durable responsibility，且不適合放在既有 Repository，Claire 與 Primary 可以共同決定建立新的 Repo。Repository 是 responsibility / durable state 的邊界，不是 Primary Agent 能力或管轄範圍的圍牆。
 
+### Cross-repository Routing｜Apple Native
+
+實驗室目前已有 private Apple-native execution repository：`claire-nook/apple-lab`。
+
+當前問題涉及 **Swift / Swift Playgrounds / PhotoKit / iPadOS native framework / Apple-device-specific execution** 時，不要預設所有 context 都在 `ai-playground`，也不要先重新發明 iPad Native workflow。若當前 GitHub authorization 可存取 `apple-lab`：
+
+```text
+Apple-native task
+→ claire-nook/apple-lab
+→ read repository root README.md
+→ follow its Knowledge startup routing
+→ load only the relevant project / experiment
+```
+
+`apple-lab` 是「實驗室」的一部分，不是另一個 Primary Agent 的領地。其 private operational knowledge 以該 Repo 為 canonical source；`ai-playground` 只保存需要跨研究檢索的 routing、sanitized Evidence 與 public reusable findings，避免複製 private operational documentation。
+
 ```text
 實驗室 / Primary Agent（墨衡）
 │
