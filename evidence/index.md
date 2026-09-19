@@ -4,6 +4,35 @@ Evidence 代表特定時間、環境與條件下實際觀察到的結果，不�
 
 ---
 
+## Day One Native Reader / M1 JSON Ingestion
+
+- Experiment: D1-NATIVE-1
+- Date: 2026-09-19
+- Status: In Progress / M1 Verified
+- Record: `experiments/dayone-native-reader/README.md`
+- Private Execution: `claire-nook/apple-lab/projects/DayOneNativeReader.swiftpm/`
+- Topics: Day One, SwiftUI, Swift Playgrounds, JSON, Rich Text, PhotoKit, iPad-first, Local-first
+
+### Result
+
+Claire iPad Human Environment 已驗證：
+
+```text
+Day One JSON
+→ Files selection
+→ SwiftUI fileImporter
+→ JSONDecoder
+→ Swift model
+→ 3-entry List / Detail
+→ flattened readable text
+```
+
+這筆 Evidence **只證明 Native JSON ingestion / basic reading**。目前 `richText` 尚未 semantic reconstruction；JSON 中 photo / PDF attachment metadata 被 model 辨識或統計，不代表 physical media 已載入或 render。
+
+下一個 Experiment milestone 是 richText reconstruction；照片目標則是從 JSON-derived identifier 透過 PhotoKit 取得 Photos / iCloud image。PDF 已由 Claire 明確排除於 Native Reader scope。
+
+---
+
 ## Artifact Collaboration / Dropbox PDF Reading Boundary
 
 - Experiment: A-ARTIFACT-1
