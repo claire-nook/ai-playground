@@ -1,0 +1,22 @@
+{
+  "id": "WALL-DAYONE-1",
+  "title": "我們只是想把 Day One 日記帶走，事情怎麼會變成這樣",
+  "completedDate": "2026-09-19",
+  "recordPath": "knowledge/wall/dayone-reader-escape-hatch.md",
+  "summary": "從「Day One 能 Export，不代表離開 App 後仍適合閱讀」開始，記錄 Day One JSON Local Reader 如何一路長出 rich text、照片 mapping、Browser local processing、Textastic Local Preview、操作手冊，最後在準備結案時才發現漏掉 PDF attachment。附 Reader、範例 Export ZIP、操作手冊、Textastic customization Wall 與 Day One 官方入口。",
+  "tags": [
+    "Day One",
+    "Personal Archive",
+    "Local-first",
+    "JSON",
+    "iPad-first",
+    "Textastic",
+    "Data Portability",
+    "Commentary"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "field-verification",
+  "demoStatus": "live",
+  "verificationStatus": "verified",
+  "flow": "Day One export concern → JSON reader → rich text / photos → browser local-first → Textastic Local Preview → user manual → last-minute PDF attachment discovery → public escape-hatch resources."
+}
