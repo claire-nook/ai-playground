@@ -28,8 +28,10 @@ from PIL import Image
 ALLOWED_OUTPUT_PREFIXES = (
     Path("experiments/artifact-transport/publisher-output"),
     Path("public/images/wall"),
+    Path("public/downloads"),
 )
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
+ALLOWED_MEDIA_TYPES = {"image/jpeg", "image/png", "image/webp", "application/pdf", "application/zip"}
 REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
@@ -160,7 +162,27 @@ def ingest_batch(batch_path: Path, *, timeout: int) -> dict[str, Any]:
                 )
 
             temp_path = temp_dir / f"item-{index:04d}.bin"
-            image_evidence = verify_image(binary, temp_path)
+            if media_type not in ALLOWED_MEDIA_TYPES:
+                raise ValueError(f"Unsupported mediaType: {media_type}")
+
+            if media_type.startswith("image/"):
+                artifact_evidence = verify_image(binary, temp_path)
+            else:
+                temp_path.write_bytes(binary)
+                if media_type == "application/pdf":
+                    if not binary.startswith(b"%PDF-"):
+                        raise ValueError("PDF signature validation failed")
+                    artifact_evidence = {"validatedAs": "pdf-signature"}
+                elif media_type == "application/zip":
+                    import zipfile
+                    with zipfile.ZipFile(temp_path) as archive:
+                        bad_member = archive.testzip()
+                        if bad_member is not None:
+                            raise ValueError(f"ZIP integrity validation failed at {bad_member}")
+                        artifact_evidence = {
+                            "validatedAs": "zip-integrity",
+                            "zipEntryCount": len(archive.infolist()),
+                        }
 
             staged.append((temp_path, output_path))
             verified_items.append(
@@ -170,7 +192,7 @@ def ingest_batch(batch_path: Path, *, timeout: int) -> dict[str, Any]:
                     "mediaType": media_type,
                     "bytes": actual_bytes,
                     "sha256": actual_sha256,
-                    **image_evidence,
+                    **artifact_evidence,
                     "sourceUrlWrittenToRepository": False,
                 }
             )
