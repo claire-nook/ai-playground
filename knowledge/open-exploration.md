@@ -57,15 +57,18 @@
 
 ---
 
-## Exploration｜探索 — Local-first Personal Archive / Day One Reader
+## Closed Exploration｜Local-first Personal Archive / Day One Reader
 
 - Experiment: [D1-READER-1](../experiments/dayone-reader/README.md)
-- Status: Active Candidate
-- Why it is interesting now｜為什麼現在值得研究：Day One structured export 已足以啟動「資料可攜之後，閱讀體驗能否也脫離原 App」的實驗；同時可驗證 iPad-first local Browser 對私人 archive 的實際能力。
-- Tags: `day-one`, `local-first`, `browser`, `json`, `privacy`, `ipad-first`, `photo-rendering`
+- Status: Verified / Completed
+- Closed: 2026-09-19
+- Tags: `day-one`, `local-first`, `browser`, `json`, `privacy`, `ipad-first`, `photo-rendering`, `pdf-attachment`, `data-portability`
 - Related Cluster｜相關研究群：iPad-first Development
 
-目前不建立獨立 Research Map。先完成 Browser renderer 與真實 export acceptance；若後續 Browser / PhotoKit / archive portability Evidence 累積成清楚的長期 Research Question，再 Promote。不要因為一碗叻沙已經成功進 SwiftUI，就立刻成立個人數位保存研究院。
+這條 Open Exploration 已完成第一輪 Browser Reader Research Question：Day One structured export 可以在不轉換 canonical archive、也不把私人日記上傳 backend 的前提下，支撐實際可閱讀的 local-first Browser Reader；照片與 PDF attachment 都已形成 native export mapping / fallback contract 與 iPad Human Environment Evidence。
+
+目前不因單一完成 Experiment 建立獨立 Research Map。大型 Journal performance、未遇到的 export edge cases 採 problem-triggered reopening；Native Swift / PhotoKit Reader 若啟動，另開 Experiment，不把不同 runtime 的問題塞回已結案的 Browser Reader。
+
 
 ---
 
