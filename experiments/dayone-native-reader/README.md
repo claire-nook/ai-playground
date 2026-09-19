@@ -171,26 +171,76 @@ M2 在 Swift Playgrounds 暴露兩個重要環境坑：
 
 ### M3 — PhotoKit Media Resolution
 
-Status: **Candidate after / alongside M2**
+Status: **Feasibility Verified / Reader Integration Ready (2026-09-20)**
 
 Research target：
 
 ```text
 Day One JSON photo metadata
-→ local identifier
-→ PHAsset
+→ photos[].appleLocalIdentifier
+→ PHAsset.fetchAssets(withLocalIdentifiers:)
+→ PHImageManager
 → Photos / iCloud
 → Native Reader image
 ```
 
-先前 private single-photo PoC 已觀察到一個真實 Day One PhotoKit identifier 可由 `PHAsset.fetchAssets` 找到並載入圖片；但那是 hardcoded identifier probe。
+#### M3-A feasibility probe — Verified
 
-本 Experiment 必須另外驗證：
+2026-09-20 在 private `apple-lab` 的既有 PhotoKit 小專案完成 Claire iPad Human Environment probe。這一輪刻意沒有先修改正式 `DayOneNativeReader.swiftpm`，而是把「JSON 到 PhotoKit 是否真的可行」隔離驗證。
 
-- identifier 是從 Day One JSON data model 取得，而非手工 hardcode；
-- selected entry 的照片可 lazy / bounded loading；
-- iCloud-only asset 在允許 network access 時的實際行為；
-- 找不到 / 已刪除 / identifier 失效時的 Reader fallback。
+Probe 保留一組已知可成功的 hardcoded `PHAsset.localIdentifier` 作 Control，並讓 App 從 Day One Test Journal JSON 直接讀取照片 metadata。為避免 Claire 已刪除的測試截圖污染結果，最終 target 鎖定 `# 03｜A Normal Travel Day` 中 Claire 確認仍存在 Photos 的真實旅遊照片。
+
+Observed result：
+
+- hardcoded Control 可取得 `PHAsset` 並顯示 image；
+- Day One JSON `photos[].identifier` 直接餵給 `PHAsset.fetchAssets(withLocalIdentifiers:)`：**找不到 asset**；
+- 同一張仍存在 Photos 的照片，改用 Day One JSON `photos[].appleLocalIdentifier`：**成功取得 PHAsset 並顯示正確 image**；
+- 因此 M3 的核心 mapping 已由 Human Environment Evidence 驗證，而不是只靠欄位名稱或格式推論。
+
+#### Critical schema pitfall — identifier 不是 PhotoKit localIdentifier
+
+這是 M3 最重要的踩坑，必須保留：
+
+```text
+Day One photos[].identifier
+≠ PHAsset.localIdentifier
+
+Day One photos[].appleLocalIdentifier
+→ PHAsset.fetchAssets(withLocalIdentifiers:)
+→ PHAsset
+```
+
+Day One photo object 同時存在多種 identifier-like metadata。不能因為欄位叫 `identifier` 就假設它屬於 Apple Photos namespace。M3-A 的 negative evidence 已證明：對一張 Claire 確認仍存在 Photos 的照片，`photos[].identifier` 查詢失敗；改用同一 photo object 的 `appleLocalIdentifier` 後成功。
+
+未來 Agent 實作或除錯 PhotoKit mapping 時，應先確認 identifier namespace，再檢查 asset 是否存在。不要把「PhotoKit 找不到」第一時間誤判成照片已刪除、權限失效或 iCloud 問題。欄位名字看起來很無辜，實際上非常會把人帶去撞牆。
+
+#### Reader integration contract unlocked by M3-A
+
+M3-A 通過代表正式 Native Reader 可以開始 PhotoKit integration，但 **不代表 M3 Reader integration 已完成**。
+
+Reader 應採 per-photo resolution，而不是讓單張照片失敗拖垮整篇 entry：
+
+```text
+richText photo embedded position
+→ match Day One photos[] metadata
+→ appleLocalIdentifier available?
+   ├─ Yes → PhotoKit resolve
+   │        ├─ asset found → render image
+   │        └─ asset unavailable → preserve position + unavailable placeholder
+   └─ No  → preserve position + missing-Apple-identifier placeholder
+```
+
+Claire 的真實使用情境包含「Day One JSON 仍保留 photo reference，但該照片後來已從 Photos 刪除」。因此 asset-not-found 必須視為 Reader 的正常資料狀態，而不是 whole-entry exception。
+
+Fallback wording也不能武斷宣告「照片已刪除」：PhotoKit 查不到可能來自刪除、library state、identifier 失效或其他尚未驗證因素。Reader 應描述為「目前無法從 Photos 取得」並保留可取得的 filename / semantic position。
+
+後續 Reader integration 仍需驗證：
+
+- richText 中多張照片依原始 embedded position 呈現；
+- individual photo lazy / bounded loading；
+- asset-not-found / missing `appleLocalIdentifier` fallback；
+- iCloud-only asset 在 `isNetworkAccessAllowed = true` 時的 Human Environment behavior；
+- 大型 Journal 下的 loading / memory behavior。
 
 不以一次載入整個 Journal 所有照片為目標。
 
@@ -238,13 +288,13 @@ Private project 已包含：
 
 D1-READER-1 已建立 Browser side 的 Day One `richText` / media mapping knowledge，可作 Native semantic reconstruction 的 reference，但 Browser implementation 成功 **不等於** Native renderer 已驗證。
 
-Private earlier PhotoKit probe 曾以 hardcoded real identifier 成功取得一張照片。這只支持「PhotoKit route plausible / previously observed」，不支持 M3 已完成。
+Private M3-A probe 已完成 hardcoded Control 與 JSON-derived mapping 對照：`photos[].identifier` 對仍存在的照片查詢失敗，而 `photos[].appleLocalIdentifier` 成功取得 PHAsset 並顯示正確 image。這驗證 M3 feasibility；正式 Reader integration 仍未完成。
 
 ### Unknown / Not Tested
 
 - 尚未遇到的 Day One richText construct / future schema edge case。
-- JSON-derived local identifier → PhotoKit integration。
-- 多張照片 / iCloud-only photo 的 bounded loading。
+- M3-A 已驗證 JSON `appleLocalIdentifier` → PhotoKit → image；正式 Reader 尚未整合。
+- 多張照片 / 已刪除或 unavailable asset fallback / iCloud-only photo 的 bounded loading。
 - 大型 Journal Native performance。
 - PDF：刻意不測。
 
@@ -254,30 +304,33 @@ M1 已回答 Native JSON ingestion / basic reading；M2 進一步回答：**Day 
 
 它仍不能回答：
 
-- JSON photo reference 已能顯示 Photos / iCloud 實體照片；
+- 正式 Native Reader 已把 JSON photo reference 整合成 Photos / iCloud 實體照片；
 - Native Reader 已達成 Browser Reader parity，而 parity 本來也不是本 Experiment 的成功標準。
 
-因此 Experiment 狀態維持 **In Progress / M1 Verified**。
+因此 Experiment 狀態維持 **In Progress / M2 Verified / M3-A Feasibility Verified**。
 
 ## Constraints / Pitfalls｜限制與踩坑
 
 - 不要把 attachment count / reference parsing 寫成 physical media rendering evidence。
 - 不要把 flattened `String` extraction 寫成 rich-text support。
-- 不要因為先前 hardcoded PhotoKit PoC 成功，就把 JSON integration 當成已驗證。
+- 不要把 Day One `photos[].identifier` 當成 PhotoKit localIdentifier；已驗證正確欄位是 `photos[].appleLocalIdentifier`。
+- 不要把 M3-A feasibility probe 成功寫成正式 Reader 已完成 PhotoKit integration。
+- PhotoKit asset-not-found 不等於可斷言「照片已刪除」；保留 semantic position 並採 unavailable placeholder。
 - private identifier / journal fixture 不進 public repo。
 - Native package / Working Copy / Swift Playgrounds operational traps 由 `apple-lab/knowledge/ipad-native-development.md` 管理，不在本 Experiment 重複維護。
 
 ## What this unlocks｜它打開了什麼下一步
 
-Immediate next target：**M3 PhotoKit Media Resolution**。
+Immediate next target：**M3 PhotoKit Reader Integration**。
 
-M2 已形成 Claire 可接受的閱讀品質；下一階段只驗證 JSON-derived PhotoKit media resolution。M2 與 M3 Evidence 必須分開，不互相借功勞。
+M2 已形成 Claire 可接受的閱讀品質；M3-A 已把 JSON-derived PhotoKit feasibility 打通。下一階段才把已驗證的 `appleLocalIdentifier → PHAsset → image` contract 整合進正式 Reader，並驗證多照片、unavailable placeholder 與 iCloud-only behavior。M2、M3-A feasibility 與 M3 Reader integration Evidence 必須分開，不互相借功勞。
 
 ## Current Judgment｜目前判斷
 
 - Native JSON ingestion / basic reading：**Verified in Claire iPad environment**。
 - Native rich-text reconstruction：**Verified in Claire iPad environment (M2)**。
-- JSON-derived PhotoKit image integration：**Not yet verified**。
+- JSON-derived PhotoKit feasibility：**Verified in Claire iPad environment (M3-A)**。
+- Native Reader PhotoKit integration：**Not yet implemented / verified**。
 - PDF support：**Out of scope by explicit product choice**。
 
 目前 Evidence 支持 Native Reader 路線具有高可行性，但本 Experiment 的 completion 必須以 Claire 真正需要的 Reader 核心能力為準，而不是「App 能打開」就提早畢業。
