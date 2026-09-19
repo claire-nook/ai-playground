@@ -6,7 +6,7 @@
 <title>Day One Reader Lab</title>
 <style>
 :root{--bg:#f4f1eb;--paper:#fffdf9;--ink:#292824;--muted:#77736b;--line:#e8e1d7;--accent:#287f78;--accent-soft:#e5f1ee;--warn:#fff7dc;--shadow:0 12px 34px rgba(50,43,34,.08);--radius:18px}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-serif,"Noto Serif TC","PingFang TC",serif;line-height:1.85}
+*,*::before,*::after{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-serif,"Noto Serif TC","PingFang TC",serif;line-height:1.85}
 button,input,select{font:inherit}.app-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:9px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(244,241,235,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
 .brand{font-family:system-ui,-apple-system,sans-serif;font-weight:750}.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px}.spacer{flex:1}.btn{border:1px solid var(--line);background:var(--paper);padding:9px 13px;border-radius:999px;cursor:pointer;color:var(--ink)}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
 .shell{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:calc(100svh - 66px)}.sidebar{border-right:1px solid var(--line);background:#f8f5ef;position:sticky;top:66px;height:calc(100svh - 66px);overflow:auto}.side-top{position:sticky;top:0;background:#f8f5ef;padding:18px 16px 12px;border-bottom:1px solid var(--line);z-index:2}
