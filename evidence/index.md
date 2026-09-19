@@ -66,6 +66,53 @@ Native reading UX 另驗證原生文字搜尋與單一 Tag 下拉篩選；Search
 
 M2 不證明 PhotoKit media integration；M3 仍需獨立 Evidence。
 
+
+## Day One Native Reader / M3 PhotoKit & Photo Browsing
+
+- Experiment: D1-NATIVE-1
+- Date: 2026-09-20
+- Status: Verified / Completed
+- Record: `experiments/dayone-native-reader/README.md`
+- Private Execution: `claire-nook/apple-lab/projects/DayOneNativeReader.swiftpm/`
+- Topics: Day One, PhotoKit, PHAsset, SwiftUI, Data Portability, Archival Reader, iPad-first
+
+### Verified chain
+
+Claire iPad Human Environment 已驗證：
+
+```text
+richText photo embedded identifier
+→ entry.photos[].identifier match
+→ photos[].appleLocalIdentifier
+→ PHAsset
+→ PHImageManager
+→ inline image
+→ tap full-screen
+→ same-entry previous / next
+```
+
+Day One generic `identifier` 與 PhotoKit local identifier 的 namespace trap 已由 negative/positive probe 驗證。Unavailable photo 採 per-item placeholder，不拖垮 entry，也不武斷宣稱照片已刪除。
+
+### Layout negative evidence
+
+兩欄 `LazyVGrid` photo wall 在目前 Reader + Swift Playgrounds Human Environment 造成可重現 reverse-scroll failure。關閉 photo hit testing、移除 parent text selection 都沒有消除；移除 grid、改回 bounded inline images 後 Claire 驗證 scrolling 恢復。
+
+這筆 Evidence 不足以宣稱 `LazyVGrid` 普遍有 bug。它只支持本 Reader 不值得為非核心 Day One UI parity 繼續追查該 composition。
+
+### Full-screen viewer
+
+Claire 已驗證：
+
+- 點擊 loaded inline image 可進 full-screen；
+- viewer 從被點擊照片開始；
+- 同篇照片可左右翻頁；
+- counter 正確，實機已觀察到 `5 / 5`；
+- 關閉可返回 Reader；
+- 照片順序依 richText 出現順序。
+
+觀察到輕微翻頁卡頓，但 root cause 未知；目前不把它歸因於 Reader 或 Swift Playgrounds，也不提前建立 cache / prefetch optimization。
+
+
 ## Artifact Collaboration / Dropbox PDF Reading Boundary
 
 - Experiment: A-ARTIFACT-1
