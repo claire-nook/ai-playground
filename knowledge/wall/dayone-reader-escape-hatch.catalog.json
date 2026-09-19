@@ -18,5 +18,6 @@
   "researchMethod": "field-verification",
   "demoStatus": "live",
   "verificationStatus": "verified",
-  "flow": "Day One export concern → JSON reader → rich text / photos → browser local-first → Textastic Local Preview → user manual → last-minute PDF attachment discovery → public escape-hatch resources."
+  "flow": "Day One export concern → JSON reader → rich text / photos → browser local-first → Textastic Local Preview → user manual → last-minute PDF attachment discovery → public escape-hatch resources.",
+  "demoPath": "/dayone-reader/"
 }
