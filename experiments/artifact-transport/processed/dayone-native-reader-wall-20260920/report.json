@@ -1,0 +1,79 @@
+{
+  "status": "verified",
+  "transport": "remote-binary-url-batch",
+  "requestId": "dayone-native-reader-wall-20260920",
+  "itemCount": 5,
+  "atomicPublication": true,
+  "items": [
+    {
+      "index": 1,
+      "outputPath": "public/images/wall/dayone-native-reader/swift-playgrounds-project-browser.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 130341,
+      "sha256": "b38537d3f9aaad5636b406dc5915e0665723839427a13be70d035911e0071e3b",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1536,
+        1059
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 2,
+      "outputPath": "public/images/wall/dayone-native-reader/dayone-native-reader-source.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 144723,
+      "sha256": "5323aa77be29a01145b45a4762a67544f4dd78246f160f114ee8d0ccb294c2c5",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1536,
+        1059
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 3,
+      "outputPath": "public/images/wall/dayone-native-reader/dayone-native-reader-empty-state.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 81505,
+      "sha256": "ac771e2b6a1449bc969e753ebd0d5d56cd604d69265fc51520f346e8ffd9791b",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1800,
+        1241
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 4,
+      "outputPath": "public/images/wall/dayone-native-reader/dayone-native-reader-entry.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 204520,
+      "sha256": "0768cfc6722e2d951f391c8281afe93693ac6d5f1e5f52f0c5d23a03dd527274",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1800,
+        1241
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    },
+    {
+      "index": 5,
+      "outputPath": "public/images/wall/dayone-native-reader/dayone-native-reader-photo.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 291398,
+      "sha256": "cf486afeb5f5eab4e3827d4ee610dd50da0bbbdbfdf0088148a4a7db718fff1f",
+      "decodedFormat": "JPEG",
+      "decodedDimensions": [
+        1536,
+        1059
+      ],
+      "exifEntries": 0,
+      "sourceUrlWrittenToRepository": false
+    }
+  ]
+}
