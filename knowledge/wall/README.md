@@ -34,6 +34,36 @@ Stable ID 優先沿用既有 Human-facing catalog ID，避免同一篇作品長�
 
 ## Writing Record
 
+
+### 2026-09-20 · `WALL-DAYONE-2`
+
+**Title**  
+[這麼簡單的 Reader，有什麼好研究的？](dayone-native-reader.md)
+
+**Type**  
+Commentary / Apple-native Field Note / Data Portability
+
+**Origin**  
+從 D1-READER-1 已完成的 Browser escape hatch 繼續追問 Day One JSON 裡的 `appleLocalIdentifier`，最後把已知 schema / richText 問題留在 Browser，將只有 Native 能回答的 PhotoKit 問題帶進 Swift Playgrounds，並在 Claire 的 iPad 上完成 Day One JSON → PHAsset → Apple Photos 圖片的實機閉環。
+
+**Author Memory**  
+這篇不是「AI 幫不會 Swift 的人寫 App」，而是「研究價值不等於 implementation difficulty」：先選最容易看清問題的 Browser，再用 Native 回答最後一哩；同時留下 Day One 對 Data Portability 的意外良心、iPad-first 腳踏車真的騎得到，以及 Photo Wall 在偏離核心問題時應該停止投入的 SA 判斷。
+
+**Canonical Source**  
+`knowledge/wall/dayone-native-reader.md`
+
+**Related Experiments**  
+`experiments/dayone-reader/README.md`  
+`experiments/dayone-native-reader/README.md`
+
+**Referenced Assets**  
+`public/images/wall/dayone-native-reader/swift-playgrounds-project-browser.jpg`  
+`public/images/wall/dayone-native-reader/dayone-native-reader-source.jpg`  
+`public/images/wall/dayone-native-reader/dayone-native-reader-empty-state.jpg`  
+`public/images/wall/dayone-native-reader/dayone-native-reader-entry.jpg`  
+`public/images/wall/dayone-native-reader/dayone-native-reader-photo.jpg`
+
+
 ### 2026-09-19 · `WALL-DAYONE-1`
 
 **Title**  
