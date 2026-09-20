@@ -1,0 +1,24 @@
+{
+  "id": "WALL-DAYONE-2",
+  "title": "這麼簡單的 Reader，有什麼好研究的？",
+  "completedDate": "2026-09-20",
+  "recordPath": "knowledge/wall/dayone-native-reader.md",
+  "summary": "從 D1-READER-1 的 Browser 研究一路走到 Swift Playgrounds / PhotoKit，記錄為什麼先在容易觀察的 Browser 拆 Day One schema，再把只有 Apple-native environment 能回答的 appleLocalIdentifier → PHAsset 問題交給 Native。也留下 iPad-first 開發、Photo Wall stop decision、Day One data portability 與 AI × SA 協作的實際心得。",
+  "tags": [
+    "Day One",
+    "Native Reader",
+    "PhotoKit",
+    "Swift Playgrounds",
+    "iPad-first",
+    "Data Portability",
+    "Data Sovereignty",
+    "AI Collaboration",
+    "System Analysis",
+    "Commentary"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "field-verification",
+  "demoStatus": "none",
+  "verificationStatus": "verified",
+  "flow": "Browser Reader → Day One schema / richText / media semantics → appleLocalIdentifier question → Swift Playgrounds → PhotoKit PHAsset verification → Native Reader → iPad-first field evidence → scope stop decision."
+}
