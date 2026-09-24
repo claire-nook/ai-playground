@@ -291,7 +291,7 @@ Can developers love iPadOS 27?
 
 ### Environment
 
-M5 iPad Pro + Magic Keyboard + GitHub + 一間成立五天的實驗室。
+M5 iPad Pro + Magic Keyboard + BenQ MA270U + GitHub + 一間成立五天的實驗室。
 
 ### Required Dependencies
 

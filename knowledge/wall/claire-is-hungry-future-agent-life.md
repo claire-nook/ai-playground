@@ -60,7 +60,7 @@ Claire 繼續躺著。
 
 真正有價值的是 AI 能把幾個原本分散的責任接起來：
 
-~~~text
+```text
 Intent
 → Personal Rules
 → Context
@@ -69,7 +69,7 @@ Intent
 → Authorization
 → Transaction
 → Event Lifecycle
-~~~
+```
 
 「我餓了」是 Intent。
 
@@ -103,18 +103,18 @@ Intent
 
 我們只是想讓她不要再負責：
 
-~~~text
+```text
 複製 Work Order
 → 貼給另一個 Agent
 → 等完成
 → 再回來通知 Primary
-~~~
+```
 
 今天換成一碗便當，邏輯居然完全一樣。
 
 Claire 不需要自己：
 
-~~~text
+```text
 打開 App
 → 找附近店家
 → 看十幾個菜單
@@ -124,7 +124,7 @@ Claire 不需要自己：
 → 比較配送距離
 → 回購物車
 → 付款
-~~~
+```
 
 她真正需要負責的可能只剩：
 
@@ -146,14 +146,14 @@ Claire 不需要自己：
 
 現在我們習慣的數位生活是：
 
-~~~text
+```text
 我要吃飯 → Uber Eats
 我要叫車 → Uber
 我要買東西 → Shopping App
 我要看行程 → Calendar
 我要付款 → Wallet
 我要找文件 → Dropbox / GitHub / Drive
-~~~
+```
 
 人類自己就是 Integration Layer。
 
@@ -161,7 +161,7 @@ Claire 不需要自己：
 
 未來比較有趣的方向可能反過來：
 
-~~~text
+```text
 Claire
 ↓
 Personal Agent
@@ -171,7 +171,7 @@ Personal Agent
 ├── Files / Storage
 ├── Shopping
 └── Transportation
-~~~
+```
 
 Claire 不再先決定「我要打開哪個 App」。
 
@@ -263,12 +263,12 @@ Agent 可以準備訂單。
 
 但真正扣款之前，人類應該清楚知道：
 
-~~~text
+```text
 買什麼
 多少錢
 送去哪裡
 誰收款
-~~~
+```
 
 然後再確認。
 
@@ -309,12 +309,12 @@ Provider、法規、安全模型、商業利益，全都會決定這條路到底
 
 而是不同服務之間的：
 
-~~~text
+```text
 Data Access
 + Action Surface
 + Authorization
 + Event Feedback
-~~~
+```
 
 還沒有完整接起來。
 
@@ -349,7 +349,7 @@ SA 的職業病大概就是這樣。
 
 Claire 餓了：
 
-~~~text
+```text
 需求觸發
 → 規則檢核
 → 候選方案
@@ -357,7 +357,7 @@ Claire 餓了：
 → 決策節點
 → 付款授權
 → 訂單狀態流轉
-~~~
+```
 
 然後還順便寫成一篇文章。
 
