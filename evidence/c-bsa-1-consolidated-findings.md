@@ -60,6 +60,39 @@ RLS（若此 access path 適用）
 
 ---
 
+## Provider Default Change Note — Supabase Data API grants (2026-10-30)
+
+> Recorded: 2026-09-24  
+> Provider source: Supabase Breaking Change published 2026-04-28. New behavior became the default for new projects on 2026-05-30 and is scheduled to be enforced on existing projects on **2026-10-30**.
+
+C-BSA-1 was executed on 2026-09-15, before the enforcement date for existing projects. At experiment time, existing Supabase projects could still inherit automatic default privileges for newly created objects in the `public` schema. Supabase has since documented a platform-default change: new `public` tables will no longer automatically receive Data API privileges for `anon`, `authenticated`, and `service_role` on existing projects after 2026-10-30.
+
+This **does not invalidate the C-BSA-1 Evidence**. It strengthens the experiment's core distinction:
+
+```text
+PostgreSQL object GRANT
+→ decides whether a Data API role can reach the table / operation at all
+
+RLS
+→ decides which rows that already-authorized role can access
+```
+
+Future interpretation / implementation rules:
+
+- Existing tables keep their current grants; the provider change concerns defaults for newly created objects.
+- New `public` tables intended for Supabase Data API / PostgREST / GraphQL / `supabase-js` access must receive explicit least-privilege `GRANT` statements.
+- This includes server-side code using `service_role` **when that code reaches PostgreSQL through the Data API**. `service_role` bypasses RLS, but missing table privilege can still produce `42501 permission denied`.
+- Direct PostgreSQL connections (psql / PostgreSQL client / ORM via connection string) are not the Data API path targeted by this provider change; their database role privileges must still be designed independently.
+- Migration / provisioning logic must treat **GRANT + RLS + Policy** as an explicit security unit rather than relying on historical Supabase defaults.
+- Do not mechanically grant CRUD to all three Data API roles. Decide `anon`, `authenticated`, and `service_role` privileges per object and per required operation.
+- When future experiments fail with `42501 permission denied for table ...`, check object grants **before** diagnosing RLS.
+
+Official references:
+
+- Supabase Changelog — Breaking Change: Tables not exposed to Data and GraphQL API automatically: https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically
+- Supabase Docs — Securing your API: https://supabase.com/docs/guides/api/securing-your-api
+- Supabase Docs — API keys / grant-before-RLS behavior: https://supabase.com/docs/guides/getting-started/api-keys
+
 ## Phase B — Operation Boundary
 
 ### 驗證結果
