@@ -45,12 +45,16 @@ Current assumptions：
 - filter / sort / pagination semantics 必須由 Feature-facing contract 明確定義。
 - provider row limits 不可被誤當 completeness guarantee。
 - grants / RLS / exposed schema 決定真正 data authorization surface。
+- **Provider default change:** Supabase 於 2026-04-28 公告 Data API exposure default 調整；2026-05-30 起新 project 預設採 explicit grants，並於 **2026-10-30 對 existing projects 強制生效**。existing tables 保留既有 grants；之後新建的 `public` tables 不應再假設 `anon` / `authenticated` / `service_role` 自動取得 Data API table privileges。
+- `service_role` 的 RLS bypass 不等於自動具有 table privilege；若經 Data API 存取而缺少 required GRANT，仍可能得到 `42501 permission denied`。
+- Direct PostgreSQL connection 不屬於此 Data API default change 的 access path；其 DB role grants / connection governance 仍需獨立設計。
 
 Product-specific profile 必須定義：
 
 - exposed schemas / relations；
 - browser role / token identity；
-- grants；
+- explicit per-object grants（不得依賴 provider historical default privileges）；
+- migration / provisioning 對 `anon` / `authenticated` / `service_role` 的 least-privilege exposure；
 - RLS policy / bypass behavior；
 - count semantics；
 - max page / result bounds；
