@@ -227,6 +227,8 @@ Static Literal
 
 C-BSA-1 已完成 Access / Operation / Transaction 三個 dimensions 的 runtime verification。Backend Service Identity 不等於 unrestricted DB access；object privilege / RLS / Function EXECUTE 是不同 authorization boundaries；RPC 可持有 Database-owned Transaction，Edge PostgreSQL client 可持有 Backend-owned Transaction。
 
+**Provider change note (recorded 2026-09-24):** Supabase 將於 **2026-10-30** 對 existing projects 強制停止替新建 `public` tables 自動提供 Data API default grants。這不推翻 C-BSA-1；未來反而必須把 object GRANT 視為 explicit design。Native Data API、PostgREST / GraphQL / `supabase-js`，以及經 Data API 使用 `service_role` 的 Custom API，都必須確認新 table 已取得所需 least-privilege grants。Direct PostgreSQL connection 則是另一條 authorization path。詳細 dated interpretation 已補入 `evidence/c-bsa-1-consolidated-findings.md` 與 Provider Assumption Register。
+
 Evidence-backed Current Judgment：`Transaction boundary 應由擁有完整 Business Operation 的那一層決定。` 完整 findings：`evidence/c-bsa-1-consolidated-findings.md`。
 
 ## Remaining Supabase-first / Platform Questions
