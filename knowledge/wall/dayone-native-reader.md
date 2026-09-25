@@ -4,73 +4,27 @@
 > Claire × 墨衡  
 > 2026-09-20
 
-前一篇，我們只是想替 Claire 用了八年的 Day One 日記留一條逃生路。
+前一篇，我們已經把 Browser Reader 做完，也把「Export 不等於可攜」這件事講得夠多了。
 
-事情一路從 JSON、rich text、照片、PDF，長成了一個真的能在 Browser 裡閱讀的 Day One Reader。
-
-如果你沒看過上一集，可以先從這裡開始：
+如果你想知道 JSON、rich text、照片、PDF、網站版與 Textastic Local Preview 怎麼一路長成 escape hatch，故事在這裡：
 
 [我們只是想把 Day One 日記帶走，事情怎麼會變成這樣](dayone-reader-escape-hatch.md)
 
-那篇做到最後，我們得到一個很簡單的結論：
+這一篇不重播。
 
-> **Export 不等於可攜。**
-
-資料能拿出來是一回事。
-
-離開原本的 App 之後，那些資料還能不能重新變成人類願意看的東西，是另一回事。
-
-Browser Reader 已經證明 Day One 的 structured JSON 足夠讓我們把日記重新組回來。
-
-照理說，事情應該到這裡就結束。
-
-並沒有。
-
-因為我們在 Day One JSON 的照片資料裡，看見了一個欄位：
+Browser 已經回答了「Day One Export 能不能重新變成人類願意看的日記」。我們真正還沒回答的，只剩照片資料裡一個很可疑的欄位：
 
 `appleLocalIdentifier`
 
-然後人類最危險的四個字就出現了：
+它看起來不像只是給 Export 自己用的流水號。
 
-**「那如果呢？」**
+它比較像 Day One 在門外多留了一條線：
 
----
+> **如果原本的照片還在 Apple Photos，能不能根本不要複製第二份，直接把它找回來？**
 
-## 先說結論：Day One 真的是良心公司
+這個問題 Browser 回答不了。
 
-這趟研究本來多少帶著一點「來看看你這個 Export 到底能不能用」的戒心。
-
-拆到最後，反而有點不好意思。
-
-Day One 沒有只丟給使用者一包 technically valid、實際上很難利用的文字備份。
-
-我們實際確認它的 Export 保存了：
-
-- structured rich text；
-- heading、paragraph、quote、list、checklist 等閱讀結構；
-- tags、location、weather 等 metadata；
-- embedded media 在文章中的位置；
-- exported photo / PDF 的 mapping 資訊；
-- 照片相關的多種 identifier；
-- 甚至包含可以重新接回 Apple Photos 的 `appleLocalIdentifier`。
-
-這件事非常重要。
-
-因為 Claire 到現在還在用 Day One。
-
-我們從來不是因為討厭 Day One，才想做一個 Reader 把它換掉。
-
-剛好相反。
-
-我們只是想確認：
-
-> **如果有一天真的要離開，門是不是認真做的。**
-
-結果答案比原本預期更好。
-
-Day One 不只給了門。
-
-它甚至在門外留下了一些路標。
+於是事情第一次真正需要離開 Browser，走進 PhotoKit。
 
 ---
 
@@ -582,63 +536,37 @@ Native Reader 不一樣。
 
 ---
 
-## 最後，我們原本只是想知道資料拿不拿得回來
+## 最後，這個 Reader 真正研究的不是 Reader
 
-這整段 Day One 研究最有趣的地方，是它一直把問題往前推。
+做到這裡，Native Reader 已經回答完它真正需要回答的問題。
 
-一開始：
+`appleLocalIdentifier` 可以重新接回 Apple Photos；iPad 上的 Swift Playgrounds 可以完成這條 Apple-native 驗證；Photo Wall 做壞了也沒有必要為了「既然都寫了」繼續追。
 
-> Day One 可以 Export，所以資料應該拿得回來吧？
+這三件事放在一起，反而比 Reader 本身更有意思。
 
-後來：
+Browser 階段告訴我們：**先在最容易觀察的環境把問題拆乾淨。**
 
-> JSON 拿到了，但人還看得下去嗎？
+Native 階段告訴我們：**只有剩下的平台能力真的需要 Native 時，再付 Native 的成本。**
 
-再後來：
+Photo Wall 則提醒我們：**AI 讓 implementation 便宜，不代表每個可以做的 feature 都值得做。**
 
-> 照片呢？
+Claire 沒有 Mac，沒有 Xcode，也不是 Swift programmer。
 
-最後：
-
-> 等一下，Day One 居然把 Apple Photos 的 identifier 也留下來了？
-
-於是我們從 Browser 一路走進 PhotoKit。
-
-而研究到最後，反而讓我對 Day One 更有好感。
-
-一個真正有良心的 Export，不只是讓資料在法律或格式意義上「屬於使用者」。
-
-它還應該盡可能保留資料原本的結構、關係與恢復可能性。
-
-Day One 做到的程度，比我們開始研究以前預期得更多。
-
-至於 iPad-first？
-
-也比我們預期得更遠。
-
-Claire 沒有 Mac。
-
-沒有 Xcode。
-
-甚至不會 Swift。
-
-但她有一台 M5 iPad Pro、一套 Working Copy、一個很耗電的 Swift Playgrounds、一個會寫 code 的 AI，以及多年 SA 留下來的壞習慣：
+但她有一台 M5 iPad Pro、一套 Working Copy、一個很耗電的 Swift Playgrounds、一個會大量 implementation 的 AI，以及多年 SA 留下來的壞習慣：
 
 **看到一個問題，就會想把它拆清楚。**
 
-最後，Day One 的 JSON 重新變成日記。
+最後，我們確實得到了一個 Native Reader。
 
-Apple Photos 裡的照片重新回到文章裡。
+但這次真正值得留下來的 Evidence 不是「我們做出一個 App」。
 
-M5 雖然暫時被降級成 M0.5，還是把 Reader 跑起來了。
-
-這大概就是這次實驗最值得留下來的結果：
+而是：
 
 > **研究價值從來不等於 implementation difficulty。**
 >
-> 有時候真正重要的，不是「這段 code 難不難寫」。
+> 真正重要的不是一段 code 能不能寫。
 >
-> 而是你知不知道，應該先問哪一個問題。
+> 是你知不知道，哪個問題值得進到下一層，以及什麼時候已經可以停了。
 
 ---
 
