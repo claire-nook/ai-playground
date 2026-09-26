@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Lifecycle Diagnostic Probe</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 1rem; font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f6f7f9; color: #1f2328; }
+    main { width: min(100%, 760px); margin: 0 auto; }
+    section { margin-top: 1rem; padding: clamp(1rem, 4vw, 1.5rem); background: #fff; border: 1px solid #d0d7de; border-radius: 12px; }
+    h1, h2 { margin-top: 0; }
+    h1 { font-size: clamp(1.55rem, 6vw, 2.2rem); }
+    h2 { font-size: 1.2rem; }
+    .hint, .privacy { color: #59636e; }
+    .field { margin-top: 0.8rem; }
+    label { display: block; margin-bottom: 0.3rem; font-weight: 700; }
+    input, button { width: 100%; min-height: 48px; padding: 0.7rem 0.8rem; font: inherit; border: 1px solid #8c959f; border-radius: 8px; }
+    button { background: #fff; font-weight: 650; cursor: pointer; }
+    button.primary { border-color: #1f2328; background: #1f2328; color: #fff; }
+    button:disabled { cursor: wait; opacity: 0.6; }
+    .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; margin-top: 1rem; }
+    .status { padding: 0.75rem; background: #eef5ff; border-radius: 8px; font-weight: 700; overflow-wrap: anywhere; }
+    .message { min-height: 1.5rem; font-weight: 650; }
+    pre { min-height: 11rem; max-height: 28rem; margin: 0; padding: 0.8rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #0d1117; color: #e6edf3; border-radius: 8px; font: 0.82rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    ol { padding-left: 1.4rem; }
+    li + li { margin-top: 0.4rem; }
+    code { overflow-wrap: anywhere; }
+    @media (max-width: 560px) { .actions { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/">← AI Playground</a>
+    <section>
+      <p class="hint">Investigation · iPad Safari standalone probe</p>
+      <h1>Auth Lifecycle Diagnostic</h1>
+      <p>觀察同一個 Supabase Auth lifecycle；本頁不修改 Application Shell，也不手動讀取或清除 Auth storage。</p>
+      <p class="privacy"><strong>Public-safe boundary：</strong>Log 只包含 timestamp、operation / Auth event、Session present/null、遮罩 Identity 與安全的 error summary。Password、Token、完整 Session、完整 Identity 不會顯示或寫入 Console。</p>
+      <p id="current-status" class="status" role="status" aria-live="polite">Current observation: starting…</p>
+
+      <form id="login-form" novalidate>
+        <div class="field"><label for="account">Account</label><input id="account" type="email" autocomplete="username" inputmode="email" required></div>
+        <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+        <button id="login-button" class="primary" type="submit">Login</button>
+      </form>
+      <p id="action-message" class="message" aria-live="polite"></p>
+      <div class="actions">
+        <button id="check-button" type="button">Check Session</button>
+        <button id="logout-button" type="button">Local Logout</button>
+        <button id="clear-button" type="button">Clear Diagnostic Log</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Diagnostic Log</h2>
+      <pre id="diagnostic-log" aria-live="polite" aria-label="Auth lifecycle diagnostic log"></pre>
+    </section>
+
+    <section>
+      <h2>A/B Test Matrix</h2>
+      <p>Ordinary Safari 與 Private Browsing 必須各用全新的測試流程，並執行完全相同的步驟：</p>
+      <ol>
+        <li>進入本頁，保留 <code>PAGE_LOAD</code>、<code>AUTH_EVENT INITIAL_SESSION</code> 與 <code>GET_SESSION page_load</code> evidence。</li>
+        <li>Login，然後按 <strong>Check Session</strong>。</li>
+        <li>按 <strong>Local Logout</strong>；等待 <code>SIGN_OUT resolved/rejected</code> 與自動執行的 <code>GET_SESSION after_sign_out</code>。</li>
+        <li>再按一次 <strong>Check Session</strong>。</li>
+        <li>Reload 本頁，等待 page-load check，再按 <strong>Check Session</strong>。</li>
+        <li>回到 Playground 首頁，重新進入本 probe，等待 page-load check，再按 <strong>Check Session</strong>。</li>
+      </ol>
+      <p class="hint">每一階段請截圖或抄錄畫面 Log。Reload 會開始新的 in-memory Log；Clear 只清畫面 Log，不影響 Session。</p>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+
+    const SUPABASE_URL = "https://cctonymfrxneonxryqei.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MN0_kx6LzCPyNbtI4CWZ9w_y-5hew_g";
+    const logElement = document.getElementById("diagnostic-log");
+    const statusElement = document.getElementById("current-status");
+    const actionMessage = document.getElementById("action-message");
+    const controls = [...document.querySelectorAll("button")];
+
+    function maskIdentifier(value) {
+      if (!value) return "none";
+      if (value.length <= 8) return "****";
+      return `${value.slice(0, 4)}****${value.slice(-4)}`;
+    }
+
+    function maskEmail(email) {
+      if (!email || !email.includes("@")) return "none";
+      const [localPart, domain] = email.split("@");
+      const domainParts = domain.split(".");
+      const domainName = domainParts.shift() || "";
+      const suffix = domainParts.length ? `.${domainParts.join(".")}` : "";
+      return `${localPart.slice(0, 2)}***@${domainName.slice(0, 2)}***${suffix}`;
+    }
+
+    function sessionFields(session) {
+      if (!session) return "session=null identity=none";
+      return `session=present user_id=${maskIdentifier(session.user?.id)} email=${maskEmail(session.user?.email)}`;
+    }
+
+    function safeErrorSummary(error) {
+      if (!error) return "error=none";
+      const name = typeof error.name === "string" && /^[A-Za-z][A-Za-z0-9_ -]{0,39}$/.test(error.name) ? error.name : "Error";
+      const status = Number.isInteger(error.status) ? ` status=${error.status}` : "";
+      return `error=present type=${name}${status}`;
+    }
+
+    function writeLog(marker, details = "") {
+      const line = `${new Date().toISOString()} | ${marker}${details ? ` | ${details}` : ""}`;
+      logElement.textContent += `${line}\n`;
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+
+    function observeSession(source, session) {
+      const fields = sessionFields(session);
+      writeLog(source, fields);
+      statusElement.textContent = `Current observation: ${fields}`;
+    }
+
+    function setBusy(busy) {
+      controls.forEach((button) => { button.disabled = busy; });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+
+    // Register immediately after client creation. The callback performs no Auth API call, avoiding lock/deadlock coupling.
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      observeSession(`AUTH_EVENT ${event}`, session);
+    });
+
+    async function checkSession(reason) {
+      writeLog(`GET_SESSION ${reason} start`);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        writeLog(`GET_SESSION ${reason} resolved`, `${safeErrorSummary(error)} ${sessionFields(data?.session)}`);
+        statusElement.textContent = `Current observation: ${sessionFields(data?.session)}`;
+      } catch (error) {
+        writeLog(`GET_SESSION ${reason} rejected`, safeErrorSummary(error));
+        statusElement.textContent = "Current observation: getSession rejected; Session presence unknown";
+      }
+    }
+
+    document.getElementById("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const account = document.getElementById("account");
+      const password = document.getElementById("password");
+      if (!account.value.trim() || !password.value) { actionMessage.textContent = "請輸入 Account 與 Password。"; return; }
+      setBusy(true);
+      actionMessage.textContent = "Login call in progress…";
+      writeLog("SIGN_IN call_start");
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email: account.value.trim(), password: password.value });
+        password.value = "";
+        writeLog("SIGN_IN resolved", `${safeErrorSummary(error)} ${sessionFields(data?.session)}`);
+        actionMessage.textContent = error ? "Login returned an error; see safe summary in Log." : "Login resolved with Session observation in Log.";
+      } catch (error) {
+        password.value = "";
+        writeLog("SIGN_IN rejected", safeErrorSummary(error));
+        actionMessage.textContent = "Login Promise rejected; see safe summary in Log.";
+      } finally { setBusy(false); }
+    });
+
+    document.getElementById("check-button").addEventListener("click", async () => {
+      setBusy(true);
+      await checkSession("manual");
+      setBusy(false);
+    });
+
+    document.getElementById("logout-button").addEventListener("click", async () => {
+      setBusy(true);
+      actionMessage.textContent = "Local signOut call in progress…";
+      writeLog("SIGN_OUT local call_start");
+      try {
+        const { error } = await supabase.auth.signOut({ scope: "local" });
+        writeLog("SIGN_OUT local resolved", safeErrorSummary(error));
+        actionMessage.textContent = error ? "Local signOut resolved with a returned error." : "Local signOut resolved without a returned error.";
+      } catch (error) {
+        writeLog("SIGN_OUT local rejected", safeErrorSummary(error));
+        actionMessage.textContent = "Local signOut Promise rejected.";
+      } finally {
+        await checkSession("after_sign_out");
+        setBusy(false);
+      }
+    });
+
+    document.getElementById("clear-button").addEventListener("click", () => {
+      logElement.textContent = "";
+      writeLog("LOG cleared", "in_memory_display_only");
+    });
+
+    window.addEventListener("pagehide", () => authListener.subscription.unsubscribe(), { once: true });
+    writeLog("PAGE_LOAD", "probe_ready log_storage=in_memory");
+    await checkSession("page_load");
+  </script>
+</body>
+</html>
