@@ -310,6 +310,56 @@ Collaboration boundary / last-known limitation：
 
 Current status：**Environment acquired / capability discovered; detailed usage patterns not yet validated.** 遇到適合的實際需求時，再逐項研究、做 Playground Experiment、形成 Evidence / Implementation Knowledge。Cloudflare 本身不因最初由 AI Society 討論引出，就被綁定成該 Research Topic 的一部分。
 
+
+### Notion / AI-Lab
+
+Status：**Operational non-canonical thought memory / Free-plan connector validated**
+
+Claire 的 Notion 已建立 top-level page **`AI-Lab`**，作為 Primary 與 Claire 的「未成熟思緒暫存層」。它不是 finished output，也不是 canonical technical knowledge。
+
+Current role：
+
+~~~text
+Conversation / exploration
+→ 有趣、可能值得保留，但尚未成熟
+→ Notion / AI-Lab
+→ 後續理解穩定、需要跨轉世可靠恢復
+→ GitHub Knowledge / Research / Evidence
+~~~
+
+目前 AI-Lab 已建立四個簡單分類：
+
+- **服務**：外部平台、Cloud / infrastructure service。
+- **工具**：Claire / Primary 實際操作的開發或工作工具。
+- **想法**：尚未成熟的靈感、腦洞、待發酵思緒。
+- **研究**：值得繼續追查 / 驗證，但尚未形成穩定結論的題目。
+
+第一筆已建立內容：**服務 → Cloudflare**。其中保存 Cloudflare 的探索筆記、Claire Free Dashboard 已看到的 capability、可能用途、working heuristic 與尚未研究的問題。Cloudflare 的正式 Lab capability 狀態仍以本 Inventory 為準；AI-Lab 不應形成第二份 canonical truth。
+
+Operating rule：
+
+- Primary 可在適合時自行把「值得留下、但還不值得 commit」的內容放進 AI-Lab，不需要把每個半熟想法都永久刻進 Git history。
+- **Bootstrap 不需要讀完整 AI-Lab。** Startup 只需知道這個 memory surface 存在。
+- 當 Claire 提到「以前是不是聊過 / 想過 / 記過某件事」，而 GitHub canonical knowledge 無法回答時，Primary 應把 AI-Lab 納入 retrieval 候選，自行搜尋，不要先要求 Claire 回想 page title。
+- 當 AI-Lab 內容成熟成穩定理解，再整理後 promotion 到 GitHub；不要原封不動複製，避免雙重 canonical source。
+- Binary / finished artifact 仍依 Dropbox collaboration surfaces 處理；AI-Lab 不是 Dropbox replacement。
+
+Current Connector evidence（2026-10-06）：
+
+- Notion workspace 可由 Primary **fetch / keyword search / create page / update page**。
+- Free plan 的一般 Search 可用。
+- **Notion AI Search 目前需要更高方案**，不可假設 Free plan 有 semantic / natural-language search。未來 retrieval 應使用可辨識 keyword / title / category，除非 runtime self-check 顯示 capability 已改變。
+- Tool availability / permission 仍屬 runtime state，未來 Conversation 應依需要重新確認。
+
+Mental model：
+
+~~~text
+Notion AI-Lab → hot / messy / non-canonical thought memory
+GitHub        → durable structured / canonical Lab memory
+Dropbox       → artifact / binary / delivery memory
+~~~
+
+
 ### Codex / Implementation Agent
 
 Codex 是重要 Implementation Agent / execution surface，但「Codex 存在」不等於 Primary 一定具有 supported autonomous direct dispatch capability。
