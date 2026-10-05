@@ -52,6 +52,49 @@ Primary 建立新 Work Order 前先讀：
 - Codex local SHA 不保證等於 GitHub-visible PR head SHA。
 - GitHub PR comment 不保證自動進入既有 Codex workspace；REWORK delta 由 Claire relay 回原 Task。
 
+### New Codex Cloud（2026-10-05 Verified Profile）
+
+2026-10-05 以 Work Order `2026-10-05-new-codex-cloud-execution-profile-validation`、Draft PR #46 / #47 與 Primary GitHub QC 驗證目前新版 Cloud surface。
+
+目前直接觀察的模式：
+
+- Task UI 仍以單一 Repository + source branch 建立工作；executor workspace 內實際 local branch 可為 `work`，不等於 requested baseline branch。
+- Published Cloud Environment 對 Claire 是可設定 / publish / selection 的 runtime surface；但 executor task 內沒有可直接辨識 Environment display name、ID、revision 或 setup provenance 的 metadata。只能觀察已配置好的 runtime 結果，不把 toolchain 來源硬歸因給 Environment。
+- Codex 可讀 repository-local Work Order、執行 shell / validation、修改 workspace 並建立 local commit；workspace 仍可能沒有 configured Git remote，`gh` 也可能未登入。
+- New Task 完成後，Claire 在 Web UI 看到 **建立草稿 PR**；觸發後平台把成果發布為 GitHub-visible Draft PR。Claire 不需要另外在 GitHub commit 或 push。
+- GitHub-visible 後，Primary 可直接從 GitHub 執行 Technical QC，並在授權範圍內完成 Ready for Review、Merge 與 superseded PR cleanup。正常 happy path 下，Claire 的 publication 工作可收斂為「建立草稿 PR」這個 Human Gate。
+- Codex local commit SHA 仍不保證等於 GitHub-visible PR head SHA。Phase 1 local `dcfa9cf...` 發布為 PR #46 head `f5fc7a2...`，再次直接驗證 identity separation。
+- **重要 continuation 差異：同一 Cloud conversation 不等於同一 GitHub PR lineage。** PR #46 建立後，在同一 Cloud conversation 做第二次 local commit，再次觸發 **建立草稿 PR**，平台沒有更新 #46，而是建立新的 branch 與 Draft PR #47。
+- 因此不要把舊 Codex Product UI 的 `Existing Task → Update Branch → same PR` 套用到 New Codex Cloud。若 continuation 產生新 Draft PR，由 Primary 以 GitHub-visible diff / report 判斷新的 canonical PR，QC 後 merge canonical artifact 並關閉 superseded PR。
+- `make_pr` 類 executor-visible metadata surface、Claire 看見的 publication control、以及真正 GitHub-visible PR 是三個不同 observation surface；沒有 direct evidence 時不要宣稱它們內部如何因果串接。
+
+目前推薦的 happy path：
+
+```text
+Primary writes repository-local Work Order
+        ↓
+Claire creates / continues New Codex Cloud task
+        ↓
+Codex preflight / implementation / validation / local commit
+        ↓
+Claire triggers 「建立草稿 PR」
+        ↓
+GitHub-visible Draft PR
+        ↓
+Primary Technical QC
+        ↓
+Accepted: Primary Ready / Merge / cleanup
+Rework: return delta to Codex; subsequent publication may create a NEW Draft PR
+        ↓
+Primary selects canonical PR and closes superseded PR
+```
+
+> **Cloud conversation lineage ≠ GitHub PR lineage.**
+>
+> **New Codex Cloud publication gate ≠ GitHub commit / push work for Claire.**
+
+Verified artifact：`agent-work/reports/2026-10-05-new-codex-cloud-execution-profile-validation.md`。PR #46 保存 Phase 1 publication evidence；PR #47 為 continuation 後 canonical artifact，經 Primary QC 後 merge。
+
 ### CLI / GitHub-integrated Agent
 
 若 runtime 已具有被授權的 commit / push / PR capability，可由 Agent 直接完成 publication。完成後仍以 GitHub-visible PR / commit 作 Primary QC surface，不因 Agent 能 publish 就省略 QC。
