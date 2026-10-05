@@ -223,7 +223,148 @@ Human Relay 理想工作量仍應很小：選對 Repository / source baseline、
 
 ---
 
-## 13. Unknown / Not Verified
+## 13. 2026-10-05 Revalidation｜New Codex Cloud
+
+2026-10-05 因 Codex Cloud 產品更新，使用正式 Investigation Work Order 重新驗證 execution surface。這次不是重新設計 collaboration governance，而是確認新版弟弟相對於 2026-09 historical profile 改變了什麼。
+
+### 13.1 Governance survived the product update
+
+以下核心沒有因新版 Cloud 改變：
+
+- repository-local Work Order 仍可作 executor contract。
+- snapshot / context preflight、Must / Must Not / Acceptance、fail closed 仍有效。
+- executor 可 inspection / validation / edit / local commit。
+- local commit identity 與 GitHub-visible identity 必須分離看待。
+- GitHub-visible PR 仍是 Primary Technical QC 的可靠 handoff surface。
+- Agent Report 仍不等於 Verified Evidence；Primary 需獨立讀 diff / report / GitHub state。
+
+這次更新證明先前把 governance contract 與 provider-specific publication adapter 分離是正確設計。產品換 execution surface，不需要把整套協作制度推倒重寫。
+
+### 13.2 Published Environment is runtime configuration, not self-describing task context
+
+Claire 可在新版 Codex Cloud 建立、設定並 Publish Cloud Environment；Task UI 可由 repository / branch 啟動工作。
+
+但 executor 內本次直接觀察不到 Published Environment 的 display name、ID、revision、publication timestamp 或 setup provenance。它能看到的是已配置完成的 Linux runtime、toolchain、managed environment signals 與 workspace filesystem。
+
+因此目前證據支持：
+
+```text
+Claire / Product UI
+  → selects / publishes Environment
+  → provider prepares runtime
+  → Codex Task observes configured runtime result
+```
+
+不支持：
+
+```text
+Codex Task
+  → can reliably introspect which Published Environment / revision created it
+```
+
+Environment identity 屬 UI / external evidence；runtime tool availability 屬 executor direct evidence。兩者不要混寫。
+
+### 13.3 Single-task observation remains repository-scoped
+
+本次 task filesystem 只觀察到 `/workspace/ai-playground` 一個 Git working tree。requested source baseline 為 `main`，executor local branch 為 `work`，`.git/FETCH_HEAD` 保存 requested GitHub `main` → starting HEAD lineage。
+
+這再次驗證：
+
+> **Source baseline identity ≠ workspace local branch name.**
+
+本次沒有嘗試繞過 repository boundary，因此只能說「本 task 實際是 single-repository workspace」，不能升格成 provider 永久只支援一個 repository 的規格。
+
+### 13.4 New publication happy path is simpler for Claire
+
+第一階段 executor local commit 完成後，Claire 在 New Codex Cloud Web UI 直接看到 **建立草稿 PR**。
+
+Claire 觸發後：
+
+- GitHub 建立 open Draft PR #46。
+- base 為 `main`。
+- 只有指定 Investigation report。
+- Claire 不需要另外進 GitHub commit 或 push。
+- local commit `dcfa9cf...` 與 GitHub-visible PR head `f5fc7a2...` 不同，再次驗證 commit identity separation。
+
+GitHub-visible 後，Primary 透過 GitHub surface 可以獨立 QC。後續 canonical PR #47 由 Primary 轉 Ready、Squash Merge，並關閉 superseded PR #46。
+
+因此目前 iPad-first happy path 可收斂為：
+
+```text
+Primary → Work Order / QC
+Claire  → Dispatch + 「建立草稿 PR」 Human Gate
+Codex   → workspace implementation / validation / local commit
+Cloud   → GitHub Draft PR publication
+Primary → GitHub QC / Ready / Merge / cleanup
+```
+
+在一般 implementation publication 上，Claire 不再需要人工執行 Git commit、push 或 merge。
+
+### 13.5 Major change: Cloud conversation lineage is not PR lineage
+
+為驗證 continuation，PR #46 建立後，在**同一 New Codex Cloud conversation** 要求 Codex 做第二次最小 report update。Codex 建立第二個 local commit後，Claire UI 再次顯示 **建立草稿 PR**，而不是 historical profile 的 `Update Branch`。
+
+Claire 再次觸發後，GitHub 沒有更新 #46，而是：
+
+- 建立新的 Draft PR #47。
+- 建立不同 head branch：`codex/set-up-investigation-environment-for-new-codex-cloud-y5dpdo`。
+- PR #46 保持 open、head 不變。
+- PR #47 從 `main` 提供完整較新版 report，而不是在 GitHub 上延續 #46 head。
+- #47 經 Primary QC 成為 canonical artifact；#46 被關閉並保留為 Phase 1 evidence。
+
+因此 2026-09 的：
+
+```text
+Existing Task → Update Branch → same PR
+```
+
+**不能套用到 2026-10-05 New Codex Cloud。**
+
+目前直接 Evidence 是：
+
+```text
+Same Cloud conversation
+  → local continuation
+  → 「建立草稿 PR」
+  → NEW branch
+  → NEW Draft PR
+```
+
+> **Cloud conversation lineage ≠ GitHub PR lineage.**
+
+Operational consequence：REWORK 可以繼續使用同一 Cloud conversation，但 publication 後 Primary 必須以 GitHub-visible state 選定新的 canonical PR，並清理 superseded PR。不要期待 UI 自動更新既有 PR。
+
+### 13.6 What “new Codex” changed
+
+相對於 2026-09 historical Codex Product UI，本次可保守下結論：
+
+| Area | 2026-09 observed profile | 2026-10-05 New Codex Cloud |
+| --- | --- | --- |
+| Work contract | Repo-local Work Order | **Still valid** |
+| Workspace | Snapshot-oriented Cloud workspace | **Still observed** |
+| Local branch vs baseline | Can differ | **Still observed** |
+| Local commit vs GitHub SHA | Can differ | **Still observed again** |
+| New publication | Claire `Create PR` | Claire **建立草稿 PR** |
+| Continuation publication | `Update Branch` → same PR | **建立草稿 PR → new PR / new branch** |
+| Environment | No reusable Published Environment profile in recorded flow | **Published Environment added as product/runtime configuration surface** |
+| Environment introspection | N/A | **Not exposed reliably inside executor task** |
+| Claire after publication | Human relay + publication gates; GitHub steps depended on flow | **After Draft PR, Primary can take over QC / Ready / Merge / cleanup** |
+
+最重要的產品更新不是「Codex 突然變成另一種 Agent」，而是 **Environment 與 publication surface 改變，而既有 governance 仍然有效**。
+
+### 13.7 Evidence chain
+
+- Work Order：`agent-work/work-orders/2026-10-05-new-codex-cloud-execution-profile-validation.md`
+- Executor / Investigation report：`agent-work/reports/2026-10-05-new-codex-cloud-execution-profile-validation.md`
+- PR #46：Phase 1 New Task Draft publication evidence，後續 closed / superseded。
+- PR #47：same-conversation continuation 產生的新 Draft PR；Primary QC 後作 canonical artifact merge。
+- Canonical merge commit：`5301cd250ff3a7a407e688989892aab3a730c0c1`
+
+這些 evidence 描述 2026-10-05 的產品行為，不宣稱永久 provider contract。產品再改，就再撞一次牆，不靠信仰維護文件。
+
+---
+
+## 14. Unknown / Not Verified
 - Codex Cloud Workspace 內部如何建立 Repository snapshot。
 - Create PR 時 local commit 為什麼可能變成不同 GitHub commit SHA。
 - 是否存在可靠的 Workspace refresh / sync mechanism，可在不建立新 task 的情況下取得 Primary 後續 commit。
