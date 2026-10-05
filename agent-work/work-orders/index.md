@@ -22,6 +22,7 @@ Historical Work Orders 不 retroactive rewrite；Catalog 只做 normalized navig
 
 | Date | Type | Work Order | Primary Objective |
 |---|---|---|---|
+| 2026-10-05 | Investigation | [`2026-10-05-new-codex-cloud-execution-profile-validation`](2026-10-05-new-codex-cloud-execution-profile-validation.md) | 調查新版 Codex Cloud execution surface 相對既有 Codex Product UI direct experience 實際改變了哪些 Environment、Workspace、Validation 與 Publication 行為。 |
 | 2026-09-17 | Review | [`2026-09-17-nook-works-architecture-v01-adversarial-review`](2026-09-17-nook-works-architecture-v01-adversarial-review.md) | 從 Architecture Reviewer 與 Implementer 雙視角 adversarially challenge Nook Works Application Architecture v0.1，找出責任錯置、過早抽象、不可施工契約與隱藏假設。 |
 | 2026-09-17 | Review | [`2026-09-17-general-platform-architecture-v01-review`](2026-09-17-general-platform-architecture-v01-review.md) | 從 Architecture Reviewer 與 Implementer 雙視角 adversarially review General Application Platform Architecture v0.1。 |
 | 2026-09-16 | Implementation | [`2026-09-16-application-shell-vertical-slice`](2026-09-16-application-shell-vertical-slice.md) | 實作 S-SHELL-1 disposable Application Shell vertical slice，整合 Auth/bootstrap、metadata Navigation、三種 Feature integration shape、routing 與 iPad-first responsive behavior。 |
