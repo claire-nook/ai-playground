@@ -253,6 +253,63 @@ Project 使用 Supabase 作為主要 backend。Database / Auth / Edge Function /
 
 既有 Playground Evidence 也包含 GitHub Actions + Supabase CLI 等 iPad-first remote execution pattern。不要把過去某次 deployment path 誤認成今天唯一的路。
 
+### Cloudflare Developer Platform
+
+Status：**Free account established / available Lab infrastructure / not tied to a single Experiment**
+
+Claire 已建立 Cloudflare Free account（GitHub identity）。Cloudflare 應視為實驗室新增的通用 **Cloud Runtime / Developer Platform capability**，不是「AI Society 專用服務」；未來 Technology exploration、PoC、小工具、backend runtime、storage 或 AI workload 遇到合適需求時，都應把 Cloudflare 納入候選，不要每一世重新從「Cloudflare 是什麼」開始考古。
+
+Current mental model：
+
+~~~text
+GitHub     → Source / CI/CD / durable repository state
+Netlify    → Web frontend / deployment
+Supabase   → formal shared PostgreSQL data / Auth / backend platform
+Cloudflare → cloud compute / lightweight app data / object storage / stateful & async runtime
+Swift/iPadOS → native device capability
+~~~
+
+已由 Claire Free Dashboard / current provider information 初步確認的主要 Free capabilities：
+
+- **Workers / Pages**：serverless compute / web deployment；可作 API、API proxy、server-side processing。Workers Free 約 100,000 requests/day，CPU quota 依 Free plan 規則。
+- **D1**：serverless SQL database（SQLite semantics）。Free Dashboard 顯示最多 **10 databases**、合計 **5 GB storage**、每日約 **5M rows read / 100K rows written**。適合某個小工具 / PoC / Experiment 自己的 structured data，不代表要取代 Supabase PostgreSQL。
+- **R2**：object storage；Free Tier 約 **10 GB-month**，另有 operation quotas。適合圖片、檔案、JSON archive 等 object data。
+- **Durable Objects**：具有 identity 與 persistent state/storage 的 stateful runtime；可用於 room/session/stateful service，亦是未來 Agent runtime 候選。
+- **Workflows**：Durable Execution Engine，可保存 multi-step execution progress、wait / retry / resume；不要與單純 Cron 混為一談。
+- **Queues**：asynchronous job / message queue。
+- **Browser Run / Browser Rendering**：Cloudflare-hosted headless browser runtime；Claire Dashboard 已可進入 Runs / Live Sessions / Playground，Free Tier 有有限 browser runtime。
+- **Workers KV**：key-value storage。
+- **Hyperdrive**：連接既有 PostgreSQL / MySQL 的 acceleration / connection layer；不是 Cloudflare 另外送一顆 PostgreSQL，未來可研究與 Supabase PostgreSQL 的搭配。
+- **Workers AI / Models / AI Gateway / Agent tracing / Vectorize 等**：AI inference、provider gateway、observability、vector / retrieval 類 infrastructure；目前只確認 capability surface，尚未形成 Lab operating pattern。
+- **MCP Portals**：目前 Dashboard 顯示位於 Cloudflare Zero Trust / Access 體系，初步理解為 MCP server access / security / gateway infrastructure；**不得推論成 ChatGPT 可藉此直接管理 Cloudflare**。
+- **Images & Stream / Realtime / Containers / Analytics Engine 等**：Free account 可見，尚未研究其 Lab 適用性與 quota。
+
+Data placement 的目前 working heuristic：
+
+~~~text
+formal / long-lived / cross-system relational data
+→ Supabase / Nook Core
+
+small application / tool / PoC / Experiment-owned relational data
+→ Cloudflare D1 candidate
+
+files / images / large objects
+→ Cloudflare R2 candidate
+
+private state belonging to one long-lived stateful object
+→ Durable Object storage candidate
+~~~
+
+這是 **routing heuristic，不是 Architecture Rule**。實際採用前仍依資料責任、lifecycle、security、query pattern、quota 與成本判斷。
+
+Collaboration boundary / last-known limitation：
+
+- ChatGPT Plugin Directory 搜尋 Cloudflare 時，**目前未找到 Cloudflare Plugin**。
+- 尚未建立 Primary → Cloudflare account 的直接 management connector / write surface，因此不得假裝能直接讀寫 Claire 的 Cloudflare runtime state。
+- GitHub-based deployment、Cloudflare API、MCP 等 collaboration path 值得後續按需求研究，但目前都不是已驗證的 Primary operating capability。
+
+Current status：**Environment acquired / capability discovered; detailed usage patterns not yet validated.** 遇到適合的實際需求時，再逐項研究、做 Playground Experiment、形成 Evidence / Implementation Knowledge。Cloudflare 本身不因最初由 AI Society 討論引出，就被綁定成該 Research Topic 的一部分。
+
 ### Codex / Implementation Agent
 
 Codex 是重要 Implementation Agent / execution surface，但「Codex 存在」不等於 Primary 一定具有 supported autonomous direct dispatch capability。
