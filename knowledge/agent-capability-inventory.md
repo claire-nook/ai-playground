@@ -4,7 +4,7 @@
 >
 > 這不是永久能力保證，也不是等到「需要工具時」才查的附錄。新的 Conversation 完成 Repository orientation 時就應讀取，先知道自己可能有哪些手腳，再以當前 Tool Discovery 確認今天哪些真的存在。
 
-- Last reviewed: 2026-09-19
+- Last reviewed: 2026-10-06
 - Scope: `實驗室` / AI Playground Primary Agent
 - Status: Living operational guide
 
@@ -255,7 +255,7 @@ Project 使用 Supabase 作為主要 backend。Database / Auth / Edge Function /
 
 ### Cloudflare Developer Platform
 
-Status：**Free account established / available Lab infrastructure / not tied to a single Experiment**
+Status：**Free account established / direct ChatGPT Connector verified / available Lab infrastructure / not tied to a single Experiment**
 
 Claire 已建立 Cloudflare Free account（GitHub identity）。Cloudflare 應視為實驗室新增的通用 **Cloud Runtime / Developer Platform capability**，不是「AI Society 專用服務」；未來 Technology exploration、PoC、小工具、backend runtime、storage 或 AI workload 遇到合適需求時，都應把 Cloudflare 納入候選，不要每一世重新從「Cloudflare 是什麼」開始考古。
 
@@ -302,13 +302,17 @@ private state belonging to one long-lived stateful object
 
 這是 **routing heuristic，不是 Architecture Rule**。實際採用前仍依資料責任、lifecycle、security、query pattern、quota 與成本判斷。
 
-Collaboration boundary / last-known limitation：
+Direct Connector evidence（2026-10-06）：
 
-- ChatGPT Plugin Directory 搜尋 Cloudflare 時，**目前未找到 Cloudflare Plugin**。
-- 尚未建立 Primary → Cloudflare account 的直接 management connector / write surface，因此不得假裝能直接讀寫 Claire 的 Cloudflare runtime state。
-- GitHub-based deployment、Cloudflare API、MCP 等 collaboration path 值得後續按需求研究，但目前都不是已驗證的 Primary operating capability。
+- Claire 已在 ChatGPT 安裝並授權 **Cloudflare Connector / Plugin**。
+- Primary 已實測可直接呼叫 Claire Cloudflare account 的 API；account discovery 成功。
+- Read-only probe 已成功取得 **D1 databases / Workers scripts / Queues / Workflows**，四者皆回 HTTP 200；當時資源數皆為 0。
+- Connector 提供三層 surface：**Cloudflare Docs search → OpenAPI spec search → authenticated Cloudflare API execute**。
+- API execute surface 支援 GET / POST / PUT / PATCH / DELETE；OpenAPI 已觀察到 D1 create/update/delete、Queue create、Workflow / trigger management、Browser Rendering 等 write/action endpoint。
+- **Write capability 尚未逐項實際驗證。** API surface 存在不等於每一項操作在 Claire Free account / current authorization 下必然成功；涉及建立、修改、刪除或可能產生成本的操作，仍應依 task 做 runtime self-check、確認 scope / quota / risk，再取得實際 Evidence。
+- 先前「Cloudflare Plugin 未找到 / Primary 無 direct management surface」的判斷已於 2026-10-06 被新 Evidence 推翻，不得沿用。
 
-Current status：**Environment acquired / capability discovered; detailed usage patterns not yet validated.** 遇到適合的實際需求時，再逐項研究、做 Playground Experiment、形成 Evidence / Implementation Knowledge。Cloudflare 本身不因最初由 AI Society 討論引出，就被綁定成該 Research Topic 的一部分。
+Current status：**Direct account read path verified; management/write surface exposed; detailed write capabilities and operating patterns pending deliberate exploration.** 遇到適合的實際需求時，再逐項研究、做 Playground Experiment、形成 Evidence / Implementation Knowledge。Cloudflare 本身不因最初由 AI Society 討論引出，就被綁定成該 Research Topic 的一部分。
 
 
 ### Notion / AI-Lab
