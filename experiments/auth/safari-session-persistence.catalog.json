@@ -1,0 +1,11 @@
+{
+  "id": "A-SAFARI-LIFECYCLE",
+  "title": "Safari Auth Session Lifecycle Probe",
+  "recordPath": "experiments/auth/safari-session-persistence-investigation.md",
+  "summary": "以 public-safe browser log 對照 Ordinary Safari 與 Private Browsing 的 local sign-out、getSession、Auth event、reload 與 re-entry lifecycle；等待 Claire Environment Evidence。",
+  "tags": ["Supabase", "Auth", "Safari", "Session", "iPad-first"],
+  "demoStatus": "live",
+  "demoPath": "/auth-lifecycle-probe/",
+  "verificationStatus": "candidate",
+  "flow": "Ordinary Safari / Private Browsing → Login → Check → Local Logout → Check → Reload → Re-entry → Check"
+}
