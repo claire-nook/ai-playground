@@ -90,14 +90,15 @@ Wall Writing Record 採 Progressive Loading：Bootstrap 只需要知道這個入
 
 ---
 
-## Cloudflare Connector / shared D1 experiment resource (2026-10-09)
+## Cloudflare Connector 與共用 D1 實驗資源（2026-10-09）
 
-- **Verified in CF-ORACLE-1:** authorized Cloudflare Connector created/updated Worker `cf-lab-oracle`, managed D1 database lifecycle and SQL, and uploaded a Worker bound to D1. Claire verified Worker UI + draw statistics in iPad Safari. See [Experiment](../experiments/cloudflare-oracle/README.md) and [Evidence](../evidence/cf-oracle-1.md).
-- **Shared D1 test database: `lab-smoke-db`**, ID `b8cfc676-a3d3-4b76-b11f-0ebc35303084`. This is the default D1 for small exploratory experiments / PoC / Connector smoke tests in this Cloudflare account. Create **experiment-specific tables**, not a new database by default.
-- **Never delete the shared database** to clean up a single experiment. Check existing table ownership and dependencies before changing or dropping objects. No destructive reset of unrelated experiments.
-- The redundant `cf-lab-oracle-db` was deleted after the oracle tables were moved. Do not treat it as an active resource.
-- Preserve structural SQL (`CREATE TABLE`, indexes, meaningful schema changes); **test INSERT statements and bulk synthetic rows are not required durable artifacts**.
-- Cloudflare permissions and tool surface must be rechecked in each session. This does not establish automated custom-domain setup, authentication, production readiness or universal API support.
+- **已驗證能力：** 在 CF-ORACLE-1 實驗中，AI 透過已授權的 Cloudflare Connector 建立及更新 Worker、操作 D1 資料庫生命週期與 SQL，並上傳綁定 D1 的 Worker。Claire 在 iPad Safari 驗證求籤結果及統計。參見[實驗紀錄](../experiments/cloudflare-oracle/README.md)與[證據](../evidence/cf-oracle-1.md)。
+- **共用測試資料庫：`lab-smoke-db`**，識別碼 `b8cfc676-a3d3-4b76-b11f-0ebc35303084`。Cloudflare 帳號中的小型探索、概念驗證及 Connector 測試，預設重用此 D1，透過實驗專屬資料表隔離；**不要每個小工具都新建資料庫**。
+- **不得為清理單一實驗而刪除整個共用資料庫。** 修改或刪除資料表前，先確認既有資料表的歸屬及相依關係，不得破壞其他實驗。
+- 多餘的 `cf-lab-oracle-db` 已刪除，不能視為仍存在的資源。
+- SQL 留存以 `CREATE TABLE`、索引及必要結構變更為主；測試資料的 `INSERT` 語法與大量合成資料不要求永久留存。
+- Connector 權限與工具能力仍須在每次新對話重新確認。此實驗**未驗證**自訂網域自動設定、登入認證或正式環境上線能力。
+
 
 ---
 
