@@ -2,6 +2,16 @@
 
 這份文件補充 `agent-work/README.md`，保存實際撞牆後確認的 execution-surface boundary 與 publication adapter。
 
+## 2026-10-09｜目前預設：Notion 輕量派工 × Codex 原生 Git
+
+一般個人實驗室工作不必先建立正式 Repo Work Order。Claire 在明確範圍說「開工」後，墨衡可於 [Notion Mailbox](https://www.notion.so/3f472eea528e81e69811f2ec85d457bc) 指定 Task／Message、目標 Repo、要做的事、限制及驗收；Codex 讀取後自行 Preflight、實作、適用驗證，於專用 branch Commit、非 force Push 並遠端讀回；墨衡以 GitHub-visible diff 獨立 QC、建立 PR／Merge，確認既有自動部署，Claire 實機驗收。同範圍修正不重複請示。若明文限定唯讀／討論則不得施工。
+
+每次先確認任務未被完成或取代，核 Repo／Branch／工作樹／遠端；必要且安全時 Fetch／乾淨可確認的 Fast-forward，未知成果／分叉／髒樹不擅自 reset、stash 或 force。Push 回應不明先讀回遠端。只有破壞性資料、密鑰／權限／安全、額外費用、越界或重大未知副作用需要停下確認。Codex 交付不等於墨衡 QC、部署或 Claire 驗收。沒有 Runtime 時記錄限制，不假裝測試通過。
+
+正式 Work Order 留給複雜、高風險、跨階段或需長期重現的任務；此時 Notion 短通知只引用 Repo Work Order，不複製另一份需求。下方 Codex Product UI／2026-10-05 Cloud 的 Claire 手動 Create PR 流程**保留為歷史 adapter**；2026-10-09 已驗證 Codex Workspace 原生 Commit／Push（ai-playground 007），PR 可由墨衡 GitHub Connector 接手。實際工具仍需每次確認，不把歷史成功當永久保證。
+
+---
+
 ## 核心原則
 
 > **Work Order 是完整施工 contract；Dispatch Handoff 是短通知。**
