@@ -31,7 +31,7 @@
 | `outputType` | `experiment` / `commentary` / `technical-note` / `knowledge`；省略預設 `experiment` |
 | `researchMethod` | `controlled-experiment` / `field-verification` / `analysis` / `synthesis`；省略預設 `controlled-experiment` |
 | `recordPath` | Repo-relative `.md` path，不得 absolute 或含 `..`；experiment 類須以 `experiments/` 開頭 |
-| `demoPath` | `demoStatus=live` 必填以 `/` 開頭的路徑；其他狀態須省略或 `null` |
+| `demoPath` | `demoStatus=live` 必填站內絕對路徑（不可 `//` 開頭）或外部 HTTPS URL；其他狀態須省略或 `null`。禁止 HTTP 與其他 scheme。 |
 | `flow` | 選填；有填則必須是非空字串 |
 
 **Experiment Record 的人類工作狀態 ≠ 網站 `verificationStatus`。** Record 可以寫 `Candidate / In Progress / Completed / Verified / Partial / Superseded`；網站狀態則是 Evidence strength，不能機械一對一翻譯。正在進行但沒有足夠證據可標示 `candidate`；已有部分可支持的結果才標 `partial`；有直接證據支持定義範圍才標 `verified`。是否已完成管理工作也不等於已驗證。
