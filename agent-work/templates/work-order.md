@@ -4,6 +4,8 @@
 >
 > Work Order 管理「派出了什麼工作」，不是 Worker KPI / task progress。核心原則是 **Reduce ceremony, not boundaries**：使用同一份 canonical Template，以 `Work Weight` 控制內容密度，不為 Micro / Standard / High-Risk 維護多套會逐漸 drift 的 Template。
 
+> **2026-10-09 適用提醒：**本 Template 只在確實需要正式 Repo Work Order 時使用。個人實驗室一般小任務可由 Notion Task／Message 直接約定目標、範圍、限制與驗收；Claire 說「開工」後，Codex 可在範圍內自主 Commit／非 force Push，墨衡 QC／PR／Merge、既有自動部署、Claire 實機驗收。特殊高風險或越界仍須停下確認。下方舊 Codex Product UI 的 Claire Create PR 說明是歷史 adapter，現行預設參考 [Agent Work](../README.md) 與 [Dispatch Handoff](../dispatch-handoff.md)。
+
 ## Metadata
 
 - Work Order ID: `YYYY-MM-DD-short-name`
