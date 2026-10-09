@@ -1,3 +1,19 @@
+## 2026-10-09｜Cloudflare Connector Direct Control
+
+### CF-CONNECTOR-1 — Cloud Oracle / Workers × D1 × Netlify
+
+- Status: In Progress / Phase 1–2 Verified
+- Record: [Cloudflare Direct Control](../experiments/cloudflare-direct-control/README.md)
+- Phase Artifacts: [Cloud Oracle + D1 SQL](../experiments/cloudflare-oracle/README.md)
+- Evidence: [cf-oracle-1.md](../evidence/cf-oracle-1.md)
+- Live Demo: https://cf-lab-oracle.claire-nook.workers.dev/
+- Tags: Cloudflare, Connector, Workers, D1, Netlify, iPad-first
+
+AI 透過 Connector 直接部署與更新 Worker，Claire 已於 iPad Safari 驗證 JSON API 與同源前端求籤。Phase 3 D1 SQL 草案已保存但尚未執行；Phase 4–5 Netlify 跨來源測試待驗證。
+
+---
+
+
 # Experiment Catalog
 
 這份 Catalog 回答：**我們曾經做過哪些 Experiment，而且當時為什麼要做？**
