@@ -1,90 +1,40 @@
-# CF-CONNECTOR-1 — Cloudflare Direct Control × Workers × D1 × Cross-host UI
+# CF-CONNECTOR-1｜Cloudflare Connector × Worker API × D1 × Netlify 換殼
 
-- Date: 2026-10-09
-- Status: Phase 1–3 functionally verified; Phase 4–5 pending
-- Primary Intent: Cloudflare Connector capability verification; iPad + AI-first cloud development
-- Tags: `ipad-first`, `ai-engineering`, `cloudflare`, `deployment`, `custom-api`, `data-api`, `cors`, `remote-execution`
-- Discussion source: Notion「Cloudflare 初探｜Direct Control × Workers × D1 小實驗計畫」(earlier planning snapshot)
-- Note: This record reflects the later five-phase design agreed in conversation, not necessarily the older Notion snapshot.
+- 日期：2026-10-09
+- 狀態：Completed（功能與實機驗證）
+- 研究類型：AI Connector 雲端操作能力、API／前端／資料庫分層、跨 Hosting 換殼
+- 具體實驗：[CF-ORACLE-1](../cloudflare-oracle/README.md)
+- 實驗證據：[CF-ORACLE-1 Evidence](../../evidence/cf-oracle-1.md)
 
-## Why this experiment exists｜為什麼做
+## 研究問題
 
-驗證 Primary AI 是否能不經 GitHub，直接透過 Cloudflare Connector 建立、修改及驗證 Worker / D1 integration；並比較 Cloudflare 與 Netlify UI shell 對同一組 API 的呼叫差異。這也是 iPad + AI-first 工作流程中，降低「AI 寫完但無法自行執行驗證」摩擦的 capability research。Playground 不是正式 Dev / SIT / UAT 環境。
+AI 是否能直接透過 Cloudflare Connector 完成 Worker API、D1 與網頁的建立和部署，並讓 Netlify 靜態前端沿用原 Worker API／D1，而不搬動後端？
 
-## Questions
+## 實驗路徑
 
-1. Connector 能否直接部署、修改、呼叫 Cloudflare Worker API，並提供可追溯執行證據？
-2. Cloudflare-hosted UI 與 Netlify-hosted UI 呼叫同一 API 時，部署及 CORS 邊界有何差異？
-3. D1 binding / CRUD 能否在 Worker API 路徑被實際驗證？
-4. 哪些操作可以由 AI 直接完成，哪些仍需要 Claire 在 Dashboard / Browser 手動操作？
+1. AI 透過 Connector 部署無 D1 的 Worker JSON API。
+2. 同一 Worker 增加 HTML／CSS／JavaScript 同源求籤網頁。
+3. Worker 綁定共用 D1 `lab-smoke-db`，使用 `oracle_fortunes` 讀取 200 支籤文，以 `oracle_draws` 記錄成功求籤，提供 `/stats`。
+4. 從 Cloudflare 取回原網頁，提交至 `ai-playground/public/cloudflare-oracle/index.html`，由 Netlify 自動部署。新殼改用跨來源呼叫同一 Worker API，原 Cloudflare 網頁保留不變。
+5. Claire 在 iPad Safari 驗證兩站求籤與共用統計，累計由 9 次增至 10 次。
 
-## Scope / Isolation
+原先規劃的「先以 Netlify 測試無 DB API，再測試 D1 API」兩階段已合併：直接使用完成 D1 整合的既有 Worker API 換殼，避免重複測試。
 
-只建立 **兩支 API**：API A（無 DB）、API B（有 D1 binding）。只比較 **兩種 UI shell**：Cloudflare 與 Netlify。按順序逐步引入變因；不混入 Zero Trust / Access / Authentication（另案研究）。不把 Playground source 視為 Production-ready。
+## 實驗網站
 
-## Five phases｜五階段計畫
+- Cloudflare 原站：https://cf-lab-oracle.claire-nook.workers.dev/
+- Netlify 新殼：https://ai-playground-lab.netlify.app/cloudflare-oracle/
 
-1. **Cloudflare Connector → API A**：無 UI、無 DB、無 Git，直接部署與測試 Worker API。
-2. **Cloudflare UI shell → API A**：Cloudflare 端 UI 呼叫既有 API A；不引入 DB / Git。
-3. **Cloudflare UI shell → API B + D1**：建立 API B 並綁定 D1；驗證資料讀寫及 UI 呼叫。
-4. **Netlify UI shell → same API A**：GitHub `ai-playground/public/` 提供 Netlify 靜態頁，呼叫 Phase 1 的同一 API A。
-5. **Same Netlify UI shell → same API B**：沿用 Phase 3 API B，驗證跨站呼叫與 D1 路徑。
+## 研究結論
 
-同源 / 跨源必須依實際 hostname 與部署方式判斷；「同在 Cloudflare」不保證同源。跨源瀏覽器呼叫須驗證 CORS，不能只靠 curl / API tool 成功推論 Browser 成功。
+- AI 在已授權範圍內，可直接透過 Cloudflare Connector 操作 Worker 與 D1，降低 iPad-first 開發對本機 CLI 的依賴。
+- Cloudflare Worker API 與 D1 可供 Cloudflare、Netlify 兩個不同 Hosting 的網頁共用。
+- Netlify 換殼只改前端 API 呼叫位置，無須重新部署後端或搬移資料。
+- Cloudflare JSON API 當時已允許跨來源讀取，故換殼不需調整 Worker CORS；這不是 API 存取保護的證明。
+- 功能已經 Safari 實機驗證，但不代表通過正式產品安全、效能或可靠性驗收。
 
-## Environment / Prior observations
+## 後續獨立研究
 
-- Cloudflare Free account created 2026-10-05.
-- Account `workers.dev` namespace: `claire-nook.workers.dev`.
-- Existing test D1: `lab-smoke-db` (database ID `b8cfc676-a3d3-4b76-b11f-0ebc35303084`).
-- Earlier Connector direct D1 SQL CRUD smoke tests reportedly succeeded after OAuth Full access; earlier read-only OAuth encountered error 10000.
-- **These are conversation handoff observations, not freshly reproduced evidence in this record.** Reconfirm live permissions and baseline before deployment.
-- No Worker creation or new phase test is claimed here.
+**API Security 為第二個實驗**：另行研究 Authentication（身分驗證）、Authorization（授權）、Rate Limiting（速率限制）及 CORS 存取政策。此處不混入安全方案設計或尚未驗證的結論。
 
-## Evidence / Unknown
-
-- **Verified in this experiment:** none yet; phases 1–5 are Pending.
-- **Prior reported observation:** D1 CRUD via Connector, with changed OAuth scope.
-- **Unknown:** Connector Worker deployment surface and limits; direct API invocation; browser-visible Worker behavior; D1 binding lifecycle; CORS; Netlify integration.
-- **Do not infer:** a Worker API works because direct D1 SQL works.
-
-## Test evidence to capture
-
-For each phase, preserve: timestamp; endpoint / deployment route (no secrets); source commit or direct-Connector deployment method; exact input; HTTP status / response; Browser Console or tool error; DB before/after state where relevant; actor (AI direct vs Claire iPad); observed limitation and next phase gate.
-
-## Constraints / Security
-
-Public repository: no access tokens, service tokens, private keys, credentials, personal data, or production secrets in code or notes. Never embed Cloudflare service tokens in public HTML/JS. D1 writes only against dedicated test objects with verified target. Preserve negative evidence. Cloudflare Access / Zero Trust belongs to a separate later experiment.
-
-## Current Judgment
-
-The five-phase plan isolates deployment, UI, DB and cross-origin variables with only two APIs and two UI shells. Feasibility of actual Worker deployment via Connector remains **unverified**. Do not promote planning into Evidence.
-
-## Next checkpoint
-
-Confirm current Connector permissions and Cloudflare Worker deployment capability, then execute Phase 1 before adding UI, D1 binding, or Git-hosted Netlify shell. Update Experiment Catalog and Evidence Index as observations emerge.
-
-## Knowledge Links
-
-- [Experiment Catalog](../../knowledge/experiments.md)
-- [Experiment Template](../../knowledge/experiment-template.md)
-- [Knowledge Capture Rules](../../knowledge/README.md)
-- [Netlify Deployment Boundary](../netlify-deployment-boundary/README.md)
-
-## 2026-10-09 Phase 1–3 verified checkpoint｜Cloud Oracle
-
-**本節更新先前的 Candidate / Planning 狀態；上方的五階段計畫是歷史 baseline，不能再解讀成 Phase 1–2 尚未執行。**
-
-- Phase 1 **Verified**：Cloudflare Connector 直接建立並部署 `cf-lab-oracle` Worker，開啟 workers.dev 公開路由；Claire iPad Safari 驗證 `/health` 與 `/oracle` JSON。
-- Phase 2 **Verified**：Connector 更新同一 Worker，根路徑提供 HTML/CSS/JS 科技神廟前端，呼叫同源 `/oracle`；Claire iPad Safari 驗證求籤畫面與結果。
-- Phase 3 **Functionally Verified**：在共用 `lab-smoke-db` 建立兩張表，寫入 200 支籤文；Worker v1.2.0 連接 D1，Claire iPad Safari 求籤六次，畫面顯示今日／本月／累計各六次。Netlify 跨來源測試尚未執行。
-- 主要 Live Demo：https://cf-lab-oracle.claire-nook.workers.dev/
-- [Phase Evidence](../../evidence/cf-oracle-1.md)
-- [Cloud Oracle 具體實驗與 SQL Artifacts](../cloudflare-oracle/README.md)
-- 兩個 Demo 未來由 Experiment / Evidence 記錄；Catalog 只保留一個主要 Demo 入口。
-- Phase 1–3 研究直接 Connector 部署與 D1 整合能力，不要求 Worker source archive。
-
-
-## Current judgment (supersedes historical planning text above)
-
-The original five-phase plan above is a historical proposal, not a literal inventory of what was deployed: the same `cf-lab-oracle` Worker evolved from hardcoded API to same-origin UI to D1-backed API. Phase 1–3 have functional evidence. `lab-smoke-db` is the **shared test D1**; no dedicated database remains. Preserve only schema DDL, not test INSERT scripts. Next: Netlify frontend against existing Worker API, then separate authentication experiment. See [Evidence](../../evidence/cf-oracle-1.md).
+本案僅保留已執行的 Connector／API／UI／D1／換殼實驗範圍。
