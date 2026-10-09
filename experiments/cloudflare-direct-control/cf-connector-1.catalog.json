@@ -1,0 +1,23 @@
+{
+  "id": "CF-CONNECTOR-1",
+  "title": "Cloudflare Direct Control × Workers × D1",
+  "recordPath": "experiments/cloudflare-direct-control/README.md",
+  "summary": "五階段研究：以 Cloudflare Connector 直接部署 Worker API A（無 DB）、Cloudflare UI shell、Worker API B + D1，以及 Netlify UI shell 對同一組 API 的跨站呼叫，驗證 AI-first 雲端開發的操作、部署與 Browser / CORS 邊界。目前僅成立研究計畫，尚未執行五階段測試。",
+  "tags": [
+    "Cloudflare",
+    "Workers",
+    "D1",
+    "Netlify",
+    "iPad-first",
+    "AI Engineering",
+    "Deployment",
+    "Custom API",
+    "CORS"
+  ],
+  "outputType": "experiment",
+  "researchMethod": "controlled-experiment",
+  "demoStatus": "planned",
+  "verificationStatus": "candidate",
+  "flow": "Connector → Worker API A → Cloudflare UI → Worker API B + D1 → Netlify UI cross-origin verification",
+  "completedDate": null
+}
