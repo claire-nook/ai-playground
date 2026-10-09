@@ -3,7 +3,7 @@
 先前 `CF-CONNECTOR-1` planning queue 的 Phase 1、2 Pending 狀態已過期：
 - Phase 1：Connector Worker create/deploy、workers.dev、JSON API；Claire iPad Safari 已驗證。
 - Phase 2：Connector 更新 Worker 內建前端，同源求籤；Claire iPad Safari 已驗證。
-- Phase 3：D1 尚未執行；Schema / seed / queries 候選 SQL 在 `experiments/cloudflare-oracle/`。
+- Phase 3：共用 `lab-smoke-db` 已有 Oracle 兩表與 200 籤；Worker v1.2.0 D1 讀寫，Claire iPad Safari 六次求籤統計可見。Schema DDL 留存，seed INSERT 不留存。
 - Phase 4–5：Netlify 前端跨來源實驗尚未執行。
 - Canonical Experiment：`experiments/cloudflare-direct-control/README.md`（CF-CONNECTOR-1）。
 - Detailed Evidence：`evidence/cf-oracle-1.md`。
@@ -17,12 +17,12 @@
 
 ## Active Research Front — CF-CONNECTOR-1 / Cloudflare Direct Control
 
-- Status: **Candidate / Planning**（2026-10-09；Phase 1–5 尚未執行）
+- Status: **Phase 1–3 Functionally Verified; Netlify Pending**（2026-10-09）
 - Experiment Record: [CF-CONNECTOR-1](../experiments/cloudflare-direct-control/README.md)
 - Catalog: [Cloudflare experiment entry](../knowledge/experiments.md)
 - Purpose: 驗證 AI 能否透過 Cloudflare Connector 直接部署與測試 Worker，並逐步驗證 D1 binding、Cloudflare / Netlify UI shell、跨來源 Browser API 呼叫。這是 iPad + AI-first 的雲端開發協作能力研究，不是正式系統開發。
 
-### Execution queue｜按順序引入變因
+### Historical execution queue｜原始計畫，現況請以上方 2026-10-09 更新為準
 
 1. **Pending — Phase 1:** Connector 直接建立 / 部署 / 測試 API A（無 UI、無 DB、無 Git）；先確認目前 Connector 是否真的提供 Worker deployment / invocation 能力。
 2. **Pending — Phase 2:** Cloudflare UI shell 呼叫同一 API A；確認實際 origin 與 Browser 行為。
