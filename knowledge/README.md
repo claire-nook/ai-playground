@@ -85,6 +85,8 @@ Research Map 的 Progress 是 **Research Coverage**，不是假裝精準的百�
 
 Catalog 應維持短小，只放 Intent、Status、Tags、Links、Why it existed、What it unlocked。完整 Method / Evidence 留在 Experiment Record。
 
+**站台 Research Catalog 是另一條 publication contract：** 每次新增 Experiment / Wall Research Output，除 Markdown Catalog 外，還要在對應目錄建立 `*.catalog.json`，遵守 `scripts/build-experiment-catalog.mjs` 的狀態 / 日期 / 路徑驗證規則。**執行前必讀 [`research-catalog-publication.md`](research-catalog-publication.md)**。缺 metadata 可能部署成功卻不顯示；metadata 無效可能直接 build fail。
+
 ---
 
 ## Open Exploration｜開放探索
@@ -182,7 +184,7 @@ Status 不必重複當 Tag；使用文件中的 `Status` 欄位即可。
 
 有意義的 Experiment 完成或形成新 Evidence 時，未來 AI 應順手完成以下維護，不要累積到第 1000 個 Experiment 才進行數位考古：
 
-1. **Experiment Record**：更新 Question / Purpose、Scope、Method、Evidence、Constraint、Current Judgment。
+1. **Experiment Record + Site Metadata**：更新 Question / Purpose、Scope、Method、Evidence、Constraint、Current Judgment；新成立的研究輸出同步建立合法 `*.catalog.json`，按 Publication Contract 驗證。
 2. **Experiment Catalog**：更新 Why it existed / What it unlocked / Status / Tags / Links。
 3. **Evidence Index**：加入可重用的 Result / Evidence / Limitation，不複製整份 Experiment Record。
 4. **Research Map**：更新相關節點 Status；若實驗暴露新的合理 Candidate Branch，留下 Branch，即使尚未實驗。
