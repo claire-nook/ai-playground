@@ -61,7 +61,7 @@ function validateCatalogEntry(entry, sourcePath) {
     throw new Error(`${sourcePath}: recordPath must be a repository-relative Markdown path`);
   }
   if (entry.outputType === "experiment" && !entry.recordPath.startsWith("experiments/")) throw new Error(`${sourcePath}: experiment recordPath must live under experiments/`);
-  if (entry.demoStatus === "live" && (typeof entry.demoPath !== "string" || !entry.demoPath.startsWith("/"))) throw new Error(`${sourcePath}: a live demo requires an absolute demoPath`);
+  if (entry.demoStatus === "live" && (typeof entry.demoPath !== "string" || !(entry.demoPath.startsWith("/") && !entry.demoPath.startsWith("//") || /^https:\/\/[^\s/?#]+(?:[/?#][^\s]*)?$/.test(entry.demoPath)))) throw new Error(`${sourcePath}: a live demo requires an absolute demoPath`);
   if (entry.demoStatus !== "live" && "demoPath" in entry && entry.demoPath !== null) throw new Error(`${sourcePath}: demoPath must be null or omitted unless the demo is live`);
   if ("flow" in entry && (typeof entry.flow !== "string" || !entry.flow.trim())) throw new Error(`${sourcePath}: flow must be a non-empty string when present`);
 }
