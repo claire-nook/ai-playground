@@ -1,7 +1,7 @@
 # CF-CONNECTOR-1 — Cloudflare Direct Control × Workers × D1 × Cross-host UI
 
 - Date: 2026-10-09
-- Status: Candidate / Planning
+- Status: Phase 1–3 functionally verified; Phase 4–5 pending
 - Primary Intent: Cloudflare Connector capability verification; iPad + AI-first cloud development
 - Tags: `ipad-first`, `ai-engineering`, `cloudflare`, `deployment`, `custom-api`, `data-api`, `cors`, `remote-execution`
 - Discussion source: Notion「Cloudflare 初探｜Direct Control × Workers × D1 小實驗計畫」(earlier planning snapshot)
@@ -71,16 +71,20 @@ Confirm current Connector permissions and Cloudflare Worker deployment capabilit
 - [Knowledge Capture Rules](../../knowledge/README.md)
 - [Netlify Deployment Boundary](../netlify-deployment-boundary/README.md)
 
-## 2026-10-09 Phase 1–2 verified checkpoint｜Cloud Oracle
+## 2026-10-09 Phase 1–3 verified checkpoint｜Cloud Oracle
 
 **本節更新先前的 Candidate / Planning 狀態；上方的五階段計畫是歷史 baseline，不能再解讀成 Phase 1–2 尚未執行。**
 
 - Phase 1 **Verified**：Cloudflare Connector 直接建立並部署 `cf-lab-oracle` Worker，開啟 workers.dev 公開路由；Claire iPad Safari 驗證 `/health` 與 `/oracle` JSON。
 - Phase 2 **Verified**：Connector 更新同一 Worker，根路徑提供 HTML/CSS/JS 科技神廟前端，呼叫同源 `/oracle`；Claire iPad Safari 驗證求籤畫面與結果。
-- Phase 3 **Candidate**：D1 Schema、seed 與查詢草案已保存，但尚未建立/執行；Phase 4–5 Netlify 跨來源測試亦未執行。
+- Phase 3 **Functionally Verified**：在共用 `lab-smoke-db` 建立兩張表，寫入 200 支籤文；Worker v1.2.0 連接 D1，Claire iPad Safari 求籤六次，畫面顯示今日／本月／累計各六次。Netlify 跨來源測試尚未執行。
 - 主要 Live Demo：https://cf-lab-oracle.claire-nook.workers.dev/
 - [Phase Evidence](../../evidence/cf-oracle-1.md)
 - [Cloud Oracle 具體實驗與 SQL Artifacts](../cloudflare-oracle/README.md)
 - 兩個 Demo 未來由 Experiment / Evidence 記錄；Catalog 只保留一個主要 Demo 入口。
-- Phase 1–2 研究直接 Connector 部署能力，不要求 Worker source archive。
+- Phase 1–3 研究直接 Connector 部署與 D1 整合能力，不要求 Worker source archive。
 
+
+## Current judgment (supersedes historical planning text above)
+
+The original five-phase plan above is a historical proposal, not a literal inventory of what was deployed: the same `cf-lab-oracle` Worker evolved from hardcoded API to same-origin UI to D1-backed API. Phase 1–3 have functional evidence. `lab-smoke-db` is the **shared test D1**; no dedicated database remains. Preserve only schema DDL, not test INSERT scripts. Next: Netlify frontend against existing Worker API, then separate authentication experiment. See [Evidence](../../evidence/cf-oracle-1.md).
