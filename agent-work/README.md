@@ -18,6 +18,20 @@
 
 ---
 
+## 2026-10-09｜個人實驗室精簡協作預設（現行）
+
+Claire 已正式採納：在**明確任務範圍**內說「開工」，即授權一般日常流程由 Codex 檢查環境、實作、適用驗證、專用 branch Commit／非 force Push，墨衡獨立 QC、PR／Merge，沿用既有自動部署，再由 Claire 以 iPad 實機驗收。同範圍修正不逐步請示；若任務明確限定只讀、討論或特定交付階段，仍以該限制為準。
+
+只有遇到破壞性資料操作、密鑰／權限／安全、明顯額外費用、超出需求或無法確認的重大副作用，才停止相關操作並請示。不得 force push、擅自 reset／覆蓋未知成果。Preflight 確認任務是否已完成、Repo／Branch／工作樹／遠端狀態；必要時可在安全且可確認的條件下 Fetch／Fast-forward，髒樹、分叉或未知成果則保留現狀回報。Push 結果不明先遠端讀回，不盲重試。
+
+日常小任務可直接以 Notion Mailbox 的 Task／Message 作為執行約定，不強制建立 Repo Work Order；複雜、高風險或需要長期重現的工作才使用本目錄的正式 Template。共同治理在此 Repo，目標 Repo 的技術限制仍有效；Notion 保存當次任務授權與通訊。Codex 的 Completed、墨衡 QC、部署成功、Claire 實機驗收是不同階段，不能互相冒充。Preview 與完整 Runtime 測試不是所有小任務的強制門檻，缺少驗證時應如實回報。
+
+日常流程：任務確認 → 環境 Preflight → 實作與適用驗證 → Commit／Push／讀回 → 墨衡 QC／PR／Merge → 部署核對／Claire 驗收 → 同範圍修正。
+
+參考：[`dispatch-handoff.md`](dispatch-handoff.md)；Notion [Agent Mailbox](https://www.notion.so/3f472eea528e81e69811f2ec85d457bc) 與 [Codex Memory](https://www.notion.so/3f472eea528e81a18e41e9ba53977374)。舊 Codex Product UI 交付模式是有日期的歷史證據，不是目前預設。
+
+---
+
 ## 0. Primary Agent Start Here｜墨衡派工入口
 
 建立、查找或重新理解 Work Order，走 Progressive Reading Path：
