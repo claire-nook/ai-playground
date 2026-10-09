@@ -16,8 +16,9 @@
   ],
   "outputType": "experiment",
   "researchMethod": "controlled-experiment",
-  "demoStatus": "planned",
+  "demoStatus": "live",
   "verificationStatus": "partial",
   "flow": "Connector → Worker deploy + public API（已驗證）→ same-origin Cloud Oracle UI（已驗證）→ D1（待測）→ Netlify cross-origin（待測）",
-  "completedDate": "2026-10-09"
+  "completedDate": "2026-10-09",
+  "demoPath": "https://cf-lab-oracle.claire-nook.workers.dev/"
 }
