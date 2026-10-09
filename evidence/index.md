@@ -1,3 +1,28 @@
+## Cloudflare Connector / Cloud Oracle Direct Worker Deployment
+
+- Experiment: CF-CONNECTOR-1
+- Date: 2026-10-09（Evidence 整理日期）
+- Status: Phase 1–2 Verified / Phase 3 Candidate
+- Record: `experiments/cloudflare-direct-control/README.md`
+- Evidence: [cf-oracle-1.md](cf-oracle-1.md)
+- SQL Artifacts: `experiments/cloudflare-oracle/schema.sql`、`seed.sql`、`queries.sql`
+- Live Demo: https://cf-lab-oracle.claire-nook.workers.dev/
+- Topics: Cloudflare Connector, Workers, Direct Deployment, iPad Safari, D1 Candidate, Netlify
+
+### Verified chain
+
+```text
+ChatGPT → Cloudflare Connector → Worker create/deploy + workers.dev route
+→ /health, /oracle JSON → Claire iPad Safari observation
+→ Connector Worker update → same-origin HTML/JS fetch /oracle
+→ Claire iPad Safari fortune display
+```
+
+Phase 3 D1 SQL 已歸檔但**尚未執行**；Netlify 跨來源 Demo 也尚未驗證。Phase 1–2 不以 GitHub source archive 為成功條件。
+
+---
+
+
 # Playground Evidence Index
 
 Evidence 代表特定時間、環境與條件下實際觀察到的結果，不等於 Production Architecture 或永久 Technical Decision。
