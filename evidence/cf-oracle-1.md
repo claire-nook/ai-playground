@@ -1,57 +1,53 @@
-# CF-ORACLE-1｜Cloudflare Connector 直接操作實驗證據
+# CF-ORACLE-1｜Cloudflare Connector、D1 與 Netlify 換殼證據
 
-- 紀錄日期：2026-10-09
-- 狀態：第一至第三階段已取得功能驗證；後續階段待測
-- 實驗主紀錄：[Cloud Oracle](../experiments/cloudflare-oracle/README.md)
-- 網站：https://cf-lab-oracle.claire-nook.workers.dev/
+- 日期：2026-10-09
+- 狀態：Completed（功能驗證）
+- 主紀錄：[Cloudflare Oracle 實驗](../experiments/cloudflare-oracle/README.md)
+- Cloudflare：https://cf-lab-oracle.claire-nook.workers.dev/
+- Netlify：https://ai-playground-lab.netlify.app/cloudflare-oracle/
 
-## 證據分級原則
+## 證據區分
 
-**AI 透過 Connector／Cloudflare API 取得的操作結果**，與 **Claire 在 iPad Safari 實際觀察的結果**，必須分開記錄。工具回報成功，不應直接視為瀏覽器端驗收或資安驗證成功。
+AI 的 Connector／API 操作回應、GitHub 提交結果，與 Claire 在 iPad Safari 實際看到的畫面，是不同層級的證據，不可混為一談。
 
-## 第一階段｜無資料庫的 Worker API
+## 階段一｜Worker API
 
-**AI 操作：** 透過 Cloudflare Connector 建立、部署 `cf-lab-oracle`，提供公開 `/health` 與 `/oracle` JSON API。初版隨機回傳 Worker 內建八支籤文。
+**AI 操作：** 透過 Cloudflare Connector 部署 `cf-lab-oracle`，提供 `/health`、`/oracle`；最初由 Worker 內建八支籤文。
 
-**Claire 實機驗證：** 在 iPad Safari 開啟 API，確認 JSON 回應，並觀察不同求籤結果。此階段沒有 D1。
+**Claire 實機：** iPad Safari 確認 JSON 回應與隨機結果。
 
-## 第二階段｜同源前端
+## 階段二｜Cloudflare 同源網頁
 
-**AI 操作：** 更新同一 Worker，讓根路徑提供 HTML／CSS／JavaScript 網頁，並呼叫同來源 API。
+**AI 操作：** 同一 Worker 根路徑提供 HTML／CSS／JavaScript，前端呼叫同源 API。
 
-**Claire 實機驗證：** Safari 截圖顯示電子神廟介面、求籤按鈕、籤文結果與專案識別。這支持「瀏覽器網頁 → Worker API → 畫面顯示」的完整互動，尚未涉及資料庫。
+**Claire 實機：** Safari 成功顯示網頁、按鈕與籤文結果。
 
-## 第三階段｜D1 建立、整併與讀寫整合
+## 階段三｜D1 整合
 
-### AI 工具操作證據
+**AI 操作：** 曾建立臨時 `cf-lab-oracle-db`；後改在共用 `lab-smoke-db` 建立 `oracle_fortunes`、`oracle_draws` 與索引，保留既有 `lab_smoke_items`，刪除臨時資料庫。建立 200 支測試籤文，四類各 50 支；Worker v1.2.0 綁定 `DB`，完成抽籤、寫入及 `/stats` 統計。
 
-1. 最初建立臨時 D1 `cf-lab-oracle-db`，建立 `oracle_fortunes`、`oracle_draws`，寫入四筆籤文並查詢。
-2. Claire 確立共用測試資料庫規則後，AI 在既有 `lab-smoke-db` 建立相同兩張表及索引，保留原有 `lab_smoke_items`。
-3. AI 確認共用資料庫內有四支籤文、零筆求籤紀錄，刪除多餘的臨時 D1，後續資料庫清單只剩 `lab-smoke-db`。
-4. 分批新增 20 與 176 支籤文，總數達 **200 支**；四個分類各 **50 支**，每類 50 個不同標題。瀏覽器測試前求籤紀錄為零。
-5. 透過 Cloudflare API 上傳 Worker v1.2.0，回應 HTTP 200。此版包含 D1 綁定、分類查詢、成功求籤寫入、台灣時間統計及前端模擬進度條。
-6. 後續嘗試以工具獨立檢查 Worker 設定時，受到安全檢查阻擋。因此上傳成功回應不能冒充為獨立的部署後設定檢查。
+**Claire 實機：** Safari 連續求籤六次，顯示今日／本月／累計各六次。統計為事件數而非訪客數。
 
-### Claire 的 iPad Safari 實機證據
+## 階段四｜Netlify 換殼
 
-Claire 實際操作電子神廟，取得 D1 籤文結果。為了看清楚進度條上的趣味訊息，她連續求籤六次，畫面顯示 **今日 6／本月 6／累計 6**。
+**AI 操作：**
+- 直接從 Cloudflare 讀回目前 Worker 原始碼，取得原版 HTML。
+- 確認 JSON API 原本已有 `Access-Control-Allow-Origin: *` 及 `OPTIONS` 支援；本次未修改 Worker。
+- 新增 `public/cloudflare-oracle/index.html`，將兩個 API 呼叫改為原 Worker 的完整網址。
+- GitHub commit：`94c4cec9abbcefdc461e53d5ec765ee83333297c`。
+- 沿用既有 Netlify Git 自動部署，不搬移 D1、不新增第二套 API。
 
-這支持瀏覽器至 Worker、D1 查詢及求籤事件統計的功能整合。它不保證網路重試或失敗時仍能恰好寫入一次。
+**Claire iPad Safari 實機：**
+- 2026-10-09 15:19 左右，Netlify 網頁成功顯示第 63 籤（system），畫面顯示今日／本月／累計 9 次。
+- 2026-10-09 15:20 左右，Cloudflare 原站成功顯示第 199 籤（health），畫面顯示今日／本月／累計 10 次。
+- 兩站求籤成功，累計統計連續增加，支持共用 Worker API 與 D1 的跨 Hosting 整合已運作。
 
-進度訊息過快，是**使用者體驗觀察**，不是資料庫效能測量。
+**證據界線：** 截圖為前端顯示與累計數字的證據，未同步逐列檢查 D1 原始紀錄；但已知 Worker 程式中成功抽籤會寫入 `oracle_draws`。兩站端到端功能驗證成立，不等於併發、負載或資安驗收。
 
-## 本次研究可以成立的結論
+## 結論與不涵蓋範圍
 
-在 Cloudflare Connector 已完成授權、且 API 支援的範圍內，AI 能直接操作 Worker 部署、D1 資料庫建立與刪除、資料表與測試資料寫入、Worker 綁定及網頁更新。Claire 負責在 iPad Safari 進行實際功能驗證，無須手動部署程式碼。
+本次確認 AI 透過 Connector 操作 Cloudflare Worker／D1，以及 Cloudflare 原站與 Netlify 新殼共用 API／資料庫的技術可行性。使用者以 iPad Safari 完成關鍵功能驗證。
 
-實驗最終採用共用 D1 `lab-smoke-db`，而非每個小工具建立獨立資料庫。公開 workers.dev 網址足以完成此次測試，未驗證自訂網域設定。
+本實驗不研究 API 存取保護。現有 API 公開、CORS 允許所有來源，且 `/oracle` 成功呼叫會寫入一筆事件。Authentication、Authorization、Rate Limiting、CORS 白名單或其他安全策略應列入**獨立第二實驗**，不將尚未進行的安全工作混入本次 Completed 結論。
 
-## 尚未驗證的範圍
-
-- 未建立登入認證或伺服器端授權；目前 API 公開。
-- 尚未測試 Netlify 前端、跨來源請求及 CORS（Cross-Origin Resource Sharing，跨來源資源共用）。
-- 尚未完成完整資安、負載、併發、重試冪等性、回復及自動化回歸測試。
-- Schema 不儲存 IP；求籤數是事件次數，不是不重複訪客數。
-- 200 筆籤文屬測試資料，部分內容採共用模板，不保留其 INSERT 腳本。
-- GitHub 保留 `schema.sql` 的 `CREATE TABLE`、`CREATE INDEX` 結構語法，不要求保存測試資料或歷史求籤紀錄。
-- 此文件是能力研究證據，不代表正式產品已具備上線條件。
+保留 `schema.sql` 結構 DDL；不留存測試資料 INSERT 腳本，也不宣稱正式產品可上線。
