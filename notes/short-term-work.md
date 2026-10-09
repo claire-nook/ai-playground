@@ -1,3 +1,16 @@
+## 2026-10-09 Cloud Oracle progress update
+
+先前 `CF-CONNECTOR-1` planning queue 的 Phase 1、2 Pending 狀態已過期：
+- Phase 1：Connector Worker create/deploy、workers.dev、JSON API；Claire iPad Safari 已驗證。
+- Phase 2：Connector 更新 Worker 內建前端，同源求籤；Claire iPad Safari 已驗證。
+- Phase 3：D1 尚未執行；Schema / seed / queries 候選 SQL 在 `experiments/cloudflare-oracle/`。
+- Phase 4–5：Netlify 前端跨來源實驗尚未執行。
+- Canonical Experiment：`experiments/cloudflare-direct-control/README.md`（CF-CONNECTOR-1）。
+- Detailed Evidence：`evidence/cf-oracle-1.md`。
+- Current Demo：https://cf-lab-oracle.claire-nook.workers.dev/
+
+---
+
 # Short-term Work Items
 
 > 無交期。這不是正式開發排程；只保存近期 Research Front 與 deliberate deferred branches。
