@@ -4,7 +4,7 @@
 >
 > 這不是永久能力保證，也不是等到「需要工具時」才查的附錄。新的 Conversation 完成 Repository orientation 時就應讀取，先知道自己可能有哪些手腳，再以當前 Tool Discovery 確認今天哪些真的存在。
 
-- Last reviewed: 2026-10-06
+- Last reviewed: 2026-10-09
 - Scope: `實驗室` / AI Playground Primary Agent
 - Status: Living operational guide
 
@@ -87,6 +87,17 @@ Canonical entry：
 ```
 
 Wall Writing Record 採 Progressive Loading：Bootstrap 只需要知道這個入口存在，**不需要每次醒來讀完所有文章**。真正需要回想作品、維護 Wall 或繼續相關寫作時再讀。新 Wall 文章發表後，Primary 應同步更新該 Registry，避免作品只躺在 Repository 裡等未來自己考古。
+
+---
+
+## Cloudflare Connector / shared D1 experiment resource (2026-10-09)
+
+- **Verified in CF-ORACLE-1:** authorized Cloudflare Connector created/updated Worker `cf-lab-oracle`, managed D1 database lifecycle and SQL, and uploaded a Worker bound to D1. Claire verified Worker UI + draw statistics in iPad Safari. See [Experiment](../experiments/cloudflare-oracle/README.md) and [Evidence](../evidence/cf-oracle-1.md).
+- **Shared D1 test database: `lab-smoke-db`**, ID `b8cfc676-a3d3-4b76-b11f-0ebc35303084`. This is the default D1 for small exploratory experiments / PoC / Connector smoke tests in this Cloudflare account. Create **experiment-specific tables**, not a new database by default.
+- **Never delete the shared database** to clean up a single experiment. Check existing table ownership and dependencies before changing or dropping objects. No destructive reset of unrelated experiments.
+- The redundant `cf-lab-oracle-db` was deleted after the oracle tables were moved. Do not treat it as an active resource.
+- Preserve structural SQL (`CREATE TABLE`, indexes, meaningful schema changes); **test INSERT statements and bulk synthetic rows are not required durable artifacts**.
+- Cloudflare permissions and tool surface must be rechecked in each session. This does not establish automated custom-domain setup, authentication, production readiness or universal API support.
 
 ---
 
