@@ -112,6 +112,7 @@ Provider / Plugin / Connector / Permission 會變，所以 Inventory 告訴你�
 | Knowledge Model / Research navigation | [`knowledge/README.md`](knowledge/README.md) |
 | Research Topic / Branch | [`knowledge/maps/`](knowledge/maps/) |
 | 做過哪些 Experiment、為什麼做 | [`knowledge/experiments.md`](knowledge/experiments.md) |
+| **成立 Experiment / Wall 研究輸出、更新站台 Catalog / Status** | **[`knowledge/research-catalog-publication.md`](knowledge/research-catalog-publication.md)**（必讀，包含 `.catalog.json` 與 build contract） |
 | 已驗證什麼 | [`evidence/index.md`](evidence/index.md) |
 | 某個 Experiment 怎麼測 | relevant `experiments/<topic>/README.md` |
 | 已驗證 pattern 如何重建 | [`knowledge/implementation/`](knowledge/implementation/) |
