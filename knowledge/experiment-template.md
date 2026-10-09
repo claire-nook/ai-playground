@@ -125,11 +125,18 @@ Evidence 可以支持什麼；又還不能支持什麼。
 - Related Experiments:
 ```
 
+## Publication / Site Catalog Gate｜成立實驗時就要檢查
+
+**建立新的 Experiment Record 不等於已發布到站台。** 同一批成立作業應在實驗目錄建立 `*.catalog.json`，更新 `knowledge/experiments.md` 與必要的 Short-term Work，並依 [`research-catalog-publication.md`](research-catalog-publication.md) 驗證 metadata。實際規則以 `scripts/build-experiment-catalog.mjs` 為準；尤其 `verificationStatus` 只有 `candidate` / `partial` / `verified`，不接受 Record 的 `In Progress` / `Completed`；`candidate` 不得填完成日期，`partial` / `verified` 必須填真實有效日期。
+
+只有確認 Netlify build / deploy 與站台實際目錄，才能宣稱站台發布完成。若沒有執行權限，明確標示未驗證，不要拿 Commit 當部署證據。
+
 ## After Experiment Checklist
 
 完成或形成新 Evidence 後，順手檢查：
 
 - Experiment Record 已更新。
+- 新 Experiment / Research Output 的 `*.catalog.json` 已建立且符合現行 build script 的 Status / Date / Path 規則；站台 build / deploy / live observation 分開回報。
 - `knowledge/experiments.md` 已更新。
 - `evidence/index.md` 已更新。
 - Relevant Research Map 或 `open-exploration.md` 已更新。
