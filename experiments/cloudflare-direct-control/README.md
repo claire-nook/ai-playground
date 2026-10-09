@@ -70,3 +70,17 @@ Confirm current Connector permissions and Cloudflare Worker deployment capabilit
 - [Experiment Template](../../knowledge/experiment-template.md)
 - [Knowledge Capture Rules](../../knowledge/README.md)
 - [Netlify Deployment Boundary](../netlify-deployment-boundary/README.md)
+
+## 2026-10-09 Phase 1–2 verified checkpoint｜Cloud Oracle
+
+**本節更新先前的 Candidate / Planning 狀態；上方的五階段計畫是歷史 baseline，不能再解讀成 Phase 1–2 尚未執行。**
+
+- Phase 1 **Verified**：Cloudflare Connector 直接建立並部署 `cf-lab-oracle` Worker，開啟 workers.dev 公開路由；Claire iPad Safari 驗證 `/health` 與 `/oracle` JSON。
+- Phase 2 **Verified**：Connector 更新同一 Worker，根路徑提供 HTML/CSS/JS 科技神廟前端，呼叫同源 `/oracle`；Claire iPad Safari 驗證求籤畫面與結果。
+- Phase 3 **Candidate**：D1 Schema、seed 與查詢草案已保存，但尚未建立/執行；Phase 4–5 Netlify 跨來源測試亦未執行。
+- 主要 Live Demo：https://cf-lab-oracle.claire-nook.workers.dev/
+- [Phase Evidence](../../evidence/cf-oracle-1.md)
+- [Cloud Oracle 具體實驗與 SQL Artifacts](../cloudflare-oracle/README.md)
+- 兩個 Demo 未來由 Experiment / Evidence 記錄；Catalog 只保留一個主要 Demo 入口。
+- Phase 1–2 研究直接 Connector 部署能力，不要求 Worker source archive。
+
