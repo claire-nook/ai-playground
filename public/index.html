@@ -108,7 +108,9 @@
   // Card metadata names what the output is and how it was verified instead of assuming every card is an Experiment.
   function renderCard(entry){
     const flow=entry.flow?`<div class="flow"><code>${escapeHtml(entry.flow)}</code></div>`:"";
-    const demoAction=entry.demoStatus==="live"?`<a href="${escapeHtml(entry.demoPath)}">開啟 Live Demo</a>`:"";
+    // 外部 HTTPS Demo 開新分頁，保留研究目錄；站內 Demo 維持原分頁。
+    const externalDemo=typeof entry.demoPath==="string"&&/^https:\/\//i.test(entry.demoPath);
+    const demoAction=entry.demoStatus==="live"?`<a href="${escapeHtml(entry.demoPath)}"${externalDemo?' target="_blank" rel="noopener noreferrer"':""}>開啟 Live Demo</a>`:"";
     const action=`<div class="card-actions"><a href="/result/?id=${encodeURIComponent(entry.id)}">查看研究成果</a>${demoAction?` · ${demoAction}`:""}</div>`;
     return `<article class="research-card"><div class="research-meta"><span class="research-id"><span class="kind-badge">${labels[entry.outputType]||escapeHtml(entry.outputType)}</span> · ${escapeHtml(entry.id)} · ${escapeHtml(entry.completedDate)}</span><span class="badges"><span class="status-badge status-${entry.demoStatus}">${labels[entry.demoStatus]}</span><span class="status-badge status-${entry.verificationStatus}">${labels[entry.verificationStatus]}</span></span></div><h3>${escapeHtml(entry.title)}</h3><p><strong>${labels[entry.researchMethod]||escapeHtml(entry.researchMethod)}</strong> · ${escapeHtml(entry.summary)}</p><div class="tags">${entry.tags.map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>${flow}${action}</article>`;
   }
