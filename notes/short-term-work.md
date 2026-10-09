@@ -2,6 +2,33 @@
 
 > 無交期。這不是正式開發排程；只保存近期 Research Front 與 deliberate deferred branches。
 
+## Active Research Front — CF-CONNECTOR-1 / Cloudflare Direct Control
+
+- Status: **Candidate / Planning**（2026-10-09；Phase 1–5 尚未執行）
+- Experiment Record: [CF-CONNECTOR-1](../experiments/cloudflare-direct-control/README.md)
+- Catalog: [Cloudflare experiment entry](../knowledge/experiments.md)
+- Purpose: 驗證 AI 能否透過 Cloudflare Connector 直接部署與測試 Worker，並逐步驗證 D1 binding、Cloudflare / Netlify UI shell、跨來源 Browser API 呼叫。這是 iPad + AI-first 的雲端開發協作能力研究，不是正式系統開發。
+
+### Execution queue｜按順序引入變因
+
+1. **Pending — Phase 1:** Connector 直接建立 / 部署 / 測試 API A（無 UI、無 DB、無 Git）；先確認目前 Connector 是否真的提供 Worker deployment / invocation 能力。
+2. **Pending — Phase 2:** Cloudflare UI shell 呼叫同一 API A；確認實際 origin 與 Browser 行為。
+3. **Pending — Phase 3:** Cloudflare UI shell 呼叫 API B（D1 binding）；在專用測試資料上驗證 DB 路徑。
+4. **Pending — Phase 4:** GitHub `public/` → Netlify UI shell 呼叫原 API A；檢查跨來源 / CORS。
+5. **Pending — Phase 5:** 同一 Netlify UI shell 呼叫原 API B；驗證跨來源 + D1 路徑。
+
+只建立 **兩支 API（A 無 DB、B 有 D1）與兩種 UI shell（Cloudflare、Netlify）**，不隨 Phase 增加而重建 API。Zero Trust / Cloudflare Access / Authentication 另案處理，避免污染變因。
+
+### Existing baseline / next action
+
+- 已有 Cloudflare Free account、`claire-nook.workers.dev` namespace、測試 D1 `lab-smoke-db`。
+- 先前對話交接記錄 Connector OAuth Full access 後可直接執行 D1 SQL CRUD；**不是本次五階段 Worker 實驗的驗證結果**。
+- **下一步：** 先確認 Cloudflare Connector 目前的 Worker 操作權限與部署能力，再執行 Phase 1。未取得直接執行證據前，不宣稱可行。
+- 每個 Phase 完成或遇到有價值的 Failure Boundary，更新 Experiment Record、`knowledge/experiments.md` 與必要的 `evidence/index.md`；不要把 Pending 寫成 Verified。
+- Repo 為公開研究資產，禁止提交 Token、Secret、私密資料。Cloudflare 直接部署的原始碼與設定在形成 Evidence 後應回存 Repo，以免平台與 Git 內容漂移。
+
+---
+
 ## Current Research Front — Constructible General Platform Baseline
 
 S-SHELL-1、D-BATCH-1、F-QUERY-1、F-DETAIL-1、F-MAINT-1 已提供目前四個常見 internal enterprise application archetype 的第一輪 Evidence / Pattern baseline：
