@@ -2,7 +2,7 @@
   "id": "CF-CONNECTOR-1",
   "title": "Cloudflare Direct Control × Workers × D1",
   "recordPath": "experiments/cloudflare-direct-control/README.md",
-  "summary": "Cloudflare Connector 已直接建立及更新 Worker；Claire 在 iPad Safari 驗證 JSON API 與同源 Cloud Oracle 求籤前端。Phase 3 D1 SQL 草案已歸檔，尚未執行；Phase 4–5 Netlify 跨來源整合待測。",
+  "summary": "Cloudflare Connector 已完成 Worker API 與 D1 讀寫整合；Netlify 換殼沿用同一 Worker API 與共用 D1。Claire 在 iPad Safari 驗證 Cloudflare、Netlify 兩站求籤成功，共用統計由 9 次增至 10 次。",
   "tags": [
     "Cloudflare",
     "Workers",
@@ -17,8 +17,8 @@
   "outputType": "experiment",
   "researchMethod": "controlled-experiment",
   "demoStatus": "live",
-  "verificationStatus": "partial",
-  "flow": "Connector → Worker deploy + public API（已驗證）→ same-origin Cloud Oracle UI（已驗證）→ D1（待測）→ Netlify cross-origin（待測）",
+  "verificationStatus": "verified",
+  "flow": "Connector → Worker deploy + public API（已驗證）→ same-origin Cloud Oracle UI（已驗證）→ D1 讀寫（已驗證）→ Netlify cross-origin 換殼（已驗證）→ iPad Safari 雙站共用統計 9→10（已驗證）",
   "completedDate": "2026-10-09",
   "demoPath": "https://cf-lab-oracle.claire-nook.workers.dev/"
 }
