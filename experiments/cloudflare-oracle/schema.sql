@@ -1,5 +1,6 @@
--- CF-ORACLE-1 / Phase 3 D1 Schema CANDIDATE
--- 尚未執行；SQLite / Cloudflare D1 相容語法
+-- CF-ORACLE-1 / Phase 3 D1 Schema (executed and verified 2026-10-09)
+-- Apply within shared lab-smoke-db; CREATE TABLE / INDEX only, no seed INSERT.
+-- SQLite / Cloudflare D1 compatible.
 -- 不儲存 IP、Cookie、訪客身分；僅記錄成功求籤事件。
 
 CREATE TABLE IF NOT EXISTS oracle_fortunes (
