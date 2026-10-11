@@ -1,5 +1,7 @@
 > **Mandatory Delivery Contract (2026-10-11):** [agent-work/delivery-contract.md](../delivery-contract.md) governs **both** GitHub Work Order and Notion dispatch. Primary must fill `Delivery Type(s)` explicitly: `NOTION_REPORT | DOC_DELIVERY | CODE_DELIVERY` (multiple allowed). Mixed code+docs is `CODE_DELIVERY`; all code/config/behavior changes **require a dedicated branch, commit, push and PR before QC/Merge**, without exception. DOC_DELIVERY requires branch/commit/push/Primary review/merge but no PR. Executor must read current Codex Memory + contract and confirm; report remote SHA and PR URL for code. Older publication-adapter passages below do not waive mandatory PR.
 
+> **2026-10-11 適用範圍：** Notion Agent Mailbox 是研究、分析、Review、文件與輕量委派的預設管道。本 Template 只在需要正式、可重現的 GitHub Work Order 時使用，例如明確程式實作、腳本、部署設定、資料庫遷移，或其他高風險／跨階段工作。不限於程式，也不要求每個小型程式修改都建單。無論使用哪種管道，delivery-contract.md 的交付類型、PR 與 QC 規則均適用。歷史 Work Order 不追溯修改。
+
 # Work Order Template
 
 > Canonical Work Order structure for Primary Agent dispatch management.
