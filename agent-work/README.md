@@ -1,3 +1,15 @@
+## Mandatory dispatch and delivery contract｜2026-10-11（優先於下方歷史預設）
+
+**無論透過 Repo Work Order 或 Notion Agent Mailbox 派工，Primary 派工前一律先讀 [`delivery-contract.md`](delivery-contract.md)，並指定交付類型，不得讓 executor 自行猜測。**
+
+- `NOTION_REPORT`：指定 Notion 頁面回報並讀回驗證。
+- `DOC_DELIVERY`：新增／修改／刪除 GitHub 文件，弟弟走專用 Branch → Commit → Push → 墨衡審查 → Merge；不強制 PR。
+- `CODE_DELIVERY`：程式、腳本、設定、部署或資料庫等行為相關修改，**一律專用 Branch → Commit → Push → PR → 墨衡 QC／適用的 Claire 驗收 → Merge**；無 PR 不得合併。
+- 混合程式與文件以 `CODE_DELIVERY` 為準；多重交付可同時指定。只有墨衡與 Claire 即時確認的低風險文件修改，才可由墨衡直接更新 main。
+- 弟弟開工前需讀 Notion Codex Memory、本契約與目標 Repo 規範，回報實際已讀；交付時提供 Repo、Branch、遠端 SHA、PR（程式必填）、驗證與限制。歷史段落若有「程式 PR 可選／由墨衡審查後直接 Merge」敘述，以本節及契約為準。
+
+---
+
 # Agent Work｜Agent 工程委派區
 
 這個目錄保存 Primary Agent（墨衡）委派給其他 Engineering Agent 的 Work Order、派工規則、協作 Experience 與可重用 execution guidance。
