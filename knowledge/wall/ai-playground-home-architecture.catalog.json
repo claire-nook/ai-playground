@@ -1,0 +1,20 @@
+{
+  "id": "WALL-HOME-1",
+  "title": "墨衡的家：一間讓 AI 記得自己撞過哪些牆的實驗室",
+  "completedDate": "2026-10-11",
+  "recordPath": "knowledge/wall/ai-playground-home-architecture.md",
+  "summary": "從 Claire 喜歡的 ASCII 架構圖出發，介紹 AI Playground 作為墨衡研究基地的責任邊界、Repository 目錄、Netlify 研究 Catalog 建置、跨對話記憶恢復，以及 Notion／Work Order 協作分流。",
+  "tags": [
+    "AI Playground",
+    "Architecture",
+    "Knowledge Management",
+    "AI Collaboration",
+    "Research Catalog",
+    "Commentary"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "synthesis",
+  "demoStatus": "none",
+  "verificationStatus": "partial",
+  "flow": "Repository responsibility → research knowledge layers → Catalog build and Netlify publication → Primary bootstrap → delegation and formal implementation boundaries."
+}
