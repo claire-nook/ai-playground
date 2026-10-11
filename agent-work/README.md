@@ -10,6 +10,16 @@
 
 ---
 
+## 現行派工分流（2026-10-11）
+
+Notion Agent Mailbox 是一般委派的預設入口。研究、調查、分析、Review、文件整理及輕量任務，直接使用 Notion Task／Message，寫清楚範圍、Read First、交付位置及驗收。研究成果如有長期保存價值，經審閱後仍應整理回 Repository。
+
+正式 GitHub Work Order 留給需要可重現施工規格的任務，例如明確程式修改、腳本、部署設定、資料庫遷移，或其他高風險、跨階段工程工作。不限於程式，也不是每個小型程式修改都必須建單。
+
+派工管道不影響交付類型。Notion 派出的行為相關變更仍須 CODE_DELIVERY 與 PR；純文件使用 DOC_DELIVERY；Notion 報告使用 NOTION_REPORT。以 delivery-contract.md 為準。Primary 能自行查閱 Repo 架構時，不必為了流程例行委派 Review。歷史 Work Order 不追溯改寫。
+
+---
+
 # Agent Work｜Agent 工程委派區
 
 這個目錄保存 Primary Agent（墨衡）委派給其他 Engineering Agent 的 Work Order、派工規則、協作 Experience 與可重用 execution guidance。
