@@ -1,3 +1,11 @@
+## Mandatory delivery routing｜2026-10-11（現行規則，優先於歷史 adapter）
+
+派工前 Primary 必讀 [`delivery-contract.md`](delivery-contract.md)，不論 Notion Message 或 GitHub Work Order，皆明確指定 `Delivery Type(s)`、Repo、Baseline、輸出位置、驗收 Gate。弟弟必須讀 Codex Memory + 本契約並確認。`DOC_DELIVERY`：Branch → Commit → Push → Primary Review → Merge，不強制 PR；`CODE_DELIVERY`：Branch → Commit → Push → **PR 必須建立** → Primary QC／適用 Claire 驗收 → Merge。`NOTION_REPORT`：Notion 寫入並讀回。混合程式與文件一律走 CODE_DELIVERY。沒有 PR 不得合併程式修改；舊版「Primary 可直接 QC／Merge 或自行決定 PR」僅作歷史記錄。若弟弟工具無法建立 PR，明確回報 publication blocker，由授權者補建 PR，不得略過。
+
+**Notion 輕量派工訊息也必填：** `Delivery Type(s)`, `Target Repository / Baseline`, `Output Destination`, `Read First`, `Acceptance / Gates`。派工管道不改變交付契約。
+
+---
+
 # Dispatch Handoff｜派工通知規則
 
 這份文件補充 `agent-work/README.md`，保存實際撞牆後確認的 execution-surface boundary 與 publication adapter。
