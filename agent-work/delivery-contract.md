@@ -2,6 +2,10 @@
 
 Effective: 2026-10-11. Owner: Claire / Primary Agent（墨衡）. Applies to Codex and other delegated implementation agents, across **GitHub Work Order** and **Notion Agent Mailbox** dispatch. This contract supersedes older optional-PR / Primary-creates-PR defaults where inconsistent. Historical execution profiles remain evidence, not exceptions.
 
+## 派工管道選擇｜2026-10-11
+
+一般研究、分析、Review、文件與輕量委派預設走 Notion Agent Mailbox。正式 GitHub Work Order 留給需要可重現施工規格的程式或其他高風險、跨階段任務。這是選擇派工管道的規則，**不是交付規則的例外**。Notion 派出的程式、腳本、設定、部署或資料庫行為變更，仍須 CODE_DELIVERY 與 PR；純 Repo 文件使用 DOC_DELIVERY。本契約不要求每項委派都建立 Work Order。
+
 ## Core boundary
 
 Dispatch channel ≠ work nature ≠ delivery destination. **Primary assigns delivery type explicitly before dispatch**; executor must not guess or downgrade it. A task may require multiple deliveries. If any repository change affects executable code, application behavior, infrastructure/deployment configuration, database migrations, scripts, or security/auth behavior, the repository delivery is `CODE_DELIVERY` even when README or reports are also modified. Unclear classification: stop and ask Primary; do not write main.
