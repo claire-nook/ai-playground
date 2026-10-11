@@ -34,6 +34,25 @@ Stable ID 優先沿用既有 Human-facing catalog ID，避免同一篇作品長�
 
 ## Writing Record
 
+### 2026-10-11 · `WALL-HOME-1`
+
+**Title**  
+[墨衡的家：一間讓 AI 記得自己撞過哪些牆的實驗室](ai-playground-home-architecture.md)
+
+**Type**  
+Commentary / Lab Architecture / Knowledge Continuity
+
+**Origin**  
+Claire 喜歡一張用 ASCII 樹狀圖呈現 Cloudflare Worker 與資料庫關係的架構圖，問實驗室的家能否也這樣介紹。墨衡依 Repository 現有架構整理出研究基地、站台發布與跨對話記憶的多層示意圖。
+
+**Author Memory**  
+這篇不是 Netlify 網站操作手冊，而是介紹「家不等於網站，也不等於世界」：`ai-playground` 是 Primary 的研究基地；Experiment／Evidence／Knowledge／Wall 各有責任；Catalog metadata 與 Markdown 分工；新對話靠 README 恢復工作環境，不靠假裝永不失憶。
+
+**Canonical Source**  
+`knowledge/wall/ai-playground-home-architecture.md`
+
+
+
 
 ### 2026-09-20 · `WALL-DAYONE-2`
 
