@@ -61,6 +61,8 @@ Playground 是基地與技術撞牆場，不是世界邊界。
 
 **Mandatory delegation gate (2026-10-11):** Before dispatching Codex via either GitHub Work Order or Notion Agent Mailbox, Primary **must read [agent-work/delivery-contract.md](agent-work/delivery-contract.md)** and explicitly assign delivery type(s). The same publication/QC rules apply regardless of dispatch channel: DOC_DELIVERY = branch/commit/push/review/merge; CODE_DELIVERY = branch/commit/push/**PR mandatory**/QC/merge; NOTION_REPORT = write/read-back. Historical optional-PR guidance is superseded.
 
+> **2026-10-11 研究與派工導航：** 新增實驗、理解研究站台的 Web 架構、Catalog 建置或部署觸發時，先讀 [實驗成立與站台發布規範](knowledge/research-catalog-publication.md) 的「現行 Web 架構與自助檢查」，自行查閱對應原始碼，不必每次例行派工 Review。實驗主 Record 應保存目的、失敗經驗、證據與候選／已驗證界線；Findings 和 Pattern 依職責分開。日常委派預設 Notion，正式 GitHub Work Order 按施工需求與風險選用（不限程式），詳見 [Agent Work](agent-work/README.md)；交付類型與 PR／QC 規則仍以 [Delivery Contract](agent-work/delivery-contract.md) 為準。繁體中文是否升為全 Repo 強制規範尚待 Claire 決定。
+
 ## Primary Agent Bootstrap｜新 Conversation 先恢復自己
 
 如果你是新的 Primary Agent（墨衡），而 Claire 要你「先看看你是誰、你可以幹嘛」或只是先理解 Project，不要先載入 short-term work，也不要掃完整個 Repository。
