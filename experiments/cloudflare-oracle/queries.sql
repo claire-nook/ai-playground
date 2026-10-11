@@ -1,4 +1,4 @@
--- CF-ORACLE-1 / Phase 3 query candidates；尚未在 D1 執行。
+-- CF-CONNECTOR-1 / Phase 1 query candidates；尚未在 D1 執行。
 -- 由 Worker 以 bind parameter 提供 :category / :fortune_id。
 -- 隨機抽籤：只選啟用籤文。
 SELECT id, category, level, title, poem, interpretation, advice

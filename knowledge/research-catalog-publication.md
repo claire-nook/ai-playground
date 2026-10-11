@@ -44,11 +44,11 @@
 - `index`: `required`（需人類 Index heading + Record link）、`unknown`（歷史登錄意圖待確認，只 WARN）。新正式實驗應使用 `required`，不以 `unknown` 規避新實驗登錄。
 - 人類 Index 格式維持 `### ID — 名稱` 與其下明確的 repo-relative 主 Record link。保留研究摘要；不能只放 metadata link。
 - 共用 Record：在同一檔放多個不同 ID 宣告，各自對應原 Catalog。如 C-DB-1 / C-EXT-1，不要求一實驗一檔。
-- 子實驗可以無卡，並以 `indexId` 明確指定既有人類 Index 的父項目。例：`{"id":"CF-ORACLE-1","card":"none","index":"required","indexId":"CF-CONNECTOR-1"}`；父 heading 必須連結子 Record，父 ID 也須已宣告或有既有 Catalog。不冒充另有獨立 Index entry。
+- 子實驗可以無卡，並以 `indexId` 明確指定既有人類 Index 的父項目。示意（非現存實驗）：`{"id":"EXAMPLE-CHILD-1","card":"none","index":"required","indexId":"EXAMPLE-PARENT-1"}`；父 heading 必須連結子 Record，父 ID 也須已宣告或有既有 Catalog。不冒充另有獨立 Index entry。
 
 唯讀 CLI：`node scripts/check-experiment-integrity.mjs [--root <repository>]`。Exit 0 = 無 ERROR（仍可能有 WARN）；1 = 勾稽錯誤；2 = 用法／讀取失敗。檢查宣告重複、Catalog ID 重複、recordPath 存在／一致、必要的主 Record／Catalog Index 對應斷連結／身分與 target 不符、以及**有明確意圖**的漏 metadata／Index。它不評估 Evidence 強度、摘要品質或站台部署，也沒有新 Action／排程／自動 commit。Builder 的 target 存在防呆仍無法發現整份 metadata 漏建。
 
-**本次漸進採用，不假裝歷史全覆蓋：**12 個已知 ID 已在 11 份 Record 宣告（9 個現有人類 Index 主項目、Custom API 的 2 個共用 ID、CF 子實驗）。其餘 7 個 Catalog ID：A、B、B-1、C-BSA-1、C-NF-0、D-BATCH-1、P-CODEX-PHONE，暫保留 `LEGACY_CATALOG_ID` WARN，下一次編輯時由作者確認登錄意圖。C-DB-1 / C-EXT-1 尚無獨立人類 Index entry，明確 `index=unknown`，不自動補摘要。GitHub Actions、Netlify Deployment Boundary、Netlify Trigger Boundary 的 3 份歷史 README 尚無明確 ID／卡片意圖，作為既知歷史未明項目由人工保留，不再對未宣告 README 輸出 `UNCLASSIFIED_RECORD`（避免普通延伸文件誤報）；不要猜 ID 或因此自動建卡。現有基準：18 experiment Catalog、0 ERROR / 9 WARN；這是例外清單，**不是允許新實驗免宣告**。完全漏建 Record 仍需派工／人工 QC 發現。
+**本次漸進採用，不假裝歷史全覆蓋：**11 個已知 ID 已在 10 份 Record 宣告（9 個現有人類 Index 主項目、Custom API 的 2 個共用 ID；CF-ORACLE-1 已併入 CF-CONNECTOR-1）。其餘 7 個 Catalog ID：A、B、B-1、C-BSA-1、C-NF-0、D-BATCH-1、P-CODEX-PHONE，暫保留 `LEGACY_CATALOG_ID` WARN，下一次編輯時由作者確認登錄意圖。C-DB-1 / C-EXT-1 尚無獨立人類 Index entry，明確 `index=unknown`，不自動補摘要。GitHub Actions、Netlify Deployment Boundary、Netlify Trigger Boundary 的 3 份歷史 README 尚無明確 ID／卡片意圖，作為既知歷史未明項目由人工保留，不再對未宣告 README 輸出 `UNCLASSIFIED_RECORD`（避免普通延伸文件誤報）；不要猜 ID 或因此自動建卡。現有基準：18 experiment Catalog、0 ERROR / 9 WARN；這是例外清單，**不是允許新實驗免宣告**。完全漏建 Record 仍需派工／人工 QC 發現。
 
 ## Required metadata & status semantics
 

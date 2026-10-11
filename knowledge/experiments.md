@@ -4,7 +4,7 @@
 
 - Status: Verified / Completed
 - Record: [Cloudflare Direct Control](../experiments/cloudflare-direct-control/README.md)
-- Phase Artifacts: [Cloud Oracle + D1 SQL](../experiments/cloudflare-oracle/README.md)
+- SQL Artifacts: [schema.sql](../experiments/cloudflare-oracle/schema.sql) / [queries.sql](../experiments/cloudflare-oracle/queries.sql)
 - Evidence: [cf-oracle-1.md](../evidence/cf-oracle-1.md)
 - Live Demo: https://cf-lab-oracle.claire-nook.workers.dev/
 - Tags: Cloudflare, Connector, Workers, D1, Netlify, iPad-first

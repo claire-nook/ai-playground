@@ -1,8 +1,9 @@
-# CF-ORACLE-1｜Cloudflare Connector、D1 與 Netlify 換殼證據
+# CF-CONNECTOR-1｜Cloudflare Connector、D1 與 Netlify 換殼證據
 
 - 日期：2026-10-09
 - 狀態：Completed（功能驗證）
-- 主紀錄：[Cloudflare Oracle 實驗](../experiments/cloudflare-oracle/README.md)
+- 主紀錄：[Cloudflare Direct Control](../experiments/cloudflare-direct-control/README.md)
+- 歷史名稱：CF-ORACLE-1（原技術階段代號，已整併，不再是獨立實驗）
 - Cloudflare：https://cf-lab-oracle.claire-nook.workers.dev/
 - Netlify：https://ai-playground-lab.netlify.app/cloudflare-oracle/
 
