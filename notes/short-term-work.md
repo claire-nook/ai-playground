@@ -1,44 +1,19 @@
-## 2026-10-09 Cloud Oracle progress update
-
-先前 `CF-CONNECTOR-1` planning queue 的 Phase 1、2 Pending 狀態已過期：
-- Phase 1：Connector Worker create/deploy、workers.dev、JSON API；Claire iPad Safari 已驗證。
-- Phase 2：Connector 更新 Worker 內建前端，同源求籤；Claire iPad Safari 已驗證。
-- Phase 3：共用 `lab-smoke-db` 已有 Oracle 兩表與 200 籤；Worker v1.2.0 D1 讀寫，Claire iPad Safari 六次求籤統計可見。Schema DDL 留存，seed INSERT 不留存。
-- Phase 4–5：Netlify 前端跨來源實驗尚未執行。
-- Canonical Experiment：`experiments/cloudflare-direct-control/README.md`（CF-CONNECTOR-1）。
-- Detailed Evidence：`evidence/cf-oracle-1.md`。
-- Current Demo：https://cf-lab-oracle.claire-nook.workers.dev/
-
----
-
 # Short-term Work Items
 
-> 無交期。這不是正式開發排程；只保存近期 Research Front 與 deliberate deferred branches。
+> 無交期。只保存近期 Research Front 與刻意保留的候選題目；已完成實驗不在此維護歷史執行清單，請至 Experiment / Evidence 查閱。
 
-## Active Research Front — CF-CONNECTOR-1 / Cloudflare Direct Control
+## Candidate — Cloudflare Login / Authentication / Authorization
 
-- Status: **Phase 1–3 Functionally Verified; Netlify Pending**（2026-10-09）
-- Experiment Record: [CF-CONNECTOR-1](../experiments/cloudflare-direct-control/README.md)
-- Catalog: [Cloudflare experiment entry](../knowledge/experiments.md)
-- Purpose: 驗證 AI 能否透過 Cloudflare Connector 直接部署與測試 Worker，並逐步驗證 D1 binding、Cloudflare / Netlify UI shell、跨來源 Browser API 呼叫。這是 iPad + AI-first 的雲端開發協作能力研究，不是正式系統開發。
-
-### Historical execution queue｜原始計畫，現況請以上方 2026-10-09 更新為準
-
-1. **Pending — Phase 1:** Connector 直接建立 / 部署 / 測試 API A（無 UI、無 DB、無 Git）；先確認目前 Connector 是否真的提供 Worker deployment / invocation 能力。
-2. **Pending — Phase 2:** Cloudflare UI shell 呼叫同一 API A；確認實際 origin 與 Browser 行為。
-3. **Pending — Phase 3:** Cloudflare UI shell 呼叫 API B（D1 binding）；在專用測試資料上驗證 DB 路徑。
-4. **Pending — Phase 4:** GitHub `public/` → Netlify UI shell 呼叫原 API A；檢查跨來源 / CORS。
-5. **Pending — Phase 5:** 同一 Netlify UI shell 呼叫原 API B；驗證跨來源 + D1 路徑。
-
-只建立 **兩支 API（A 無 DB、B 有 D1）與兩種 UI shell（Cloudflare、Netlify）**，不隨 Phase 增加而重建 API。Zero Trust / Cloudflare Access / Authentication 另案處理，避免污染變因。
-
-### Existing baseline / next action
-
-- 已有 Cloudflare Free account、`claire-nook.workers.dev` namespace、測試 D1 `lab-smoke-db`。
-- 先前對話交接記錄 Connector OAuth Full access 後可直接執行 D1 SQL CRUD；**不是本次五階段 Worker 實驗的驗證結果**。
-- **下一步：** 先確認 Cloudflare Connector 目前的 Worker 操作權限與部署能力，再執行 Phase 1。未取得直接執行證據前，不宣稱可行。
-- 每個 Phase 完成或遇到有價值的 Failure Boundary，更新 Experiment Record、`knowledge/experiments.md` 與必要的 `evidence/index.md`；不要把 Pending 寫成 Verified。
-- Repo 為公開研究資產，禁止提交 Token、Secret、私密資料。Cloudflare 直接部署的原始碼與設定在形成 Evidence 後應回存 Repo，以免平台與 Git 內容漂移。
+- Status: **Candidate / Not Started**。尚未啟動實驗，也沒有選定正式架構。
+- Context: [Notion Cloudflare 初探與候選研究](https://app.notion.com/p/3f372eea528e81cea59ae805bff31d0c)。
+- 已完成的 Cloudflare Connector、Worker、D1、Netlify 換殼驗證，見 [CF-CONNECTOR-1](../experiments/cloudflare-direct-control/README.md)；這些功能證據**不代表**已驗證 API 安全或登入保護。
+- 研究問題：
+  - 私人管理頁面的存取保護，與外部使用者註冊／登入服務，應如何區分？
+  - Cloudflare Access、Supabase Auth，以及 Worker 驗證 JWT（JSON Web Token）分別適合哪些情境？
+  - Authentication（身分驗證）、Authorization（授權）、Session、角色權限與資料庫存取政策如何分工？
+  - 公開 API、私人 API、系統對系統 API 的保護方式有何差異？API Key／Token／Secrets／Rate Limiting 與 CORS（Cross-Origin Resource Sharing）各能與不能防護什麼？
+- 啟動條件：先選定具體使用情境與保護目標，再決定實驗設計、成本、權限及驗收方式。
+- **GitHub 驅動 Cloudflare 部署：尚待另行討論 Repo ownership／部署邊界，不在本次列為已確定的 Short-term 工作。**
 
 ---
 
