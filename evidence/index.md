@@ -1,25 +1,13 @@
 ## Cloudflare Connector / Cloud Oracle Direct Worker Deployment
 
 - Experiment: CF-CONNECTOR-1
-- Date: 2026-10-09（Evidence 整理日期）
-- Status: Verified / Completed（Worker API、同源 UI、D1 讀寫與 Netlify 換殼）
-- Record: `experiments/cloudflare-direct-control/README.md`
-- Evidence: [cf-oracle-1.md](cf-oracle-1.md)
+- Date: 2026-10-09
+- Status: Verified / Completed（Worker API、同源 UI、D1 讀寫、Netlify 換殼）
+- Record and human verification: [Cloudflare Direct Control](../experiments/cloudflare-direct-control/README.md)
 - SQL Artifacts: [schema.sql](../experiments/cloudflare-oracle/schema.sql)、[queries.sql](../experiments/cloudflare-oracle/queries.sql)
 - Live Demo: https://cf-lab-oracle.claire-nook.workers.dev/
-- Topics: Cloudflare Connector, Workers, Direct Deployment, iPad Safari, D1, Netlify
 
-### Verified chain
-
-```text
-ChatGPT → Cloudflare Connector → Worker create/deploy + workers.dev route
-→ /health, /oracle JSON → Claire iPad Safari observation
-→ Connector Worker update → same-origin HTML/JS fetch /oracle
-→ Claire iPad Safari fortune display
-```
-
-後續已完成 D1 讀寫及 Netlify 跨來源換殼；Claire 在 iPad Safari 驗證兩站求籤、共用統計由 9 增至 10。原先 Phase 3 未執行的描述屬中途狀態，現已由後續 Evidence 取代。功能驗證不代表正式資安／效能驗收。
-
+Claire 在 iPad Safari 驗證 Cloudflare 與 Netlify 兩站求籤、共用統計由 9 增至 10；操作步驟、觀察與證據界線已整合至唯一主 Record。未驗證 API 安全、負載與正式產品可靠性。
 ---
 
 
