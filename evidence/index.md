@@ -2,12 +2,12 @@
 
 - Experiment: CF-CONNECTOR-1
 - Date: 2026-10-09（Evidence 整理日期）
-- Status: Phase 1–2 Verified / Phase 3 Candidate
+- Status: Verified / Completed（Worker API、同源 UI、D1 讀寫與 Netlify 換殼）
 - Record: `experiments/cloudflare-direct-control/README.md`
 - Evidence: [cf-oracle-1.md](cf-oracle-1.md)
-- SQL Artifacts: `experiments/cloudflare-oracle/schema.sql`、`seed.sql`、`queries.sql`
+- SQL Artifacts: [schema.sql](../experiments/cloudflare-oracle/schema.sql)、[queries.sql](../experiments/cloudflare-oracle/queries.sql)
 - Live Demo: https://cf-lab-oracle.claire-nook.workers.dev/
-- Topics: Cloudflare Connector, Workers, Direct Deployment, iPad Safari, D1 Candidate, Netlify
+- Topics: Cloudflare Connector, Workers, Direct Deployment, iPad Safari, D1, Netlify
 
 ### Verified chain
 
@@ -18,7 +18,7 @@ ChatGPT → Cloudflare Connector → Worker create/deploy + workers.dev route
 → Claire iPad Safari fortune display
 ```
 
-Phase 3 D1 SQL 已歸檔但**尚未執行**；Netlify 跨來源 Demo 也尚未驗證。Phase 1–2 不以 GitHub source archive 為成功條件。
+後續已完成 D1 讀寫及 Netlify 跨來源換殼；Claire 在 iPad Safari 驗證兩站求籤、共用統計由 9 增至 10。原先 Phase 3 未執行的描述屬中途狀態，現已由後續 Evidence 取代。功能驗證不代表正式資安／效能驗收。
 
 ---
 
