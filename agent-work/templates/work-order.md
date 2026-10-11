@@ -1,3 +1,5 @@
+> **Mandatory Delivery Contract (2026-10-11):** [agent-work/delivery-contract.md](../delivery-contract.md) governs **both** GitHub Work Order and Notion dispatch. Primary must fill `Delivery Type(s)` explicitly: `NOTION_REPORT | DOC_DELIVERY | CODE_DELIVERY` (multiple allowed). Mixed code+docs is `CODE_DELIVERY`; all code/config/behavior changes **require a dedicated branch, commit, push and PR before QC/Merge**, without exception. DOC_DELIVERY requires branch/commit/push/Primary review/merge but no PR. Executor must read current Codex Memory + contract and confirm; report remote SHA and PR URL for code. Older publication-adapter passages below do not waive mandatory PR.
+
 # Work Order Template
 
 > Canonical Work Order structure for Primary Agent dispatch management.
@@ -11,6 +13,7 @@
 - Work Order ID: `YYYY-MM-DD-short-name`
 - Date: `YYYY-MM-DD`
 - Type: `Implementation | Investigation | Review | Documentation | Experiment`
+- Delivery Type(s): `NOTION_REPORT | DOC_DELIVERY | CODE_DELIVERY` (explicit; multiple allowed)
 - Work Weight: `Micro | Standard | High-Risk`
 - Primary Objective: `<one-line objective>`
 - Requested By: `Primary Agent | Claire | Primary Agent / Claire`
