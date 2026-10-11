@@ -2,6 +2,36 @@
 
 > **必讀時機：** 新增 Experiment / Wall Research Output、修改 Catalog 狀態、宣稱站台已發布之前。這是 authoring / publication contract，不是 Formal Specification。
 
+## 現行 Web 架構與自助檢查｜新增實驗前先讀（2026-10-11）
+
+本節是 Primary 自助理解站台的入口，不必每次請 Implementation Agent 重做架構 Review。**以下描述已從目前 Repo 的 `netlify.toml`、`scripts/build-experiment-catalog.mjs`、`scripts/check-experiment-integrity.mjs`、`public/index.html` 讀取確認；若原始碼改變，以當前原始碼為準。**
+
+```text
+experiments/**/README.md        → 人類可讀的實驗主紀錄
+knowledge/experiments.md        → 人工維護的研究目錄
+experiments/**/*.catalog.json  ┐
+knowledge/wall/**/*.catalog.json ┴→ scripts/build-experiment-catalog.mjs
+                                    → public/research-catalog.json
+                                    → public/experiment-catalog.json（相容輸出）
+public/index.html               → 站台首頁／研究成果入口
+public/assets/                 → 前端樣式與閱讀器腳本
+public/                         → Netlify 靜態發布根目錄
+```
+
+- **建置來源與部署：** `netlify.toml` 指定 `node scripts/build-experiment-catalog.mjs`，發布 `public/`；`*.catalog.json` 才是站台研究卡片的機器可讀來源。`public/research-catalog.json` 是建置產物，不是手工資料庫。
+- **觸發邊界：** `netlify.toml` 的 ignore 規則依變更路徑判斷是否需要部署。單純修改研究 Markdown 通常不觸發站台更新；`public/`、Catalog metadata、Builder、Netlify 設定等部署相關路徑會觸發，遇到無法判斷的 Git 狀態有保守部署分支。**這是程式設定，不等於已觀察到本次實際部署。**
+- **網站閱讀器：** `public/index.html` 載入 `public/assets/markdown-reader.js`、樣式，以及 marked、DOMPurify、Mermaid 等前端函式庫。不要把 Markdown 文件本身誤認成站台卡片資料來源，也不要未看原始碼就宣稱所有 Markdown 都會自動公開成卡片。
+- **完整性檢查：** `scripts/check-experiment-integrity.mjs` 是唯讀檢查，確認明確宣告的實驗 ID、Catalog 與人工索引的部分對應；**不保證**所有延伸連結、內容品質、實測證據、部署或網站呈現正確。
+- **Primary 的自助閱讀順序：** 本文件 → `netlify.toml` → Builder → Checker → `public/index.html`／相關 `public/assets/`。只有涉及具體異常或架構改造、需要額外獨立驗證時才委派 Review；不為了回想目前 Web 架構而例行派工。
+
+## 實驗知識保存與可審閱性｜2026-10-11
+
+- 一個正式實驗以一份主 Record 為閱讀入口。主檔應讓沒有參與當時對話的 Primary 與參與實驗的 Claire 都能理解：**目的、實際過程、失敗／否決理由、觀察證據、未驗證部分與目前結論**。
+- Findings／Evidence 保存詳細觀察與可追溯條件；跨實驗可重用的 Platform Pattern／Knowledge 保存歸納後的設計規則。**分工不同就保留獨立文件**，不因文字有交集便強制合併；同一事實重複貼成多份平行主紀錄則應整理。
+- 將「實際觀察」「候選設計」「正式採納」清楚分開。負面結果與 Claire 的反對理由也是研究成果，不得在整理時洗成成功故事。
+- 文件應以 Claire 能審閱的方式撰寫，技術識別碼、路徑與程式介面保留原樣。**是否將繁體中文升為全 Repo 強制規則仍待 Claire 決定**；本次不追溯改寫所有歷史文件。
+- 更新主檔或延伸文件後，人工確認彼此連結、結論一致且無不必要的重複；Checker 不能代替這項人工審閱。
+
 ## Two catalogs, different jobs
 
 - `knowledge/experiments.md`：人與 AI 閱讀的研究目錄，記錄 Why / Status / Links。
