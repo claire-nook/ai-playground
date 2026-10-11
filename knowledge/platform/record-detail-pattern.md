@@ -1,211 +1,211 @@
-# General Record Detail Pattern
+# 通用資料明細設計模式（General Record Detail Pattern）
 
-> Status: Pattern Candidate v0.1  
-> Date: 2026-09-17  
-> Source: `F-DETAIL-1`  
-> Scope: Read-only Record Detail + Master → Detail lifecycle  
+> 狀態：候選設計模式 v0.1，尚非正式平台標準  
+> 日期：2026-09-17  
+> 來源實驗：`F-DETAIL-1`  
+> 範圍：唯讀資料明細，以及「查詢清單 → 明細」操作流程  
 
-## 1. Purpose
+## 1. 文件目的
 
-This document captures the current architecture / interaction candidate distilled from F-DETAIL-1. It is not a production UI specification and it does not require one universal Detail component.
+本文件整理 F-DETAIL-1 實驗所歸納的架構與互動設計候選方案。**這不是正式產品 UI 規格，也不要求所有明細頁都使用同一個通用元件。**
 
-The Pattern standardizes responsibilities and lifecycle where repeated inconsistency would be costly; Feature Specification still owns business composition.
+設計模式只統一那些如果各自實作、容易產生昂貴不一致的責任與操作流程；業務畫面如何安排，仍由各業務功能規格決定。
 
 ---
 
-## 2. Core Flow
+## 2. 核心操作流程
 
 ```text
-Query Context
-→ Select Stable Record Identity
-→ Record Detail
-→ Feature-defined Business Content
-+ Platform-standard Audit
-→ Return
-→ Re-resolve Stable Record in current result ordering
-→ Restore work context
+保留查詢時的工作狀態
+→ 選取有穩定識別碼的資料
+→ 開啟資料明細
+→ 顯示由業務功能決定的內容
+＋ 平台統一的建立／修改紀錄
+→ 返回查詢
+→ 依目前結果順序重新定位原資料
+→ 恢復原本的工作狀態
 ```
 
-The Pattern is intentionally read-only. Mutation lifecycle belongs to the next Maintenance Pattern challenge.
+本設計模式刻意只處理唯讀操作。新增與修改等資料異動流程，留待下一輪資料維護設計研究。
 
 ---
 
-## 3. Responsibility Boundary
+## 3. 責任分工
 
-### Feature Specification owns
+### 業務功能規格（Feature Specification）負責
 
-- Which business fields appear.
-- Field labels and business meaning.
-- Grouping and ordering.
-- Business-specific sections / summaries / visualizations.
-- Whether a field needs ordinary, wider, or full reading space.
-- Feature-specific actions.
+- 顯示哪些業務欄位。
+- 欄位標籤與業務意義。
+- 欄位分組與順序。
+- 業務專屬的區塊、摘要或視覺化。
+- 欄位需要一般、較寬或整列的閱讀空間。
+- 業務功能專屬的操作。
 
-### Platform Pattern owns / standardizes
+### 平台設計模式（Platform Pattern）負責統一
 
-- Stable record identity as lifecycle anchor.
-- Common read-only field presentation conventions.
-- Responsive behavior principles.
-- Detail loading / error / not-found states.
-- Master → Detail → Return lifecycle semantics.
-- Platform-standard Audit presentation.
-- Consistent interpretation of common field semantics where useful.
+- 以穩定的資料識別碼作為操作流程中的定位依據。
+- 唯讀欄位的共通顯示慣例。
+- 響應式版面的設計原則。
+- 明細載入中、發生錯誤或找不到資料的狀態。
+- 查詢清單 → 明細 → 返回的操作流程語意。
+- 平台統一的建立與修改紀錄顯示方式。
+- 必要時，統一常見欄位資料類型的呈現方式。
 
-### Platform does not automatically own
+### 平台不會自動接管
 
-- Business page composition.
-- DB schema → UI generation.
-- Field order inferred from physical column order.
-- Business-specific metrics / trace / lifecycle sections.
-- Generic metadata-driven form generation merely because the prototype used metadata-like fixtures.
+- 業務畫面的欄位組合與配置。
+- 根據資料庫結構自動產生 UI。
+- 依資料表實體欄位順序決定畫面欄位順序。
+- 業務專屬的指標、追蹤資訊或生命週期區塊。
+- 只因原型使用類似中繼資料的測試結構，就要求正式系統採用中繼資料驅動的表單產生方式。
 
 ---
 
-## 4. Common Pattern ≠ Auto-generated Page
+## 4. 共通設計模式不等於自動產生整張畫面
 
-The current candidate explicitly rejects this inference:
+目前的候選設計明確反對直接做出以下推論：
 
 ```text
-DB Schema / API Payload
-→ automatic Platform-generated Detail page
+資料庫結構（DB Schema）／API 回傳內容
+→ 平台自動產生完整明細畫面
 ```
 
-No current Evidence requires or justifies that architecture.
+目前沒有實驗證據要求或支持這種架構。
 
-A formal Feature may be hand-composed from a Specification while still conforming to Platform Detail conventions.
+正式業務功能可以依規格個別製作畫面，同時遵守平台共通的明細顯示慣例。
 
-The Platform should offer reusable primitives / guidance when repetition is useful, but should not steal composition authority from the Feature.
+平台可以在確實需要重用時提供共用元件與設計指引，但不應剝奪業務功能決定畫面組合的權責。
 
 ---
 
-## 5. Field Presentation Candidate
+## 5. 欄位呈現的候選規則
 
-Current field semantics exercised by F-DETAIL-1 include:
+F-DETAIL-1 已用原型檢視的欄位資料類型包括：
 
-- Text
-- Reference / Code + Description
-- Number
-- Currency
-- Percentage
-- Date
-- Datetime
-- Boolean
-- Nullable
-- Long Text
+- 文字
+- 參照代碼與說明
+- 數字
+- 金額
+- 百分比
+- 日期
+- 日期與時間
+- 布林值（是／否）
+- 可為空值的欄位
+- 長篇文字
 
-These are presentation semantics, not a claim that every Feature must expose these types.
+這些是已檢視的欄位呈現類型，**不代表每個業務功能都必須具備所有類型**。
 
-### Layout capability
+### 版面寬度
 
-`normal / wide / full` is currently a layout vocabulary candidate, not a mandatory metadata contract.
+`normal / wide / full`（一般／較寬／整列）目前只是候選版面用語，**不是強制性的欄位中繼資料約定**。
 
-Desktop may use multiple columns; tablet / mobile collapse according to available width. The Pattern should not require a fixed three-field row.
+桌面版可以使用多欄；平板與手機則依可用寬度調整。平台不應強制每列固定三個欄位。
 
-### Long Text
+### 長篇文字
 
-Long Text should support readable full-width plain-text presentation, wrapping, paragraph / newline preservation where appropriate.
+長篇文字應提供易於閱讀的純文字顯示方式，包括足夠寬度、自然換行，以及視需要保留原本段落與換行。
 
 ```text
-Long Text ≠ Rich Text
+長篇純文字 ≠ 富文字格式（Rich Text）
 ```
 
-Rich Text requires a separate content and security contract.
+富文字格式需要另外訂定內容格式與安全性約定。
 
 ---
 
-## 6. Platform Standard Audit Pattern
+## 6. 平台統一的建立與修改紀錄（Audit）
 
-For ordinary single-record Detail surfaces, Audit should be consistently recognizable.
+一般單筆資料明細中的建立與修改紀錄，應有一致、容易辨識的顯示方式。
 
-Baseline semantic set:
+候選的基本欄位意義：
 
 ```text
-Created At
-Created By
-Updated At
-Updated By
+建立時間（Created At）
+建立者（Created By）
+修改時間（Updated At）
+修改者（Updated By）
 ```
 
-Candidate rule:
+候選原則：
 
-> Audit is Platform-standard composition; Business Content is Feature-defined composition.
+> **建立與修改紀錄採平台統一的顯示方式；業務內容的畫面安排則由各功能決定。**
 
-This does not prevent future extensions such as version, approval, delete, or workflow audit when real Requirements demand them.
+如果未來有真實需求，仍可擴充版本、核准、刪除或工作流程相關紀錄；目前規則不排除這些可能性。
 
 ---
 
-## 7. Return Context
+## 7. 返回查詢時的工作狀態
 
-The Pattern distinguishes work context from pagination coordinates.
-
-```text
-Query Context ≠ Old Page Number
-```
-
-If record R was selected from page 32 and newer records are inserted while Detail is open, R may move to page 33 / 34 under the same sorting rule.
-
-Candidate return behavior:
+此設計模式區分「使用者原本在處理哪筆資料」與「原本位於第幾頁」。
 
 ```text
-Preserve Query Criteria + Sort + Page Size + Stable Record Identity
-→ resolve R against current result ordering
-→ derive current page/location
-→ render current page
-→ restore selected-record anchor
+返回查詢時的工作狀態 ≠ 舊頁碼
 ```
 
-If R no longer exists or no longer satisfies the Query, the Feature should expose an explicit fallback state rather than silently pretending that the old page is the restored context.
+例如使用者從第 32 頁選取資料 R，查看明細期間有人新增了較新的資料。即使排序規則沒變，R 也可能移到第 33 或 34 頁。
 
-### Backend contract remains open
+目前的候選返回流程：
 
-The production mechanism for bounded anchor-position / cursor resolution is not yet defined. A browser-side full-result scan is prototype convenience, not architecture.
+```text
+保存查詢條件＋排序方式＋每頁筆數＋穩定的資料識別碼
+→ 依目前查詢結果順序重新定位 R
+→ 算出 R 現在所在的頁面與位置
+→ 顯示目前頁面
+→ 恢復原資料的選取定位
+```
+
+如果 R 已不存在或不再符合查詢條件，業務功能應明確顯示替代狀態，不能默默返回舊頁面，假裝已恢復原本工作位置。
+
+### 後端技術約定仍未定案
+
+正式環境要如何在有限查詢成本內重新定位資料位置或游標，目前尚未定義。瀏覽器原型直接掃描全部模擬資料，只是測試方便，**不是正式架構決策**。
 
 ---
 
-## 8. State Ownership Candidate
+## 8. 狀態歸屬的候選規則
 
-| State / Meaning | Candidate Owner |
+| 狀態或意義 | 候選負責者 |
 | --- | --- |
-| Query criteria / sort / page size | Query Feature |
-| Current result/page semantics | Query Feature |
-| Stable selected record identity | Detail / transition lifecycle |
-| Current Detail data | Detail Feature |
-| Route / URL transport | Shell / Routing mechanism |
-| Browser History integration | Shell + Feature contract |
-| Audit semantic presentation | Platform Pattern |
-| Business content composition | Feature Specification |
+| 查詢條件／排序／每頁筆數 | 查詢功能 |
+| 目前查詢結果及頁面規則 | 查詢功能 |
+| 已選取資料的穩定識別碼 | 明細功能／切換流程 |
+| 目前明細資料 | 明細功能 |
+| 路由／網址狀態的傳遞 | 外層介面（Shell）／路由機制 |
+| 瀏覽器歷史紀錄整合 | 外層介面與業務功能之間的約定 |
+| 建立與修改紀錄的顯示意義 | 平台設計模式 |
+| 業務內容的畫面安排 | 業務功能規格 |
 
-Principle inherited from the General Application Platform Architecture:
+沿用「通用應用平台架構」的原則：
 
-> **State ownership follows semantic lifecycle, not visual containment.**
+> **狀態應由真正負責該操作流程意義的部分管理，而不是由畫面上包住它的元件決定。**
 
 ---
 
-## 9. Handoff to Maintenance Pattern
+## 9. 交接下一輪｜資料維護設計模式
 
-Read-only Detail is a base interaction pattern, not a requirement that Create / Update / Read share one implementation file or route.
+唯讀明細只是基本互動模式，**不代表新增／修改／唯讀一定要共用同一個程式檔案或路由**。
 
-Two valid architecture candidates remain open:
+目前仍保留兩種待比較的架構方向：
 
 ```text
-Mode-based surface
-Record Feature
-├─ Create Mode
-├─ Update Mode
-└─ Read Mode
+同一畫面切換模式
+資料功能
+├─ 新增模式
+├─ 修改模式
+└─ 唯讀模式
 ```
 
 ```text
-Surface-separated implementation
-Record Create
-Record Update
-Record Read
+分開實作各個畫面
+資料新增
+資料修改
+資料唯讀
 ```
 
-The next Pattern should compare them under real maintenance pressure rather than declaring one modern and the other obsolete.
+下一輪應在真實資料維護需求下比較兩者，而不是先宣布其中一種比較現代、另一種已經過時。
 
-The shared question is:
+共同研究問題：
 
-> Which semantics and lifecycle should be Platform-standard regardless of whether Create / Update / Read are one surface or three?
+> 無論新增／修改／唯讀使用同一畫面或三個畫面，哪些行為與操作流程應由平台統一規範？
 
-Next pressures include capability / authorization, Save / Cancel, dirty state, validation, Browser Back / navigation guard, concurrent update conflict and post-save return behavior.
+下一輪需面對的問題包括：操作能力與權限控管、儲存／取消、未儲存變更、資料驗證、瀏覽器返回與導覽阻擋、多人同時修改的衝突，以及儲存後應返回哪個畫面。
