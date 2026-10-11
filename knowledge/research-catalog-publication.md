@@ -20,6 +20,16 @@
 5. 從 repo root 執行 `node scripts/check-experiment-integrity.mjs`；需要卡片時再跑 `node scripts/build-experiment-catalog.mjs`，確認輸出含預期 ID。Checker 唯讀；Builder 寫產生的 Catalog，不修改人工 Index。
 6. 按 Delivery Contract 完成遠端交付／QC，再分別確認下方四道證據 gate。未取得部署／站台證據前不能宣稱網站發布完成。
 
+## Primary Record vs supporting Markdown｜主檔與延伸文件
+
+正常情況 **1 個正式 Experiment ID 對應 1 份 Primary Experiment Record**；實驗成立到結案持續更新同一主 Markdown。主檔可承載完整紀錄，也可只保存摘要與閱讀入口，Catalog 的 `recordPath` 與人工 Experiment Index 都指向它。
+
+內容需要延伸時，用普通 Markdown links 連到第二、第三份或更深的文件；可以是 Evidence、實驗總結、測試紀錄或技術說明，沒有固定檔數／類型／深度。**延伸文件不需要獨立 ID、metadata 或 Experiment Index entry；Checker 不追蹤主 Record／延伸文件的 link graph，也不勾稽延伸 target 的存在性或內容。** 即使延伸檔名為 README.md，仍不從檔名推斷它是正式實驗。人工 Index 中附帶的普通延伸 link 也不納管；必要的主 Record／Catalog 對應仍須正確。閱讀連結是否可用由作者／人工 QC 確認，沒有第二／三層檢查器或附件管理系統。
+
+只有**另有明確獨立 Experiment ID 宣告**的真正子實驗，才有自己的 primary Record 與必要登錄，並可用 `indexId` 登錄在父項目下。一般 Evidence／附件不是子實驗，不放 Experiment 宣告或套用 `indexId`。Checker 搜尋 Markdown 中的明確宣告以發現 identity，不代表對沒有宣告的普通文件建立身分／登錄要求；不從標題或目錄層級猜子實驗。
+
+歷史 C-DB-1 / C-EXT-1 共用 Record 保留相容，不強制遷移；未來預設一實驗一主檔。Evidence / Evidence Record 不新增強制分類或身分管理，歷史雙文件實驗不在本次歸併。
+
 ## Canonical Experiment ID｜明確宣告與相容邊界
 
 在主 Record 的 Markdown code fence **外**放 HTML comment；其中 JSON 必須完整，不從標題猜 ID：
@@ -36,9 +46,9 @@
 - 共用 Record：在同一檔放多個不同 ID 宣告，各自對應原 Catalog。如 C-DB-1 / C-EXT-1，不要求一實驗一檔。
 - 子實驗可以無卡，並以 `indexId` 明確指定既有人類 Index 的父項目。例：`{"id":"CF-ORACLE-1","card":"none","index":"required","indexId":"CF-CONNECTOR-1"}`；父 heading 必須連結子 Record，父 ID 也須已宣告或有既有 Catalog。不冒充另有獨立 Index entry。
 
-唯讀 CLI：`node scripts/check-experiment-integrity.mjs [--root <repository>]`。Exit 0 = 無 ERROR（仍可能有 WARN）；1 = 勾稽錯誤；2 = 用法／讀取失敗。檢查宣告重複、Catalog ID 重複、recordPath 存在／一致、人類 Index 斷連結／身分與 target 不符、以及**有明確意圖**的漏 metadata／Index。它不評估 Evidence 強度、摘要品質或站台部署，也沒有新 Action／排程／自動 commit。Builder 的 target 存在防呆仍無法發現整份 metadata 漏建。
+唯讀 CLI：`node scripts/check-experiment-integrity.mjs [--root <repository>]`。Exit 0 = 無 ERROR（仍可能有 WARN）；1 = 勾稽錯誤；2 = 用法／讀取失敗。檢查宣告重複、Catalog ID 重複、recordPath 存在／一致、必要的主 Record／Catalog Index 對應斷連結／身分與 target 不符、以及**有明確意圖**的漏 metadata／Index。它不評估 Evidence 強度、摘要品質或站台部署，也沒有新 Action／排程／自動 commit。Builder 的 target 存在防呆仍無法發現整份 metadata 漏建。
 
-**本次漸進採用，不假裝歷史全覆蓋：**12 個已知 ID 已在 11 份 Record 宣告（9 個現有人類 Index 主項目、Custom API 的 2 個共用 ID、CF 子實驗）。其餘 7 個 Catalog ID：A、B、B-1、C-BSA-1、C-NF-0、D-BATCH-1、P-CODEX-PHONE，暫保留 `LEGACY_CATALOG_ID` WARN，下一次編輯時由作者確認登錄意圖。C-DB-1 / C-EXT-1 尚無獨立人類 Index entry，明確 `index=unknown`，不自動補摘要。GitHub Actions、Netlify Deployment Boundary、Netlify Trigger Boundary 的 3 份歷史 README 尚無明確 ID／卡片意圖，列 `UNCLASSIFIED_RECORD` WARN；不要猜 ID 或因此自動建卡。現有基準：18 experiment Catalog、0 ERROR / 12 WARN；這是例外清單，**不是允許新實驗免宣告**。完全漏建 Record 仍需派工／人工 QC 發現。
+**本次漸進採用，不假裝歷史全覆蓋：**12 個已知 ID 已在 11 份 Record 宣告（9 個現有人類 Index 主項目、Custom API 的 2 個共用 ID、CF 子實驗）。其餘 7 個 Catalog ID：A、B、B-1、C-BSA-1、C-NF-0、D-BATCH-1、P-CODEX-PHONE，暫保留 `LEGACY_CATALOG_ID` WARN，下一次編輯時由作者確認登錄意圖。C-DB-1 / C-EXT-1 尚無獨立人類 Index entry，明確 `index=unknown`，不自動補摘要。GitHub Actions、Netlify Deployment Boundary、Netlify Trigger Boundary 的 3 份歷史 README 尚無明確 ID／卡片意圖，作為既知歷史未明項目由人工保留，不再對未宣告 README 輸出 `UNCLASSIFIED_RECORD`（避免普通延伸文件誤報）；不要猜 ID 或因此自動建卡。現有基準：18 experiment Catalog、0 ERROR / 9 WARN；這是例外清單，**不是允許新實驗免宣告**。完全漏建 Record 仍需派工／人工 QC 發現。
 
 ## Required metadata & status semantics
 
@@ -92,6 +102,6 @@
 3. **Deployed catalog / card**：實際 deploy identity/status、部署站台 Catalog 的 ID 與卡片；build PASS 不等於 deployed。無卡項目明確註記不適用。
 4. **Browser / human path**：卡片 → 主 Record → 必要延伸文件／Live Demo 的實際觀測，註明誰驗證；未實測留待 Claire。
 
-Reader runtime 固定讀 GitHub **main**；PR Preview 的 JS／卡片可來自分支，但未 merge 的 Record 仍不會由分支讀入。不要把 Preview 上的 main 正文當作分支 README 驗證。Reader 將明確的同 Repo main `.md` link 留在 Reader；目錄請改明確 README，repo-relative image／artifact 仍讀 raw Repo，`/dayone-reader/`、`/downloads/...` 等 site-root 路徑走目前站台 origin。外部 URL 保持原導航。
+Reader runtime 固定讀 GitHub **main**；PR Preview 的 JS／卡片可來自分支，但未 merge 的 Record 仍不會由分支讀入。不要把 Preview 上的 main 正文當作分支 README 驗證。Reader 將明確的同 Repo main `.md` link 留在 Reader，以「返回」沿使用者閱讀路徑連續閱讀，延伸文件不要求 ID／metadata；PDF／ZIP／Live Demo 使用一般瀏覽器連結。目錄請改明確 README，repo-relative image／artifact 仍讀 raw Repo，`/dayone-reader/`、`/downloads/...` 等 site-root 路徑走目前站台 origin。外部 URL 保持原導航。
 
 正式 Work Order 的 `agent-work/work-orders/index.md` 是另一份人工交付索引，按既有 Maintenance Rule 登錄，不使用 Experiment ID 宣告或要求網站卡片。Executor completion ≠ QC acceptance ≠ merge/deploy ≠ Claire human acceptance。

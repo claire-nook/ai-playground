@@ -66,13 +66,13 @@ test("shared Record and cardless child registered under parent produce no false 
   assert.equal(result.declarations, 3); assert.equal(result.errors, 0); assert.equal(result.warnings, 0);
 });
 
-test("wrong primary target, orphan Index links and missing explicit Index are errors", async (t) => {
+test("wrong primary target and missing required primary Index links are errors", async (t) => {
   const root = await fixture(t, { ...base,
     "experiments/other/README.md": "Historical note",
     "experiments/example/test.catalog.json": metadata("TEST-1", "experiments/other/README.md"),
     "knowledge/experiments.md": "### TEST-1 — Fixture\n- Record: [Missing](../experiments/example/missing.md)\n",
   });
-  assert.deepEqual(codes(await checkExperiments(root)), ["INDEX_RECORD_MISMATCH", "MISSING_INDEX_ENTRY", "ORPHAN_INDEX_REFERENCE", "RECORD_MISMATCH"]);
+  assert.deepEqual(codes(await checkExperiments(root)), ["INDEX_RECORD_MISMATCH", "MISSING_INDEX_ENTRY", "RECORD_MISMATCH"]);
 });
 
 test("catalog pointing at another declared identity is an orphan", async (t) => {
@@ -85,14 +85,14 @@ test("cardless intent contradicting a present card is reported", async (t) => {
   assert.deepEqual(codes(await checkExperiments(root)), ["CARD_INTENT_MISMATCH"]);
 });
 
-test("ambiguous historical README / Catalog warns, fenced example does not declare", async (t) => {
+test("legacy Catalog warns; unregistered Markdown and fenced examples do not declare experiments", async (t) => {
   const root = await fixture(t, { ...base,
     "experiments/example/README.md": `# Legacy\n\n\`\`\`html\n${declaration("EXAMPLE-1")}\n\`\`\`\n`,
     "experiments/historical/README.md": "# Historical note",
   });
   const result = await checkExperiments(root);
   assert.equal(result.declarations, 0); assert.equal(result.errors, 0);
-  assert.deepEqual(result.findings.map((item) => item.code), ["LEGACY_CATALOG_ID", "UNCLASSIFIED_RECORD"]);
+  assert.deepEqual(result.findings.map((item) => item.code), ["LEGACY_CATALOG_ID"]);
 });
 
 test("malformed declarations and unsafe paths fail without aborting the report", async (t) => {
@@ -115,4 +115,28 @@ test("repeatable CLI leaves all fixture contents and directory entries untouched
   assert.equal(runs[0].status, 0); assert.equal(runs[1].status, 0);
   assert.equal(runs[0].stdout, runs[1].stdout);
   assert.deepEqual(await snapshot(root), before);
+});
+
+
+test("ordinary second / third-level Markdown needs no identity or registration, even when named README", async (t) => {
+  const root = await fixture(t, { ...base,
+    "experiments/example/README.md": `${declaration("TEST-1")}\n[Evidence](support/README.md)\n[Summary](summary.md)\n[Unverified link](absent.md)`,
+    "experiments/example/support/README.md": "# Evidence\n[Third-level details](details.md)",
+    "experiments/example/support/details.md": "# Test log\n[Further evidence](missing.md)",
+    "experiments/example/summary.md": "# Experiment summary",
+    "knowledge/experiments.md": index("TEST-1") + "- Optional notes: [Notes](../experiments/example/missing-summary.md)\n",
+  });
+  const result = await checkExperiments(root);
+  assert.equal(result.declarations, 1);
+  assert.equal(result.catalogs, 1);
+  assert.deepEqual(result.findings, []);
+  assert.equal((await cli(root)).status, 0);
+});
+
+test("ordinary extension cannot replace a required primary Record registration", async (t) => {
+  const root = await fixture(t, { ...base,
+    "experiments/example/summary.md": "# Summary",
+    "knowledge/experiments.md": index("TEST-1", "example/summary.md"),
+  });
+  assert.deepEqual(codes(await checkExperiments(root)), ["INDEX_RECORD_MISMATCH", "MISSING_INDEX_ENTRY"]);
 });

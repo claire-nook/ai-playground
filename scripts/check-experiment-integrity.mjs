@@ -55,7 +55,7 @@ export async function checkExperiments(root = defaultRoot) {
   }
 
   const catalogs = new Map();
-  const catalogRecords = new Set();
+  const metadataPaths = new Set();
   for (const file of files.filter((file) => file.endsWith(".catalog.json"))) {
     const source = path.relative(root, file).split(path.sep).join("/");
     let entry;
@@ -65,13 +65,13 @@ export async function checkExperiments(root = defaultRoot) {
       add("ERROR", "INVALID_CATALOG", source, "catalog requires a valid ID"); continue;
     }
     if ((entry.outputType ?? "experiment") !== "experiment") continue;
+    metadataPaths.add(source);
     if (catalogs.has(entry.id)) add("ERROR", "DUPLICATE_CATALOG_ID", source, entry.id);
     else catalogs.set(entry.id, entry);
     if (!safePath(entry.recordPath) || !await exists(entry.recordPath)) {
       add("ERROR", "MISSING_RECORD", source, `${entry.id}: invalid or missing recordPath ${entry.recordPath}`);
       continue;
     }
-    catalogRecords.add(entry.recordPath);
     const declaration = declarations.get(entry.id);
     if (!declaration) add("WARN", "LEGACY_CATALOG_ID", source, `${entry.id}: no Record declaration; identity currently inferred from existing catalog`);
     else if (declaration.recordPath !== entry.recordPath) add("ERROR", "RECORD_MISMATCH", source, `${entry.id}: declaration is in ${declaration.recordPath}, catalog targets ${entry.recordPath}`);
@@ -79,6 +79,10 @@ export async function checkExperiments(root = defaultRoot) {
     if (records.has(entry.recordPath) && !declaration) add("ERROR", "ORPHAN_CATALOG_ID", source, `${entry.id}: target Record declares other IDs, but not this ID`);
   }
 
+  // Only identity-bearing primary targets / metadata belong to this checker.
+  // Ordinary supporting links in the human Index are not experiment registrations.
+  const primaryTargets = new Set([...declarations.values(), ...catalogs.values()]
+    .map((entry) => entry.recordPath).filter(safePath));
   const indexPath = "knowledge/experiments.md";
   const indexText = await readFile(path.join(root, indexPath), "utf8").catch((error) => {
     if (error.code === "ENOENT") { add("WARN", "MISSING_INDEX_FILE", indexPath, "human index absent"); return ""; }
@@ -106,7 +110,7 @@ export async function checkExperiments(root = defaultRoot) {
       } catch { continue; }
       if (!target?.startsWith("experiments/")) continue;
       if (headingId) indexEntries.get(headingId)?.add(target);
-      if ((target.endsWith(".md") || target.endsWith(".catalog.json")) && !await exists(target)) {
+      if ((primaryTargets.has(target) || metadataPaths.has(target)) && !await exists(target)) {
         add("ERROR", "ORPHAN_INDEX_REFERENCE", indexPath, target);
       }
     }
@@ -125,10 +129,6 @@ export async function checkExperiments(root = defaultRoot) {
     if (!declarations.has(id) && !catalogs.has(id)) add("WARN", "UNKNOWN_INDEX_ID", indexPath, `${id}: no declared identity or legacy catalog`);
     const record = declarations.get(id)?.recordPath ?? catalogs.get(id)?.recordPath;
     if (record && !targets.has(record)) add("ERROR", "INDEX_RECORD_MISMATCH", indexPath, `${id}: heading does not link to primary Record ${record}`);
-  }
-  for (const file of files.filter((file) => path.basename(file) === "README.md")) {
-    const source = path.relative(root, file).split(path.sep).join("/");
-    if (!records.has(source) && !catalogRecords.has(source)) add("WARN", "UNCLASSIFIED_RECORD", source, "no explicit declaration or catalog; historical/formal status unknown, no card assumed");
   }
   findings.sort((a, b) => `${a.level}:${a.code}:${a.source}`.localeCompare(`${b.level}:${b.code}:${b.source}`));
   return { declarations: declarations.size, catalogs: catalogs.size, findings,
