@@ -1,5 +1,7 @@
 # CF-ORACLE-1｜AI Connector × Cloudflare Worker × D1 × Netlify 換殼
 
+<!-- experiment: {"id":"CF-ORACLE-1","card":"none","index":"required","indexId":"CF-CONNECTOR-1"} -->
+
 - 日期：2026-10-09
 - 狀態：Completed（功能與跨站實機驗證完成）
 - Cloudflare 原站：https://cf-lab-oracle.claire-nook.workers.dev/

@@ -1,4 +1,4 @@
-import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
+import { readdir, readFile, mkdir, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,6 +73,11 @@ const catalog = await Promise.all(catalogFiles.map(async (catalogPath) => {
   try { entry = JSON.parse(await readFile(catalogPath, "utf8")); }
   catch (error) { throw new Error(`${relativePath}: invalid JSON (${error.message})`); }
   validateCatalogEntry(entry, relativePath);
+  const record = await stat(path.join(root, entry.recordPath)).catch((error) => {
+    if (["ENOENT", "ENOTDIR"].includes(error.code)) return null;
+    throw error;
+  });
+  if (!record?.isFile()) throw new Error(`${relativePath}: recordPath does not identify an existing file: ${entry.recordPath}`);
   return entry;
 }));
 

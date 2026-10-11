@@ -57,7 +57,7 @@ flowchart TD
 - ChatGPT App / MCP 可以是 caller，但不是 Codex execution host。
 - 尚未確認 stable production-supported external Codex Cloud Task API。
 
-Report：`agent-work/reports/2026-09-15-codex-external-dispatch-recon.md`
+Report：[`agent-work/reports/2026-09-15-codex-external-dispatch-recon.md`](../../agent-work/reports/2026-09-15-codex-external-dispatch-recon.md)
 
 ### Phase 2 — Dispatch experiment design
 
@@ -69,7 +69,7 @@ ChatGPT → admission bridge → GitHub Actions → codex exec → validation �
 
 這個方案技術上合理，但仍有 caller identity、publication authority、credential isolation 與 execution trust boundary 未解。
 
-Report：`agent-work/reports/2026-09-15-codex-dispatch-experiment-design.md`
+Report：[`agent-work/reports/2026-09-15-codex-dispatch-experiment-design.md`](../../agent-work/reports/2026-09-15-codex-dispatch-experiment-design.md)
 
 ### Phase 2.5 — Adversarial validation
 
@@ -83,7 +83,7 @@ Codex 對 Primary Draft 主動找碴後，重要修正包括：
 
 這輪研究證明了 adversarial multi-agent review 的價值：第二個 Agent 不是把第一個 Agent 的答案重新說一次，而是應主動攻擊其假設。
 
-Report：`agent-work/reports/2026-09-15-p-codex-phone-phase2-5-adversarial-validation.md`
+Report：[`agent-work/reports/2026-09-15-p-codex-phone-phase2-5-adversarial-validation.md`](../../agent-work/reports/2026-09-15-p-codex-phone-phase2-5-adversarial-validation.md)
 
 ### Phase 2.6 — Repository / workspace boundary
 
@@ -115,7 +115,7 @@ Observed workspace：
 
 AI 能決定執行 Git command，不代表它憑空擁有 GitHub authority。
 
-Report：`agent-work/reports/2026-09-15-codex-github-boundary-recon.md`
+Report：[`agent-work/reports/2026-09-15-codex-github-boundary-recon.md`](../../agent-work/reports/2026-09-15-codex-github-boundary-recon.md)
 
 ### Phase 2.7 — Subscription-funded unattended authentication
 
@@ -135,7 +135,7 @@ Report：`agent-work/reports/2026-09-15-codex-github-boundary-recon.md`
 
 目前沒有找到符合全部條件的 supported provider contract。
 
-Report：`agent-work/reports/2026-09-15-codex-subscription-auth-automation-recon.md`
+Report：[`agent-work/reports/2026-09-15-codex-subscription-auth-automation-recon.md`](../../agent-work/reports/2026-09-15-codex-subscription-auth-automation-recon.md)
 
 ---
 

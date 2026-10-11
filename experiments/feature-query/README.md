@@ -1,5 +1,7 @@
 # F-QUERY-1 — Representative Read-only Query Vertical Prototype
 
+<!-- experiment: {"id":"F-QUERY-1","card":"required","index":"required"} -->
+
 ## Experiment Identity
 
 - Date: `2026-09-17`

@@ -6,8 +6,12 @@
 >
 > Evidence 寫作原則另見 [`evidence-backed-technical-writing.md`](evidence-backed-technical-writing.md)。尤其不要把 Provider Claim、Runtime Observation、Inference 與 Architecture Judgment 混成同一件事。
 
+新增正式實驗先依 [publication contract](research-catalog-publication.md) 選穩定 ID、主 Record 與卡片意圖。Record 可是短摘要／目錄；沒有卡片仍宣告 ID。共用 Record／子實驗語法及歷史 WARN 見同契約。
+
 ```markdown
 # Experiment <ID> — <Name>
+
+<!-- experiment: {"id":"REPLACE-WITH-STABLE-ID","card":"required","index":"required"} -->
 
 - Date: YYYY-MM-DD
 - Status: Candidate / In Progress / Completed / Verified / Partial / Superseded

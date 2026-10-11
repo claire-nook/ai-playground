@@ -1,5 +1,7 @@
 # T-TXT-1 — Textastic Markdown Preview / Manual Print Page Break
 
+<!-- experiment: {"id":"T-TXT-1","card":"required","index":"required"} -->
+
 - Date: 2026-09-16
 - Status: Verified / Completed
 - Environment: iPad Pro + Textastic + Safari / iPadOS Print
