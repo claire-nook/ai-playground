@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-11｜派工管道選擇（現行）
+
+日常研究、調查、分析、Review、文件與輕量任務，預設使用 Notion Agent Mailbox。明確程式／腳本／設定／資料庫修改，或其他需要可重現施工規格的高風險、跨階段任務，才評估建立正式 GitHub Work Order；不以程式為唯一條件，也不要求每次小改動都建單。
+
+Notion 派工應包含交付類型、目標 Repo 與基準（不適用則標 None）、Read First、輸出位置、驗收與限制。正式 Work Order 存在時，Notion 只提供短通知與路徑，不複製第二份需求。研究成果值得保存時，仍需另行交付到適當的 Repository。
+
+**派工管道不降低交付安全規則：** Notion 派出的程式／行為相關修改仍是 CODE_DELIVERY，PR 必填；文件交付是 DOC_DELIVERY；Notion 報告是 NOTION_REPORT。詳見 delivery-contract.md。下方舊版執行模式保留作為歷史經驗。
+
+---
+
 # Dispatch Handoff｜派工通知規則
 
 這份文件補充 `agent-work/README.md`，保存實際撞牆後確認的 execution-surface boundary 與 publication adapter。
