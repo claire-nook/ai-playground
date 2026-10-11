@@ -1,5 +1,8 @@
 # Experiment C — Supabase Custom API
 
+<!-- experiment: {"id":"C-DB-1","card":"required","index":"unknown"} -->
+<!-- experiment: {"id":"C-EXT-1","card":"required","index":"unknown"} -->
+
 ## C-0 — Supabase Edge Function Deployment Lifecycle
 
 - Date: 2026-09-12

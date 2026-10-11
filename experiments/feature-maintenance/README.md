@@ -1,5 +1,7 @@
 # F-MAINT-1 — Single-record Maintenance Lifecycle Prototype
 
+<!-- experiment: {"id":"F-MAINT-1","card":"required","index":"required"} -->
+
 ## Experiment Identity
 
 - Date: `2026-09-17`
@@ -12,8 +14,8 @@
 - Status: `Completed / Pattern Candidate Established`
 - Verification: `Partial — Functional / Interaction Evidence`
 - Data: `Synthetic Mock Fixture`
-- Consolidated Findings: `evidence/f-maint-1-findings.md`
-- Pattern Synthesis: `knowledge/platform/single-record-maintenance-pattern.md`
+- Consolidated Findings: [`evidence/f-maint-1-findings.md`](../../evidence/f-maint-1-findings.md)
+- Pattern Synthesis: [`knowledge/platform/single-record-maintenance-pattern.md`](../../knowledge/platform/single-record-maintenance-pattern.md)
 
 ## Research Question
 

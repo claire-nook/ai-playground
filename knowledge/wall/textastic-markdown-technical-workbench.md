@@ -12,7 +12,7 @@ Textastic 原本是一套很能打的 iPad 文字編輯器。
 
 前一篇 Wall 記錄了人工 Print Page Break 的故事。這一篇不再只談某一個功能，而是整理這套 Markdown Preview customization 現在到底長成了什麼、途中撞過哪些牆，以及哪些「沒有做」其實跟做了什麼一樣重要。
 
-相關 Experiment / Artifact：[`../../experiments/textastic-markdown/`](../../experiments/textastic-markdown/)
+相關 Experiment / Artifact：[`../../experiments/textastic-markdown/README.md`](../../experiments/textastic-markdown/README.md)
 
 ---
 

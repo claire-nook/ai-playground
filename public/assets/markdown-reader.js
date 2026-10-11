@@ -38,7 +38,9 @@
       const value = node.getAttribute(attribute);
       if (!value || value.startsWith("#") || /^(?:[a-z]+:|\/\/)/i.test(value))
         return;
-      node.setAttribute(attribute, new URL(value, base).href);
+      // Site-root links belong to this deployment, including Deploy Previews.
+      const targetBase = value.startsWith("/") ? window.location.origin : base;
+      node.setAttribute(attribute, new URL(value, targetBase).href);
     });
   }
 
@@ -74,9 +76,17 @@
   }
 
   function repositoryPathFromRawUrl(url) {
-    if (!url.startsWith(rawRoot)) return null;
-    const path = decodeURIComponent(url.slice(rawRoot.length));
-    return safeRepositoryPath(path) && path.endsWith(".md") ? path : null;
+    try {
+      const target = new URL(url);
+      // Explicit main-branch Markdown only; directories, artifacts and other repos
+      // or branches retain normal browser navigation.
+      const prefix = [rawRoot, githubRoot].find((root) => target.href.startsWith(root));
+      if (!prefix) return null;
+      const path = decodeURIComponent(target.pathname.slice(new URL(prefix).pathname.length));
+      return safeRepositoryPath(path) && path.endsWith(".md") ? path : null;
+    } catch {
+      return null;
+    }
   }
 
   function updateMapNavigation(container, recordPath) {
@@ -180,6 +190,8 @@
       return;
     }
 
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+        readerLink.hasAttribute("download") || readerLink.target === "_blank") return;
     const path = repositoryPathFromRawUrl(readerLink.href);
     if (!path) return;
     event.preventDefault();
@@ -189,7 +201,10 @@
       fallback: container.querySelector("#github-record, .github-record"),
       pushHistory: true,
     });
-    container.scrollIntoView({ behavior: "smooth", block: "start" });
+    const fragment = new URL(readerLink.href).hash;
+    let anchor;
+    try { anchor = fragment && document.getElementById(decodeURIComponent(fragment.slice(1))); } catch { /* malformed fragment: show document */ }
+    (anchor && container.contains(anchor) ? anchor : container).scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   // Let Research Map links behave like an in-page reader instead of ejecting the
@@ -228,5 +243,5 @@
       "<strong>Claire &amp; 墨衡</strong><br>Human × AI Technical Research Collaboration<br><span>Experiment Demo is disposable; Evidence should not be.</span>";
   }
 
-  window.PlaygroundReader = { renderMarkdown, repository, branch };
+  window.PlaygroundReader = { renderMarkdown, repository, branch, resolveDocumentUrls, repositoryPathFromRawUrl };
 })();

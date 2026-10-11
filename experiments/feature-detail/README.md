@@ -1,5 +1,7 @@
 # F-DETAIL-1 — General Master → Detail Interaction Prototype
 
+<!-- experiment: {"id":"F-DETAIL-1","card":"required","index":"required"} -->
+
 ## Experiment Identity
 
 - Date: `2026-09-17`
@@ -11,8 +13,8 @@
 - Verification: `Partial — Functional / Interaction Evidence`
 - Data: `Synthetic Mock Fixture`
 - Final Prototype: `v2`
-- Consolidated Findings: `evidence/f-detail-1-findings.md`
-- Pattern Synthesis: `knowledge/platform/record-detail-pattern.md`
+- Consolidated Findings: [`evidence/f-detail-1-findings.md`](../../evidence/f-detail-1-findings.md)
+- Pattern Synthesis: [`knowledge/platform/record-detail-pattern.md`](../../knowledge/platform/record-detail-pattern.md)
 
 ## Research Question
 
@@ -156,7 +158,7 @@ Claire 已在 desktop / iPhone review v2：
 - Audit 應提升為 Platform Standard Pattern。
 - Query → Detail → Return 應以 stable record identity，而不是舊 page number，作為 work-context anchor。
 
-完整整理見：`evidence/f-detail-1-findings.md`。
+完整整理見：[`evidence/f-detail-1-findings.md`](../../evidence/f-detail-1-findings.md)。
 
 ---
 

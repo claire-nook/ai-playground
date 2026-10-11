@@ -1,5 +1,7 @@
 # D1-NATIVE-1 — Day One Native Reader
 
+<!-- experiment: {"id":"D1-NATIVE-1","card":"required","index":"required"} -->
+
 - Date: 2026-09-19
 - Status: Verified / Completed
 - Primary Intent: Open Exploration / Local-first Personal Archive
@@ -323,13 +325,13 @@ Private project 已包含：
 
 D1-READER-1 已建立 Browser side 的 Day One `richText` / media mapping knowledge，可作 Native semantic reconstruction 的 reference，但 Browser implementation 成功 **不等於** Native renderer 已驗證。
 
-Private M3-A probe 已完成 hardcoded Control 與 JSON-derived mapping 對照：`photos[].identifier` 對仍存在的照片查詢失敗，而 `photos[].appleLocalIdentifier` 成功取得 PHAsset 並顯示正確 image。這驗證 M3 feasibility；正式 Reader integration 仍未完成。
+Private M3-A probe 已完成 hardcoded Control 與 JSON-derived mapping 對照：`photos[].identifier` 對仍存在的照片查詢失敗，而 `photos[].appleLocalIdentifier` 成功取得 PHAsset 並顯示正確 image。這是 M3-A feasibility checkpoint；後續 M3-B / M3-C 已完成正式 Reader integration 與 Claire Human Environment Acceptance，詳見上方各節。
 
 ### Unknown / Not Tested
 
 - 尚未遇到的 Day One richText construct / future schema edge case。
-- M3-A 已驗證 JSON `appleLocalIdentifier` → PhotoKit → image；正式 Reader 尚未整合。
-- 多張照片 / 已刪除或 unavailable asset fallback / iCloud-only photo 的 bounded loading。
+- M3-A feasibility 與 M3-B / M3-C integration 已驗證；不把它們延伸成所有 PhotoKit edge case 均已測試。
+- iCloud-only photo 的 edge behavior；已測的同篇多張照片與 unavailable asset fallback 範圍見 M3-B / M3-C。
 - 大型 Journal Native performance。
 - PDF：刻意不測。
 
@@ -364,7 +366,7 @@ Status：**Verified / Completed — 2026-09-20**。
 - 不要把 attachment count / reference parsing 寫成 physical media rendering evidence。
 - 不要把 flattened `String` extraction 寫成 rich-text support。
 - 不要把 Day One `photos[].identifier` 當成 PhotoKit localIdentifier；已驗證正確欄位是 `photos[].appleLocalIdentifier`。
-- 不要把 M3-A feasibility probe 成功寫成正式 Reader 已完成 PhotoKit integration。
+- M3-A feasibility 本身不足以證明正式 integration；本 Record 的 integration 證據另見 M3-B / M3-C。
 - PhotoKit asset-not-found 不等於可斷言「照片已刪除」；保留 semantic position 並採 unavailable placeholder。
 - private identifier / journal fixture 不進 public repo。
 - Native package / Working Copy / Swift Playgrounds operational traps 由 `apple-lab/knowledge/ipad-native-development.md` 管理，不在本 Experiment 重複維護。
@@ -387,7 +389,7 @@ Stop condition 已滿足。後續不因「還能再漂亮一點」維持 Experim
 
 ## Re-test / Re-open Trigger
 
-Experiment 尚在進行中。若未來完成後再重開，Trigger 可包括：
+Experiment 已於 2026-09-20 關閉為 Verified / Completed。未來有真實問題才重開，Trigger 可包括：
 
 - Day One export schema 改變。
 - Apple Photos / PhotoKit identifier behavior 改變。

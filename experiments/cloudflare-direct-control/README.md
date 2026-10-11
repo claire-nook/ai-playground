@@ -1,5 +1,7 @@
 # CF-CONNECTOR-1｜Cloudflare Connector × Worker API × D1 × Netlify 換殼
 
+<!-- experiment: {"id":"CF-CONNECTOR-1","card":"required","index":"required"} -->
+
 - 日期：2026-10-09
 - 狀態：Completed（功能與實機驗證）
 - 研究類型：AI Connector 雲端操作能力、API／前端／資料庫分層、跨 Hosting 換殼

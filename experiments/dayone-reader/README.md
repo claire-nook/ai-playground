@@ -1,5 +1,7 @@
 # D1-READER-1 — Day One JSON Local Reader
 
+<!-- experiment: {"id":"D1-READER-1","card":"required","index":"required"} -->
+
 - Date: 2026-09-19
 - Status: Verified / Completed
 - Primary Intent: Open Exploration / Local-first Personal Archive
@@ -391,9 +393,9 @@ Native Swift / PhotoKit Reader 則明確屬於**另一個 Experiment**。它研�
 
 ### Public artifacts
 
-- Live Reader: `/dayone-reader/`
-- Sample Export: `/downloads/dayone-reader/dayone-reader-sample-export.zip`
-- Human-facing Guide: `/downloads/dayone-reader/dayone-reader-guide-v0.5.pdf`
-- Wall Commentary: `knowledge/wall/dayone-reader-escape-hatch.md`
+- Live Reader: [`/dayone-reader/`](/dayone-reader/)
+- Sample Export: [`/downloads/dayone-reader/dayone-reader-sample-export.zip`](/downloads/dayone-reader/dayone-reader-sample-export.zip)
+- Human-facing Guide: [`/downloads/dayone-reader/dayone-reader-guide-v0.5.pdf`](/downloads/dayone-reader/dayone-reader-guide-v0.5.pdf)
+- Wall Commentary: [`knowledge/wall/dayone-reader-escape-hatch.md`](../../knowledge/wall/dayone-reader-escape-hatch.md)
 
 D1-READER-1 到此關閉。Reader 可以繼續存在、被使用、被未來的真實資料打臉；Experiment 不需要為了等待下一次打臉而永遠掛著 Active。這才叫結案，不是向宇宙申請永久保固。

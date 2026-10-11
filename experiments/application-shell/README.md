@@ -1,12 +1,14 @@
 # S-SHELL-1 — Nook Works Application Shell Integration Probe
 
+<!-- experiment: {"id":"S-SHELL-1","card":"required","index":"required"} -->
+
 - Date: 2026-09-16
 - Status: Verified / Completed
 - Type: Application Shell / Integration / Composition
 - Primary Target: Nook Works browser application shell
 - Environment Priority: iPad-first + iPhone narrow viewport + desktop sanity
-- Consolidated Findings: `evidence/s-shell-1-application-shell-findings.md`
-- Auth Lifecycle Evidence: `evidence/2026-09-16-safari-auth-session-lifecycle.md`
+- Consolidated Findings: [`evidence/s-shell-1-application-shell-findings.md`](../../evidence/s-shell-1-application-shell-findings.md)
+- Auth Lifecycle Evidence: [`evidence/2026-09-16-safari-auth-session-lifecycle.md`](../../evidence/2026-09-16-safari-auth-session-lifecycle.md)
 - Existing Capability Baseline: Experiment A / B / B-1 / C-DB-1 / C-EXT-1
 
 ## Research Question

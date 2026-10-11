@@ -1,5 +1,7 @@
 # A-ARTIFACT-1 — AI-assisted Artifact Collaboration Workflow
 
+<!-- experiment: {"id":"A-ARTIFACT-1","card":"required","index":"required"} -->
+
 - Date: 2026-09-18
 - Status: Completed / Operational Workflow + Known Boundaries
 - Primary Intent: Claire × Primary Agent / Private Artifact Intake / Processing / Delivery / Repository Handoff
@@ -24,7 +26,7 @@ Human Intake
 → Human Output
 ~~~
 
-Experiment 已完成日常協作流程、Primary workspace lifecycle，以及 Dropbox PDF reading boundary 的收斂。**Claire × Primary 的日常 artifact collaboration workflow 已升格為 operational capability**。日常操作請優先讀 `knowledge/implementation/artifact-collaboration-workflow.md`；PDF 閱讀限制請讀 `knowledge/implementation/dropbox-pdf-reading-boundary.md`。本文件保留 Evidence / failure modes / design history。
+Experiment 已完成日常協作流程、Primary workspace lifecycle，以及 Dropbox PDF reading boundary 的收斂。**Claire × Primary 的日常 artifact collaboration workflow 已升格為 operational capability**。日常操作請優先讀 [`knowledge/implementation/artifact-collaboration-workflow.md`](../../knowledge/implementation/artifact-collaboration-workflow.md)；PDF 閱讀限制請讀 [`knowledge/implementation/dropbox-pdf-reading-boundary.md`](../../knowledge/implementation/dropbox-pdf-reading-boundary.md)。本文件保留 Evidence / failure modes / design history。
 
 ---
 

@@ -6,8 +6,14 @@
 >
 > Evidence 寫作原則另見 [`evidence-backed-technical-writing.md`](evidence-backed-technical-writing.md)。尤其不要把 Provider Claim、Runtime Observation、Inference 與 Architecture Judgment 混成同一件事。
 
+新增正式實驗先依 [publication contract](research-catalog-publication.md) 選穩定 ID、主 Record 與卡片意圖。預設 1 ID 對應 1 份可持續更新的主 Record，亦可是短摘要／閱讀目錄；沒有卡片仍宣告 ID。
+
+需要延伸內容時，以普通 links 連 Evidence、總結、測試紀錄等任意深度的 Markdown，不要求它們有 ID／metadata／Index entry，Checker 不追讀／勾稽延伸 files。只有另行成立獨立 ID 的真正子實驗才使用 `indexId`；歷史共用 Record 保留相容。語法與邊界見同契約。
+
 ```markdown
 # Experiment <ID> — <Name>
+
+<!-- experiment: {"id":"REPLACE-WITH-STABLE-ID","card":"required","index":"required"} -->
 
 - Date: YYYY-MM-DD
 - Status: Candidate / In Progress / Completed / Verified / Partial / Superseded
