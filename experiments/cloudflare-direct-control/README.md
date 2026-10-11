@@ -5,7 +5,6 @@
 - 日期：2026-10-09
 - 狀態：Completed（功能與實機驗證）
 - 研究類型：AI Connector 雲端操作能力、API／前端／資料庫分層、跨 Hosting 換殼
-- 實驗證據：[Cloudflare Connector 實機證據](../../evidence/cf-oracle-1.md)
 - SQL 結構：[schema.sql](../cloudflare-oracle/schema.sql)；早期查詢：[queries.sql](../cloudflare-oracle/queries.sql)
 
 ## 研究問題
@@ -22,19 +21,18 @@ AI 是否能直接透過 Cloudflare Connector 完成 Worker API、D1 與網頁�
 
 原先規劃的「先以 Netlify 測試無 DB API，再測試 D1 API」兩階段已合併：直接使用完成 D1 整合的既有 Worker API 換殼，避免重複測試。
 
-## 完整實驗過程｜兩個 Phase
+## 實驗過程與實測｜兩個 Phase
 
-Cloud Oracle 是本次唯一實驗的測試載體；原先另記為 `CF-ORACLE-1` 的技術過程已整合於此，不再視為獨立子實驗。Phase 1 涵蓋 Cloudflare 原生 API、網頁與 D1；Phase 2 是 Netlify 跨 Hosting 換殼。以下保留原始操作順序，避免為了歸檔而抹掉驗證細節。
-
+Cloud Oracle 是唯一測試載體。Phase 1 涵蓋 Cloudflare Worker API、同源網頁與 D1；Phase 2 驗證 Netlify 跨 Hosting 換殼。
 
 
 ### Phase 1A｜Worker API
 
-AI 透過 Cloudflare Connector 建立並部署 `cf-lab-oracle`，先提供 `/health`、`/oracle` JSON API。初版由 Worker 內建八支測試籤文，不涉及 D1。Claire 在 iPad Safari 確認 API 回應。
+AI 透過 Cloudflare Connector 建立並部署 `cf-lab-oracle`，先提供 `/health`、`/oracle` JSON API。初版由 Worker 內建八支測試籤文，不涉及 D1。Claire 在 iPad Safari 確認 JSON 回應與隨機結果。
 
 ### Phase 1B｜同源網頁
 
-AI 直接更新 Worker，使根路徑提供 HTML、CSS、JavaScript 電子神廟介面。瀏覽器以同源 `/oracle` 取得籤文，Claire 實機完成求籤。
+AI 直接更新 Worker，使根路徑提供 HTML、CSS、JavaScript 電子神廟介面。瀏覽器以同源 `/oracle` 取得籤文，Claire 在 Safari 確認網頁、按鈕與籤文結果可正常顯示並完成求籤。
 
 ### Phase 1C｜D1 讀寫
 
@@ -56,7 +54,7 @@ AI 透過 Cloudflare Connector 讀回已部署 Worker 的原始碼，取得原�
 - Cloudflare 原站、Worker 邏輯與 D1 均未為換殼而修改。
 - Worker 當時已對 JSON API 回應設定 `Access-Control-Allow-Origin: *` 並支援 `OPTIONS`，故此次跨來源 GET 不需新增 CORS 設定。
 
-Claire 在 iPad Safari 分別操作兩個網站：Netlify 網頁成功取得第 63 籤；Cloudflare 原站成功取得第 199 籤。畫面中的今日／本月／累計統計由 9／9／9 增至 10／10／10。這提供兩個 Hosting 前端共用同一 Worker API 與 D1 的端到端功能證據。
+Claire 在 iPad Safari 分別操作兩個網站：2026-10-09 約 15:19，Netlify 網頁取得第 63 籤（system）；約 15:20，Cloudflare 原站取得第 199 籤（health）。畫面中的今日／本月／累計統計由 9／9／9 增至 10／10／10。這提供兩個 Hosting 前端共用同一 Worker API 與 D1 的端到端功能證據。**證據界線：** Safari 截圖證明前端操作及顯示的統計連續增加；並未同步逐列檢查 D1 原始紀錄。Worker 成功求籤時會寫入 `oracle_draws`，但這不等於併發、負載或安全性驗收。
 
 ## 最終架構
 
@@ -89,6 +87,8 @@ iPad Safari
 - 功能已經 Safari 實機驗證，但不代表通過正式產品安全、效能或可靠性驗收。
 
 ## 技術留存與限制
+
+AI Connector 操作回應、GitHub Commit 與 Claire 在 iPad Safari 的實際觀察是不同層級的證據；本 Record 僅將有實測支持的功能列為 Verified。
 
 - [D1 Schema](../cloudflare-oracle/schema.sql) 保存 `CREATE TABLE` 與索引；[早期 SQL 查詢](../cloudflare-oracle/queries.sql) 僅供探索，日期查詢使用 UTC，與 Worker 的台灣時間統計不可混同。
 - SQL 未留存 200 支籤文的 INSERT 腳本；`oracle_draws` 記錄求籤事件，不記錄訪客身分。
