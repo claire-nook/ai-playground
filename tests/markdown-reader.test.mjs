@@ -76,3 +76,40 @@ test("click dispatch loads main Markdown in the same Reader and preserves extern
   assert.equal((await click(raw + "evidence/other.md", { metaKey: true })).prevented, undefined);
   assert.equal(fetched.length, 1);
 });
+
+test("explicit fences highlight once, preserve code, and leave Mermaid/plain/inline code alone", () => {
+  const { api, window } = readerHarness();
+  const codes = ["sql", "js", "ts", "html", "yaml", "mermaid", "text", null].map((language) => {
+    const original = "<tag> SELECT 42";
+    return {
+      classList: Object.assign(new Set(language ? ["language-" + language] : []), { add(value) { Set.prototype.add.call(this, value); } }),
+      textContent: original,
+      innerHTML: original,
+    };
+  });
+  const highlighted = [];
+  window.hljs = {
+    getLanguage: (name) => name !== "typescript" ? { name } : null,
+    highlight: (text, { language }) => {
+      highlighted.push(language);
+      return { value: '<span class="hljs-keyword">' + text + "</span>" };
+    },
+  };
+  window.DOMPurify = { sanitize: (html) => html };
+  api.upgradeCodeHighlighting({ querySelectorAll: () => codes });
+  assert.deepEqual(highlighted, ["sql", "javascript", "xml", "yaml"]);
+  assert.equal(codes[0].classList.has("hljs"), true);
+  assert.equal(codes[2].classList.has("hljs"), false);
+  for (const index of [2, 5, 6, 7]) assert.equal(codes[index].innerHTML, "<tag> SELECT 42");
+});
+
+test("missing highlighter or sanitizer gracefully leaves code unchanged", () => {
+  const { api, window } = readerHarness();
+  const code = { classList: new Set(["language-sql"]), textContent: "SELECT 1", innerHTML: "SELECT 1" };
+  const root = { querySelectorAll: () => [code] };
+  api.upgradeCodeHighlighting(root);
+  window.hljs = { getLanguage: () => ({}), highlight: () => { throw Error("grammar failed"); } };
+  window.DOMPurify = { sanitize: (html) => html };
+  api.upgradeCodeHighlighting(root);
+  assert.equal(code.textContent, "SELECT 1");
+});

@@ -44,6 +44,39 @@
     });
   }
 
+  // Highlight only explicitly labeled fenced blocks after Markdown sanitization.
+  // Preserve original text on CDN/grammar errors; never touch Mermaid or inline code.
+  const highlightLanguages = Object.freeze({
+    sql: "sql", json: "json", javascript: "javascript", js: "javascript",
+    typescript: "typescript", ts: "typescript", html: "xml", xml: "xml",
+    css: "css", bash: "bash", shell: "bash", sh: "bash",
+    yaml: "yaml", yml: "yaml",
+  });
+
+  function upgradeCodeHighlighting(root) {
+    const highlighter = window.hljs;
+    if (!highlighter?.highlight || !highlighter?.getLanguage || !window.DOMPurify) return;
+    root.querySelectorAll("pre > code").forEach((code) => {
+      const match = [...code.classList].map((name) => /^language-([a-z0-9_-]+)$/i.exec(name)).find(Boolean);
+      const language = match && highlightLanguages[match[1].toLowerCase()];
+      if (!language || !highlighter.getLanguage(language)) return;
+      const original = code.textContent;
+      try {
+        const highlighted = highlighter.highlight(original, { language, ignoreIllegals: true }).value;
+        // Highlight.js emits span tokens. Sanitize its HTML before inserting it.
+        const safe = window.DOMPurify.sanitize(highlighted, {
+          ALLOWED_TAGS: ["span"],
+          ALLOWED_ATTR: ["class"],
+        });
+        code.innerHTML = safe;
+        code.classList.add("hljs");
+      } catch (error) {
+        code.textContent = original;
+        console.warn("Code highlighting unavailable", language, error);
+      }
+    });
+  }
+
   async function upgradeMermaid(root) {
     const blocks = [...root.querySelectorAll("pre > code.language-mermaid")];
     blocks.forEach((code) => {
@@ -153,6 +186,7 @@
         USE_PROFILES: { html: true },
       });
       resolveDocumentUrls(article, recordPath);
+      upgradeCodeHighlighting(article);
       state.hidden = true;
       article.hidden = false;
       await upgradeMermaid(article);
@@ -243,5 +277,5 @@
       "<strong>Claire &amp; 墨衡</strong><br>Human × AI Technical Research Collaboration<br><span>Experiment Demo is disposable; Evidence should not be.</span>";
   }
 
-  window.PlaygroundReader = { renderMarkdown, repository, branch, resolveDocumentUrls, repositoryPathFromRawUrl };
+  window.PlaygroundReader = { renderMarkdown, repository, branch, resolveDocumentUrls, repositoryPathFromRawUrl, upgradeCodeHighlighting };
 })();

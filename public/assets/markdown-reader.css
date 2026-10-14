@@ -209,3 +209,20 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Scoped forest syntax tokens; inline code and Mermaid remain unaffected. */
+.markdown-body pre code.hljs { color: #f0f2ef; }
+.markdown-body pre .hljs-keyword,
+.markdown-body pre .hljs-selector-tag { color: #9fe0b6; font-weight: 700; }
+.markdown-body pre .hljs-string,
+.markdown-body pre .hljs-literal { color: #f2cf72; }
+.markdown-body pre .hljs-number { color: #f0aa72; }
+.markdown-body pre .hljs-comment { color: #9aa9a2; font-style: italic; }
+.markdown-body pre .hljs-type,
+.markdown-body pre .hljs-built_in { color: #79d3c2; }
+.markdown-body pre .hljs-function,
+.markdown-body pre .hljs-title { color: #91bfe3; }
+.markdown-body pre .hljs-variable,
+.markdown-body pre .hljs-attr,
+.markdown-body pre .hljs-symbol { color: #dce8e1; }
+
