@@ -80,7 +80,7 @@ PDF physical rendering 明確 out of scope；大型 Journal performance、iCloud
 - Day One 未來或尚未遇到的 richText / media capability 不被假裝成已窮舉；新 edge case 採 problem-triggered reopening。
 - Native Swift / PhotoKit Reader 是另一個 Experiment，不屬於 D1-READER-1 completion criteria。
 
-**Current judgment**
+**Judgment at experiment close (2026-09-18)**
 
 Browser local-first Reader 已回答原始 Research Question，D1-READER-1 關閉為 **Verified / Completed**。完成代表目前 scope 已有足夠 Evidence，不代表向 Day One export schema 申請永久保固。
 
@@ -93,17 +93,17 @@ Browser local-first Reader 已回答原始 Research Question，D1-READER-1 關�
 - Status: Completed / Operational Workflow + Known Boundaries
 - Card: [../experiments/artifact-transport/a-artifact-1.catalog.json](../experiments/artifact-transport/a-artifact-1.catalog.json)
 - Record: [../experiments/artifact-transport/README.md](../experiments/artifact-transport/README.md)
-- Operating Guide: [implementation/artifact-collaboration-workflow.md](implementation/artifact-collaboration-workflow.md)
-- Workspace Policy: [implementation/primary-workspace-housekeeping.md](implementation/primary-workspace-housekeeping.md)
-- Dropbox PDF Boundary: [implementation/dropbox-pdf-reading-boundary.md](implementation/dropbox-pdf-reading-boundary.md)
+- Historical implementation reference: [implementation/artifact-collaboration-workflow.md](implementation/artifact-collaboration-workflow.md)
+- Historical workspace lifecycle study: [implementation/primary-workspace-housekeeping.md](implementation/primary-workspace-housekeeping.md)
+- Historical Dropbox PDF boundary study: [implementation/dropbox-pdf-reading-boundary.md](implementation/dropbox-pdf-reading-boundary.md)
 - Primary Intent: Claire × Primary Agent / Artifact Intake → Processing → Routing → Delivery
 - Tags: agent-collaboration, artifact-workflow, dropbox, github, ipad-first, binary-transport, privacy-boundary, human-middleware
 
 **What was established**
 
 - Human / Conversation artifact → Primary local processing → GitHub publication 已 operational。
-- GitHub text/source → Primary processing / rendering → Dropbox `/AI Output` → iOS Files / Preview 已 operational。
-- `/AI 工作區` 已定義為 Primary autonomous scratch / staging surface，並完成 create → stage → rename → verify → cleanup 真實 lifecycle probe。
+- 2026-09-18 實測：GitHub text/source → Agent processing / rendering → Dropbox delivery area → iOS Files / Preview。
+- 2026-09-18 實測：獨立 working area 完成 create → stage → rename → verify → cleanup lifecycle probe；不代表現行私人工作區授權。
 - Markdown → Human-facing PDF 已有 reusable renderer：`scripts/render-markdown-pdf.py`。
 - Dropbox PDF reading boundary 已用真實 2.66 MB 與 95.15 MB PDF 驗證：<=5 MiB 可 full extracted-text fetch；>5 MiB 保留 metadata / preview / temporary download link，但 full fetch 受 5 MiB hard limit，且目前沒有 page-range / partial fetch primitive。
 
