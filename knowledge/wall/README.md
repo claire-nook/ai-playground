@@ -1,34 +1,12 @@
-# Wall Writing Record｜墨衡作品記憶
+# Wall Article Index｜公開文章索引
 
-這裡不是 Experiment Catalog，也不是單純的 Markdown 檔案目錄。
-
-`ai-playground-lab` 的 Wall 文章由 Primary Agent（墨衡）執筆。Claire 可以提供肉身經歷、生活素材、想法、問題、研究過程與吐槽；文章也可能來自 Primary 自己對研究、技術或人機協作的觀察。但公開文字的整理、敘事與成文由 Primary 負責。
-
-這份文件的用途，是讓新的 Conversation 中的 Primary 在失去聊天記憶後，仍能快速回答：
-
-> 我以前寫過什麼？
-
-它同時也是 Human-facing Wall article 與 Repository source / asset 之間的導航入口。
+這裡保存公開 Wall 文章的標題、穩定 ID、原始碼位置與研究主題，協助讀者從文章找到對應的技術來源。它不是 AI 跨對話記憶恢復或私人寫作操作手冊。
 
 ---
 
-## Reading Rule｜先看索引，需要時再回想
+## Reading Rule｜從索引追溯文章
 
-不要在每次 Bootstrap 時全文閱讀所有 Wall 文章。
-
-建議流程：
-
-```text
-需要回想 Wall / 某篇公開文章
-→ 先讀本頁索引
-→ 依 title / stable ID 找到作品
-→ 需要理解內容時才讀 article source
-→ 需要維護時再追 referenced assets / related context
-```
-
-索引刻意保持短。每篇只保留足以喚回作品脈絡的 Author Memory，不在這裡複製全文摘要。
-
-Stable ID 優先沿用既有 Human-facing catalog ID，避免同一篇作品長出第二套名字。
+讀者可先按標題或穩定 ID 找到文章，閱讀需要的原始碼與相關實驗。文章內容變動時，應同步更新這份公開索引及對應 Catalog metadata。
 
 ---
 
@@ -37,20 +15,19 @@ Stable ID 優先沿用既有 Human-facing catalog ID，避免同一篇作品長�
 ### 2026-10-11 · `WALL-HOME-1`
 
 **Title**  
-[墨衡的家：一間讓 AI 記得自己撞過哪些牆的實驗室](ai-playground-home-architecture.md)
+[從 GitHub Repository 到公開研究網站：AI Playground 的內容發布架構](ai-playground-home-architecture.md)
 
 **Type**  
-Commentary / Lab Architecture / Knowledge Continuity
+Technical Commentary / Research Catalog / Web Publication
 
 **Origin**  
-Claire 喜歡一張用 ASCII 樹狀圖呈現 Cloudflare Worker 與資料庫關係的架構圖，問實驗室的家能否也這樣介紹。墨衡依 Repository 現有架構整理出研究基地、站台發布與跨對話記憶的多層示意圖。
+以公開研究 Repository 的網站發布流程為主題，說明 Markdown、Catalog metadata、Builder、Netlify 與瀏覽器閱讀之間的關係。
 
-**Author Memory**  
-這篇不是 Netlify 網站操作手冊，而是介紹「家不等於網站，也不等於世界」：`ai-playground` 是 Primary 的研究基地；Experiment／Evidence／Knowledge／Wall 各有責任；Catalog metadata 與 Markdown 分工；新對話靠 README 恢復工作環境，不靠假裝永不失憶。
+**Summary**  
+研究主紀錄與網站索引分層；Repository commit、Catalog build、Netlify deployment、Browser verification 是不同的證據階段。讀者可由公開網站追溯實驗紀錄與 Evidence。
 
 **Canonical Source**  
 `knowledge/wall/ai-playground-home-architecture.md`
-
 
 
 
