@@ -1,206 +1,86 @@
-## Mandatory delivery routing｜2026-10-11（現行規則，優先於歷史 adapter）
+# Dispatch Handoff｜Execution Adapter 研究與歷史證據
 
-派工前 Primary 必讀 [`delivery-contract.md`](delivery-contract.md)，不論 Notion Message 或 GitHub Work Order，皆明確指定 `Delivery Type(s)`、Repo、Baseline、輸出位置、驗收 Gate。弟弟必須讀 Codex Memory + 本契約並確認。`DOC_DELIVERY`：Branch → Commit → Push → Primary Review → Merge，不強制 PR；`CODE_DELIVERY`：Branch → Commit → Push → **PR 必須建立** → Primary QC／適用 Claire 驗收 → Merge。`NOTION_REPORT`：Notion 寫入並讀回。混合程式與文件一律走 CODE_DELIVERY。沒有 PR 不得合併程式修改；舊版「Primary 可直接 QC／Merge 或自行決定 PR」僅作歷史記錄。若弟弟工具無法建立 PR，明確回報 publication blocker，由授權者補建 PR，不得略過。
+> **Historical technical reference.** 本文件保存不同 Agent execution surface 的已觀察行為與交接設計；**不是現行跨專案派工規範，也不提供私人授權**。原有 2026-09-14、2026-10-05、2026-10-09、2026-10-11 的操作敘述僅作 dated evidence，不能用來判定今天的權限或 UI。
 
-**Notion 輕量派工訊息也必填：** `Delivery Type(s)`, `Target Repository / Baseline`, `Output Destination`, `Read First`, `Acceptance / Gates`。派工管道不改變交付契約。
+## 研究問題
 
----
+當同一份 Work Order 交給不同執行環境時，哪些資訊應該固定，哪些操作必須因 Runtime 而調整？
 
-## 2026-10-11｜派工管道選擇（現行）
+**Work Order 保存施工需求；Dispatch Handoff 只提供最小必要的執行入口。**
 
-日常研究、調查、分析、Review、文件與輕量任務，預設使用 Notion Agent Mailbox。明確程式／腳本／設定／資料庫修改，或其他需要可重現施工規格的高風險、跨階段任務，才評估建立正式 GitHub Work Order；不以程式為唯一條件，也不要求每次小改動都建單。
+## 最小 Dispatch 資訊
 
-Notion 派工應包含交付類型、目標 Repo 與基準（不適用則標 None）、Read First、輸出位置、驗收與限制。正式 Work Order 存在時，Notion 只提供短通知與路徑，不複製第二份需求。研究成果值得保存時，仍需另行交付到適當的 Repository。
+- Target Repository 與 Source Baseline（可重現的 commit / ref）
+- Work Order 路徑、Read First 與必要的 context access
+- Task Mode：New Task 或 Existing Task continuation / REWORK
+- Execution Profile：Product UI、CLI、GitHub-integrated 或 Human-supervised
+- 交付目的地、需要的 GitHub-visible handoff、適用的驗收 Gate
+- 本次例外與已知限制
 
-**派工管道不降低交付安全規則：** Notion 派出的程式／行為相關修改仍是 CODE_DELIVERY，PR 必填；文件交付是 DOC_DELIVERY；Notion 報告是 NOTION_REPORT。詳見 delivery-contract.md。下方舊版執行模式保留作為歷史經驗。
+這是**研究中的可重現資訊模型**，不是對任何私人工作流程的強制命令。實際派工必須遵守當次授權與目標 Repository 的規範。
 
----
-
-# Dispatch Handoff｜派工通知規則
-
-這份文件補充 `agent-work/README.md`，保存實際撞牆後確認的 execution-surface boundary 與 publication adapter。
-
-## 2026-10-09｜目前預設：Notion 輕量派工 × Codex 原生 Git
-
-一般個人實驗室工作不必先建立正式 Repo Work Order。Claire 在明確範圍說「開工」後，墨衡可於 [Notion Mailbox](https://www.notion.so/3f472eea528e81e69811f2ec85d457bc) 指定 Task／Message、目標 Repo、要做的事、限制及驗收；Codex 讀取後自行 Preflight、實作、適用驗證，於專用 branch Commit、非 force Push 並遠端讀回；墨衡以 GitHub-visible diff 獨立 QC、建立 PR／Merge，確認既有自動部署，Claire 實機驗收。同範圍修正不重複請示。若明文限定唯讀／討論則不得施工。
-
-每次先確認任務未被完成或取代，核 Repo／Branch／工作樹／遠端；必要且安全時 Fetch／乾淨可確認的 Fast-forward，未知成果／分叉／髒樹不擅自 reset、stash 或 force。Push 回應不明先讀回遠端。只有破壞性資料、密鑰／權限／安全、額外費用、越界或重大未知副作用需要停下確認。Codex 交付不等於墨衡 QC、部署或 Claire 驗收。沒有 Runtime 時記錄限制，不假裝測試通過。
-
-正式 Work Order 留給複雜、高風險、跨階段或需長期重現的任務；此時 Notion 短通知只引用 Repo Work Order，不複製另一份需求。下方 Codex Product UI／2026-10-05 Cloud 的 Claire 手動 Create PR 流程**保留為歷史 adapter**；2026-10-09 已驗證 Codex Workspace 原生 Commit／Push（ai-playground 007），PR 可由墨衡 GitHub Connector 接手。實際工具仍需每次確認，不把歷史成功當永久保證。
-
----
-
-## 核心原則
-
-> **Work Order 是完整施工 contract；Dispatch Handoff 是短通知。**
->
-> **Governance Contract 保持穩定；publication mechanics 依 Execution Profile 替換。**
-
-Primary 建立新 Work Order 前先讀：
-
-1. `agent-work/work-orders/index.md`
-2. `agent-work/templates/work-order.md`
-
-完整 Work Order 必須存在 executor 真正可讀的 execution surface。GitHub Issue、ChatGPT Project File、Connector-visible context 或 Primary 私有 context 可當 reference，但不得是唯一施工來源。
-
-若 executor 無法讀取 required context，不要求它靠摘要猜 Scope / Acceptance / Boundary；依 `Cannot Complete` fail closed。
-
-## Dispatch Handoff 必須包含什麼
-
-- Repository
-- Source baseline
-- Work Order path
-- Execution type：`New Task | Existing Task continuation / REWORK`
-- Execution Profile
-- 可直接複製給 executor 的短 Prompt
-- 本次特有 execution exception，若有
-
-不要在 Dispatch Prompt 複製第二份 Requirement，也不要重寫 Template 的 Completion Contract。
-
-## Task Mode
-
-### New Task
-
-從指定 GitHub-visible source baseline 建立新的 workspace / snapshot，重新讀 Work Order 與 Read First。
-
-### Existing Task continuation / REWORK
-
-保留原 implementation lineage，在原 Task / workspace 能安全延續時處理 QC delta。若 Primary 後續變更的 required context 無法可靠進入原 workspace，建立新的 GitHub-visible checkpoint，再啟動 New Task；不要平行猜測重建。
-
-> **New Task starts from a reproducible GitHub-visible repository state, not Claire's oral history.**
-
-## Execution Profiles｜Publication Adapter
-
-### Codex Product UI
-
-目前已直接觀察的模式：
-
-- New Task：Codex local commit + report → stop → Claire **Create PR**。
-- Existing Task continuation：Codex local commit + report → stop → Claire **Update Branch** 發布到既有 PR。
-- Codex local SHA 不保證等於 GitHub-visible PR head SHA。
-- GitHub PR comment 不保證自動進入既有 Codex workspace；REWORK delta 由 Claire relay 回原 Task。
-
-### New Codex Cloud（2026-10-05 Verified Profile）
-
-2026-10-05 以 Work Order `2026-10-05-new-codex-cloud-execution-profile-validation`、Draft PR #46 / #47 與 Primary GitHub QC 驗證目前新版 Cloud surface。
-
-目前直接觀察的模式：
-
-- Task UI 仍以單一 Repository + source branch 建立工作；executor workspace 內實際 local branch 可為 `work`，不等於 requested baseline branch。
-- Published Cloud Environment 對 Claire 是可設定 / publish / selection 的 runtime surface；但 executor task 內沒有可直接辨識 Environment display name、ID、revision 或 setup provenance 的 metadata。只能觀察已配置好的 runtime 結果，不把 toolchain 來源硬歸因給 Environment。
-- Codex 可讀 repository-local Work Order、執行 shell / validation、修改 workspace 並建立 local commit；workspace 仍可能沒有 configured Git remote，`gh` 也可能未登入。
-- New Task 完成後，Claire 在 Web UI 看到 **建立草稿 PR**；觸發後平台把成果發布為 GitHub-visible Draft PR。Claire 不需要另外在 GitHub commit 或 push。
-- GitHub-visible 後，Primary 可直接從 GitHub 執行 Technical QC，並在授權範圍內完成 Ready for Review、Merge 與 superseded PR cleanup。正常 happy path 下，Claire 的 publication 工作可收斂為「建立草稿 PR」這個 Human Gate。
-- Codex local commit SHA 仍不保證等於 GitHub-visible PR head SHA。Phase 1 local `dcfa9cf...` 發布為 PR #46 head `f5fc7a2...`，再次直接驗證 identity separation。
-- **重要 continuation 差異：同一 Cloud conversation 不等於同一 GitHub PR lineage。** PR #46 建立後，在同一 Cloud conversation 做第二次 local commit，再次觸發 **建立草稿 PR**，平台沒有更新 #46，而是建立新的 branch 與 Draft PR #47。
-- 因此不要把舊 Codex Product UI 的 `Existing Task → Update Branch → same PR` 套用到 New Codex Cloud。若 continuation 產生新 Draft PR，由 Primary 以 GitHub-visible diff / report 判斷新的 canonical PR，QC 後 merge canonical artifact 並關閉 superseded PR。
-- `make_pr` 類 executor-visible metadata surface、Claire 看見的 publication control、以及真正 GitHub-visible PR 是三個不同 observation surface；沒有 direct evidence 時不要宣稱它們內部如何因果串接。
-
-目前推薦的 happy path：
+## Context / Snapshot Boundary
 
 ```text
-Primary writes repository-local Work Order
-        ↓
-Claire creates / continues New Codex Cloud task
-        ↓
-Codex preflight / implementation / validation / local commit
-        ↓
-Claire triggers 「建立草稿 PR」
-        ↓
-GitHub-visible Draft PR
-        ↓
-Primary Technical QC
-        ↓
-Accepted: Primary Ready / Merge / cleanup
-Rework: return delta to Codex; subsequent publication may create a NEW Draft PR
-        ↓
-Primary selects canonical PR and closes superseded PR
+Work Order + Required Context + Source Baseline
+                    │
+                    ▼
+            Execution Workspace
+                    │
+          ┌─────────┴──────────┐
+          ▼                    ▼
+     New Task            Existing REWORK
+          │                    │
+          ▼                    ▼
+ Read current source     Check original lineage
+          │                    │
+          └─────────┬──────────┘
+                    ▼
+             Traceable Change
+                    │
+                    ▼
+           GitHub-visible Handoff
+                    │
+                    ▼
+             Independent QC
 ```
 
-> **Cloud conversation lineage ≠ GitHub PR lineage.**
->
-> **New Codex Cloud publication gate ≠ GitHub commit / push work for Claire.**
+- `Source baseline: main` 描述 dispatch 時指定的 GitHub-visible source，不表示 workspace local branch 必須叫 `main`。
+- Prompt Access、Tool Access、Workspace Access 與 Provider Credential 不可混為一談。
+- Existing Task 不應假設後續修改的 Repository 檔案、PR comment 或私人 Context 自動同步到原 workspace。
+- 若必要 context 無法確認，應保留 blocker 與失敗證據，不猜測補齊。
+- GitHub-visible commit、remote branch 與 PR 是不同發布階段；Push 成功不能推定 PR、部署或 QC 成功。
 
-Verified artifact：`agent-work/reports/2026-10-05-new-codex-cloud-execution-profile-validation.md`。PR #46 保存 Phase 1 publication evidence；PR #47 為 continuation 後 canonical artifact，經 Primary QC 後 merge。
+## Execution Profiles｜觀察與限制
 
-### CLI / GitHub-integrated Agent
+| Profile | 可研究的 publication adapter | 必須重新確認 |
+| --- | --- | --- |
+| Codex Product UI | 歷史測試出現 local commit / report，再由使用者操作 Create PR 或 Update Branch | 產品 UI、workspace snapshot、權限及可用操作 |
+| Codex Cloud / Git-integrated Agent | 2026-10-05 及後續測試觀察到特定環境可進行原生 Git commit / push | 本次是否真的可 push、能否建立 PR、遠端 SHA |
+| CLI Agent | 在具備授權時可由執行者操作 Git 與 publication | CLI 是否存在、授權範圍與 workspace 狀態 |
+| Human-supervised Agent | 由人類完成必要的 push / PR publication | 人類 Gate 是否已完成，不得假裝自動發布 |
 
-若 runtime 已具有被授權的 commit / push / PR capability，可由 Agent 直接完成 publication。完成後仍以 GitHub-visible PR / commit 作 Primary QC surface，不因 Agent 能 publish 就省略 QC。
+這些是 **adapter categories 與 dated observations**，不是某個 provider 的永久功能保證。
 
-### Human-supervised Agent
+## Historical Direct Evidence
 
-Agent 可完成 workspace change / validation / commit，由 human 負責 push / PR publication。Human publication 不等於 Technical QC。
+### 2026-09-14｜Work Order 不在 execution surface
 
-### Unknown / New Runtime
+曾觀察到執行者啟動時未取得後續指定的 Work Order。這支持一項保守結論：**Primary 看得到的檔案，不保證執行者在自己的 snapshot 中也看得到。** 應驗證真正可讀的來源，而不是以連結存在當作已讀。
 
-先確認 Prompt Access、Tool Access、Workspace Access、GitHub publication capability，再選 adapter。不要把 provider-specific UI 步驟硬套成 canonical completion semantics。
+### 2026-09-14｜PR continuation / Update Branch
 
-> **Prompt Access ≠ Tool Access ≠ Workspace Access.**
->
-> **Provider Credential ≠ GitHub Execution Credential.**
+當時 Product UI 的 PR continuation 與 Update Branch 行為顯示，原工作階段和後續 GitHub 變更之間存在同步邊界。這是特定產品版本的觀察，不可擴張成所有 Agent runtime 的限制。
 
-## New Task 建議格式
+### 2026-10-05｜Codex Cloud execution profile
 
-```text
-Repository: owner/repo
-Source baseline: main
-Work Order: agent-work/work-orders/<name>.md
-Execution type: New Task
-Execution Profile: <profile>
+在特定 Workspace 的測試中，觀察到原生 Git commit / push 的可用性。它能縮短人工傳遞步驟，但不能推定 PR、獨立 QC 或實機驗收已完成。
 
-可複製給 Implementation Agent：
-請在 <owner/repo> 以 GitHub-visible <branch-or-ref> 建立符合 Execution Profile 的工作環境。先確認 Work Order 與 Read First 可讀、required baseline context 存在，再依 Work Order 執行。Must / Must Not / Acceptance 是 contract；Suggested Method 可在不違反 boundary 下調整；Executor Judgment 內的低風險 implementation detail 由你決定。不要自行擴張 Architecture / Scope。最後依 Work Order 的 Report Contract 與 Completion Contract 結案；若 Cannot Complete，停止並保留 blocker / failure evidence；若 Completed，完成 validation、diff check、commit 與本 Execution Profile 支援的 publication handoff，再停止等待 Primary Technical QC / External Gates。
-```
+## 可重用的技術判斷
 
-## Existing Task REWORK 建議格式
+1. **Governance Contract ≠ Execution Adapter.** 穩定的需求與驗收語義，不必隨每個工具介面重新發明。
+2. **Executor Completion ≠ External Acceptance.** 完成回報不等於驗證通過。
+3. **Historical Evidence ≠ Current Permission.** 任何過去成功的操作，仍需在當次環境重新確認。
+4. **No invisible context.** 必要資料必須存在執行者實際能讀取的位置。
 
-```text
-Repository: owner/repo
-PR: #<number>
-Execution type: Existing Task continuation / REWORK
-Execution Profile: <profile>
-
-可複製給 Implementation Agent：
-保留原 implementation lineage，依本訊息中的 REWORK delta 修正，不要擴張原 Work Order scope。先確認目前 workspace / branch / HEAD 與既有 implementation 的關係；若 required context 無法安全取得，依 Cannot Complete 停止，不要平行重建。完成後依原 Work Order 的 Completion Contract 做 validation、diff check、commit，並依 Execution Profile 發布或回報 publication state，等待 Primary 重新 QC。
-```
-
-若 REWORK 只是局部修正，delta 直接放 continuation message。不要假設 GitHub review comment 會自動同步到 executor workspace。
-
-## Snapshot / Continuation Boundary
-
-目前已驗證 Codex Product UI 的 **Codex → GitHub → Primary** publication；尚未驗證 **Primary → GitHub → Existing Codex Task workspace** 必然自動同步。
-
-因此對 Codex Product UI 保守採用：Existing Task repo context 視為建立 Task 時的 snapshot。Primary 後續修改 repo / Work Order / PR comment，不假設舊 Task 自動取得。
-
-其他 Execution Profile 應依自己的直接 evidence 判斷，不把 Codex Cloud 的限制誤當所有 Agent runtime 的限制。
-
-## Historical Direct Evidence｜Codex Product UI
-
-### 2026-09-14：Work Order 不在 execution surface
-
-Batch Scheduling 首次 Dispatch 時，Primary 把 ChatGPT Project-level `playground.md` 與 private GitHub Issue 當 required context；Codex workspace 無法取得，因而停止。這是正確的 fail-closed 行為。
-
-形成穩定規則：
-
-> **Repo-local Work Order first; short Dispatch second.**
-
-### 2026-09-14：PR continuation / Update Branch
-
-Batch Scheduling PR #23 驗證：首次 Create PR 發布 implementation；原 Task continuation 產生後續 local commit，但 PR 不會自行更新；Claire 使用 Update Branch 後，既有 PR head 才改變並保留 lineage。
-
-因此 `Create PR / Update Branch` 是 **Codex Product UI adapter 的直接 Evidence**，不是所有 Implementation Agent 的固定 publication protocol。
-
-## Current Judgment
-
-穩定治理核心：
-
-- Repository-local Work Order。
-- reproducible source baseline / context preflight。
-- explicit Must / Must Not / Acceptance / Executor Judgment。
-- Missing context 時 fail closed。
-- Implementation authority ≠ Architecture Decision authority。
-- Agent Report ≠ Verified Evidence。
-- GitHub-visible state 作 Primary QC handoff surface。
-- Human / Provider / Environment Gate 依風險保留。
-
-Execution mechanics 可以隨 runtime 演進。不要因為換了一個 Agent provider，就把整本家訓重新抄一遍。
+延伸閱讀：[Agent Work 公開索引](README.md) · [Work Order Template](templates/work-order.md) · [Experience](experience/)
