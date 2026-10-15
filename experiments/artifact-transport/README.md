@@ -83,11 +83,11 @@ Conversation attachment
 | Primary autonomous `workflow_dispatch` | **Unavailable in current GitHub Connector** | Claire 仍保留每批一次 manual Run human gate |
 | Dropbox existing binary → Primary local workspace | **Blocked / Not established** | 不得與反方向 Primary → Dropbox 混為一談 |
 | GitHub repository binary → Primary local workspace | **Open** | 尚未建立 general materialization path |
-| Primary local workspace → Human Output | **Verified / Operational** | finished artifact 可直接上傳 `/AI Output`，由 iOS Files / Preview 取用 |
-| GitHub text/source → Primary → Dropbox | **Verified / Operational** | Markdown / text source 可處理、render 後交付 `/AI Output` |
+| Primary local workspace → Human Output | **Verified / Operational** | finished artifact 可直接上傳 `/delivery-area`，由 iOS Files / Preview 取用 |
+| GitHub text/source → Primary → Dropbox | **Verified / Operational** | Markdown / text source 可處理、render 後交付 `/delivery-area` |
 | GitHub repository binary → Primary local workspace | **Blocked / Not established** | general binary materialization 仍是獨立 transport boundary |
 | Dropbox PDF reading boundary | **Verified / Closed** | <=5 MiB full text fetch；95.15 MB real PDF 驗證 metadata / preview / temp URL 可用、full fetch 受 5 MiB hard limit、無 page-range primitive |
-| Primary workspace lifecycle / cleanup | **Verified / Operational** | `/AI 工作區` 由 Primary 自主管理；task staging → rename → verify → cleanup 已實測 |
+| Primary workspace lifecycle / cleanup | **Verified / Operational** | `/working-area` 由 Primary 自主管理；task staging → rename → verify → cleanup 已實測 |
 | Rollback / recovery | **Open** | wrong destination / revision / partial failure recovery 尚未完整驗證 |
 
 ### Human Responsibility Today
@@ -120,7 +120,7 @@ A-ARTIFACT-1 到此收斂。
 Claire 指定要主動處理的兩個剩餘主題已完成：
 
 1. **Dropbox PDF reading boundary**：已用真實 2.66 MB / 95.15 MB PDF 驗證，5 MiB full-text fetch limit、preview / metadata / temporary-link 能力與缺少 page-range primitive 均已確認。
-2. **Primary workspace lifecycle**：`/AI 工作區` 已形成 autonomous housekeeping policy，並完成 create → stage → rename → verify → cleanup 真實 probe。
+2. **Primary workspace lifecycle**：`/working-area` 已形成 autonomous housekeeping policy，並完成 create → stage → rename → verify → cleanup 真實 probe。
 
 以下不阻擋結案：
 
@@ -393,7 +393,7 @@ select / share source artifact
 | --- | --- | --- |
 | Local Workspace → GitHub | Verified | Verified；另已有更低摩擦的 Dropbox staging → GitHub Actions publication path |
 | Local Workspace → Dropbox | Open | **Superseded：現已 Verified** via Dropbox `upload_file` |
-| Local Workspace → Human Output | Open | **Superseded：後續已 Verified / Operational via Dropbox /AI Output** |
+| Local Workspace → Human Output | Open | **Superseded：後續已 Verified / Operational via Dropbox /delivery-area** |
 
 ### C. End-to-end workflow
 
@@ -452,7 +452,7 @@ Current Judgment：
 
 **Superseded / Operational.**
 
-`/AI Inbox` 與 `/AI Output` 由 Claire 依 Human workflow 使用；真正需要 lifecycle governance 的是 `/AI 工作區`。
+歷史測試將 intake 與 delivery 分配給人類工作流程；需要完整 lifecycle 驗證的是獨立的 working area。
 
 Research-derived lifecycle evidence：
 
@@ -464,8 +464,8 @@ Verified probe：
 
 ~~~text
 create task folder
-→ copy working artifact from /AI Output
-→ rename inside /AI 工作區
+→ copy working artifact from /delivery-area
+→ rename inside /working-area
 → list / verify
 → delete entire task folder
 → verify no residual probe folder
@@ -473,7 +473,7 @@ create task folder
 
 Current Judgment：
 
-> `/AI 工作區` 是 Primary autonomous scratch / staging surface，可吸收 temporary artifacts，降低不必要 Git commit pollution；housekeeping 由 Primary 自行負責。
+> 實驗觀察：獨立 working area 可吸收暫存產物，降低不必要的 Git commit pollution；這是 dated evidence，不是對現行私人儲存空間的授權。
 
 ### F. Rollback / recovery
 
@@ -665,7 +665,7 @@ scripts/ingest-image-from-url.py
 ~~~text
 Conversation attachment
 → Primary Agent local processing
-→ Dropbox AI Inbox staging
+→ Dropbox staging area
 → single-use temporary download URL
 → GitHub Actions Runner
 → direct binary download
@@ -905,7 +905,7 @@ Human / Conversation artifact
 
 GitHub text/source
 → Primary processing / Markdown → PDF renderer
-→ Dropbox /AI Output
+→ Dropbox /delivery-area
 → iOS Files
 → iOS Preview
 ✅ Operational
@@ -927,12 +927,12 @@ knowledge/implementation/markdown-to-pdf.md
 
 ## Workspace Lifecycle Probe｜2026-09-18
 
-為驗證 `/AI 工作區` 不只是名義上的自治區，而能由 Primary 自行完成完整 working lifecycle，執行真實 Dropbox probe。
+為驗證獨立 working area 的 lifecycle 可行性，當時執行真實 Dropbox probe；下列路徑已改為角色化表示，保留操作順序與驗證結果。
 
 Source：
 
 ~~~text
-/AI Output/case-b-conversation-images.pdf
+/delivery-area/case-b-conversation-images.pdf
 size: 1,111,109 bytes
 ~~~
 
@@ -940,7 +940,7 @@ Probe：
 
 ~~~text
 create
-/AI 工作區/workspace-lifecycle-probe-20260918/
+/working-area/workspace-lifecycle-probe-20260918/
 
 copy source
 → staging-case-b.pdf
@@ -966,8 +966,8 @@ Result：
 - same file identity preserved across rename：Verified
 - inspection / listing：Verified
 - whole-task cleanup：Verified
-- source in `/AI Output` remained untouched
-- no probe residue remained in `/AI 工作區`
+- source in `/delivery-area` remained untouched
+- no probe residue remained in `/working-area`
 
 Promotion：
 
