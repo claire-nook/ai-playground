@@ -19,7 +19,7 @@ This repository is **not** a Development, Test, UAT, or Production environment. 
 | 實驗成立、Catalog 與公開站台發布 | [Research Catalog & Publication](knowledge/research-catalog-publication.md) |
 | 實驗結果與可追溯證據 | [Evidence Index](evidence/index.md) |
 | 已整理的公開實作方法 | [Implementation Knowledge](knowledge/implementation/) |
-| 公開文章與研究成果 | [Wall Index](knowledge/wall/README.md) |
+| Wall Writing：撰寫、修改、回想文章及作品記錄 | [Wall Writing & Article Index](knowledge/wall/README.md) |
 | 本 Repository 的工作項目與交付紀錄 | [Agent Work](agent-work/README.md) |
 | 短期研究工作紀錄 | [Short-term Work](notes/short-term-work.md) |
 
