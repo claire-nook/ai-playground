@@ -171,7 +171,7 @@ Claire 用 M5 iPad Pro 當主要 technical workstation 的第七天，剛好撞�
 
 ## Maintenance Rule｜寫完要留下作品記憶
 
-Primary 發表新的 Wall 文章後，應在同一個工作 context 內更新本頁。
+在 AI Playground 新增或修改 Wall 文章時，應在同一個工作 context 內更新本頁；由當次獲授權的協作者執行，不以「Primary」作為跨對話固定身分。
 
 每篇記錄原則上只保留：
 
