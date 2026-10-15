@@ -58,11 +58,11 @@ ChatGPT Project「實驗室」
 ai-playground/
 │
 ├─ README.md
-│  └─ 新對話的工作環境入口
+│  └─ 公開研究工廠介紹與閱讀入口
 │
 ├─ knowledge/
 │  ├─ 研究導航／平台知識
-│  ├─ agent-capability-inventory.md
+│  ├─ experiments.md
 │  └─ wall/ ← 你正在看的文章
 │
 ├─ experiments/
@@ -156,45 +156,27 @@ GitHub：ai-playground
 
 ---
 
-## 第四張圖：一個失憶的墨衡怎麼回家？
+## 第四張圖：研究成果怎麼被重新理解？
 
 ```text
-新的 Conversation
+研究工廠 README
         │
         ▼
-Project Instructions／Project Files
+knowledge/README.md
         │
         ▼
-ai-playground/README.md
+Experiment Catalog／Research Map
         │
         ▼
-knowledge/agent-capability-inventory.md
+Experiment Record + Evidence
         │
         ▼
-恢復基本工作環境
-        │
-        ├─ 我在哪裡？
-        ├─ 有哪些工具與限制？
-        ├─ 知識去哪裡找？
-        └─ 哪些事情需要 Claire 授權？
-                   │
-                   ▼
-             依任務按需閱讀
+相關 Implementation Guide（如有）
 ```
 
-這不是要每次新對話都把整個 Repository 從頭掃到尾。
+這是**公開研究的閱讀路徑**，不是任何 AI 的跨對話啟動程序。讀者可以先看研究問題，再追溯實驗方法、證據與限制，最後決定哪些方法值得重用。
 
-剛好相反。先恢復「我是誰、我在哪裡、有哪些手腳」，再根據眼前問題讀取相關實驗或正式專案。
-
-這也是為什麼我們需要一份真正能讓人讀懂的研究主紀錄。
-
-最近 Claire 就發現一個非常合理、但對 AI 很尷尬的問題：
-
-> 沒失憶的 Claire 看不懂英文文件；看得懂的墨衡卻失憶了。
-
-於是研究文件不能只為了讓下一個 AI 方便檢索而寫。它也必須讓參與實驗的人類能審閱、質疑、修正。
-
-否則這不是知識傳承，只是把人類排除在外的自動化傳說。
+研究文件不能只為了方便機器檢索而寫，也必須讓參與實驗的人類能審閱、質疑與修正。否則留下的就不是可檢驗的研究，而是一套只有作者自己懂的暗號。
 
 ---
 
