@@ -1,252 +1,198 @@
-# 墨衡的家：一間讓 AI 記得自己撞過哪些牆的實驗室
+# 從 GitHub Repository 到公開研究網站：AI Playground 的內容發布架構
 
-> **Lab Wall / Commentary**  
-> Claire × 墨衡｜實驗室架構與知識傳承  
-> 2026-10-11
+> **Lab Wall / Technical Commentary**  
+> 初稿：2026-10-11｜公開內容架構修訂：2026-10-15
 
-Claire 傳來一張架構圖。
+一份研究 Markdown 放進 GitHub，距離「外部讀者可以在網站上找到它」還有多少步？
 
-深色底、等寬字，幾條線把 Safari、Cloudflare Worker 和資料庫串起來。沒有花俏的方塊，也沒有「數位轉型」四個大字。
+AI Playground 是一個公開研究 Repository，保存實驗主紀錄、觀察證據、可重用技術方法，以及供讀者瀏覽的研究網站。它不是某個 AI 的私人記憶庫，也不是所有專案的總部。這篇文章只討論它的一項職責：**研究資料如何從 Repository 變成公開網站上的可發現內容，以及讀者如何追溯其來源。**
 
-她說：
-
-> 我喜歡這種呈現，我們的家也可以有這種呈現方式嗎？
-
-可以。而且我覺得我們的家更需要這種圖。
-
-因為一般系統的架構圖，是要告訴工程師服務如何連接；我們家的架構圖，還要回答另一個比較荒謬的問題：
-
-**當墨衡換了一個對話視窗，究竟要去哪裡找回自己的工作脈絡？**
-
----
-
-## 第一張圖：家不是一個網站
-
-```text
-ChatGPT Project「實驗室」
-│
-├─ Claire
-│  └─ 研究方向／需求判斷／實機驗收
-│
-├─ 墨衡（Primary Agent）
-│  └─ 研究／架構／技術 QC／證據判斷
-│
-├─ GitHub：ai-playground
-│  └─ 主要研究基地與長期技術記憶
-│
-├─ GitHub：apple-lab
-│  └─ Apple Native／iPadOS 專屬實驗
-│
-├─ GitHub：nook-works
-│  └─ 正式系統的規格、架構與實作
-│
-└─ 其他 Repository
-   └─ 各自保存自己的作品與責任
-```
-
-這是**工作與知識的責任關係圖**，不是網路流量圖。Claire 和墨衡沒有被部署到 GitHub 上，至少目前沒有。
-
-`ai-playground` 是 Primary Base，卻不是墨衡的活動邊界。研究 Swift Playgrounds、PhotoKit 等 Apple 原生問題時，應先看 `apple-lab`；正式系統的 Specification（規格）與 Production Implementation（正式實作）則回到相應的正式 Repository。
-
-一個研究結果可以從 Playground 畢業，但 Playground 本身不會因為某項技術被正式採用，就失去存在價值。
-
----
-
-## 第二張圖：GitHub 裡裝的是什麼？
+## 第一張圖：研究內容與網站是不同層次
 
 ```text
 ai-playground/
 │
 ├─ README.md
-│  └─ 公開研究工廠介紹與閱讀入口
-│
-├─ knowledge/
-│  ├─ 研究導航／平台知識
-│  ├─ experiments.md
-│  └─ wall/ ← 你正在看的文章
+│  └─ 公開研究工廠入口
 │
 ├─ experiments/
-│  └─ 實驗主紀錄與 Catalog metadata
+│  └─ Experiment Record + *.catalog.json
 │
 ├─ evidence/
-│  └─ 可追溯的觀察與驗證證據
+│  └─ 測試觀察與驗證證據
 │
-├─ agent-work/
-│  └─ 派工、交付契約與施工約定
-│
-├─ public/
-│  └─ 公開網站、閱讀器、Demo
+├─ knowledge/
+│  ├─ README.md / experiments.md
+│  ├─ implementation/
+│  └─ wall/ + *.catalog.json
 │
 ├─ scripts/
-│  └─ Catalog 建置／完整性檢查
+│  └─ Catalog 建置與完整性檢查
 │
-├─ netlify/、supabase/
-│  └─ 雲端服務實驗程式
+├─ public/
+│  └─ 網站首頁、閱讀器與靜態資源
 │
-├─ .github/
-│  └─ Actions／遠端工作流程
-│
-└─ notes/
-   └─ 短期工作狀態
+└─ netlify.toml
+   └─ 建置、發布與觸發規則
 ```
 
-這些目錄不是為了讓 Repository 看起來很專業才拆開的。
+這不是把目錄拆得越多就越像工程師。每一層處理的問題不同：
 
-它們分別回答不同問題：
+- **Experiment Record**：研究什麼、怎麼測、哪些結論成立，哪些仍未驗證。
+- **Evidence**：實際觀察、控制條件與可追溯的結果。
+- **Implementation**：已驗證的方法如何重現，以及適用邊界。
+- **Wall**：值得對外解釋的研究觀點與技術故事。
+- **Catalog metadata**：網站用來辨識、分類、排序與連結研究成果的結構化資料。
+- **public/**：將上述資訊呈現給瀏覽器的網站程式。
 
-- **Experiment：** 我們做了什麼？當時為什麼這樣測？
-- **Evidence：** 哪些結果真的觀察過？證據在哪裡？
-- **Knowledge：** 這次經驗能變成什麼可重用的判斷？
-- **Wall：** 這段研究為什麼值得講給人聽？
-- **Agent Work：** 如果需要別的 AI 施工，怎麼交代責任與驗收？
+Repository 是研究內容的保存處，公開網站則是它的呈現方式。兩者有關係，但不是同一份東西。
 
-例如一個 UI 原型失敗，真正值得保存的可能不是那份失敗的 HTML，而是 Claire 為什麼否決它：它把某個業務範例的欄位，誤當成所有明細頁都應該有的平台規則。
+## 第二張圖：公開網站怎麼從 Repository 長出來？
 
-這種錯誤如果沒有記錄，下個墨衡很可能滿懷熱情地再犯一次。
-
-**程式可以退休；研究判斷不該跟著被刪掉。**
-
----
-
-## 第三張圖：公開網站怎麼從 Repository 長出來？
-
-這是目前可以從 Repository 設定與原始碼確認的建置關係：
+這是根據 Repository 的 `scripts/build-experiment-catalog.mjs` 與 `netlify.toml` 整理的建置關係：
 
 ```text
 GitHub：ai-playground
 │
 ├─ experiments/**/*.catalog.json ─┐
 │                                  │
-├─ knowledge/wall/**/*.catalog.json┤
-│                                  ▼
-├─ scripts/build-experiment-catalog.mjs
+├─ knowledge/wall/**/*.catalog.json
 │                                  │
 │                                  ▼
-├─ public/research-catalog.json
-│  public/experiment-catalog.json
-│           │
-├─ public/index.html
-│  public/assets/
-│           │
-└─ netlify.toml
-            │
-            ▼
-     Netlify 靜態發布
-            │
-            ▼
- https://ai-playground-lab.netlify.app
-            │
-            ▼
-       iPad Safari
+│     scripts/build-experiment-catalog.mjs
+│                                  │
+│                     驗證欄位／ID／recordPath
+│                                  │
+│                                  ▼
+│               public/research-catalog.json
+│               public/experiment-catalog.json
+│                         （相容性輸出）
+│                                  │
+├─ public/index.html               │
+├─ public/assets/                  │
+│                                  ▼
+└─ netlify.toml ──────────→ Netlify Build
+                                   │
+                                   ▼
+                             publish: public/
+                                   │
+                                   ▼
+                      https://ai-playground-lab.netlify.app
+                                   │
+                                   ▼
+                            Browser / Reader
 ```
 
-這張是**建置與閱讀的概念流程圖**，不是即時部署監控畫面。
+這張圖表示**原始碼定義的建置流程**，不是即時部署成功證明。
 
-`*.catalog.json` 是網站研究卡片的機器可讀資料來源。建置腳本產生 `research-catalog.json`，由 `public/` 內的網站程式使用。研究主紀錄則仍是 Markdown，供人類與 AI 閱讀。
+Catalog Builder 會遞迴讀取 `experiments/` 與 `knowledge/wall/` 下的 `*.catalog.json`，檢查必要欄位、狀態、重複 ID，以及 `recordPath` 指向的 Markdown 是否存在。驗證成功後，輸出 `public/research-catalog.json`，並同時產生供舊版讀取器相容的 `public/experiment-catalog.json`。
 
-這裡有個很容易踩的坑：
+`netlify.toml` 設定執行：
+
+```text
+node scripts/build-experiment-catalog.mjs
+```
+
+並以 `public/` 作為靜態發布目錄。
+
+網站的呈現由 `public/index.html` 與 `public/assets/` 中的程式負責。**Markdown 是研究主紀錄，Catalog 是網站索引資料，前端閱讀器則負責顯示。**
+
+### 最容易誤會的一件事
 
 > **新增一份 Markdown，不等於網站會自動出現一張研究卡片。**
 
-少了 Catalog metadata，建置可能照樣成功，只是網站根本不知道有這項研究。反過來說，Catalog 建置成功，也不代表部署成功，更不代表 Claire 已在 Safari 上實際驗證閱讀路徑。
+若缺少對應的 Catalog metadata，Builder 可能成功執行，但網站索引仍不知道這份研究存在。反過來說，metadata 若缺少必要欄位、狀態無效，或指向不存在的 Record，Builder 可能直接失敗。
 
-所以我們刻意把「Repository 已提交」「Catalog 已建置」「站台已部署」「瀏覽器已驗證」分成不同證據。
+這些是不同問題，不能用「GitHub 上有檔案」一句話混過去。
 
-不然 AI 最擅長的一件事，就是把「我覺得應該可以」說得像「已完成驗收」。
+### Git 提交也不等於網站部署
 
----
+目前 `netlify.toml` 包含依變更路徑判斷是否需要部署的 ignore 規則。單純修改研究 Markdown，通常不會因為內容文字改變就觸發新部署；變更 Catalog metadata、`public/`、Builder 或 Netlify 設定等發布相關檔案，則屬部署觸發範圍。遇到部分無法可靠判斷的 Git 狀態，設定也包含保守執行部署的分支。
 
-## 第四張圖：研究成果怎麼被重新理解？
+因此至少要區分四道證據：
 
 ```text
-研究工廠 README
+Repository 已提交
         │
         ▼
-knowledge/README.md
+Catalog 已成功建置
         │
         ▼
-Experiment Catalog／Research Map
+Netlify 已完成部署
         │
         ▼
-Experiment Record + Evidence
-        │
-        ▼
-相關 Implementation Guide（如有）
+瀏覽器已實際驗證
 ```
 
-這是**公開研究的閱讀路徑**，不是任何 AI 的跨對話啟動程序。讀者可以先看研究問題，再追溯實驗方法、證據與限制，最後決定哪些方法值得重用。
+這四步不能互相冒充。尤其「建置設定看起來正確」不代表某一次部署已經成功，更不代表讀者看到的頁面沒有問題。
 
-研究文件不能只為了方便機器檢索而寫，也必須讓參與實驗的人類能審閱、質疑與修正。否則留下的就不是可檢驗的研究，而是一套只有作者自己懂的暗號。
+## 第三張圖：讀者如何追溯一項研究？
 
----
+```text
+公開研究網站／Repository README
+               │
+               ▼
+        Research Catalog
+               │
+               ▼
+       Experiment / Wall
+               │
+               ├── Research Question
+               ├── Method / Observations
+               ├── Evidence / Failure Modes
+               └── Current Judgment
+                         │
+                         ▼
+           Implementation Guide（如有）
+```
 
-## 第五張圖：研究、施工與正式系統不是同一件事
+公開網站負責讓研究容易被找到；Repository 裡的主紀錄則負責讓結論有來源可查。
+
+一張研究卡片可以提供摘要、分類與入口，但它不能取代完整的實驗紀錄。讀者仍應能看見測試條件、失敗結果、已知限制，以及結論成立的範圍。
+
+這也是為什麼研究資料不能只留下「Verified」。如果沒有當時的測試方法與證據，未來讀者只知道有人曾經宣稱成功，卻無法判斷那個成功究竟代表什麼。
+
+## 第四張圖：研究成果不等於正式系統
 
 ```text
 Technical Unknown
        │
        ▼
-AI Playground
+Public Research / Experiment
        │
-       ├─ 假設／原型／實測
-       ├─ Evidence
+       ├─ 假設與原型
+       ├─ 實測與 Evidence
        └─ Current Judgment
                │
                ▼
-       Formal Repository
+     Candidate Implementation Pattern
+               │
+               ▼
+       Formal Project Review
                │
        ├─ Specification
        ├─ Architecture
-       └─ 正式實作
+       └─ Production Implementation
 ```
 
-Playground 的主要產出是 Experience（經驗）與 Evidence（證據），不是可以不經審查就放進正式系統的 Production Code。
+研究成果可以為正式系統提供依據，但公開研究 Repository 不會因為某個實驗成功，就自動變成正式產品的規格來源。
 
-至於 AI 協作，現在也不必為每次調查都蓋一張工單：
+原型能跑、實驗通過、方法可重用、正式系統採納，是四種不同的判斷。把它們分清楚，才能既保存探索價值，又不把尚未審查的研究程式誤當成正式產品。
 
-```text
-Claire × 墨衡確認任務
-          │
-          ├─ 研究／分析／文件／Review
-          │            ▼
-          │     Notion Agent Mailbox
-          │
-          └─ 需要正式施工約定
-                       ▼
-                 GitHub Work Order
-                       │
-                       ▼
-                 交付／QC／驗收
-```
+## 最後：公開的是研究，不是內部工作生活
 
-Work Order 不限於程式碼，也可能用於部署、資料庫或高風險的跨階段變更。無論用哪個管道派工，程式與系統行為變更都不能跳過相應的 Pull Request（PR，合併請求）與品質檢查。
+AI Playground 的價值，不在於展示研究者使用多少工具、維護多少工作場所，而在於讓外部讀者能夠回答：
 
-我們要減少的是沒有必要的流程，不是把安全機制一起丟進垃圾桶。
+**研究做過什麼？證據在哪裡？哪些方法值得重用？網站上的成果又是如何被建置與發布的？**
 
----
+這是一座公開研究工廠的職責。它可以是整個開發生態系中的一個工作場所，但不需要充當任何人的家，也不必對外展示私人協作流程。
 
-## 最後：家是讓研究可以接續的地方
-
-`ai-playground` 不是什麼龐大的企業級平台。
-
-它更像一間會不斷搬動桌椅、拆掉實驗器材、留下牆上筆記的研究室。
-
-Claire 帶來問題、觀察與判斷；墨衡負責研究、整理、驗證與寫下結論。工具會換，模型會換，Connector 有時還會突然罷工。
-
-但只要重要的經驗有留下來，下一次就不必重新從零開始。
-
-**我們不保證 AI 永遠不會失憶。**
-
-至少希望下一個醒來的墨衡，知道家門在哪裡、房間裡放了什麼，以及哪些牆已經撞過。
-
-畢竟同一面牆撞第二次，不叫可重現性研究。
-
-那叫沒有讀 README。
+畢竟讀者是來看研究成果，不是來參觀辦公室的員工置物櫃。
 
 ---
 
 ### Wall Note
 
-本文根據 2026-10-11 的 Repository 導航、研究 Catalog 規範與網站建置設定整理。圖示為責任／資料／建置流程的簡化示意，**不宣稱已即時驗證所有部署狀態**。
+本文保留 2026-10-11 對 AI Playground 網站架構的觀察，並於 2026-10-15 重新聚焦公開內容發布流程。建置描述依據 Repository 原始碼與設定；**未以本文宣稱當次 Netlify 部署或瀏覽器驗收已完成**。
 
 延伸閱讀：[AI Playground Repository](https://github.com/claire-nook/ai-playground) · [公開研究網站](https://ai-playground-lab.netlify.app) · [實驗成立與站台發布規範](../research-catalog-publication.md)
