@@ -182,21 +182,21 @@ Status 不必重複當 Tag；使用文件中的 `Status` 欄位即可。
 
 ## Knowledge Capture Protocol｜每次 Experiment 順手完成
 
-有意義的 Experiment 完成或形成新 Evidence 時，未來 AI 應順手完成以下維護，不要累積到第 1000 個 Experiment 才進行數位考古：
+有意義的 Experiment 完成或形成新 Evidence 時，應依研究工作流程完成以下維護，不要累積到第 1000 個 Experiment 才進行數位考古：
 
 1. **Experiment Record + Site Metadata**：更新 Question / Purpose、Scope、Method、Evidence、Constraint、Current Judgment；新成立的研究輸出同步建立合法 `*.catalog.json`，按 Publication Contract 驗證。
 2. **Experiment Catalog**：更新 Why it existed / What it unlocked / Status / Tags / Links。
 3. **Evidence Index**：加入可重用的 Result / Evidence / Limitation，不複製整份 Experiment Record。
 4. **Research Map**：更新相關節點 Status；若實驗暴露新的合理 Candidate Branch，留下 Branch，即使尚未實驗。
 5. **Links / Tags**：補上跨 Research Intent 可重用的關係與少量穩定 Tags。
-6. **Implementation Knowledge Check**：判斷 Source + Evidence 是否已足以讓未來 AI 正確重建 implementation；若不足，必須在本次實驗 context 尚存在時建立或更新 `knowledge/implementation/` Guide，不得把補寫工作推給未來對話。
+6. **Implementation Knowledge Check**：判斷 Source + Evidence 是否已足以讓其他研究者正確重建 implementation；若不足，必須在本次實驗 context 尚存在時建立或更新 `knowledge/implementation/` Guide，不得將必要的研究方法與限制留在未記錄的工作過程中。
 7. **Short-term Work**：完成的工作標示 Completed；真正值得長期保存的 Context 應畢業到 Research Map / Catalog / Evidence / Implementation Guide，而不是永遠靠 TODO 墓碑保存。
 
-### Implementation Knowledge Check｜不要讓未來自己考古
+### Implementation Knowledge Check｜保留可重現的方法
 
 每個有實作產出的 Experiment 在 completion / stable checkpoint 時，都必須問一次：
 
-> 如果目前 conversation context 立刻消失，未來 AI 只靠 Repository，能否正確理解「怎麼做、為什麼這樣做、哪些設定不能漏、哪些實驗寫法不應照抄」？
+> 如果只閱讀公開的 Source、Experiment Record 與 Evidence，其他研究者能否正確理解「怎麼做、為什麼這樣做、哪些設定不能漏、哪些實驗寫法不應照抄」？
 
 若答案是 Yes，而且 Source + Evidence 已清楚自解釋，就**不要**為了形式建立 Guide。
 
@@ -213,7 +213,7 @@ Status 不必重複當 Tag；使用文件中的 `Status` 欄位即可。
 
 Guide 的責任是保存 reusable implementation knowledge，不是複製整份 Experiment Record 或貼一份 source code。至少應說明必要元件、關鍵設定、責任邊界、已知陷阱、正式實作不可照抄的 test-only 部分，以及對應 Source / Evidence 路徑。
 
-**Timing Rule：**Implementation Guide 必須在 Experiment context 尚新鮮時完成。若重要 implementation knowledge 已在中途形成，可先於 checkpoint 寫入；Experiment completion 時再做一次 final check。不得以「未來需要時再補」作為正常策略，因為未來 AI 能重新讀 code，卻未必能重建當時未寫下來的 provider state、失敗脈絡與設計理由。
+**Timing Rule：**Implementation Guide 必須在 Experiment context 尚新鮮時完成。若重要 implementation knowledge 已在中途形成，可先於 checkpoint 寫入；Experiment completion 時再做一次 final check。不得以「未來需要時再補」作為正常策略，因為後續研究者可以重新讀 code，卻未必能重建當時未寫下來的 provider state、失敗脈絡與設計理由。
 
 ### Checkpoint Capture｜長實驗不要等結案才寫
 
@@ -226,11 +226,11 @@ Knowledge Capture 不必等整個 Experiment `Completed` 才發生。當長時�
 - Human Environment Evidence 已完成，但下一個 implementation / deployment 尚在進行。
 - 已確認 provider-specific 設定或容易重踩的 implementation trap。
 - 後續工作需交給另一 Agent、等待 provider runtime、人工操作或其他 asynchronous dependency。
-- 對話 context 已累積大量不可由 repository source 重新推導的 observation / reasoning。
+- 研究過程已累積大量不可由 repository source 重新推導的 observation / reasoning。
 
 Checkpoint 不是把未完成實驗假裝 Completed，也不是每五分鐘寫流水帳。它只保存**已成立且值得跨 context 保留**的知識，並明確標示尚未驗證的下一段。
 
-後續 Evidence 若改變 Judgment，應追加 / supersede，而不是把舊 failure 改寫成從未發生。如此即使 AI conversation context 被截斷、Agent Task 換代或 provider 操作中斷，Git repository 仍保存已取得的研究資產。畢竟把唯一一份工程記憶寄放在 context window，跟把唯一備份放在同一顆硬碟差不多有創意。
+後續 Evidence 若改變 Judgment，應追加 / supersede，而不是把舊 failure 改寫成從未發生。如此即使研究中斷、執行環境改變或 provider 操作失敗，Repository 仍保存已取得的研究資產。
 
 建立新 Experiment 時可以從 [`experiment-template.md`](experiment-template.md) 開始，但 Template 是提醒，不是官僚表單。沒有內容的 section 可以刪掉。
 
@@ -242,7 +242,7 @@ Checkpoint 不是把未完成實驗假裝 Completed，也不是每五分鐘寫�
 
 ## Language Convention｜語言約定
 
-Knowledge Base 需要同時服務 Claire、未來 AI，以及幻想中可能真的會出現的外國友人。
+Knowledge Base 應讓公開研究紀錄的讀者與後續實作者都能理解。
 
 核心原則：
 
@@ -252,7 +252,7 @@ Knowledge Base 需要同時服務 Claire、未來 AI，以及幻想中可能真�
 
 - Research Context、Reasoning、Observation、Judgment、Constraint 等敘事以繁體中文為主。
 - Standard IT terms 保留業界常用英文，例如 `clone`, `commit`, `branch`, `Repo`, `Workflow`, `Runner`, `Runtime`, `Deployment`, `Credential`, `Session`, `Authentication`, `Authorization`, `RLS`, `API`, `Endpoint`。
-- 第一次遇到 Claire 可能不熟悉的 Concept，可以用中文**解釋**，不要硬造中文術語。例如：`Credential`：系統用來證明呼叫方具有某種存取權限的資訊。
+- 第一次遇到讀者可能不熟悉的 Concept，可以用中文**解釋**，不要硬造中文術語。例如：`Credential`：系統用來證明呼叫方具有某種存取權限的資訊。
 - 不需要把 `clone` 翻成「拓製」之類看起來很有文化、實際上讓讀者重新學一次 Git 的詞。
 - Title / Heading / Tags / Status / Provider / Capability / Link Relationship 優先使用穩定英文 Technical Vocabulary，必要時用 `English｜繁體中文` 雙標題協助閱讀。
 - 不做逐段中英雙語翻譯。Knowledge Base 是工程知識，不是聯合國逐字稿。
@@ -272,7 +272,7 @@ Knowledge Base 需要同時服務 Claire、未來 AI，以及幻想中可能真�
 
 ---
 
-## Reading Order｜給未來 AI
+## Reading Order｜依研究任務閱讀
 
 進行新 Experiment 前：
 
