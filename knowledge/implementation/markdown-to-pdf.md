@@ -1,15 +1,15 @@
 # Markdown → Human-facing PDF Rendering Pattern
 
-- Status: Verified local pattern / reusable Primary capability
+- Status: Verified local pattern / reusable rendering method
 - First verified: 2026-09-18
-- Origin: A-ARTIFACT-1 / GitHub → Primary → Dropbox output research
+- Origin: A-ARTIFACT-1 / Markdown-to-PDF output research
 - Reuses: Textastic forest-style visual language, explicit fenced-language philosophy, manual page-break contract
 
 ## Intent
 
 這個 Pattern 解決的不是「PDF 能不能產生」，而是：
 
-> Primary 如何把 Repository 中的 Markdown 轉成可交付、可稍後打開、可存入 Dropbox 的 Human-facing PDF，而不需要每次重新手刻一套排版。
+> 如何把 Repository 中的 Markdown 轉成可驗證、可交付的 Human-facing PDF，而不需要每次重新手刻一套排版。
 
 Canonical renderer：
 
@@ -21,12 +21,12 @@ Execution shape：
 
 ~~~text
 GitHub Markdown source
-→ Primary local workspace
+→ renderer workspace
 → reusable Markdown renderer
 → HTML/CSS transformation
 → PDF
 → visual / structural verification
-→ Dropbox Human Output
+→ requested delivery surface
 ~~~
 
 Repository 保存 durable rendering capability；local workspace 只承擔 ephemeral execution。
@@ -98,13 +98,13 @@ Conversation upload
 
 因此，**renderer 本身支援圖片**。如果 PDF 出現 missing-image placeholder，應先判斷 referenced binary 是否真的已 materialize 到 renderer workspace，不要先怪 CSS / Markdown / WeasyPrint。
 
-Markdown source 可由 GitHub Connector 直接讀取，但 Repository binary image 與 Primary local filesystem 是不同 execution surface。
+Markdown source 可由 GitHub Connector 直接讀取，但 Repository binary image 與 renderer filesystem 是不同 execution surface。
 
 如果 referenced image bytes 尚未 materialize 到 renderer workspace：
 
 ~~~text
-GitHub Markdown        → Primary local text       Verified
-GitHub repository PNG  → Primary local binary     Not yet established as general path
+GitHub Markdown        → renderer input text       Verified
+GitHub repository PNG  → renderer input binary     Not yet established as general path
 ~~~
 
 Renderer 會輸出清楚的 missing-image placeholder，而不是 silently drop image。
@@ -152,43 +152,23 @@ Export working copy 額外加入：
 
 ## Promotion Rule
 
-這是 Primary 可反覆使用的 **Authoring / Publication Capability**，不是只在本次 Experiment 使用的一次性 script。
+這是可反覆使用的 **Authoring / Publication Pattern**，不是只在本次 Experiment 使用的一次性 script。
 
-新 Conversation 需要產 PDF 時：
+需要產 PDF 時：
 
 ~~~text
-Capability Inventory
-→ knowledge/implementation/markdown-to-pdf.md
+knowledge/implementation/markdown-to-pdf.md
 → scripts/render-markdown-pdf.py
-→ source Markdown
-→ local render / verify
+→ source Markdown + available local assets
+→ render / inspect / verify
 → requested delivery surface
 ~~~
 
-不要每次從零重新發明 PDF CSS。人類已經付過一次排版稅。
+保留已驗證的排版方法，避免重複實作。
 
 
-## Durable Delivery Pattern
+## Delivery boundary
 
-Human-facing PDF 不應只依賴 Conversation temporary download。
+PDF 的渲染與保存位置是不同責任。完成 PDF 結構與視覺驗證後，應依實際任務指定的交付位置保存；暫時性下載連結不應被當作永久存放保證。
 
-Current verified delivery：
-
-~~~text
-Primary renders PDF
-→ Dropbox /AI Output/<reasonable-name>.pdf
-→ Dropbox sync
-→ Claire opens iOS Files
-→ Dropbox
-→ AI Output
-→ native iOS Preview
-✅ Verified
-~~~
-
-Dropbox 在這條路主要是 durable storage + sync layer；Claire 的日常 discovery surface 是 iOS Files，PDF reading surface 是 iOS Preview。
-
-Canonical collaboration guide：
-
-~~~text
-knowledge/implementation/artifact-collaboration-workflow.md
-~~~
+A-ARTIFACT-1 曾驗證以雲端檔案儲存搭配 iOS Files / Preview 交付成品；該歷史案例與平台限制詳見 [Experiment Record](../../experiments/artifact-transport/README.md)。
