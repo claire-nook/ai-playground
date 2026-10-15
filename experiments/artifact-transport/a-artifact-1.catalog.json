@@ -3,7 +3,7 @@
   "title": "AI-assisted Artifact Collaboration Workflow",
   "completedDate": "2026-09-18",
   "recordPath": "experiments/artifact-transport/README.md",
-  "summary": "已完成 Claire × Primary Artifact Collaboration Workflow 收斂：Human/Conversation artifact → Primary → GitHub publication、GitHub text/source → Primary → Dropbox /AI Output、Primary-owned /AI 工作區 housekeeping，以及 Dropbox PDF reading boundary。Dropbox PDF <=5 MiB 可 full extracted-text fetch；95.15 MB real PDF 驗證 metadata/preview/temp link 可用、full text 受 5 MiB hard limit，且目前無 page-range/partial fetch。Direct binary materialization、autonomous workflow_dispatch、rollback/recovery 均列為 Deferred / problem-triggered，不阻擋結案。",
+  "summary": "2026-09-18 Artifact Collaboration 實驗：驗證 Human/Conversation artifact → Agent processing → GitHub publication，以及 GitHub text/source → Agent rendering → Dropbox delivery area；獨立 working area 完成 lifecycle probe。PDF reading 測試顯示當時 <=5 MiB 可 full extracted-text fetch；95.15 MB PDF 可取得 metadata/preview/temporary link，full fetch 受 5 MiB 限制，無 page-range primitive。Direct binary materialization、autonomous workflow_dispatch 與 rollback/recovery 尚未建立完整驗證。此為日期化研究結果，非現行私人協作授權。",
   "tags": [
     "Agent Collaboration",
     "Artifact Workflow",
@@ -17,5 +17,5 @@
   "demoStatus": "none",
   "demoPath": null,
   "verificationStatus": "verified",
-  "flow": "Operational: Human/Conversation artifact → Primary local processing → Dropbox staging → [COLLAB] Artifact Batch Publish → GitHub; GitHub text/source → Primary processing/rendering → Dropbox /AI Output → iOS Files/Preview. /AI 工作區 is Primary autonomous scratch/staging with verified cleanup lifecycle. Dropbox PDF reading: <=5 MiB full extracted text; >5 MiB metadata/preview/temp link only, no current page-range primitive."
+  "flow": "Observed on 2026-09-18: Human/Conversation artifact → Agent processing → Dropbox staging → [COLLAB] Artifact Batch Publish → GitHub; GitHub text/source → Agent rendering → Dropbox delivery area → iOS Files/Preview. Separate working area lifecycle verified. PDF fetch boundary: <=5 MiB full text; larger PDF metadata/preview/temporary link; no tested page-range primitive. Not a current operating contract."
 }
