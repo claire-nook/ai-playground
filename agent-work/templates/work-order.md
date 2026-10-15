@@ -144,17 +144,19 @@ GitHub-visible state 是 Primary Technical QC 的 handoff surface。Workspace/lo
 
 若 executor 的 substantive output 本身就是主要交付物，例如 `Review`、`Investigation`、Architecture analysis、Experiment analysis，且內容長到 Primary 需要逐段閱讀、引用、QC 或後續保存，**不得預設只存在 executor response / chat UI**。
 
-此類 Work Order 預設應指定 repository report artifact，例如：
+**依 Delivery Type 選擇持久交付位置**：`NOTION_REPORT` 以指定 Notion 頁面、MESSAGE ID 與讀回確認為準，未另授權不得寫入 Git；只有明確授權 `DOC_DELIVERY`／`CODE_DELIVERY` 的 Repository 報告才預設指定 report artifact，例如：
 
 `agent-work/reports/<work-order-id>.md`
 
-並要求：
+對**已授權的 Repository 報告交付**，並要求：
 
 1. executor 將完整 substantive report 寫入指定 repository path；
 2. final diff 僅包含 Work Order 授權的 artifact / changes；
 3. 建立可追溯 commit identity；
 4. 依 Execution Profile 形成 GitHub-visible handoff surface；
 5. executor response 只保留短 handoff summary：Result、Report path、Commit SHA / change identity、publication state、External Gates Remaining。
+
+`NOTION_REPORT` 應將完整報告寫入指定 Notion 頁面並讀回，回報頁面 URL／MESSAGE ID；不適用上述 repository diff、commit 與 GitHub publication 要求，除非另有明確授權。
 
 Human Relay 的責任是傳遞 dispatch / publication gate，不是人工複製長篇 Report。若 Primary 需要完整內容才能 QC，就應讓內容存在可直接讀取的 durable surface。
 
@@ -213,9 +215,9 @@ Report 遵守目標 Repository 適用的 Report 語言規則（如有）。Repor
 
 1. 完成 `Must`，確認未違反 `Must Not`。
 2. 執行要求的 validation；不能執行的項目列為 limitation 或 `External Gates Remaining`。
-3. 檢查 final diff / changed files。
-4. 依 `Execution Profile` 建立可追溯 commit，並完成該 runtime 支援的 publication handoff。
-5. 回報 Result、changed files、validation、known limitations / unknowns、commit identity、GitHub publication state、External Gates Remaining。
+3. 依授權交付類型檢查產物：`NOTION_REPORT` 核對指定 Notion 頁面與讀回結果；Repository 交付檢查 final diff / changed files。
+4. **僅對已授權的 `DOC_DELIVERY`／`CODE_DELIVERY`** 依 `Execution Profile` 建立可追溯 commit 與適用的 publication handoff；`NOTION_REPORT` 不要求、也不授權 Git commit。
+5. 回報 Result、validation、known limitations / unknowns、External Gates Remaining，以及適用的 Notion URL／MESSAGE ID 或 Git commit identity／publication state。
 6. 若 Work Order 套用 `Durable Report Handoff Rule`，確認完整 report 已存在指定 durable artifact；不得以 chat response 取代。
 7. 完成後停止擴張工作，進入 Primary Technical QC / External Gate。
 
@@ -223,7 +225,7 @@ Report 遵守目標 Repository 適用的 Report 語言規則（如有）。Repor
 
 ### Publication Adapter｜依 Execution Profile 發布（不得降低 Collaboration Contract 的交付門檻）
 
-穩定 governance requirement 是：**有可追溯 change identity；需要 QC 的變更最終有 GitHub-visible handoff surface；Primary 以 GitHub-visible state 做 Technical QC。**
+對已授權的 Repository 變更，穩定 governance requirement 是：**有可追溯 change identity；需要 QC 的 Git 變更最終有 GitHub-visible handoff surface；Primary 以 GitHub-visible state 做 Technical QC。** `NOTION_REPORT` 則以指定 Notion 頁面／MESSAGE ID／讀回作可追溯交付，不得由本 Adapter 推導 Git 寫入授權。
 
 具體 mechanics 依 Execution Profile：
 
