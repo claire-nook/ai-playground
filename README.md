@@ -4,13 +4,13 @@ Public technical playground for experiments, proofs of concept, integration spik
 
 This repository is intentionally **not** a Development, Test, UAT, or Production environment. Its durable output is Experience / Evidence / Knowledge, not production-ready code.
 
-## Environment Identity｜實驗室、墨衡與 AI Playground
+## Environment Identity｜AI Playground 公開研究工廠
 
-ChatGPT Project「實驗室」是 Claire 與 研究協調者長期進行 Technology / Information / Research / Experimentation 的工作空間。它不是 Nook Works 專案，也不等於任何單一 Repository。
+本 Repository 是公開技術研究空間，不代表任何私人工作空間，也不等於任何單一正式產品專案。
 
-`ai-playground` 是**公開研究工廠（Public Research Factory）**：保存 Research、Experiment、Evidence、公開 Knowledge、研究成果與可公開的 Agent collaboration records。它**不是**墨衡的跨 Conversation 身分恢復入口、私人能力手冊或全域操作規範的權威來源。私人身分恢復、跨對話操作規範與能力管理不屬於本公開 Repository 的職責；歷史文件不得作為現行啟動或權限依據。
+`ai-playground` 是**公開研究工廠（Public Research Factory）**：保存 Research、Experiment、Evidence、公開 Knowledge、研究成果與可公開的 Agent collaboration records。它**不是** AI 助理的跨 Conversation 身分恢復入口、私人能力手冊或全域操作規範的權威來源。私人身分恢復、跨對話操作規範與能力管理不屬於本公開 Repository 的職責；歷史文件不得作為現行啟動或權限依據。
 
-但 `ai-playground` **不是墨衡的 scope boundary**。當問題屬於其他正式作品、知識庫或 Repository，Primary 可以依當前任務需要進入相應 Repo 讀取、分析或在既有 authorization boundary 內工作。例如 Nook Works 的正式 Specification / Architecture / Database / Production-oriented implementation 應回到 `nook-works`，而不是為了方便全部複製進 Playground。
+但 `ai-playground` **不是所有技術工作的 scope boundary**。當問題屬於其他正式作品、知識庫或 Repository，Primary 可以依當前任務需要進入相應 Repo 讀取、分析或在既有 authorization boundary 內工作。例如 Nook Works 的正式 Specification / Architecture / Database / Production-oriented implementation 應回到 `nook-works`，而不是為了方便全部複製進 Playground。
 
 未來若出現新的 durable responsibility，且不適合放在既有 Repository，Claire 與 Primary 可以共同決定建立新的 Repo。Repository 是 responsibility / durable state 的邊界，不是 Primary Agent 能力或管轄範圍的圍牆。
 
@@ -59,7 +59,7 @@ Formal Repository Requirement
 
 Playground 是公開技術撞牆場，不是墨衡的私人知識基地，也不是世界邊界。
 
-**Playground-local delegation gate（歷史現行入口，第二階段待與 Core 契約核對）:** Before dispatching Codex via either GitHub Work Order or Notion Agent Mailbox, Primary **must read [agent-work/delivery-contract.md](agent-work/delivery-contract.md)** and explicitly assign delivery type(s). The same publication/QC rules apply regardless of dispatch channel: DOC_DELIVERY = branch/commit/push/review/merge; CODE_DELIVERY = branch/commit/push/**PR mandatory**/QC/merge; NOTION_REPORT = write/read-back. Historical optional-PR guidance is superseded.
+**Playground-local delegation gate（歷史入口，第二階段待審查）:** Before dispatching Codex via either GitHub Work Order or Notion Agent Mailbox, Primary **must read [agent-work/delivery-contract.md](agent-work/delivery-contract.md)** and explicitly assign delivery type(s). The same publication/QC rules apply regardless of dispatch channel: DOC_DELIVERY = branch/commit/push/review/merge; CODE_DELIVERY = branch/commit/push/**PR mandatory**/QC/merge; NOTION_REPORT = write/read-back. Historical optional-PR guidance is superseded.
 
 > **2026-10-11 研究與派工導航：** 新增實驗、理解研究站台的 Web 架構、Catalog 建置或部署觸發時，先讀 [實驗成立與站台發布規範](knowledge/research-catalog-publication.md) 的「現行 Web 架構與自助檢查」，自行查閱對應原始碼，不必每次例行派工 Review。實驗主 Record 應保存目的、失敗經驗、證據與候選／已驗證界線；Findings 和 Pattern 依職責分開。日常委派預設 Notion，正式 GitHub Work Order 按施工需求與風險選用（不限程式），詳見 [Agent Work](agent-work/README.md)；Playground 公開執行者暫仍可讀 [Delivery Contract](agent-work/delivery-contract.md) 取得本地交付資訊；公開契約與模板仍待逐項審查，不應將歷史版本誤認為跨環境通用規範。繁體中文是否升為全 Repo 強制規範尚待 Claire 決定。
 
