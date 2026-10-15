@@ -29,6 +29,7 @@ Relevant public implementation:
 - `.github/workflows/collab-artifact-batch-publish.yml`
 - `.github/workflow-contracts/artifact-batch-publish.schema.json`
 - `scripts/process-image-artifact.py`
+- `scripts/ingest-image-batch-from-urls.py`
 - `scripts/ingest-image-from-url.py`
 
 One image is a one-item batch; multiple images use the same batch contract. The experiment verified both. Temporary download URLs must not be persisted into the Repository. Publication destinations must satisfy the workflow allowlist.
