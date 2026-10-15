@@ -30,9 +30,9 @@ Experiment 已完成日常協作流程、Primary workspace lifecycle，以及 Dr
 
 ---
 
-## Current State Snapshot｜2026-09-18
+## Research State Snapshot｜2026-09-18（歷史實測）
 
-先讀這一節，再決定是否需要往下考古。下方 Completed Evidence / Probe 記錄保留研究過程與被取代的假設；**本節代表目前最新 operational judgment**。
+本節記錄 **2026-09-18 當時**已驗證的能力與限制；下方 Completed Evidence / Probe 保存研究演進與被取代的假設。這是 dated research evidence，**不是今日工具可用性或私人協作規範的保證**。
 
 ### 已成立的主要協作路徑
 
@@ -61,7 +61,7 @@ Conversation attachment
 - explicit publication allowlist 擴充至 `public/images/wall/**`；
 - temporary source URL 不落入 Repository。
 
-Canonical collaboration tool：
+實驗當時使用的 publication workflow：
 
 ~~~text
 [COLLAB] Artifact Batch Publish
@@ -111,7 +111,7 @@ resize
 → 每批按一次 Run
 ~~~
 
-Primary 應自行處理 Repository navigation、加工、命名、Dropbox staging、temporary URL、canonical `batch_json` 與 publication 後 QC。
+研究目標是讓 Agent 承擔 Repository navigation、加工、命名、staging、temporary URL、`batch_json` 與 publication 後 QC；實際責任及工具可用性仍須依當次授權與環境確認。
 
 ### Experiment Stop Condition
 
@@ -189,25 +189,24 @@ GitHub
 
 ---
 
-## Workspace Shape Under Test
+## Workspace Shape Under Test｜歷史測試配置
 
-Canonical collaboration shape：
+以下是當時實驗使用的示意性 storage roles，**不構成公開的現行私人路徑規範**：
 
 ~~~text
-Dropbox
-├── AI Inbox         # Human → Primary intake / raw source stays unchanged
-├── AI 工作區         # Primary-owned autonomous working / staging area
-└── AI Output        # Primary → Human durable finished-artifact delivery
+Dropbox (historical test roles)
+├── Intake area      # Human → Agent source intake
+├── Working area     # Agent scratch / staging
+└── Delivery area    # Agent → Human finished artifact
 ~~~
 
 Responsibility：
 
-- `AI Inbox`：Claire 投遞 source。Primary 不整理原始 source，不把 finished output 混回 intake。
-- `AI 工作區`：Primary 完全自治的 operational surface，可自行管理 staging / intermediate artifacts 與合理 subfolders。
-- `AI Output`：Human-facing finished artifact surface。Claire 已要求 Dropbox delivery 時，Primary 應自行使用這個 canonical root 與合理 filename，不必再次向 Claire索取目的地。
-- Claire 若提到「之前放 Dropbox 的檔案」，Primary 應先自行搜尋 `AI 工作區` / `AI Output`，而不是把 path discovery 丟回 Human。
+- Intake role：保存原始 source，不混入 finished output。
+- Working role：隔離暫存、加工與中間產物。
+- Delivery role：交付可供人類取得的完成品。
 
-這三個 root 是明確 collaboration boundary；Dropbox 其他 private / family / shared storage 不因本授權變成 Primary 自治範圍。
+這是實驗中的資料責任模型，不表示任何特定私人 Dropbox 目錄已授權公開或可由其他 Agent 自行操作。
 
 
 ---
