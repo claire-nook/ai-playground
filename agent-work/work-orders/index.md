@@ -1,6 +1,6 @@
-# Work Order Catalog
+# Work Order Catalog｜歷史研究導航
 
-本文件是 `agent-work/work-orders/` 的 Historical Navigation 與 Work Order Governance 入口。Work Order 管理工單，不管理 Worker KPI / 即時進度；實際 change 由 PR / Commit，研究結果由 Experiment / Evidence 承接。
+本文件整理 `agent-work/work-orders/` 中已公開的歷史 Work Order，協助讀者追溯任務設計、當時的 execution context、交付與研究證據。**它不是現行跨專案派工規範或私人任務看板。** Work Order 記錄當時的任務範圍，不管理 Worker KPI／即時進度；實際變更由 PR／Commit、研究結果由 Experiment／Evidence 承接。
 
 ## Reading Path
 
@@ -10,13 +10,13 @@
 4. 目標 Work Order
 5. 需要時再追 Related Report / Experiment / Evidence / PR / Commit
 
-## Work Order Governance
+## 歷史文件的閱讀方式
 
-新 Work Order 一律使用 `agent-work/templates/work-order.md` canonical structure。Metadata labels 與主要 Sections 固定，不適用填 `None`，不要刪除。
+公開的 [Work Order Template](../templates/work-order.md) 可用來理解任務結構，但不是本目錄以外的現行正式契約。歷史 Work Order 的欄位、限制、交付方式與當時的工具能力，應依其日期和原始證據判讀。
 
-Work Order 不維護 `Status`、工時、完成百分比或 KPI。Canonical Type 每張只選一個：`Implementation`、`Investigation`、`Review`、`Documentation`、`Experiment`。
+Work Order 不維護 `Status`、工時、完成百分比或 KPI。研究中使用的 Type 包含 `Implementation`、`Investigation`、`Review`、`Documentation`、`Experiment`。
 
-Historical Work Orders 不 retroactive rewrite；Catalog 只做 normalized navigation，避免改寫當時 dispatch contract。
+**歷史 Work Order 不追溯改寫。** Catalog 只做導航，不將過去的 dispatch contract 宣稱為今天的操作指令。
 
 ## Catalog
 
@@ -51,6 +51,6 @@ Historical Work Orders 不 retroactive rewrite；Catalog 只做 normalized navig
 | None | Implementation | [`experiment-catalog`](experiment-catalog.md) | 建立 metadata-driven Experiment Catalog。 |
 | None | Implementation | [`playground-human-view`](playground-human-view.md) | 建立 Experiments / Short Term / Knowledge Map Human View。 |
 
-## Maintenance Rule
+## Catalog 維護原則
 
-Primary Agent 建立新 Work Order 時，在同一 dispatch preparation checkpoint：使用 canonical Template、確認固定 Sections、Catalog 新增一列，commit 必要 dispatch context，再交由 Claire 建立 Codex Task / Workspace。Catalog 只做 navigation，不複製 Scope / Acceptance / Decision Boundary。
+新增可公開的歷史 Work Order 時，登記日期、研究類型、相對路徑與目標摘要；維持連結可讀，必要時補充關聯 Report／Experiment／Evidence／PR。不要把私人派工授權、當次內部操作指令或未公開的協作資訊寫進公開索引。
