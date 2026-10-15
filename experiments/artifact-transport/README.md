@@ -4,7 +4,7 @@
 
 - Date: 2026-09-18
 - Status: Completed / Operational Workflow + Known Boundaries
-- Primary Intent: Claire × Primary Agent / Private Artifact Intake / Processing / Delivery / Repository Handoff
+- Primary Intent: Artifact intake / processing / delivery / repository handoff with minimal human middleware
 - Tags: agent-collaboration, artifact-workflow, dropbox, github, ipad-first, binary-transport, privacy-boundary, human-middleware
 
 ## Research Question
@@ -26,7 +26,7 @@ Human Intake
 → Human Output
 ~~~
 
-Experiment 已完成日常協作流程、Primary workspace lifecycle，以及 Dropbox PDF reading boundary 的收斂。**Claire × Primary 的日常 artifact collaboration workflow 已升格為 operational capability**。日常操作請優先讀 [`knowledge/implementation/artifact-collaboration-workflow.md`](../../knowledge/implementation/artifact-collaboration-workflow.md)；PDF 閱讀限制請讀 [`knowledge/implementation/dropbox-pdf-reading-boundary.md`](../../knowledge/implementation/dropbox-pdf-reading-boundary.md)。本文件保留 Evidence / failure modes / design history。
+Experiment 已完成日常協作流程、Primary workspace lifecycle，以及 Dropbox PDF reading boundary 的收斂。**實測的 artifact collaboration workflow 已形成可重現的技術方法**。公開的可重現技術方法整理於 [Artifact Transport and Publication Pattern](../../knowledge/implementation/artifact-collaboration-workflow.md)；PDF 閱讀測試結果見 [Dropbox PDF Reading Boundary](../../knowledge/implementation/dropbox-pdf-reading-boundary.md)。本文件保留 Evidence / failure modes / design history。
 
 ---
 
@@ -143,7 +143,7 @@ Current Judgment：
 規則：
 
 - 不記錄既有私人 / 家庭 / shared folder 的真實名稱。
-- 不記錄與技術判斷無關的私人檔名、文件名稱或 storage topology。
+- 不記錄與技術判斷無關的私人檔名、文件名稱或 storage topology；既有歷史紀錄也應匿名化。
 - 既有私人資料區域視為 out-of-scope，不進行無目的列舉、搜尋、讀取、搬移或修改。
 - 只有專門建立的 AI collaboration area 與 Claire 明確指定的測試素材屬 Experiment surface。
 - Public Evidence 優先記錄 capability、failure mode、size boundary、transport shape，而不是私人內容。
@@ -419,7 +419,7 @@ Current note：
 
 **Closed / Boundary Verified.**
 
-Canonical operational reference：
+Detailed experimental boundary：
 
 ~~~text
 knowledge/implementation/dropbox-pdf-reading-boundary.md
@@ -428,12 +428,12 @@ knowledge/implementation/dropbox-pdf-reading-boundary.md
 Real controls：
 
 ~~~text
-/英文學習/旋元佑文法.pdf
+Small PDF control (2,784,964 bytes)
 2.66 MB
 → full extracted text
 ✅
 
-/英文學習/旋元祐字源大挪移.pdf
+Large PDF control (99,768,096 bytes)
 95.15 MB
 → metadata / preview / temporary download link
 ✅
@@ -455,7 +455,7 @@ Current Judgment：
 
 `/AI Inbox` 與 `/AI Output` 由 Claire 依 Human workflow 使用；真正需要 lifecycle governance 的是 `/AI 工作區`。
 
-Canonical policy：
+Research-derived lifecycle evidence：
 
 ~~~text
 knowledge/implementation/primary-workspace-housekeeping.md
@@ -988,7 +988,7 @@ Claire 指定真實測試範圍：`/英文學習`。
 ### Small control
 
 ~~~text
-/英文學習/旋元佑文法.pdf
+Small PDF control (2,784,964 bytes)
 2,784,964 bytes / 2.66 MB
 ~~~
 
@@ -1002,7 +1002,7 @@ Result：
 ### Large control
 
 ~~~text
-/英文學習/旋元祐字源大挪移.pdf
+Large PDF control (99,768,096 bytes)
 99,768,096 bytes / 95.15 MB
 ~~~
 
