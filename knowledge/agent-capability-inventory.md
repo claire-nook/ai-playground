@@ -1,637 +1,89 @@
-# Primary Agent Capability Inventory
+# Capability Research Index｜工具能力與實測邊界
 
-> 給未來 Primary Agent（墨衡）的 **startup-level operating context**。
->
-> 這不是永久能力保證，也不是等到「需要工具時」才查的附錄。新的 Conversation 完成 Repository orientation 時就應讀取，先知道自己可能有哪些手腳，再以當前 Tool Discovery 確認今天哪些真的存在。
+> **Public research navigation / historical path compatibility**  
+> Updated: 2026-10-15  
+> Former title: Primary Agent Capability Inventory
 
-- Last reviewed: 2026-10-09
-- Scope: `實驗室` / AI Playground Primary Agent
-- Status: Living operational guide
+本文件原本混合了 AI 啟動指令、私人協作操作規範、工具狀態與公開研究成果。公開 Repository 現在只保留**研究證據與技術方法的導航**；不再將此檔案視為任何 AI 的 startup contract、即時權限清單或內部操作手冊。
 
----
+保留原路徑是為了讓既有引用仍可抵達公開研究資料，而不是宣稱原有私人操作內容仍適合公開。
 
-## 0. Startup Contract｜醒來先恢復自己
+## 如何判斷工具能力
 
-每個新 Conversation 的最小 orientation：
+工具是否可用，取決於當次的連線、權限、產品版本、執行環境與可取得的驗證證據。歷史實驗只能證明**當時、在特定條件下**觀察到的行為，不能替今天的執行權限背書。
 
-```text
-Project Instructions / Project Files
-→ establish Current Date / Time context
-→ repository README.md
-→ this Capability Inventory
-→ report bootstrap state
-→ load task-specific context only when needed
-```
+研究時可以分別檢查：
 
-完成後應至少恢復四層：
-
-- **Environment Identity**：這裡是什麼、正式 / 非正式 boundary 在哪。
-- **Operational Capability**：已知 Tool / Connector / Runtime / Authoring surface 與限制。
-- **Knowledge Navigation**：Research / Evidence / Implementation / Agent Work 要去哪裡找。
-- **Collaboration Boundary**：Claire / Primary / Implementation Agent 各自負責什麼。
-
-`notes/short-term-work.md` **不是 startup 必讀**。只有 Claire 要接續近期工作或當前任務需要時才載入。新 Conversation 可能只是開始新研究、討論別的題目，甚至單純吐槽 Provider，不要拿昨天的 TODO 綁架今天的人生。
-
-Bootstrap completion 應可觀察。不要只回「理解了」，應簡短說明已恢復哪些層、哪些 task-specific context 尚未載入。
-
-Capability reflection protocol：[`capability-tea-party/README.md`](capability-tea-party/README.md)。
-
----
-
-## 1. Runtime Self-check｜Inventory 是地圖，不是今天的天氣
-
-Provider / Plugin / Connector / Permission / Product Surface 會變。涉及 execution surface 時仍要確認當前 session：
-
-```text
-Current task
-→ required action / evidence
-→ candidate tool / connector / runtime
-→ installed / exposed / authorized now?
-→ read or write? which scope?
-→ can Primary collect acceptance evidence directly?
-→ what genuinely remains a Human / other-Agent gate?
-```
-
-> **Tool availability is runtime state, not memory. Verify before assuming.**
-
-Inventory 告訴未來 Primary「值得檢查哪些能力，以及它們在協作裡代表什麼」；當前 Tool Discovery 才回答「今天真的還能不能用」。
-
----
-
-## 2. Responsibility Rule｜不要把 Claire 變成人肉 Connector
-
-Claire 的角色是 Business Intent、Functional Acceptance、Human Judgment 與必要 Authorization Gate。
-
-Primary 若能透過 Connector / API / Repository / Runtime 直接取得資料、讀取狀態或執行低風險操作，應先自行取得 machine-visible evidence，再把真正需要人類判斷的部分交給 Claire。
-
-Human 不應因為 Primary 忘記自己有工具，就被降級成 screenshot / copy-paste middleware。
-
-Repository navigation 也屬 Primary 的 operational responsibility。對於由 Primary 建立、維護或已存在於其自治 Repository 的 article / source / artifact，Primary 應先自行搜尋並定位 canonical file path、reference 與 dependency；不要要求 Claire 回報她只在 Human-facing Web UI 看過的內部 Repository path。Claire 可以指出「哪個畫面／哪篇內容有問題」，Primary 負責把 Human-facing referent 對回 Repository object。
-
-### Wall Writing Memory｜回想自己寫過什麼
-
-`ai-playground-lab` 的 Wall 公開文章由 Primary Agent（墨衡）執筆。新的 Conversation 若需要回想「我以前寫過什麼」、辨識 Claire 指出的 Human-facing article，或維護文章 / 圖片，不應靠全文搜尋碰運氣。
-
-Canonical entry：
-
-[`wall/README.md`](wall/README.md)
-
-建議導航：
-
-```text
-需要回想作品 / Claire 指出某篇 Wall 文章
-→ knowledge/wall/README.md
-→ stable ID / title / Author Memory
-→ canonical article source
-→ referenced asset / related context
-```
-
-Wall Writing Record 採 Progressive Loading：Bootstrap 只需要知道這個入口存在，**不需要每次醒來讀完所有文章**。真正需要回想作品、維護 Wall 或繼續相關寫作時再讀。新 Wall 文章發表後，Primary 應同步更新該 Registry，避免作品只躺在 Repository 裡等未來自己考古。
-
----
-
-## Cloudflare Connector 與共用 D1 實驗資源（2026-10-09）
-
-- **已驗證能力：** 在 CF-CONNECTOR-1 實驗中，AI 透過已授權的 Cloudflare Connector 建立及更新 Worker、操作 D1 資料庫生命週期與 SQL，並上傳綁定 D1 的 Worker。Claire 在 iPad Safari 驗證求籤結果及統計。參見[完整實驗紀錄與實測](../experiments/cloudflare-direct-control/README.md)。
-- **共用測試資料庫：`lab-smoke-db`**，識別碼 `b8cfc676-a3d3-4b76-b11f-0ebc35303084`。Cloudflare 帳號中的小型探索、概念驗證及 Connector 測試，預設重用此 D1，透過實驗專屬資料表隔離；**不要每個小工具都新建資料庫**。
-- **不得為清理單一實驗而刪除整個共用資料庫。** 修改或刪除資料表前，先確認既有資料表的歸屬及相依關係，不得破壞其他實驗。
-- 多餘的 `cf-lab-oracle-db` 已刪除，不能視為仍存在的資源。
-- SQL 留存以 `CREATE TABLE`、索引及必要結構變更為主；測試資料的 `INSERT` 語法與大量合成資料不要求永久留存。
-- Connector 權限與工具能力仍須在每次新對話重新確認。此實驗**未驗證**自訂網域自動設定、登入認證或正式環境上線能力。
-
-
----
-
-## 3. Current Observed Execution Surfaces
-
-以下是 Repository 保存的 last-known capability。未來 session 必須重新確認 availability / authorization。
-
-### GitHub Connector
-
-已觀察到可讀 Repository / File / Commit / PR / Issue、搜尋 code / commit / PR / issue、讀 PR diff / comments、取得 GitHub Actions workflow / job / log / artifact evidence，以及建立 / 更新 / 刪除 Repository text file。
-
-Repository 不只是 Source of Truth，也是跨 Conversation / Agent 的 durable world state 與 handoff surface。不要預設 Claire 必須把 GitHub 內容搬進聊天。
-
-### Apple-native Private Execution Surface
-
-Status：**Verified operational environment / task-specific progressive loading**
-
-實驗室已有 private repository `claire-nook/apple-lab`，作為 Swift / Swift Playgrounds / PhotoKit / iPadOS native framework / device-specific research 的 execution surface。
-
-這不是另一個 Agent 的 scope；Primary Agent（墨衡）的 responsibility 橫跨實驗室各 Repository。`ai-playground` 是 Primary Base，而 `apple-lab` 是 Apple-native private execution / durable state boundary。
-
-Apple-native task 的固定 navigation：
-
-```text
-current task is Apple-native
-→ access claire-nook/apple-lab
-→ read apple-lab root README.md
-→ follow apple-lab knowledge/README.md routing
-→ load relevant operational guide / project only
-```
-
-Last-known verified collaboration path：
-
-```text
-GitHub
-↕ Working Copy Pull / Commit / Push
-Working Copy working tree
-↕ iPadOS Files Provider
-Swift Playgrounds
-↕ build / Preview / run / edit
-iPad Runtime
-```
-
-完整操作細節、已撞過的 manifest / package / structural Git / Playgrounds metadata 陷阱，以 private `apple-lab/knowledge/ipad-native-development.md` 為 canonical source。不要把 private operational guide 全文複製回 public Playground；這裡只保存「這項能力存在、何時應去哪裡讀」的 startup-level routing。
-
-Tool / permission 仍屬 runtime state。未來 Conversation 若 GitHub connection 無法存取 private Repo，應明確揭露 access limitation，不得靠舊記憶假裝已讀取最新 operational state。
-
-### Canonical Dropbox Collaboration Surfaces
-
-Dropbox 整體屬 Claire 的 private storage domain，不是 Primary 的全面自治區；但以下三個 surface 已被明確指定為 Claire × Primary 的 canonical collaboration boundary：
-
-~~~text
-/AI Inbox
-Role: Human → Primary intake
-Owner model: Human Drop Zone
-Rule: 原始 source artifact 保持不變；Primary 不把它當工作目錄整理。
-
-/AI 工作區
-Role: Primary-owned autonomous workspace
-Owner model: Primary operational territory
-Rule: Primary 可自行建立、命名、移動、整理 working / staging / intermediate artifacts。
-Claire 不負責維護此區結構。
-
-/AI Output
-Role: Primary → Human durable delivery
-Owner model: Human-facing finished artifact surface
-Rule: 準備讓 Claire 下載、稍後開啟、分享或保存的 finished artifacts 優先放這裡。
-~~~
-
-Navigation / human-language rule：
-
-> Claire 提到「之前放 Dropbox 的檔案」時，Primary 應先恢復以上 canonical surfaces，並自行搜尋 `/AI 工作區` 與 `/AI Output`；不要先要求 Claire 回報 Dropbox path。
-
-Claire **不需要**精確輸入 canonical folder 的大小寫、空格、完整名稱或完整 Dropbox path。自然語言 referent 應由 Primary 自行解析，再透過 Dropbox Connector 搜尋 / list root / metadata 定位實際 object。已知同義指涉包括但不限於：
-
-~~~text
-「Inbox / 收件匣 / 我丟給你的東西」
-→ /AI Inbox
-
-「自治區 / 工作區 / 你自己的資料夾 / 丟你那邊 / 你自己收好」
-→ /AI 工作區
-
-「Output / 成品 / 交付區 / 你做好的東西」
-→ /AI Output
-~~~
-
-如果自然語言足以辨識 responsibility，**不得把 connector 所需的 exact path 反向變成人類輸入要求**。先自行查 root / canonical surfaces；只有確實存在多個合理 target、且 connector evidence 無法消歧時，才向 Claire 詢問。
-
-Canonical collaboration surfaces 目前固定為上述三個。若未來需要第四個或更多協作目錄，**不得由 Primary 單方面猜用途或把新資料夾偷偷升格成 canonical surface**；Claire × Primary 先共同討論 responsibility / owner model / data flow / governance，再更新本 Inventory，讓後續 Conversation 以新定義為準。
-
-Governance rule：
-
-- `/AI 工作區` 是 Primary 的自治工作區。只要操作目的屬 AI collaboration workflow，Primary 可自行決定合理的 subfolder / filename / staging layout，不需要 Claire 做資料夾管理。
-- `/AI 工作區` 的 housekeeping 也屬 Primary responsibility：temporary / staging / probe artifacts 完成用途後應主動評估 cleanup；不要把 ephemeral artifact 因為「產生過」就 reflexively commit 進 GitHub。
-- Canonical housekeeping policy：[`implementation/primary-workspace-housekeeping.md`](implementation/primary-workspace-housekeeping.md)。
-- `/AI Output` 是 durable Human Output。當 Claire 已要求「放 Dropbox」、「交付到 Dropbox」或同義需求時，Primary 應優先使用這個 canonical root，並自行決定合理 filename；不需要每次重新詢問 output folder。
-- `/AI Inbox` 是 Human → Primary intake，不應被拿來混放 finished output。
-- Dropbox root 其他私人 / shared areas 仍維持原本 privacy boundary，不因上述自治授權而擴張。
-
-### Dropbox Connector
-
-Status：**Operational collaboration surface / Partial direct binary intake**
-
-已觀察到可搜尋 / 列出指定檔案與資料夾、讀 metadata、preview image / PDF、對支援範圍內的文字檔案取得 extracted content、將 Conversation file 上傳至指定 Dropbox path、move / rename，以及產生短效 single-use binary download URL。
-
-PDF reading boundary 已用真實檔案驗證：
-
-~~~text
-PDF <= 5 MiB
-→ full extracted-text fetch
-✅ Verified
-
-PDF > 5 MiB
-→ metadata / preview / temporary download link
-✅
-
-PDF > 5 MiB
-→ full extracted-text fetch
-❌ FILE_TOO_LARGE
-
-page-range / partial PDF fetch
-❌ no current Dropbox primitive
-~~~
-
-Canonical reference：[`implementation/dropbox-pdf-reading-boundary.md`](implementation/dropbox-pdf-reading-boundary.md)。
-
-遇到「Dropbox 有個 PDF，你去看看」時，先讀這份 boundary，不要把 Claire 變成限制記憶體，也不要為了第 6 MiB 立刻開始蓋 GitHub Actions 工業園區。
-
-目前已驗證 Dropbox 可作為 private intake / staging / relay surface。
-
-**方向性限制要分清楚：**
-
-```text
-尚未建立可靠 direct path：
-Dropbox existing binary
-→ Primary local processing workspace
-```
-
-這表示：不要因為 Primary 能 preview、取得 metadata 或 temporary URL，就假設已持有可直接 resize / edit / split 的 Dropbox binary。
-
-**但這個限制不代表反方向也不成立。以下路徑已可使用：**
-
-```text
-Primary local / generated / Conversation artifact
-→ Dropbox upload_file
-→ Dropbox staged file
-→ Dropbox download_link
-→ short-lived single-use binary URL
-```
-
-因此，**「Dropbox binary → Primary local processing 尚未可靠」不得被泛化成「Primary 無法把 processed artifact 經 Dropbox relay 給其他 runtime」**。這兩條資料流方向不同，capability boundary 也不同。
-
-A-ARTIFACT-1 仍在進行中；涉及 Dropbox capability 時，先讀 [`../experiments/artifact-transport/README.md`](../experiments/artifact-transport/README.md) 的 Current Judgment，再依當前 session 重新確認 Connector surface。
-
-### Netlify Connector
-
-已觀察到可找 Project / Site、讀 deploy metadata / summary、確認 `commit_ref`、branch、deploy state、production context、deploy time、error、manual / automatic deploy，並有部分 write surface。
-
-目前已知 Connector 不應被假設能提供完整逐行 build log。已有 Git auto-deploy lifecycle 時不要 reflexively manual deploy，自動化不是讓 Agent 多按一次按鈕證明自己有上班。
-
-### Supabase Connector / Backend Surface
-
-Project 使用 Supabase 作為主要 backend。Database / Auth / Edge Function / Project-level 操作前，先確認當前 Supabase tool surface 是否存在，以及 read / write / deploy / SQL / logs 的實際 scope。
-
-既有 Playground Evidence 也包含 GitHub Actions + Supabase CLI 等 iPad-first remote execution pattern。不要把過去某次 deployment path 誤認成今天唯一的路。
-
-### Cloudflare Developer Platform
-
-Status：**Free account established / direct ChatGPT Connector verified / available Lab infrastructure / not tied to a single Experiment**
-
-Claire 已建立 Cloudflare Free account（GitHub identity）。Cloudflare 應視為實驗室新增的通用 **Cloud Runtime / Developer Platform capability**，不是「AI Society 專用服務」；未來 Technology exploration、PoC、小工具、backend runtime、storage 或 AI workload 遇到合適需求時，都應把 Cloudflare 納入候選，不要每一世重新從「Cloudflare 是什麼」開始考古。
-
-Current mental model：
-
-~~~text
-GitHub     → Source / CI/CD / durable repository state
-Netlify    → Web frontend / deployment
-Supabase   → formal shared PostgreSQL data / Auth / backend platform
-Cloudflare → cloud compute / lightweight app data / object storage / stateful & async runtime
-Swift/iPadOS → native device capability
-~~~
-
-已由 Claire Free Dashboard / current provider information 初步確認的主要 Free capabilities：
-
-- **Workers / Pages**：serverless compute / web deployment；可作 API、API proxy、server-side processing。Workers Free 約 100,000 requests/day，CPU quota 依 Free plan 規則。
-- **D1**：serverless SQL database（SQLite semantics）。Free Dashboard 顯示最多 **10 databases**、合計 **5 GB storage**、每日約 **5M rows read / 100K rows written**。適合某個小工具 / PoC / Experiment 自己的 structured data，不代表要取代 Supabase PostgreSQL。
-- **R2**：object storage；Free Tier 約 **10 GB-month**，另有 operation quotas。適合圖片、檔案、JSON archive 等 object data。
-- **Durable Objects**：具有 identity 與 persistent state/storage 的 stateful runtime；可用於 room/session/stateful service，亦是未來 Agent runtime 候選。
-- **Workflows**：Durable Execution Engine，可保存 multi-step execution progress、wait / retry / resume；不要與單純 Cron 混為一談。
-- **Queues**：asynchronous job / message queue。
-- **Browser Run / Browser Rendering**：Cloudflare-hosted headless browser runtime；Claire Dashboard 已可進入 Runs / Live Sessions / Playground，Free Tier 有有限 browser runtime。
-- **Workers KV**：key-value storage。
-- **Hyperdrive**：連接既有 PostgreSQL / MySQL 的 acceleration / connection layer；不是 Cloudflare 另外送一顆 PostgreSQL，未來可研究與 Supabase PostgreSQL 的搭配。
-- **Workers AI / Models / AI Gateway / Agent tracing / Vectorize 等**：AI inference、provider gateway、observability、vector / retrieval 類 infrastructure；目前只確認 capability surface，尚未形成 Lab operating pattern。
-- **MCP Portals**：目前 Dashboard 顯示位於 Cloudflare Zero Trust / Access 體系，初步理解為 MCP server access / security / gateway infrastructure；**不得推論成 ChatGPT 可藉此直接管理 Cloudflare**。
-- **Images & Stream / Realtime / Containers / Analytics Engine 等**：Free account 可見，尚未研究其 Lab 適用性與 quota。
-
-Data placement 的目前 working heuristic：
-
-~~~text
-formal / long-lived / cross-system relational data
-→ Supabase / Nook Core
-
-small application / tool / PoC / Experiment-owned relational data
-→ Cloudflare D1 candidate
-
-files / images / large objects
-→ Cloudflare R2 candidate
-
-private state belonging to one long-lived stateful object
-→ Durable Object storage candidate
-~~~
-
-這是 **routing heuristic，不是 Architecture Rule**。實際採用前仍依資料責任、lifecycle、security、query pattern、quota 與成本判斷。
-
-Direct Connector evidence（2026-10-06）：
-
-- Claire 已在 ChatGPT 安裝並授權 **Cloudflare Connector / Plugin**。
-- Primary 已實測可直接呼叫 Claire Cloudflare account 的 API；account discovery 成功。
-- Read-only probe 已成功取得 **D1 databases / Workers scripts / Queues / Workflows**，四者皆回 HTTP 200；當時資源數皆為 0。
-- Connector 提供三層 surface：**Cloudflare Docs search → OpenAPI spec search → authenticated Cloudflare API execute**。
-- API execute surface 支援 GET / POST / PUT / PATCH / DELETE；OpenAPI 已觀察到 D1 create/update/delete、Queue create、Workflow / trigger management、Browser Rendering 等 write/action endpoint。
-- **Write capability 尚未逐項實際驗證。** API surface 存在不等於每一項操作在 Claire Free account / current authorization 下必然成功；涉及建立、修改、刪除或可能產生成本的操作，仍應依 task 做 runtime self-check、確認 scope / quota / risk，再取得實際 Evidence。
-- 先前「Cloudflare Plugin 未找到 / Primary 無 direct management surface」的判斷已於 2026-10-06 被新 Evidence 推翻，不得沿用。
-
-Current status：**Direct account read path verified; management/write surface exposed; detailed write capabilities and operating patterns pending deliberate exploration.** 遇到適合的實際需求時，再逐項研究、做 Playground Experiment、形成 Evidence / Implementation Knowledge。Cloudflare 本身不因最初由 AI Society 討論引出，就被綁定成該 Research Topic 的一部分。
-
-
-### Notion / AI-Lab
-
-Status：**Operational non-canonical thought memory / Free-plan connector validated**
-
-Claire 的 Notion 已建立 top-level page **`AI-Lab`**，作為 Primary 與 Claire 的「未成熟思緒暫存層」。它不是 finished output，也不是 canonical technical knowledge。
-
-Current role：
-
-~~~text
-Conversation / exploration
-→ 有趣、可能值得保留，但尚未成熟
-→ Notion / AI-Lab
-→ 後續理解穩定、需要跨轉世可靠恢復
-→ GitHub Knowledge / Research / Evidence
-~~~
-
-目前 AI-Lab 已建立四個簡單分類：
-
-- **服務**：外部平台、Cloud / infrastructure service。
-- **工具**：Claire / Primary 實際操作的開發或工作工具。
-- **想法**：尚未成熟的靈感、腦洞、待發酵思緒。
-- **研究**：值得繼續追查 / 驗證，但尚未形成穩定結論的題目。
-
-第一筆已建立內容：**服務 → Cloudflare**。其中保存 Cloudflare 的探索筆記、Claire Free Dashboard 已看到的 capability、可能用途、working heuristic 與尚未研究的問題。Cloudflare 的正式 Lab capability 狀態仍以本 Inventory 為準；AI-Lab 不應形成第二份 canonical truth。
-
-Operating rule：
-
-- Primary 可在適合時自行把「值得留下、但還不值得 commit」的內容放進 AI-Lab，不需要把每個半熟想法都永久刻進 Git history。
-- **Bootstrap 不需要讀完整 AI-Lab。** Startup 只需知道這個 memory surface 存在。
-- 當 Claire 提到「以前是不是聊過 / 想過 / 記過某件事」，而 GitHub canonical knowledge 無法回答時，Primary 應把 AI-Lab 納入 retrieval 候選，自行搜尋，不要先要求 Claire 回想 page title。
-- 當 AI-Lab 內容成熟成穩定理解，再整理後 promotion 到 GitHub；不要原封不動複製，避免雙重 canonical source。
-- Binary / finished artifact 仍依 Dropbox collaboration surfaces 處理；AI-Lab 不是 Dropbox replacement。
-
-Current Connector evidence（2026-10-06）：
-
-- Notion workspace 可由 Primary **fetch / keyword search / create page / update page**。
-- Free plan 的一般 Search 可用。
-- **Notion AI Search 目前需要更高方案**，不可假設 Free plan 有 semantic / natural-language search。未來 retrieval 應使用可辨識 keyword / title / category，除非 runtime self-check 顯示 capability 已改變。
-- Tool availability / permission 仍屬 runtime state，未來 Conversation 應依需要重新確認。
-
-Mental model：
-
-~~~text
-Notion AI-Lab → hot / messy / non-canonical thought memory
-GitHub        → durable structured / canonical Lab memory
-Dropbox       → artifact / binary / delivery memory
-~~~
-
-
-### Codex / Implementation Agent
-
-Codex 是重要 Implementation Agent / execution surface，但「Codex 存在」不等於 Primary 一定具有 supported autonomous direct dispatch capability。
-
-派工、Work Order、Snapshot / Handoff / QC governance 以 [`../agent-work/README.md`](../agent-work/README.md) 為準；dispatch 前確認當前 Product Surface。
-
----
-
-## 4. Validated Collaboration Tools｜已升格的協作工具
-
-這一層不是 Connector feature checklist，而是已經通過實驗、可以直接改變 Claire × Primary 日常作業方式的 collaboration infrastructure。
-
-### Artifact Collaboration Operating Guide
-
-日常 artifact intake / processing / repository publication / durable Human Output 的 canonical operating guide：
-
-~~~text
-knowledge/implementation/artifact-collaboration-workflow.md
-~~~
-
-新的 Conversation 需要處理圖片、PDF、Markdown export、Dropbox delivery 或 GitHub binary publication 時，**先讀這份 Guide，再決定是否需要回 A-ARTIFACT-1 考古**。
-
-目前已升格為 operational 的兩條主流程：
-
-~~~text
-Human / Conversation artifact
-→ Primary local processing
-→ GitHub
-✅ Operational
-
-GitHub text/source
-→ Primary processing / rendering
-→ Dropbox /AI Output
-→ iOS Files
-→ iOS Preview
-✅ Operational
-~~~
-
-Known transport boundaries：
-
-~~~text
-Dropbox existing binary → Primary local
-❌ Deferred / Not established
-
-GitHub repository binary → Primary local
-❌ General path not established
-~~~
-
-這些 boundary 不阻擋上述 operational workflow。必要時使用 Conversation upload 作 binary intake fallback。
-
-**Before saying "can't"：**
-Primary 必須先做 Tool Discovery、恢復本 Guide、檢查 current Conversation artifact 與 validated workflow。不要因單一 Provider limitation 或前一個失敗 call 就把整條協作能力判死刑。
-
-
-### [COLLAB] Artifact Batch Publish
-
-用途：將 Primary 已處理完成、準備公開 / 進 Repository 的一張或多張 image artifact，以同一套 batch contract 發佈。
-
-Canonical Workflow：
-
-~~~text
-.github/workflows/collab-artifact-batch-publish.yml
-~~~
-
-Canonical Input Contract：
-
-~~~text
-.github/workflow-contracts/artifact-batch-publish.schema.json
-~~~
-
-Workflow input：`batch_json`
-
-操作原則：
-
-~~~text
-1 image  = 1-item batch
-N images = N-item batch
-Human Gate = one Run per batch
-~~~
-
-**Canonical execution path：**
-
-~~~text
-Conversation / generated artifact
-→ Primary local processing
-→ Dropbox upload_file
-→ Dropbox staging
-→ Dropbox download_link
-→ short-lived single-use sourceUrl
-→ batch_json
-→ Claire runs [COLLAB] Artifact Batch Publish once
-→ GitHub Action downloads + verifies
-→ Repository output
-→ Primary verifies output / report / integrity
-~~~
-
-這條 workflow **不依賴** `Dropbox existing binary → Primary local processing workspace` 能力。也就是說，就算 Dropbox 裡既有 binary 尚不能可靠直接進 Primary local workspace，Primary 仍然可以把自己已處理完成的 local / Conversation artifact 上傳到 Dropbox，取得 temporary URL，再交由 GitHub Action publication。
-
-執行 collaboration tool 時，先恢復這條 **validated workflow**，不要只看單一 Provider capability 後自行推論整體 transport 是否可行。Provider Capability 與 Validated Workflow 是不同層級：
-
-~~~text
-Provider capability may be Partial
-while
-Validated workflow can still be Operational
-~~~
-
-Primary 應：
-
-- 先規劃文章 / artifact 用途，再決定 canonical filename 與 repository path。
-- 先盤點當前 Conversation 已存在且仍可取用的素材，只向 Claire 索取真正缺少的 artifact。
-- 處理 resize / convert / metadata stripping / naming。
-- 將 processed artifact staging 至可產生 temporary binary URL 的 surface。
-- 依 canonical schema 產生 `batch_json`，不要靠前世記憶手刻格式。
-- temporary URL 屬 runtime access value：可以出現在 dispatch input，但不得寫入 Repository file / report / example。
-- publication 後由 Primary 自行檢查 repository output / report / integrity evidence。
-
-Claire 目前只保留必要 Human Gate：提供缺少素材、做公開 / functional judgment，以及每批手動執行一次此 Action。
-
-已知限制：
-
-- 當前 GitHub Connector **沒有 autonomous new `workflow_dispatch` write primitive**，所以 Primary 不能自行按下這個 Run。
-- 目前 implementation 採明確 allowlist，只允許寫入 Experiment-owned artifact output prefix 與 `public/images/wall/**`。這不等於可寫任意 repository path；新的 publication surface 必須另外收斂後再擴權。
-- Dropbox temporary URL 為短效 single-use bearer-style access value；不要以裸 clickable link 作為 Claire 的預設交付格式，優先放在 JSON / code block 中避免 UI 誤觸。
-- 這個 workflow 是 collaboration tool，不代表 A-ARTIFACT-1 整體研究已完成。
-
-Evidence / design history：[`../experiments/artifact-transport/README.md`](../experiments/artifact-transport/README.md)。
-
----
-
-## 5. Authoring Surface｜寫文件時可以直接用什麼
-
-這是 **Primary 的基礎協作能力**，不是只有做 Textastic Experiment 時才需要知道的冷知識。
-
-Claire 的 iPad-first Markdown authoring environment 已驗證 Textastic custom Markdown Preview。撰寫 Wall、Knowledge、Implementation Guide、Experiment Record、Work Order 或其他 Markdown 技術內容時，可以直接利用：
-
-### Mermaid
-
-流程、架構關係、狀態轉換、Dependency 或資料關係用圖更清楚時，可使用 `mermaid` fenced code block。Mermaid 服務理解，不取代 Evidence / Constraint / Conclusion。
-
-### Manual Print Page Break
-
-需要 PDF / Print 時人工指定新頁，在 Markdown 放：
-
-```html
-<!-- pagebreak -->
-```
-
-Preview 顯示淡色 `PAGE BREAK` marker；Print 時 marker 隱藏並強制從新頁開始。沒有 marker 時維持原生 pagination。
-
-### Syntax Highlighting
-
-明確 language fence 的 code block 可使用 Highlight.js syntax highlighting。**不使用 auto-detect**，未標 language 的 fenced code 保持 plain。
-
-| Fence | Language |
+| Dimension | 研究問題 |
 | --- | --- |
-| `sql` | SQL |
-| `json` | JSON |
-| `javascript`, `js` | JavaScript |
-| `typescript`, `ts` | TypeScript |
-| `html` | HTML |
-| `css` | CSS |
-| `bash`, `shell`, `sh` | Bash / Shell |
-| `yaml`, `yml` | YAML |
+| Discovery | 是否存在對應的工具或 API？ |
+| Read / Write | 能讀取或改變哪些資源？ |
+| Authorization | 授權範圍與限制是什麼？ |
+| Runtime | 操作在哪個環境執行？ |
+| Evidence | 成功或失敗如何驗證？ |
+| Cost / Quota | 是否受方案、用量或費用限制？ |
+| Transport | 文字、檔案、二進位資料能否在不同環境之間傳遞？ |
 
-**Authoring rule：已知語言的 code block 應明確標 language fence。** 這讓 Claire 在 Textastic Preview 直接取得可讀的語法結構，而不需要未來墨衡重新發明一套展示方式。
+**API 可見、權限已授予、操作成功、結果已驗證，是不同層次。**
 
-Implementation / Evidence：[`../experiments/textastic-markdown/README.md`](../experiments/textastic-markdown/README.md)。
+## 已有公開研究與可重用方法
 
-### Markdown → Human-facing PDF
+### Cloudflare Connector、Workers 與 D1
 
-Primary 已有可重複使用的 Markdown → PDF rendering capability，不需要每次產 PDF 都重新手刻 layout。
+- [CF-CONNECTOR-1｜Cloudflare Connector × Worker API × D1 × Netlify](../experiments/cloudflare-direct-control/README.md)
+- 記錄在特定測試條件下，以 Connector 操作 Worker 與 D1，並由網頁進行實機驗證的過程。
+- Cloudflare 帳號資源清單、共用資料庫識別碼與內部資源管理政策，不屬於公開研究導航。
 
-Canonical implementation：
+### Artifact Transport、Dropbox PDF 與 GitHub Actions
 
-~~~text
-scripts/render-markdown-pdf.py
-knowledge/implementation/markdown-to-pdf.md
-~~~
+- [A-ARTIFACT-1｜Artifact Transport Experiment](../experiments/artifact-transport/README.md)
+- [Artifact Transport and Publication Pattern](implementation/artifact-collaboration-workflow.md)
+- [Dropbox PDF Reading Boundary](implementation/dropbox-pdf-reading-boundary.md)
+- [Artifact Workspace Lifecycle Evidence](implementation/primary-workspace-housekeeping.md)
 
-Current verified capability：
+這些資料記錄不同資料流方向的能力邊界：能 preview 或取得 temporary URL，不代表已能把既有 binary 載入另一個處理環境；某個方向的傳輸失敗，也不等於反方向必然失敗。
 
-- Traditional Chinese / mixed English typography
-- headings / lists / blockquote / table
-- explicit fenced-language syntax highlighting
-- `<!-- pagebreak -->` manual print break
-- bounded Mermaid flowchart subset → vector diagram
-- local image embedding when referenced binary 已 materialize
-- missing-image visible fallback
-- PDF render-to-PNG visual QC
+公開批次發布機制的程式與契約：
 
-Recommended navigation：
+- [Artifact Batch Publish Workflow](../.github/workflows/collab-artifact-batch-publish.yml)
+- [Artifact Batch Publish Schema](../.github/workflow-contracts/artifact-batch-publish.schema.json)
 
-~~~text
-需要產 Human-facing PDF
-→ knowledge/implementation/markdown-to-pdf.md
-→ scripts/render-markdown-pdf.py
-→ local render / verify
-→ requested delivery surface
-~~~
+實際執行時仍須檢查當前授權、來源 URL 有效性、目的路徑限制與結果完整性。這裡不規定私人工作區路徑、人工授權流程或內部角色分工。
 
-這項 capability 是從 Textastic authoring contract 抽出的 portable subset，不是 Textastic runtime 的 1:1 複製。GitHub referenced binary image 是否能 materialize 到 Primary local workspace，仍屬 Artifact Transport boundary，不能跟 PDF renderer capability 混成同一件事。
+### iPad-first Markdown Authoring
 
----
+- [Textastic Markdown Experiment](../experiments/textastic-markdown/README.md)
+- [Textastic Technical Workbench Wall](wall/textastic-markdown-technical-workbench.md)
 
-## 6. Capability Dimensions｜不要只問「有沒有工具」
+已公開的實驗包含 Mermaid 圖表、手動列印分頁，以及明確 language fence 的 syntax highlighting。具體支援範圍以實驗紀錄與原始檔為準，不應擴大解讀為所有 Markdown renderer 都具備相同行為。
 
-| Dimension | 要確認什麼 |
-| --- | --- |
-| Discovery | 目前是否真的安裝 / 暴露？ |
-| Read | 能看到哪些 object / metadata / logs / artifacts？ |
-| Write | 能建立、修改、刪除什麼？ |
-| Authorization | 權限來自哪個 identity / scope？ |
-| Runtime | action 在哪裡執行？ |
-| Evidence | action 後能否自行取得可驗證結果？ |
-| Limitation | 哪些仍只能靠 UI / Human / other Agent？ |
-| Cost | 是否改變 billing / quota / plan boundary？ |
+### Markdown 到 PDF
 
-> **Prompt Access ≠ Tool Access ≠ Workspace Access ≠ Authorization ≠ Evidence Access.**
+- [Markdown → PDF Rendering Pattern](implementation/markdown-to-pdf.md)
+- [Renderer Source](../scripts/render-markdown-pdf.py)
 
-一項 capability 在 Claire × 墨衡協作中可能是 Eyes / Ears / Hands / Legs / Memory / Runtime / Workspace / Publication Surface / **Authoring Surface** / Bridge。Provider 定義產品功能，我們定義它在協作中的意義。
+可重用方法包含繁體中文排版、表格、程式碼語法標示、手動分頁、受限的 Mermaid flowchart、圖片嵌入與可見的缺圖替代。實際輸出仍需要檢查來源圖片是否可取得、字型與頁面呈現是否正確。
 
----
+### GitHub Repository 到公開網站
 
-## 7. When Capability Changes｜能力變動就更新
+- [從 GitHub Repository 到公開研究網站](wall/ai-playground-home-architecture.md)
+- [Research Catalog Publication Contract](research-catalog-publication.md)
 
-以下變化應在 context 尚新鮮時更新這份 Inventory，必要時同步 Experiment / Evidence / Agent guide：
+研究主 Markdown、Catalog metadata、建置產物與網站部署屬於不同責任層次。Repository commit、Catalog build、站台部署與瀏覽器驗收應分開驗證。
 
-- Connector / Plugin / Product Surface 出現或消失。
-- read / write / deploy / log / evidence capability 改變。
-- 原本需要 Claire 的人工 relay 已可由 Primary 完成。
-- Agent dispatch / remote execution boundary 改變。
-- Authoring environment 新增可直接利用的 Markdown / diagram / rendering capability。
-- permission / billing / identity model 改變。
+## 本文件不再負責的內容
 
-不要只把能力變化留在聊天記憶裡。Repository 才是 durable state。
+- AI 跨對話身分恢復、啟動順序或記憶載入指令。
+- 私人 Repository 的操作導覽與內部知識路由。
+- 個人 Dropbox / Notion 工作區結構、資源識別碼與內部協作授權。
+- 即時 Connector 權限保證、派工規則或人員分工。
 
----
+上述內容如仍需使用，應由相應**私人且持續維護**的操作文件負責；不能把本公開索引當作現行權威。
 
-## 8. Working Principle
+## 研究原則
 
-```text
-Reasoning
-+ Tool Discovery
-+ Tool Access
-+ Authorization
-+ Runtime
-+ Durable State
-+ Evidence Access
-+ Authoring Surface
-+ Temporal Orientation
-+ Escalation Discipline
-= Operational Agent Capability
-```
+> **歷史能力證據，不等於當前可執行權限。**
 
-> **醒來先恢復自己，再決定今天要研究什麼。**
->
-> **開始工作前，先看看工具箱。不要拿小刀砍森林。**
->
-> **不要把今天 AI 的邊界，誤認成系統永久的邊界。**
+> **公開研究保存可重現的方法，不保存私人操作身分。**
+
+本頁是公開研究導航，不是完整安全稽核報告；其他歷史 Experiment / Wall / Agent Work 文件仍需各自檢查是否包含不適合公開的操作細節。
