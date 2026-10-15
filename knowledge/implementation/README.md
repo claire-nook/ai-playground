@@ -12,7 +12,7 @@ Implementation    → 未來正式開發時，已驗證過的 mechanism 要怎�
 
 Implementation Guide 不是 Production Specification，也不是直接 copy 到正式系統的 template。它的目的，是避免未來只剩一句 `Verified`，卻沒有人記得當時到底怎麼做成功。
 
-## Current Guides
+## Public Implementation Patterns & Evidence
 
 - [`Artifact Transport and Publication Pattern`](artifact-collaboration-workflow.md)
   - Conversation image processing → temporary binary URL → GitHub Actions batch publication
