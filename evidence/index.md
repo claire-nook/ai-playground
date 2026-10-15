@@ -132,15 +132,15 @@ Claire 已驗證：
 - Date: 2026-09-18
 - Status: Completed / Operational Workflow + Known Boundaries
 - Record: `experiments/artifact-transport/README.md`
-- Operating Guide: `knowledge/implementation/artifact-collaboration-workflow.md`
-- Workspace Policy: `knowledge/implementation/primary-workspace-housekeeping.md`
-- Dropbox PDF Boundary: `knowledge/implementation/dropbox-pdf-reading-boundary.md`
+- Historical implementation reference: `knowledge/implementation/artifact-collaboration-workflow.md`
+- Historical workspace lifecycle study: `knowledge/implementation/primary-workspace-housekeeping.md`
+- Historical Dropbox PDF boundary study: `knowledge/implementation/dropbox-pdf-reading-boundary.md`
 - Renderer: `scripts/render-markdown-pdf.py`
 - Topics: Dropbox, GitHub, Artifact Transport, Human Output, Primary Workspace, PDF Reading, iPad-first
 
 ### Result
 
-日常協作主路徑已 operational：
+2026-09-18 當時已驗證的協作路徑（不代表今日工具權限或操作契約）：
 
 ~~~text
 Human / Conversation artifact
@@ -155,12 +155,12 @@ Human / Conversation artifact
 ~~~text
 GitHub text/source
 → Primary processing / rendering
-→ Dropbox /AI Output
+→ Dropbox delivery area
 → iOS Files
 → iOS Preview
 ~~~
 
-`/AI 工作區` 已驗證可由 Primary 自主 create / stage / rename / inspect / cleanup，用來吸收 ephemeral artifact，避免不必要 Git commit pollution。
+當時的獨立 working area 已驗證 create / stage / rename / inspect / cleanup，可吸收 ephemeral artifact，避免不必要 Git commit pollution；此為歷史實測，不構成現行私人工作區授權。
 
 Dropbox PDF reading boundary 以真實教材驗證：
 
