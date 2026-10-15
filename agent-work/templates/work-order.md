@@ -1,14 +1,13 @@
-> **Mandatory Delivery Contract (2026-10-11):** [agent-work/delivery-contract.md](../delivery-contract.md) governs **both** GitHub Work Order and Notion dispatch. Primary must fill `Delivery Type(s)` explicitly: `NOTION_REPORT | DOC_DELIVERY | CODE_DELIVERY` (multiple allowed). Mixed code+docs is `CODE_DELIVERY`; all code/config/behavior changes **require a dedicated branch, commit, push and PR before QC/Merge**, without exception. DOC_DELIVERY requires branch/commit/push/Primary review/merge but no PR. Executor must read current Codex Memory + contract and confirm; report remote SHA and PR URL for code. Older publication-adapter passages below do not waive mandatory PR.
+# Work Order Template｜公開研究範例
 
-> **2026-10-11 適用範圍：** Notion Agent Mailbox 是研究、分析、Review、文件與輕量委派的預設管道。本 Template 只在需要正式、可重現的 GitHub Work Order 時使用，例如明確程式實作、腳本、部署設定、資料庫遷移，或其他高風險／跨階段工作。不限於程式，也不要求每個小型程式修改都建單。無論使用哪種管道，delivery-contract.md 的交付類型、PR 與 QC 規則均適用。歷史 Work Order 不追溯修改。
+> **Public synchronized structure, not a governing contract.** 本文件的正式段落與順序依私人 Core Master Template（blob `7c4cb8b88cafb12801987e81e460b0e11eaca519`）整理；只作公開研究範例，不授權實際派工。具體任務仍需由可讀的現行規範與目標 Repository 確定權限、交付及驗收。
+>
+> [公開 Delivery Types 說明](../delivery-contract.md)僅供理解研究中的交付分類，不取代正式契約。
 
-# Work Order Template
-
-> Canonical Work Order structure for Primary Agent dispatch management.
+> Core canonical Work Order structure for cross-repository dispatch. Factory copies are synchronized derivatives, not independent templates.
 >
 > Work Order 管理「派出了什麼工作」，不是 Worker KPI / task progress。核心原則是 **Reduce ceremony, not boundaries**：使用同一份 canonical Template，以 `Work Weight` 控制內容密度，不為 Micro / Standard / High-Risk 維護多套會逐漸 drift 的 Template。
 
-> **2026-10-09 適用提醒：**本 Template 只在確實需要正式 Repo Work Order 時使用。個人實驗室一般小任務可由 Notion Task／Message 直接約定目標、範圍、限制與驗收；Claire 說「開工」後，Codex 可在範圍內自主 Commit／非 force Push，墨衡 QC／PR／Merge、既有自動部署、Claire 實機驗收。特殊高風險或越界仍須停下確認。下方舊 Codex Product UI 的 Claire Create PR 說明是歷史 adapter，現行預設參考 [Agent Work](../README.md) 與 [Dispatch Handoff](../dispatch-handoff.md)。
 
 ## Metadata
 
@@ -18,7 +17,7 @@
 - Delivery Type(s): `NOTION_REPORT | DOC_DELIVERY | CODE_DELIVERY` (explicit; multiple allowed)
 - Work Weight: `Micro | Standard | High-Risk`
 - Primary Objective: `<one-line objective>`
-- Requested By: `Primary Agent | Claire | Primary Agent / Claire`
+- Requested By: `Primary Agent | Human Reviewer | Primary Agent / Human Reviewer`
 - Intended Executor: `Codex | Implementation Agent | Unassigned`
 - Target Repository: `<owner/repo | None>`
 - Source Baseline: `<branch / ref / snapshot contract | None>`
@@ -60,7 +59,7 @@
 
 - `None`
 
-不要假設 executor 自動知道 Claire / Nook / Playground 的歷史脈絡。
+不要假設 executor 自動知道 執行任務所屬專案 的歷史脈絡。
 
 ## Context Preflight｜執行環境確認
 
@@ -125,7 +124,7 @@ Evidence 可包含 Source / Diff、Test Result、Runtime Output、Provider Resul
 
 ## External Gates｜外部驗證 Gate
 
-列出 executor workspace 無法或不應自行宣稱完成、必須由 Primary / Claire / Provider / Deployment / 真實裝置完成的驗證。
+列出 executor workspace 無法或不應自行宣稱完成、必須由 Primary / Human Reviewer / Provider / Deployment / 真實裝置完成的驗證。
 
 - `None`
 
@@ -159,11 +158,11 @@ GitHub-visible state 是 Primary Technical QC 的 handoff surface。Workspace/lo
 
 Human Relay 的責任是傳遞 dispatch / publication gate，不是人工複製長篇 Report。若 Primary 需要完整內容才能 QC，就應讓內容存在可直接讀取的 durable surface。
 
-例外：短小、一次性、沒有後續 QC / Knowledge value 的回報可只留在 executor response；若因 execution surface 無法寫 repository，Work Order 必須事先指定替代 durable artifact / handoff mechanism，而不是默認由 Claire 手動搬運。
+例外：短小、一次性、沒有後續 QC / Knowledge value 的回報可只留在 executor response；若因 execution surface 無法寫 repository，Work Order 必須事先指定替代 durable artifact / handoff mechanism，而不是默認由 人類審查者手動搬運。
 
 ## Report Contract｜執行後回報
 
-Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight 應與 `Type` / `Work Weight` 成正比，不要把同一件事在 Source、commit、PR、Report 重寫四遍。
+Report 遵守目標 Repository 適用的 Report 語言規則（如有）。Report weight 應與 `Type` / `Work Weight` 成正比，不要把同一件事在 Source、commit、PR、Report 重寫四遍。
 
 ### Implementation / Documentation 預設
 
@@ -189,6 +188,12 @@ Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight �
 
 保留 blocker、attempt、failure evidence、changed files / workspace residue、decision needed。
 
+## 其他｜本次特殊事項
+
+僅在既有正式段落不足以容納特定任務資訊時填寫；不要為單一工廠自行新增、刪除或重排正式模板段落。
+
+- `None`
+
 ## Completion Contract｜固定結案準則
 
 核心治理只承認兩種 executor 終態：`Cannot Complete` 或 `Completed`。不要新增模糊的 `Partially Completed`。
@@ -199,7 +204,7 @@ Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight �
 
 1. 停止，不猜缺失 Context，不繞過明確限制，不為交付擴張 Scope。
 2. 保留真實 observation / failure evidence，不把部分完成包裝成完成。
-3. 回報 blocker、已完成步驟、changed files、workspace residue、validation / evidence、需要 Primary / Claire 決定的事項。
+3. 回報 blocker、已完成步驟、changed files、workspace residue、validation / evidence、需要 Primary / Human Reviewer 決定的事項。
 4. 不為了產生 commit / PR 製造無意義修改。
 
 ### B. Completed｜Executor Completion
@@ -216,13 +221,13 @@ Report 預設遵守 `agent-work/report-language-guideline.txt`。Report weight �
 
 `Completed` 表示 **Executor Completion**，不自動等於 Technical QC PASS、Deployment PASS、Human Acceptance PASS、Provider Verification PASS 或 Experiment Verified。
 
-### Publication Adapter｜依 Execution Profile 發布
+### Publication Adapter｜依 Execution Profile 發布（不得降低 Collaboration Contract 的交付門檻）
 
 穩定 governance requirement 是：**有可追溯 change identity；需要 QC 的變更最終有 GitHub-visible handoff surface；Primary 以 GitHub-visible state 做 Technical QC。**
 
 具體 mechanics 依 Execution Profile：
 
-- `Codex Product UI`：通常 local commit + report → stop → Claire Create PR；continuation / REWORK 由 Claire Update Branch。
+- `Codex Product UI`：依當次實際 UI 與權限完成 GitHub-visible publication；若需要 有權限的人員操作 Create PR / Update Branch，明確列為未完成 gate，不得以歷史 UI 行為當成今日保證。
 - `CLI / GitHub-integrated Agent`：若 runtime 已被授權，可由 Agent commit / publish / create PR，再停止等待 Primary QC。
 - `Human-supervised Agent`：可由 human push / create PR。
 - 其他 runtime：Work Order 明確指定 adapter；不要假設某個 provider UI 必然存在。
