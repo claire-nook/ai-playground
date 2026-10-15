@@ -1,211 +1,63 @@
-# Dropbox PDF Reading Boundary
+# Dropbox PDF Reading Boundary｜實測限制
 
-- Status: Verified boundary / operational reference
-- Established: 2026-09-18
-- Scope: What Primary can read from Dropbox PDFs with the current Dropbox Connector
-- Evidence origin: A-ARTIFACT-1
-- Non-goal: solving large-PDF reading with custom Actions, splitters, chunkers, or new plugins
+- Test date: 2026-09-18
+- Status: Dated experimental evidence; connector behavior may change
+- Evidence: [A-ARTIFACT-1](../../experiments/artifact-transport/README.md)
+- Scope: PDF metadata, preview, text extraction, search, and temporary URL behavior
 
-## 1. Why This Exists
+## Research question
 
-Claire may simply say:
+在 2026-09-18 的 Dropbox Connector 測試環境中，PDF 能否直接取得全文或指定頁面內容？檔案大小對能力有何影響？
 
-> Dropbox 有個檔案，你去看看。
+## Control cases
 
-Primary should not rediscover the same PDF limits from scratch, nor should Claire be expected to remember connector limits.
+使用兩份真實文字 PDF 進行對照。為避免公開私人檔案名稱與儲存路徑，此處只保留檔案大小與可驗證結果。
 
-This guide answers only:
+| Control | File size | Observation |
+| --- | ---: | --- |
+| Small PDF | 2,784,964 bytes (2.66 MB) | Metadata、preview、完整 extracted text 均成功；擷取文字長度 360,763 characters |
+| Large PDF | 99,768,096 bytes (95.15 MB) | Metadata、preview、temporary download URL 成功；完整 extracted text fetch 失敗 |
 
-> **With the current Dropbox Connector, how far can Primary read a PDF before hitting a platform boundary?**
-
-If the real use case later requires more than this boundary, choose another reading surface / specialized connector / explicit upload workflow at that time. Do not build an eight-program contraption merely to conquer the sixth megabyte.
-
-## 2. Verified Control Files
-
-Real files under /英文學習 were used.
-
-### Small control
-
-~~~text
-/英文學習/旋元佑文法.pdf
-size: 2,784,964 bytes
-display: 2.66 MB
-~~~
-
-Observed:
-
-- metadata: Verified
-- preview: Verified
-- full extracted text fetch: Verified
-- extracted text length: 360,763 characters
-
-The fetched text included document structure and body text, including the table of contents and first chapter content.
-
-### Large control
-
-~~~text
-/英文學習/旋元祐字源大挪移.pdf
-size: 99,768,096 bytes
-display: 95.15 MB
-~~~
-
-Observed:
-
-- metadata: Verified
-- preview: Verified
-- direct temporary download link: Verified
-- full extracted text fetch: Failed with explicit 5 MiB limit
-- page-range fetch: No current Dropbox Connector primitive exposed
-- partial text fetch by page / byte range: No current Dropbox Connector primitive exposed
-
-Fetch failure returned:
+Large PDF 回傳的錯誤：
 
 ~~~text
 FILE_TOO_LARGE
 Maximum supported size is 5MB (5242880 bytes)
 ~~~
 
-## 3. Current Reading Capability Matrix
+Small PDF 擷取內容包含目錄與正文。以上只證明當次控制組的行為，並非所有 PDF 的永久保證。
 
-| Capability | <= 5 MiB PDF | > 5 MiB PDF | Current Judgment |
-| --- | --- | --- | --- |
-| Metadata | Verified | Verified | filename / size / MIME / revision / modified time available |
-| Visual preview | Verified | Verified | preview surface exists, but it is not a page-range reading API |
-| Full extracted text fetch | Verified | Blocked | hard 5 MiB connector limit observed |
-| Search by PDF content | Not established | Not established | test queries against known small-file terms and likely large-file terms returned no result |
-| Page-range text fetch | Not exposed | Not exposed | no current primitive such as pages 31–50 |
-| Partial / chunk fetch | Not exposed | Not exposed | no offset / range parameter in current fetch tool |
-| Temporary direct download URL | Available | Available | useful for external runtimes, but does not itself give Primary extracted text |
-| Direct Dropbox binary → Primary local processing | Not established | Not established | separate transport boundary |
+## Observed capability matrix
 
-## 4. Practical Reading Decision
+| Capability | Small control | Large control |
+| --- | --- | --- |
+| Metadata | Verified | Verified |
+| Visual preview | Verified | Verified |
+| Full extracted text fetch | Verified | Blocked at 5 MiB |
+| Page-range text fetch | Not exposed | Not exposed |
+| Partial / byte-range text fetch | Not exposed | Not exposed |
+| Temporary direct download URL | Available | Available |
+| Direct binary materialization into separate local processing runtime | Not established | Not established |
+| PDF content search as section reader | Not established | Not established |
 
-### Case A — PDF <= 5 MiB
+測試曾使用小型控制組已知的文法術語與大型控制組可能出現的字源術語進行搜尋，未取得結果。這不足以宣稱 Dropbox 永遠無法搜尋 PDF，但不能將搜尋當成已驗證的分頁閱讀替代方案。
 
-Preferred first path:
-
-~~~text
-Dropbox file
-→ metadata
-→ fetch extracted text
-→ read / summarize / teach / organize
-~~~
-
-This is the cleanest current Dropbox-native reading workflow.
-
-### Case B — PDF > 5 MiB
-
-Current Dropbox-native path can still do:
+## Transport is not extraction
 
 ~~~text
-metadata
-preview
-temporary download link
-~~~
-
-But Primary cannot currently rely on Dropbox Connector alone for:
-
-~~~text
-full text
-page 1–30
-page 31–50
-semantic chunk 7
-byte-range fetch
-~~~
-
-So when Claire says “讀第 31–50 頁” on a >5 MiB Dropbox PDF, do not pretend Dropbox fetch can do it.
-
-## 5. Search Boundary
-
-Dropbox search was tested with terms known to exist in the small PDF, including:
-
-~~~text
-基本句型
-動名詞
-~~~
-
-and likely large-book terms such as:
-
-~~~text
-字根
-字首
-prefix
-root
-~~~
-
-No results were returned.
-
-Therefore current guidance is conservative:
-
-> **Do not depend on Dropbox search as a page/section-level PDF reading substitute.**
-
-Search may still be useful for filename discovery, but content retrieval behavior for these PDFs is not established strongly enough to build a reading workflow on it.
-
-## 6. Temporary Download Link Boundary
-
-Large PDF direct download link generation succeeded.
-
-However:
-
-~~~text
-Dropbox
-→ temporary single-use URL
-✅
+Dropbox PDF
+→ metadata / preview / temporary single-use URL
+= observed
 
 temporary URL
-→ Primary extracted text / page-range reader
-❌ not established in current runtime
+→ separate runtime's PDF text or page-range reader
+= not established in this experiment
 ~~~
 
-The link proves the file is retrievable by another capable runtime. It does not erase the current Primary / Connector reading boundary.
+取得 URL 不代表已能在另一個執行環境取得文字或指定頁面。Conversation 直接上傳 PDF 也屬不同的輸入介面，不能套用此處的 5 MiB fetch 限制。
 
-Do not convert this into a new engineering project unless a real use case justifies it.
+## Practical interpretation and future verification
 
-## 7. Conversation Upload Is a Different Surface
+當時的 Dropbox-native 讀取方式對 2.66 MB 控制組有效；95.15 MB 控制組則受全文擷取上限阻擋。若需要大型 PDF 分頁閱讀，應先重新檢查當前 Connector 功能、檔案處理環境與授權，而不是把歷史限制當成永久事實。
 
-A user uploading a PDF directly into Conversation may have different platform limits and behavior.
-
-That boundary is **not part of this Dropbox experiment**.
-
-Do not assume:
-
-~~~text
-Dropbox 5 MiB fetch limit
-=
-Conversation upload limit
-~~~
-
-and do not assume a 90 MB Conversation upload would be a good reading workflow merely because upload UI accepts it. File acceptance, extraction limits, context pressure, and stable page-range access are separate concerns.
-
-If a future real reading need appears, evaluate the then-current best surface.
-
-## 8. Future Study / Tutoring Use Case
-
-A realistic tutoring workflow may look like:
-
-~~~text
-Day 1: read pages 1–30
-Day 2: read pages 31–50
-Day 3: Claire disappears into the void
-Day 4: continue pages 51–90
-~~~
-
-Reading progress / notes may live in Dropbox, a learning repository, or a dedicated Study project. That continuity layer is separate from the PDF reader itself.
-
-This experiment does not require Dropbox to solve the entire study workflow.
-
-## 9. Reopen Conditions
-
-Reopen this boundary only if one of these changes:
-
-- Dropbox Connector adds page-range / partial fetch
-- fetch size limit changes
-- Dropbox exposes a reliable document-reading primitive beyond whole-file extraction
-- a real Claire workflow requires >5 MiB PDF reading
-- a specialized PDF / academic plugin becomes worth evaluating
-
-Until then:
-
-> **Record the boundary, use it, and stop.**
-
-The laboratory studies walls. It does not automatically build tunnels through every wall it finds.
+此實驗沒有驗證自動分割、頁面範圍讀取、可靠的跨 runtime binary transfer，或長期讀書進度管理。相關完整研究脈絡見 [A-ARTIFACT-1](../../experiments/artifact-transport/README.md)。
