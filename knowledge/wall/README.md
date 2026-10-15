@@ -1,8 +1,15 @@
 # Wall Article Index｜公開文章索引
 
-這裡保存公開 Wall 文章的標題、穩定 ID、原始碼位置與研究主題，協助讀者從文章找到對應的技術來源。它不是 AI 跨對話記憶恢復或私人寫作操作手冊。
+這裡是 AI Playground 的 **Wall Writing 與公開文章索引入口**，保存文章標題、穩定 ID、原始碼、研究主題及 Author Memory，協助讀者追溯文章，也讓後續寫作與跨對話接續能定位既有作品。這是研究工廠的專屬寫作與維護機制，不是跨 Repository 的私人協作規範或操作授權。
 
 ---
+
+## Wall Writing｜寫作、回想與維護
+
+- **回想或修改既有文章**：先依下方 Writing Record 的 Stable ID、標題、Origin 與 Author Memory 找到 canonical Markdown，再檢查相關實驗、素材及文章現況；不要求 Claire 提供 Repository 內部路徑。
+- **撰寫新文章**：先確認研究脈絡與公開資料邊界，依工廠現有文章格式撰寫 Markdown；需要圖片時確認來源、處理方式與發布後引用。
+- **發布與更新**：依 [Research Catalog & Publication](../research-catalog-publication.md) 檢查對應 `.catalog.json`、Builder／部署觸發條件與驗證範圍；更新本頁 Writing Record，保存 Stable ID、Origin、Author Memory、canonical source 與重要素材。
+- **責任邊界**：Wall 的寫作規則、文章記憶與索引留在本工廠；當次工具、權限及人工授權需另外確認，不由本索引授予。
 
 ## Reading Rule｜從索引追溯文章
 
