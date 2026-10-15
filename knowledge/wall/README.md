@@ -33,6 +33,9 @@ Technical Commentary / Research Catalog / Web Publication
 **Summary**  
 研究主紀錄與網站索引分層；Repository commit、Catalog build、Netlify deployment、Browser verification 是不同的證據階段。讀者可由公開網站追溯實驗紀錄與 Evidence。
 
+**Author Memory**  
+這篇刻意從公開內容發布架構切入，而不是把 Playground 寫成 AI 的私人總部；重點是讓讀者分清 Repository 內容、Catalog 索引、Netlify 發布與瀏覽器實際驗證，各自需要不同證據。
+
 **Canonical Source**  
 `knowledge/wall/ai-playground-home-architecture.md`
 
@@ -190,7 +193,7 @@ Claire 用 M5 iPad Pro 當主要 technical workstation 的第七天，剛好撞�
 
 ## Repository Navigation Rule
 
-當 Claire 從 Human-facing Web 指出「某篇文章有問題」時，Primary 應先用本頁與 Repository 自行定位：
+當 Claire 從 Human-facing Web 指出「某篇文章有問題」時，當次獲授權的協作者應先用本頁與 Repository 自行定位：
 
 ```text
 Human-facing article / title / stable ID
