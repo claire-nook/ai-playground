@@ -14,13 +14,11 @@ Implementation Guide 不是 Production Specification，也不是直接 copy 到�
 
 ## Current Guides
 
-- [`Artifact Collaboration Operating Guide`](artifact-collaboration-workflow.md)
-  - Human / Conversation artifact → Primary → GitHub
-  - GitHub text/source → Primary → Dropbox `/AI Output`
-  - canonical Dropbox surfaces：`/AI Inbox` / `/AI 工作區` / `/AI Output`
-  - [COLLAB] Artifact Batch Publish
-  - binary materialization boundaries / fallback
-  - Before saying "can't" self-check
+- [`Artifact Transport and Publication Pattern`](artifact-collaboration-workflow.md)
+  - Conversation image processing → temporary binary URL → GitHub Actions batch publication
+  - [COLLAB] Artifact Batch Publish workflow / schema
+  - byte length / SHA-256 / image decode validation
+  - verified transport directions and unresolved binary materialization boundaries
 
 - [`Markdown → Human-facing PDF Rendering Pattern`](markdown-to-pdf.md)
   - reusable renderer：`../../scripts/render-markdown-pdf.py`
@@ -28,22 +26,18 @@ Implementation Guide 不是 Production Specification，也不是直接 copy 到�
   - bounded Mermaid flowchart subset
   - manual `<!-- pagebreak -->`
   - local image embedding / missing-image fallback
-  - durable delivery to Dropbox `/AI Output`
+  - PDF quality checks and delivery-surface separation
 
-- [`Primary Workspace Housekeeping Policy`](primary-workspace-housekeeping.md)
-  - `/AI 工作區` = Primary autonomous operational workspace
-  - ephemeral artifact absorbs Git scratch pollution
-  - task-scoped staging / rename / cleanup
-  - GitHub durable-state decision rule
-  - search-before-asking-human rule
-  - verified Workspace Lifecycle Probe
+- [`Artifact Workspace Lifecycle Evidence`](../../experiments/artifact-transport/README.md)
+  - staging / rename / verify / cleanup experiment
+  - ephemeral artifacts versus durable repository evidence
+  - historical test evidence, not a private workspace policy
 
-- [`Dropbox PDF Reading Boundary`](dropbox-pdf-reading-boundary.md)
-  - <= 5 MiB full extracted-text fetch
-  - > 5 MiB metadata / preview / temporary download link
-  - no current page-range / partial-text primitive
-  - real 2.66 MB and 95.15 MB PDF controls
-  - stop rule: record boundary, do not engineer around it without a real use case
+- [`Dropbox PDF Reading Boundary Evidence`](../../experiments/artifact-transport/README.md)
+  - <= 5 MiB extracted-text fetch observed; larger control blocked
+  - metadata / preview / temporary URL tested
+  - no page-range / partial-text primitive observed at test time
+  - capability observations are time-bound, not permanent provider guarantees
 
 - [`Supabase Cron Implementation Guide`](supabase-cron.md)
   - Cron → PostgreSQL Database Function
