@@ -1,6 +1,6 @@
 # Work Order Template｜公開研究範例
 
-> **Public synchronized structure, not a governing contract.** 本文件的正式段落與順序依私人 Core Master Template（blob `7c4cb8b88cafb12801987e81e460b0e11eaca519`）整理；只作公開研究範例，不授權實際派工。具體任務仍需由可讀的現行規範與目標 Repository 確定權限、交付及驗收。
+> **Public synchronized structure, not a governing contract.** 本文件的正式段落與順序依私人 Core Master Template（blob `87d4539072c912a8726511d6d61595816a89b41d`）整理；只作公開研究範例，不授權實際派工。具體任務仍需由可讀的現行規範與目標 Repository 確定權限、交付及驗收。
 >
 > [公開 Delivery Types 說明](../delivery-contract.md)僅供理解研究中的交付分類，不取代正式契約。
 
