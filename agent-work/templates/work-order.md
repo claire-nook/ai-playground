@@ -1,6 +1,6 @@
 # Work Order Template｜公開研究範例
 
-> **Public synchronized structure, not a governing contract.** 本文件的正式段落與順序依私人 Core Master Template（blob `87d4539072c912a8726511d6d61595816a89b41d`）整理；只作公開研究範例，不授權實際派工。具體任務仍需由可讀的現行規範與目標 Repository 確定權限、交付及驗收。
+> **Public synchronized structure, not a governing contract.** 本文件的正式段落與順序依私人 Core Master Template（blob `a8496316ed5254e4bcd4081b0377dfe16267708a`）整理；只作公開研究範例，不授權實際派工。具體任務仍需由可讀的現行規範與目標 Repository 確定權限、交付及驗收。
 >
 > [公開 Delivery Types 說明](../delivery-contract.md)僅供理解研究中的交付分類，不取代正式契約。
 
@@ -138,7 +138,7 @@ Evidence 可包含 Source / Diff、Test Result、Runtime Output、Provider Resul
 - GitHub-visible PR / Commit: `None`
 - Other: `None`
 
-GitHub-visible state 是 Primary Technical QC 的 handoff surface。Workspace/local commit SHA 不必等於 GitHub PR head SHA。
+對**已授權的 Repository 交付**，GitHub-visible state 是 Primary Technical QC 的 handoff surface。Workspace/local commit SHA 不必等於 GitHub PR head SHA。`NOTION_REPORT` 的交付證據則是指定 Notion 頁面、MESSAGE ID 與讀回確認，不因本段產生 Git 寫入授權。
 
 ### Durable Report Handoff Rule｜長篇回報不得丟給 Human Relay 搬運
 
@@ -184,7 +184,7 @@ Report 遵守目標 Repository 適用的 Report 語言規則（如有）。Repor
 
 保留 findings、severity / impact、supporting evidence、required rework / recommendation；不要把 reviewer opinion 偽裝成 provider evidence。
 
-`Standard` / `High-Risk` Review 原則上套用 `Durable Report Handoff Rule`：完整 Review 寫入 repository report artifact，executor response 只做短 handoff。只有明確判定為短小且不需後續逐段 QC 的 Review 才可例外。
+`Standard` / `High-Risk` Review 原則上套用 `Durable Report Handoff Rule`：完整 Review **依已授權的 Delivery Type 寫入指定 durable surface**；`NOTION_REPORT` 寫入指定 Notion 頁面並讀回，只有已授權的 `DOC_DELIVERY`／`CODE_DELIVERY` Repository 報告才寫入 repository report artifact。executor response 只做短 handoff。只有明確判定為短小且不需後續逐段 QC 的 Review 才可例外；此例外不擴張任何 Git 寫入權限。
 
 ### Cannot Complete 預設
 
