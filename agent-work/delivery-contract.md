@@ -1,46 +1,60 @@
-# Agent Delivery Contract｜跨派工管道一致交付規範
+# Agent Delivery Types｜公開交付與驗證模型
 
-Effective: 2026-10-11. Owner: Claire / Primary Agent（墨衡）. Applies to Codex and other delegated implementation agents, across **GitHub Work Order** and **Notion Agent Mailbox** dispatch. This contract supersedes older optional-PR / Primary-creates-PR defaults where inconsistent. Historical execution profiles remain evidence, not exceptions.
+> **Public technical reference / historical compatibility path.**  
+> 本文件說明 Agent 委派研究中使用的交付分類與可驗證交接方式。它不是跨 Repository 的私人協作契約，也不授權任何 Agent 修改資料、建立 PR 或執行部署。實際施工須依當次任務授權、可讀的現行規範及目標 Repository 的要求。
 
-## 派工管道選擇｜2026-10-11
+## Dispatch Channel 與 Delivery Type 是不同維度
 
-一般研究、分析、Review、文件與輕量委派預設走 Notion Agent Mailbox。正式 GitHub Work Order 留給需要可重現施工規格的程式或其他高風險、跨階段任務。這是選擇派工管道的規則，**不是交付規則的例外**。Notion 派出的程式、腳本、設定、部署或資料庫行為變更，仍須 CODE_DELIVERY 與 PR；純 Repo 文件使用 DOC_DELIVERY。本契約不要求每項委派都建立 Work Order。
+任務透過何種介面傳遞，不會自動決定成果應放在哪裡、需要哪些驗證，也不表示執行者取得了寫入權限。
 
-## Core boundary
-
-Dispatch channel ≠ work nature ≠ delivery destination. **Primary assigns delivery type explicitly before dispatch**; executor must not guess or downgrade it. A task may require multiple deliveries. If any repository change affects executable code, application behavior, infrastructure/deployment configuration, database migrations, scripts, or security/auth behavior, the repository delivery is `CODE_DELIVERY` even when README or reports are also modified. Unclear classification: stop and ask Primary; do not write main.
-
-## Delivery types
-
-| Type | Deliverable | Mandatory path |
+| Delivery Type | 研究中的交付目的 | 可觀察的 handoff |
 | --- | --- | --- |
-| `NOTION_REPORT` | Research/discussion/evidence written to the specified Notion page | Write, read back, provide page URL/message ID. No Git change unless separately assigned. |
-| `DOC_DELIVERY` | Add/edit/delete documentation or research report in a repository, without behavior-changing files | Dedicated branch → commit → non-force push → remote read-back → report repo/branch/SHA/files → Primary reviews diff and merges. PR is not required. |
-| `CODE_DELIVERY` | Any behavior-changing repository artifact, including code, scripts, deployment/configuration, migrations, and mixed code+docs | Dedicated branch → commit → non-force push → **PR mandatory** → report PR URL/head SHA/files/tests/limitations → Primary technical QC → applicable Claire/preview acceptance → Primary merges after gates pass. No direct push to main. |
+| `NOTION_REPORT` | 在指定的持久文件頁面交付調查、分析或審閱 | 頁面／訊息 ID、讀回確認、未知事項；不暗示有 Git 變更 |
+| `DOC_DELIVERY` | Repository 中的文件或研究紀錄修改 | 變更檔案、Branch／Commit／遠端 SHA、Diff review、限制 |
+| `CODE_DELIVERY` | 程式、腳本、行為、部署／基礎設施設定、資料庫遷移或安全相關變更 | 專用 Branch、Commit、Push、PR、獨立 Technical QC 與適用驗收 |
 
-If multiple outputs are needed, specify e.g. `NOTION_REPORT + DOC_DELIVERY`. The dispatch channel never changes these requirements. **Only Primary's own low-risk documentation edits, confirmed synchronously with Claire, may update main directly** when repository protection and authorization allow; this is not an executor exemption.
+混合程式與文件的變更，應按行為相關修改評估風險。表格描述既有研究採用的分類，**不取代當次正式授權或更嚴格的 Repository 規則**。
 
-## Mandatory Primary dispatch preflight
+## Publication 與驗證是不同階段
 
-1. Read this contract via `ai-playground/agent-work/delivery-contract.md` before *any* Codex dispatch, whether Notion or GitHub. Root README and `agent-work/README.md` must route here.
-2. State explicit `Delivery Type(s)`, target repository, baseline/ref, output path or Notion page, required QC/acceptance gates, and relevant task scope. Work Order Template and Notion message must both include these fields.
-3. Require executor to read current Codex Memory, this contract, target-repository rules, and report which sources were actually read. A link alone is not proof of reading.
-4. Review remote diff/PR independently; do not equate executor `Completed` with QC PASS, deployment PASS, or Claire acceptance. For `CODE_DELIVERY`, **no PR means no completed publication**; if executor cannot create PR, report blocked publication and arrange authorized creation before QC/Merge, never silently waive PR.
-5. Merge only after appropriate review/acceptance and permission; never assume deployment/preview succeeded.
+```text
+Executor Scope Completed
+          │
+          ▼
+   Traceable Artifact
+          │
+          ▼
+ Remote Publication Confirmed
+          │
+          ▼
+   Independent Diff / PR QC
+          │
+          ▼
+   External Gates (if needed)
+          │
+          ▼
+    Accepted / Verified
+```
 
-## Mandatory Executor preflight / publication
+- Local commit 不等於 remote push。
+- Branch push 不等於 PR 已建立。
+- PR 不等於 Merge、Preview、Deployment 或 Runtime Test 通過。
+- Executor report 只能證明其回報內容，不能代替獨立驗證。
+- `Completed` 表示 executor 的 scope 結束，不表示其他 Gate 已通過。
+- 缺少必要 Context、權限或 publication capability 時，應明確保留 blocker，不默默降級交付方式。
 
-- Confirm assigned delivery type; read Memory + contract + target repo instructions. Confirm workspace repo, HEAD, working tree, remote main and target branch. Check remote updates; Fetch/Fast-forward only if safe. Preserve unknown local work; no blind pull/reset/stash/force push.
-- Never modify or push `main` for delegated `DOC_DELIVERY` or `CODE_DELIVERY`. Never infer that a local commit is visible remotely.
-- Push to a dedicated branch, read back remote publication; distinguish local SHA from remote head SHA. For code, open PR against intended base and confirm its URL; if the available Codex UI requires a human publication step, report the exact remaining gate, without claiming PR exists.
-- Report: delivery type(s), read-confirmation, repo, branch, remote head SHA, changed paths, tests/evidence, PR URL for code, Notion page/message ID where applicable, unknowns, and external gates.
-- If required source, publication permission, or PR capability is missing, stop that part and return `Cannot Complete` / explicit publication blocker; do not silently use a weaker workflow.
-- `Completed` means executor handoff complete, not merge, technical QC, deployment, or human acceptance.
+## 可重現交接的最小證據
 
-## Review and preview
+- 任務的 `Delivery Type(s)`、Target Repository、Source Baseline、Scope 與驗收條件
+- 執行者實際讀取的來源與無法取得的 Context
+- Branch、遠端 SHA、變更路徑及 Diff／PR URL（適用時）
+- Tests、observations、failure evidence 與尚未完成的 External Gates
+- 無法完成時的 blocker、已嘗試步驟與 workspace residue
 
-PR is the durable review node for **every** code change, not ceremony. Netlify Deploy Preview normally follows PR integration; Branch Deploy can preview pushed branches only when configured. Neither preview nor runtime validation may be claimed without checking actual status. For interactive features Claire may verify via iPad Safari before merge; other external gates are set by Primary.
+## 使用邊界
 
-## Historical rule precedence
+這些模式來自特定時期的 Agent Work 研究。不同執行環境可能不支援相同的 Git 或 PR 操作；是否需要人工協助、如何處理權限、由誰 Merge，都不能由這份公開文件推定。
 
-Older `agent-work/README.md`, `dispatch-handoff.md`, Work Order Template, and Notion Memory passages mentioning optional PR or Primary-created PR for code are **superseded** by this 2026-10-11 delivery contract. Primary may help create a PR when executor tooling cannot, but **must not merge code without a PR**. Repository-specific stricter safety rules continue to apply.
+本公開版本與任何私人正式契約**不是同步副本，也不宣稱擁有跨專案權威**。公開方法可供研究與參考；正式任務仍需讀取當次有效的規範。
+
+延伸閱讀：[Agent Work Index](README.md) · [Dispatch Execution Adapter Evidence](dispatch-handoff.md) · [Work Order Template](templates/work-order.md)
