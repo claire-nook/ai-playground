@@ -192,26 +192,22 @@ Mermaid 也只有 fenced Mermaid 才轉成 diagram。
 
 是我們後來發現：這已經不能只被記成 T-TXT-2 的 Experiment Result。
 
-對未來的 Primary Agent（墨衡）而言，這是一項**基礎輸出能力**。
+對需要撰寫 Experiment Record、Knowledge、Implementation Guide、Wall 或其他 Markdown 技術文件的人而言，這是一項**可重用的編輯與輸出方法**。
 
-未來寫 Experiment Record、Knowledge、Implementation Guide、Wall、Work Order 或其他 Markdown 技術文件時，不需要重新研究「Claire 的環境能不能畫 Mermaid」「SQL fence 有沒有顏色」「PDF 能不能人工換頁」。這些能力應該像知道自己能讀 GitHub 一樣，在 startup orientation 就被恢復。
-
-因此它也被寫進 [`../agent-capability-inventory.md`](../agent-capability-inventory.md)。
-
-這是一個小但重要的知識分類差異：
+後續使用者可以直接閱讀本次實驗的來源與驗證結果，不必重新測試 Mermaid、SQL syntax highlighting 或手動 PDF 換頁的基本機制。這是一個小但重要的知識分類差異：
 
 ```text
 Experiment
-= 我們憑什麼相信它能工作
+= 在什麼條件下驗證過哪些行為
 
-Capability Inventory
-= 我現在知道自己可以怎麼工作
+Implementation / Source
+= 如何重現已驗證的功能
 
 Wall
-= 做完以後，我們認為真正值得留下的是什麼
+= 研究完成後值得分享的觀點
 ```
 
-Evidence 是記憶，Knowledge 是能力，Wall 是觀點。
+Evidence 保存觀察，Implementation 保存方法，Wall 保存觀點。
 
 ---
 
