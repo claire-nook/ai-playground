@@ -6,9 +6,9 @@ This repository is intentionally **not** a Development, Test, UAT, or Production
 
 ## Environment Identity｜實驗室、墨衡與 AI Playground
 
-ChatGPT Project「實驗室」是 Claire 與 Primary Agent（墨衡）長期進行 Technology / Information / Research / Experimentation 的工作空間。它不是 Nook Works 專案，也不等於任何單一 Repository。
+ChatGPT Project「實驗室」是 Claire 與 研究協調者長期進行 Technology / Information / Research / Experimentation 的工作空間。它不是 Nook Works 專案，也不等於任何單一 Repository。
 
-`ai-playground` 是「實驗室」的 **公開研究工廠（Public Research Factory）**：保存 Research、Experiment、Evidence、公開 Knowledge、研究成果與可公開的 Agent collaboration records。它**不是**墨衡的跨 Conversation 身分恢復入口、私人能力手冊或全域操作規範的權威來源。這些現行責任由 private `claire-nook/mo-heng-core` 承擔；新 Conversation 應依 ChatGPT Project 的 `laboratory.md` → private Core 根目錄 `README.md` → 按需讀取 Core 索引啟動。無法存取私人 Core 時應明確回報，不以 Playground 舊文件替代。
+`ai-playground` 是**公開研究工廠（Public Research Factory）**：保存 Research、Experiment、Evidence、公開 Knowledge、研究成果與可公開的 Agent collaboration records。它**不是**墨衡的跨 Conversation 身分恢復入口、私人能力手冊或全域操作規範的權威來源。私人身分恢復、跨對話操作規範與能力管理不屬於本公開 Repository 的職責；歷史文件不得作為現行啟動或權限依據。
 
 但 `ai-playground` **不是墨衡的 scope boundary**。當問題屬於其他正式作品、知識庫或 Repository，Primary 可以依當前任務需要進入相應 Repo 讀取、分析或在既有 authorization boundary 內工作。例如 Nook Works 的正式 Specification / Architecture / Database / Production-oriented implementation 應回到 `nook-works`，而不是為了方便全部複製進 Playground。
 
@@ -31,10 +31,7 @@ Apple-native task
 `apple-lab` 是「實驗室」的一部分，不是另一個 Primary Agent 的領地。其 private operational knowledge 以該 Repo 為 canonical source；`ai-playground` 只保存需要跨研究檢索的 routing、sanitized Evidence 與 public reusable findings，避免複製 private operational documentation。
 
 ```text
-實驗室 / Primary Agent（墨衡）
-│
-├─ mo-heng-core (private)
-│  └─ Primary knowledge / capability / cross-Conversation recovery
+實驗室 / 研究協調者
 │
 ├─ ai-playground
 │  └─ Public Research Factory：Research / Experiment / Evidence / public knowledge
@@ -64,13 +61,11 @@ Playground 是公開技術撞牆場，不是墨衡的私人知識基地，也不
 
 **Playground-local delegation gate（歷史現行入口，第二階段待與 Core 契約核對）:** Before dispatching Codex via either GitHub Work Order or Notion Agent Mailbox, Primary **must read [agent-work/delivery-contract.md](agent-work/delivery-contract.md)** and explicitly assign delivery type(s). The same publication/QC rules apply regardless of dispatch channel: DOC_DELIVERY = branch/commit/push/review/merge; CODE_DELIVERY = branch/commit/push/**PR mandatory**/QC/merge; NOTION_REPORT = write/read-back. Historical optional-PR guidance is superseded.
 
-> **2026-10-11 研究與派工導航：** 新增實驗、理解研究站台的 Web 架構、Catalog 建置或部署觸發時，先讀 [實驗成立與站台發布規範](knowledge/research-catalog-publication.md) 的「現行 Web 架構與自助檢查」，自行查閱對應原始碼，不必每次例行派工 Review。實驗主 Record 應保存目的、失敗經驗、證據與候選／已驗證界線；Findings 和 Pattern 依職責分開。日常委派預設 Notion，正式 GitHub Work Order 按施工需求與風險選用（不限程式），詳見 [Agent Work](agent-work/README.md)；Playground 公開執行者暫仍可讀 [Delivery Contract](agent-work/delivery-contract.md) 取得本地交付資訊，但跨 Repository 正式規範以 private Core 為主；公開契約與模板將在第二階段逐項核對同步，不可假定目前兩者完全同版。繁體中文是否升為全 Repo 強制規範尚待 Claire 決定。
+> **2026-10-11 研究與派工導航：** 新增實驗、理解研究站台的 Web 架構、Catalog 建置或部署觸發時，先讀 [實驗成立與站台發布規範](knowledge/research-catalog-publication.md) 的「現行 Web 架構與自助檢查」，自行查閱對應原始碼，不必每次例行派工 Review。實驗主 Record 應保存目的、失敗經驗、證據與候選／已驗證界線；Findings 和 Pattern 依職責分開。日常委派預設 Notion，正式 GitHub Work Order 按施工需求與風險選用（不限程式），詳見 [Agent Work](agent-work/README.md)；Playground 公開執行者暫仍可讀 [Delivery Contract](agent-work/delivery-contract.md) 取得本地交付資訊；公開契約與模板仍待逐項審查，不應將歷史版本誤認為跨環境通用規範。繁體中文是否升為全 Repo 強制規範尚待 Claire 決定。
 
-## Repository Orientation｜只在研究任務需要時進入
+## Repository Orientation｜研究任務按需導覽
 
-**此 README 只負責 ai-playground 的研究工廠導覽，不是新 Conversation 的 Primary Agent Bootstrap。** 墨衡的正式啟動路徑為 ChatGPT Project `laboratory.md` → private `claire-nook/mo-heng-core/README.md` → 依任務按需讀取 Core 文件。不可要求新墨衡將本 README 或 `knowledge/agent-capability-inventory.md` 當成全域必讀。
-
-`knowledge/agent-capability-inventory.md` 是**待審查的舊版能力／啟動紀錄**，目前保留原路徑供歷史引用及第二階段逐檔清理；它不再具有現行操作權威，也不應被用來推斷本次 Session 的工具權限。其他研究導覽和舊檔連結暫時保留，待反向引用逐一修正後再決定退役，避免讀者遇到斷鏈。
+**本 README 僅提供公開研究工廠的導覽，不是 AI 助理的私人啟動手冊。** `knowledge/agent-capability-inventory.md` 為待審查的歷史研究文件，不再是現行能力或權限的權威來源。其路徑暫時保留供歷史引用及逐檔清理；研究導航與舊連結將在反向引用修復後逐步更新。
 
 ## Repository Map｜需要什麼再往下讀
 
@@ -91,7 +86,7 @@ Playground 是公開技術撞牆場，不是墨衡的私人知識基地，也不
 | Provider-deployable experiment source | `supabase/` / `netlify/` |
 | Remote execution / deployment workflow | `.github/workflows/` |
 
-閱讀原則：**Progressive Loading**。先依 Project／private Core 恢復正式 operating context；進入 Playground 後再按研究任務載入相關 Knowledge 或其他 Repository。不要一進門掃整棟樓，這裡是實驗室，不是新進員工耐力測驗。
+閱讀原則：**Progressive Loading**。進入 Playground 後依研究任務載入相關 Knowledge 或其他公開、已授權的 Repository。不要一進門掃整棟樓，這裡是實驗室，不是新進員工耐力測驗。
 
 ## Core Knowledge Model
 
@@ -131,10 +126,10 @@ Repository 中各層責任：
 - **Experiment Ownership ≠ Experiment Execution.**
 - **Agent Report ≠ Verified Evidence.**
 - Claire 負責 Business Intent / Functional Acceptance / Human Judgment / necessary Authorization Gate。
-- Primary Agent（墨衡）負責 Research / Architecture / Technical QC / Evidence Judgment。
+- 研究協調者負責 Research / Architecture / Technical QC / Evidence Judgment。
 - Implementation Agent 依 Work Order 施工、測試與留下 traceable handoff，不因施工自動取得 Architecture Decision authority。
 
-本 Repository 保存可公開的研究證據與協作歷史；跨 Conversation 的私人操作知識與能力恢復應以 private Core 為準。不要把歷史文件當作今天的權限或授權。
+本 Repository 保存可公開的研究證據與協作歷史；私人操作知識與跨 Conversation 能力恢復不在此公開 Repository 管理。不要把歷史文件當作今天的權限或授權。
 
 ## Artifact Lifetime / Deployment Boundary
 
