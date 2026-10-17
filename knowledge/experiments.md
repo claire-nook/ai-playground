@@ -2,7 +2,7 @@
 
 ### AI-CONNECTOR-FLOW-1 — AI Connector Data Handoff / 站著與坐著
 
-- Status: Partial / Phase A Conversation INSERT／摘要寫回閉環已驗證
+- Status: Completed（本輪） / Evidence Partial：A INSERT、B2 PASS；B1、C BLOCKED
 - Record: [AI Connector 資料流動實驗](../experiments/connector-data-flow/README.md)
 - Card: [Catalog metadata](../experiments/connector-data-flow/ai-connector-flow-1.catalog.json)
 - Tags: AI Connector, Supabase PostgreSQL, Cloudflare D1, Dropbox, Supabase Storage, Workspace, Data Handoff
