@@ -3,10 +3,10 @@
 <!-- experiment: {"id":"AI-CONNECTOR-FLOW-1","card":"required","index":"required"} -->
 
 - 成立日期：2026-10-17
-- 狀態：Partial / Phase A INSERT 與摘要閉環已驗證；A 的 UPDATE、排程及 B／C 尚未驗證
+- 狀態：Partial / Phase A INSERT 與摘要閉環已驗證；A 的 UPDATE 及 B／C 尚未驗證
 - 研究方法：Controlled Experiment
 - 研究對象：AI Connector、資料庫讀寫、物件儲存、Workspace 資料交接
-- 實驗場域：ChatGPT Conversation 與 Codex Cloud，依當次工具可用性分別驗證
+- 實驗場域：ChatGPT Conversation；Codex Cloud 不列入本實驗必測範圍
 
 ## 研究問題
 
@@ -24,7 +24,7 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 
 來源：Supabase PostgreSQL Table、Cloudflare D1 Table；Supabase Storage 的來源讀取能力可作後續獨立延伸，不混入本輪核心比較。
 
-執行環境：ChatGPT Conversation、Codex Cloud。每條路徑記錄當次 Connector 方法、資料型別、工具參數契約、是否進入 Workspace、資料量與權限邊界；同樣的內容、相同轉換規則作為對照。不能把 Codex 成功推論為 ChatGPT Conversation 成功，反之亦然。
+執行環境：ChatGPT Conversation。每條路徑記錄當次 Connector 方法、資料型別、工具參數契約、是否進入 Workspace、資料量與權限邊界；同樣的內容、相同轉換規則作為對照。既有 Codex Cloud 相關成果僅作背景，不構成本實驗驗收條件。
 
 測試資料採**非敏感合成資料**，具有穩定 ID、順序、繁體中文段落、特殊字元、換行與可驗證摘要；不以模型記憶重建來源，不把私人小說正文或內部憑證提交到公開 Repository。
 
@@ -70,7 +70,7 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 
 ## 2026-10-17｜Phase A 實測紀錄：Conversation 原生 Table → AI → Table
 
-**結論：本次 A1、A2 的 INSERT／讀回閉環 PASS；完整 A 範圍尚未結案。** 本段記錄當次 ChatGPT Conversation 實測，不推論 Codex Cloud 或無人值守排程也可完成。
+**結論：本次 A1、A2 的 INSERT／讀回閉環 PASS；完整 A 範圍尚未結案。** 本段記錄當次 ChatGPT Conversation 實測；無人值守排程屬其他研究方向，不納入本實驗驗收。
 
 ### 測試流程與直接觀察
 
@@ -89,35 +89,34 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 | Supabase 來源 → AI 摘要 → Supabase 摘要 Table INSERT | PASS | 原視窗獨立 SELECT，摘要 `oid=1`、來源 `oid=1` |
 | D1 來源 → AI 摘要 → D1 摘要 Table INSERT | PASS | 原視窗獨立 SELECT，摘要 `oid=1`、來源 `oid=1` |
 | 新視窗兩套 Connector 各自全文進入模型上下文 | PARTIAL | 摘要語義正確，但本主 Record 尚未收錄新視窗逐步工具輸出，不能僅由資料庫內容證明兩次獨立全文閱讀 |
-| UPDATE／重跑冪等性／Codex Cloud 對照 | NOT TESTED | 本次僅驗證 INSERT |
-| 無人值守排程與授權 | NOT TESTED | 後續 Phase B，需獨立設計與測試 |
+| UPDATE／重跑冪等性 | NOT TESTED | 本次僅驗證 INSERT |
 | Dropbox／Supabase Storage 交付 | NOT TESTED | 原計畫 B／C 尚未執行 |
 
 ### 已觀察到的失敗與界線
 
 - 原視窗曾嘗試 Supabase → D1 的跨 Connector 原文轉送，遇到工具安全檢查阻擋；不影響兩個來源各自的 INSERT／摘要閉環，也不能宣稱跨 Connector 原文搬運已成功。
 - 初次「全文讀取」僅在工具執行環境內成立，模型只看到 metadata；後來才修正為實際輸出全文。這是本實驗重要的 negative evidence。
-- 目前驗收證明目標資料庫確實有正確摘要；新視窗完整閱讀的嚴格證據仍需執行視窗的工具紀錄。未驗證無人值守授權，也未測試大規模內容或反覆執行。
+- 目前驗收證明目標資料庫確實有正確摘要；新視窗完整閱讀的嚴格證據仍需執行視窗的工具紀錄。未測試大規模內容或反覆執行。
 - 本次是 **Conversation 內互動式 Connector 執行**，未建立自製 API、Edge Function 或額外後端。就本次可見流程，屬「站著」的候選路徑；不將模型上下文或工具執行環境誤稱為 Execution Workspace。
 
 ### Current Judgment（本階段）
 
-**Partial / Verified sub-paths：** 互動式 ChatGPT 可透過 Connector 生成內容、持久化寫入資料庫，並對資料庫內容進行語義摘要後再寫回另一 Table；Supabase 與 D1 的目的地讀回驗證均成功。A 的 UPDATE、執行紀錄完整性、Codex Cloud 對照與無人值守排程仍需各自驗證。Phase B（排程 AI 無人協助授權）是下一個獨立研究問題，不等同原計畫的 Dropbox B 路徑。
+**Partial / Verified sub-paths：** 互動式 ChatGPT 可透過 Connector 生成內容、持久化寫入資料庫，並對資料庫內容進行語義摘要後再寫回另一 Table；Supabase 與 D1 的目的地讀回驗證均成功。A 的 UPDATE 與執行紀錄完整性仍需驗證。正式 B 為 Table → Dropbox（B1 直接交付、B2 Workspace／EPUB 對照）；無人值守排程與 Connector 授權繼承僅屬可能的後續獨立研究方向，不是本實驗 Phase B。
 
 ## 預定執行順序（原計畫，非上述實測紀錄）
 
 1. 確認測試 Table、Bucket、授權與可用 Connector 的實際讀寫契約；不得破壞共用測試資源。
-2. 優先執行 A 的最小 INSERT／讀回閉環，再擴展 UPDATE 與不同執行環境。
+2. 優先執行 A 的最小 INSERT／讀回閉環，再擴展 UPDATE。
 3. 執行 C1／C2 的文字／JSON 交付，辨識站著是否可行。
 4. 執行 B1，再評估 B2 的 Workspace 與 EPUB 路徑。
 5. 逐 Run 保存直接 Evidence；只有完成驗證的路徑才升級對應結論。
 
 ## 已知背景與待驗證界線
 
-- 既有 Codex Cloud 實測曾將 Notion／Dropbox Connector 文字重建至 Workspace、加工 EPUB、上傳 Dropbox 並核對遠端結果；本輪新來源、新目的地與 ChatGPT Conversation 的相同能力仍 **NOT TESTED**。
+- 既有 Codex Cloud 實測曾將 Notion／Dropbox Connector 文字重建至 Workspace、加工 EPUB、上傳 Dropbox 並核對遠端結果；本實驗仍須獨立驗證 ChatGPT Conversation 的 Table 來源交付路徑。
 - Supabase Storage 寫入 Connector 是否接受直接文字／bytes／本機檔案路徑 **待查**；D1 與 Supabase 讀寫權限、資料量上限也須以當次工具驗證。
 - 研究工廠是公開 Repo；真實環境憑證、私人作品內容及非公開操作資訊不得入庫。
-- 本次已取得 A1／A2 INSERT 與摘要寫回的直接證據；原計畫 B／C、A 的 UPDATE 及其他執行環境仍未測試。
+- 本次已取得 A1／A2 INSERT 與摘要寫回的直接證據；原計畫 B／C及 A 的 UPDATE 仍未測試。
 
 ## Current Judgment
 
