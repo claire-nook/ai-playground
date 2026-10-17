@@ -1,0 +1,24 @@
+{
+  "id": "WALL-RUNTIME-1",
+  "title": "AI 明明讀得到檔案，為什麼就是做不出一本書？",
+  "completedDate": "2026-10-17",
+  "recordPath": "knowledge/wall/when-ai-can-read-but-cannot-move-files.md",
+  "summary": "從 ChatGPT Conversation 的 Notion／Dropbox 讀取後加工瓶頸出發，對照 Codex Cloud 兩輪以工具編排將 TXT 與 Notion 五個子頁落地 Workspace、加工 EPUB、回存 Dropbox 的實測流程，以及 Claire 使用 Apple Books 開啟兩本電子書的驗收；探討 AI 執行環境與 Connector 資料通道的能力邊界。",
+  "tags": [
+    "AI Collaboration",
+    "Runtime Capability",
+    "Connector",
+    "Workspace",
+    "Codex",
+    "Notion",
+    "Dropbox",
+    "EPUB",
+    "Data Portability",
+    "Commentary"
+  ],
+  "outputType": "commentary",
+  "researchMethod": "field-verification",
+  "demoStatus": "none",
+  "verificationStatus": "verified",
+  "flow": "Notion／Dropbox text fetch → Context vs Workspace barrier → Codex tool orchestration → Workspace Python/Pandoc → EPUB → Dropbox remote verification → Apple Books field test"
+}
