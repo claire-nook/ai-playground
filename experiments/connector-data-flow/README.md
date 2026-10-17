@@ -179,7 +179,7 @@ Phase A 的本次執行結果與驗收矩陣已直接保存在本主 Record。�
 
 ### Phase B Current Judgment
 
-**Verified sub-paths：** Supabase → Workspace → Dropbox、Cloudflare D1 → Workspace → Dropbox，均完成 TXT 節錄交付與遠端獨立讀回。**Blocked sub-path：** Supabase B1 站著模式在當次 Dropbox Connector 輸入契約下未找到直接文字寫檔路徑，未發出上傳。D1 B1、B2 全文保真、大檔與重跑冪等性均未驗證。研究整體仍為 **Partial**；A UPDATE 與 C 尚待實測。
+**Verified sub-paths：** Supabase → Workspace → Dropbox、Cloudflare D1 → Workspace → Dropbox，均完成 TXT 節錄交付與遠端獨立讀回。**Blocked sub-path：** Supabase B1 站著模式在當次 Dropbox Connector 輸入契約下未找到直接文字寫檔路徑，未發出上傳。D1 B1、B2 全文保真、大檔與重跑冪等性均未驗證。研究整體仍為 **Partial**；A UPDATE 未測；C 已完成 Connector 能力預檢，未找到原生上傳工具。
 
 
 ## 2026-10-17｜Phase C 結果：Supabase Storage Connector 能力預檢
