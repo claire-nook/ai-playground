@@ -3,7 +3,7 @@
 <!-- experiment: {"id":"AI-CONNECTOR-FLOW-1","card":"required","index":"required"} -->
 
 - 成立日期：2026-10-17
-- 狀態：Partial / Phase A INSERT 與摘要閉環、B2 兩種資料庫來源至 Dropbox 已驗證；A UPDATE、C 尚未驗證，B1 站著模式受工具契約阻擋
+- 狀態：Partial / Phase A INSERT 與摘要閉環、B2 兩種資料庫來源至 Dropbox 已驗證；A UPDATE 未測、C 原生 Storage 上傳 BLOCKED，B1 站著模式受工具契約阻擋
 - 研究方法：Controlled Experiment
 - 研究對象：AI Connector、資料庫讀寫、物件儲存、Workspace 資料交接
 - 實驗場域：ChatGPT Conversation；Codex Cloud 不列入本實驗必測範圍
