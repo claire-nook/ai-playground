@@ -7,7 +7,7 @@
 - Card: [Catalog metadata](../experiments/connector-data-flow/ai-connector-flow-1.catalog.json)
 - Tags: AI Connector, Supabase PostgreSQL, Cloudflare D1, Dropbox, Supabase Storage, Workspace, Data Handoff
 
-研究 AI 透過 Connector 讀到資料後，能否完成實際加工與持久化交付。A 為 Table → Table 的作家／編輯寫回閉環（核心）；B 為 Table → Dropbox 的直接整理與 EPUB 工作台對照；C 為 Supabase Table／D1 → Supabase Storage 的 TXT／JSON 物件交付。逐條區分不進 Workspace 的「站著」與資料進入 Workspace 的「坐著」，並以目的地讀回驗證。2026-10-17 已驗證互動式 ChatGPT 對 Supabase 與 D1 的原創內容 INSERT，以及跨視窗摘要寫入、兩個目的地獨立 SELECT；完整盲測工具軌跡、UPDATE、無人值守排程與 B／C 仍待驗證。
+研究 ChatGPT Conversation 透過 Connector 讀到資料後，能否完成實際加工與持久化交付；Codex Cloud 不列為必測環境。A 為 Table → Table 的作家／編輯寫回閉環（核心）；B 為 Table → Dropbox 的直接整理與 EPUB 工作台對照；C 為 Supabase Table／D1 → Supabase Storage 的 TXT／JSON 物件交付。逐條區分不進 Workspace 的「站著」與資料進入 Workspace 的「坐著」，並以目的地讀回驗證。2026-10-17 已驗證互動式 ChatGPT 對 Supabase 與 D1 的原創內容 INSERT，以及跨視窗摘要寫入、兩個目的地獨立 SELECT；完整盲測工具軌跡、UPDATE 與 B／C 仍待驗證；無人值守排程屬其他研究方向。
 
 ---
 
