@@ -46,6 +46,8 @@ Technical Decision Candidate
 - **Current Judgment** 會隨新證據修正，不等同永久保證或正式採用。
 - **Technical Decision Candidate** 仍需在實際採用環境中重新評估。
 
+**公開報告採輕量分享原則：** 清楚說明過程、結果與心得即可，不以學術論文或稽核報告規格要求逐筆舉證；實際測試仍須誠實，不公開私人資源連結與內部識別資訊。詳見 [Research Catalog & Publication](knowledge/research-catalog-publication.md)。
+
 研究紀錄與索引的細部規則見 [Knowledge Index](knowledge/README.md)。
 
 ## Repository Structure｜公開研究資產
