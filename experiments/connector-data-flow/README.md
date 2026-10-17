@@ -3,7 +3,7 @@
 <!-- experiment: {"id":"AI-CONNECTOR-FLOW-1","card":"required","index":"required"} -->
 
 - 成立日期：2026-10-17
-- 狀態：Partial / Phase A INSERT 與摘要閉環已驗證；A 的 UPDATE 及 B／C 尚未驗證
+- 狀態：Partial / Phase A INSERT 與摘要閉環、B2 兩種資料庫來源至 Dropbox 已驗證；A UPDATE、C 尚未驗證，B1 站著模式受工具契約阻擋
 - 研究方法：Controlled Experiment
 - 研究對象：AI Connector、資料庫讀寫、物件儲存、Workspace 資料交接
 - 實驗場域：ChatGPT Conversation；Codex Cloud 不列入本實驗必測範圍
@@ -41,7 +41,7 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 ## B｜Table → Dropbox（人類交付與 Workspace 對照）
 
 - B1：來源 Table → AI 整理成 TXT／JSON → Dropbox 指定測試輸出區。**候選站著路徑**，但是否能不經 Workspace，取決於 Dropbox 寫入工具接受文字／內容或僅本地檔案路徑。
-- B2：來源 Table → Workspace → EPUB → Dropbox 指定測試輸出區。**候選坐著路徑**，用於驗證資料進入工作台、實體封裝與遠端交付。
+- B2：來源 Table → Workspace → TXT／JSON／EPUB 等檔案 → Dropbox 指定測試輸出區。**坐著路徑**，用於驗證資料進入工作台、實體封裝與遠端交付；EPUB 是候選格式，不是通過條件。
 - 兩者皆驗證 Dropbox 遠端 metadata、大小／雜湊（可取得時）與內容；EPUB 另檢查 ZIP／章節結構及實際閱讀器匯入（後者需人類驗證）。
 - 先前 Codex 已完成 Notion／Dropbox 文字來源到 EPUB 的其他實驗；**不等於本實驗的 Table 來源已通過**。
 
@@ -90,7 +90,7 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 | D1 來源 → AI 摘要 → D1 摘要 Table INSERT | PASS | 原視窗獨立 SELECT，摘要 `oid=1`、來源 `oid=1` |
 | 新視窗兩套 Connector 各自全文進入模型上下文 | PARTIAL | 摘要語義正確，但本主 Record 尚未收錄新視窗逐步工具輸出，不能僅由資料庫內容證明兩次獨立全文閱讀 |
 | UPDATE／重跑冪等性 | NOT TESTED | 本次僅驗證 INSERT |
-| Dropbox／Supabase Storage 交付 | NOT TESTED | 原計畫 B／C 尚未執行 |
+| Dropbox／Supabase Storage 交付（Phase A 當時） | NOT TESTED | 本表保留 Phase A 當時狀態；後續 B 的結果見下方 Phase B 紀錄 |
 
 ### 已觀察到的失敗與界線
 
@@ -116,12 +116,62 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 - 既有 Codex Cloud 實測曾將 Notion／Dropbox Connector 文字重建至 Workspace、加工 EPUB、上傳 Dropbox 並核對遠端結果；本實驗仍須獨立驗證 ChatGPT Conversation 的 Table 來源交付路徑。
 - Supabase Storage 寫入 Connector 是否接受直接文字／bytes／本機檔案路徑 **待查**；D1 與 Supabase 讀寫權限、資料量上限也須以當次工具驗證。
 - 研究工廠是公開 Repo；真實環境憑證、私人作品內容及非公開操作資訊不得入庫。
-- 本次已取得 A1／A2 INSERT 與摘要寫回的直接證據；原計畫 B／C及 A 的 UPDATE 仍未測試。
+- 本次已取得 A1／A2 INSERT 與摘要寫回的直接證據；B2 後續已驗證；B1 站著模式遭工具契約阻擋，C 與 A 的 UPDATE 仍未測試。
 
 ## Current Judgment
 
-**Partial：** A1／A2 的互動式 INSERT／摘要閉環已驗證；A 其餘範圍、B／C 尚未驗證。A 是核心業務能力，B 是工作台／人類交付能力，C 是 Connector 直接物件交接能力。站著與坐著是資料流路徑，不是優劣排名；成功與否需逐路徑驗證。
+**Partial：** A1／A2 的互動式 INSERT／摘要閉環與 B2 的 Supabase／D1 → Workspace → Dropbox 節錄交付均已驗證；B1 站著模式 BLOCKED；A UPDATE 與 C 尚未驗證。A 是核心業務能力，B 是工作台／人類交付能力，C 是 Connector 直接物件交接能力。站著與坐著是資料流路徑，不是優劣排名；成功與否需逐路徑驗證。
 
 ## Evidence
 
 Phase A 的本次執行結果與驗收矩陣已直接保存在本主 Record。摘要列由原視窗分別在兩套資料庫獨立 SELECT 驗證；未另建平行 Evidence Record。新視窗逐步工具紀錄尚未歸檔，故不擴大聲稱盲測的完整閱讀路徑已經逐步稽核。
+
+
+## 2026-10-17｜Phase B 實測紀錄：Table → Dropbox（Conversation）
+
+**本階段結論：B1 站著模式 BLOCKED（未實際送出 Dropbox 上傳）；B2 坐著模式的 Supabase 與 Cloudflare D1 兩條節錄交付鏈路皆 PASS。** 本次以同一筆合成小說測試資料（來源 `oid=1`，4,382 字元）為基礎；輸出只含來源註記及開頭節錄，**不等於全文保真驗證**。本階段由 ChatGPT Conversation 互動式完成，不涉及 Codex Cloud、人工複製或人工上傳。
+
+### B1｜站著：Supabase → Model Context → Dropbox
+
+- **Source**：Supabase PostgreSQL `public.test_ai_content`、`oid=1`。Connector SQL SELECT 讀取正文成功，來源長度 4,382 字元；模型可取得正文。
+- **限制**：目前可用 Dropbox `upload_file` 的描述要求 `source_file` 指向平台可辨識的來源檔案；工具集合未找到直接接受純文字 `content` 並建立 Dropbox 檔案的入口。嚴守「不經 Execution Workspace」的 B1 條件，因此沒有先建立本機檔案、沒有發出 Dropbox 上傳呼叫，也沒有遠端讀回。
+- **Outcome**：來源讀取 PASS；直接文字寫檔 **BLOCKED（tool-contract boundary）**；目的地驗收 NOT TESTED。這是「當次工具集合與實驗條件下未找到可行寫入路徑」，**不是 Dropbox API 永遠無法接受文字，也不是已經取得 Dropbox 拒絕上傳的證據**。
+
+### B2-S｜坐著：Supabase → Model Context → Workspace → Dropbox
+
+- **Source**：Supabase `public.test_ai_content`，`oid=1`，4,382 字元。
+- **Transformation**：由讀取結果選取小說標題、第一節與前段節錄，加上來源與字數註記；在 Execution Workspace 建立 UTF-8 TXT，**749 bytes**。輸出不是全文備份。
+- **Destination**：Dropbox `/AI Output/B2_supabase_to_dropbox_20261017.txt`。使用 `dropbox.upload_file`，參數 `source_file` 傳入 Workspace 絕對路徑，`destination_path` 傳入完整 Dropbox 路徑；工具先回 `in_progress`，經 `check_upload_file_status` 取得 `completed`，Dropbox file ID `id:NJHKuvk6IgYAAAAAAAAB_w`，server modified `2026-10-17T10:38:13Z`。
+- **Independent readback**：再次使用 `dropbox.fetch` 從遠端路徑讀取，文字包含來源註記、小說標題與原始節錄，與本輪生成檔內容一致。可供人工查看的連結：<https://www.dropbox.com/scl/fi/od0xdjufgqw9trzpr44ro>。
+- **Outcome**：**PASS（節錄加工／交付）**；未執行來源全文與遠端檔案的逐 byte/hash 保真比對。
+
+### B2-D｜坐著：Cloudflare D1 → Model Context → Workspace → Dropbox
+
+- **Source**：Cloudflare D1 `lab-smoke-db` 的 `test_ai_content`、`oid=1`；D1 Connector 透過 SQL 查詢回傳原文節錄及 `length(content)=4382`，HTTP 200、`success=true`、`rows_read=1`、`rows_written=0`。**本次查詢直接取的是節錄，並未展開整篇 4,382 字元到模型**，不可誤稱已完成全文閱讀。
+- **Transformation**：將實際查得的節錄與來源註記封裝成 Workspace UTF-8 TXT，**757 bytes**；不是全文備份。
+- **Destination**：Dropbox `/AI Output/B2_cloudflare_D1_to_dropbox_20261017.txt`，由 Connector 上傳完成；遠端 metadata 的 server modified 為 `2026-10-17T10:39:32Z`。
+- **Independent readback**：再次使用 `dropbox.fetch` 讀回，確認來源註記、標題及節錄內容與預期一致。遠端連結：<https://www.dropbox.com/scl/fi/xz4a1gdr94qyzj1ngxjzb>。
+- **Outcome**：**PASS（節錄加工／交付）**；沒有全文保真或雜湊驗證。
+
+### 觀察矩陣
+
+| 測項 | Supabase | Cloudflare D1 | 限制 |
+| --- | --- | --- | --- |
+| B1 站著：Table → Context → Dropbox | BLOCKED | NOT TESTED | 來源讀取 PASS，但缺乏符合 B1 的文字寫檔入口；未嘗試上傳 |
+| B2 坐著：Table → Context → Workspace TXT | PASS | PASS | 兩者均為來源節錄，非全文封裝 |
+| B2 坐著：Workspace → Dropbox | PASS（重試） | PASS | Supabase 第一次呼叫遇安全檢查阻擋；重試成功 |
+| B2：Dropbox 獨立讀回 | PASS | PASS | 已核對節錄內容；未做 byte/hash 驗證 |
+| B2：完整節錄交付鏈路 | **PASS** | **PASS** | 僅證明本次互動式 Conversation 的節錄流程 |
+
+### 給後續 AI 的操作經驗與排錯提醒
+
+1. **不要把「我不會呼叫工具」當成「平台不支援」。** Dropbox `upload_file` 的說明文字強調 `source_file` 由 ChatGPT fileParams 注入、不可自行建構，但本次實際可呼叫的介面接受 `source_file` 字串。曾有模型僅憑說明就宣稱無法上傳；後來實際傳入已存在的 Workspace 檔案絕對路徑，成功取得非同步上傳回應、完成狀態與獨立讀回。**此為當次觀察，不保證其他版本或其他檔案類型也適用。**
+2. **先分清「站著」與「坐著」，不可偷換路徑。** B1 不能為了漂亮的 PASS 偷建 Workspace 檔案；B2 則應明確留下 Workspace 實體檔案及 Dropbox 遠端讀回的證據。
+3. **單次安全檢查阻擋不等於持續性平台限制。** Supabase B2 首次上傳遭平台安全檢查阻擋，沒有取得 Dropbox 端回應；使用**同一來源檔與相同目的地**重新呼叫後，取得 `in_progress` → `completed`。根因未知，不能直接歸因於視窗故障、資料庫來源或安全政策永久禁止。Cloudflare D1 B2 當次成功，樣本不足以比較平台穩定性。
+4. **`in_progress` 不是成功，也不是失敗。** 必須保留 `operation_id`，使用 `dropbox.check_upload_file_status` 輪詢直到 `completed`；然後再用 `dropbox.fetch` 從目的地獨立讀回。單看工具回傳「完成」不滿足本研究的端到端 PASS 標準。
+5. **資料來源可見性與輸出保真是兩個問題。** 工具查得全文，不等於模型一定收到全文；D1 本輪只要求節錄，因此不宣稱全文展開。兩份遠端 TXT 均為節錄檔，驗證的是可追溯的來源文字加工與交付，而非全文逐位元一致。
+6. **重試是新的觀察，不是擦掉第一次的錯誤。** 研究紀錄同時保存首次阻擋、再次成功與未知根因。實驗的目的在辨識能力邊界，而不是把所有狀態塗成 PASS。
+
+### Phase B Current Judgment
+
+**Verified sub-paths：** Supabase → Workspace → Dropbox、Cloudflare D1 → Workspace → Dropbox，均完成 TXT 節錄交付與遠端獨立讀回。**Blocked sub-path：** Supabase B1 站著模式在當次 Dropbox Connector 輸入契約下未找到直接文字寫檔路徑，未發出上傳。D1 B1、B2 全文保真、大檔與重跑冪等性均未驗證。研究整體仍為 **Partial**；A UPDATE 與 C 尚待實測。
