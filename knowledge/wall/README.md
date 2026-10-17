@@ -19,6 +19,24 @@
 
 ## Writing Record
 
+### 2026-10-17 · `WALL-RUNTIME-1`
+
+**Title**  
+[AI 明明讀得到檔案，為什麼就是做不出一本書？](when-ai-can-read-but-cannot-move-files.md)
+
+**Type**  
+Technical Commentary / AI Runtime Capability / Field Verification
+
+**Origin**  
+從 ChatGPT Conversation 讀取 Notion／Dropbox 資料卻未完成 EPUB 交付的失敗開始，對照 Codex Cloud 兩輪從 Dropbox TXT 與 Notion 五個故事子頁取得當次來源、透過工具編排落地 Workspace、用 Python／Pandoc 製作 EPUB 並回存 Dropbox 的成果，最後由 Claire 以 iPad Apple Books 實機匯入開啟兩份成品。
+
+**Author Memory**  
+這篇要留下的不是「Codex 比 ChatGPT 強」，而是模型看見資料不代表 Workspace 得到實體檔案；執行環境與工具資料通道決定能否完成工作。舊失敗不能歸咎個別 Connector，也不能將 OpenAI 平台全面封鎖當成已證實根因；保留可追溯的成功路徑與未測邊界。
+
+**Canonical Source**  
+`knowledge/wall/when-ai-can-read-but-cannot-move-files.md`
+
+
 ### 2026-10-11 · `WALL-HOME-1`
 
 **Title**  
