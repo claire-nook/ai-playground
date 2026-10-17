@@ -31,7 +31,7 @@ Technical Commentary / AI Runtime Capability / Field Verification
 從 ChatGPT Conversation 讀取 Notion／Dropbox 資料卻未完成 EPUB 交付的失敗開始，對照 Codex Cloud 兩輪從 Dropbox TXT 與 Notion 五個故事子頁取得當次來源、透過工具編排落地 Workspace、用 Python／Pandoc 製作 EPUB 並回存 Dropbox 的成果，最後由 Claire 以 iPad Apple Books 實機匯入開啟兩份成品。
 
 **Author Memory**  
-這篇要留下的不是「Codex 比 ChatGPT 強」，而是模型看見資料不代表 Workspace 得到實體檔案；執行環境與工具資料通道決定能否完成工作。舊失敗不能歸咎個別 Connector，也不能將 OpenAI 平台全面封鎖當成已證實根因；保留可追溯的成功路徑與未測邊界。
+本文主軸是「AI 有眼睛、有手、有工作台，卻還可能叫人類親自下載／上傳 CSV」的產品荒謬：表面上增加了 Connector，卻可能讓付費使用者變成跨系統檔案搬運 API。以兩輪 Codex Cloud 成功橋接 Notion／Dropbox 文字 → Workspace → EPUB → Dropbox 對照 ChatGPT Conversation 的先前失敗，帶嘲諷但不亂判罪；執行環境、資料通道差異是研究核心，不宣稱已證明 OpenAI 統一封鎖。
 
 **Canonical Source**  
 `knowledge/wall/when-ai-can-read-but-cannot-move-files.md`
