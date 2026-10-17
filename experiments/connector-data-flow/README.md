@@ -120,7 +120,7 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 
 ## Current Judgment
 
-**Partial：** A1／A2 的互動式 INSERT／摘要閉環與 B2 的 Supabase／D1 → Workspace → Dropbox 節錄交付均已驗證；B1 站著模式 BLOCKED；A UPDATE 與 C 尚未驗證。A 是核心業務能力，B 是工作台／人類交付能力，C 是 Connector 直接物件交接能力。站著與坐著是資料流路徑，不是優劣排名；成功與否需逐路徑驗證。
+**Partial：** A1／A2 的互動式 INSERT／摘要閉環與 B2 的 Supabase／D1 → Workspace → Dropbox 節錄交付均已驗證；B1 站著模式 BLOCKED；A UPDATE 未測、C 原生 Storage 上傳 BLOCKED。A 是核心業務能力，B 是工作台／人類交付能力，C 是 Connector 直接物件交接能力。站著與坐著是資料流路徑，不是優劣排名；成功與否需逐路徑驗證。
 
 ## Evidence
 
