@@ -180,3 +180,18 @@ Phase A 的本次執行結果與驗收矩陣已直接保存在本主 Record。�
 ### Phase B Current Judgment
 
 **Verified sub-paths：** Supabase → Workspace → Dropbox、Cloudflare D1 → Workspace → Dropbox，均完成 TXT 節錄交付與遠端獨立讀回。**Blocked sub-path：** Supabase B1 站著模式在當次 Dropbox Connector 輸入契約下未找到直接文字寫檔路徑，未發出上傳。D1 B1、B2 全文保真、大檔與重跑冪等性均未驗證。研究整體仍為 **Partial**；A UPDATE 與 C 尚待實測。
+
+
+## 2026-10-17｜Phase C 結果：Supabase Storage Connector 能力預檢
+
+**C1（Supabase Table → Storage）、C2（Cloudflare D1 Table → Storage）：BLOCKED。** 當次 Supabase Connector 工具清單沒有原生 Storage 物件上傳操作。已透過唯讀 SQL 查詢 Storage metadata，確認私人測試 Bucket 與兩個零位元組資料夾 placeholder；此結果僅證明 metadata 可見，不代表物件內容可讀或可上傳。未發出上傳請求，亦未進行遠端物件讀回，因此不能標示為上傳 FAIL 或交付 PASS。
+
+本研究限定 Connector 原生交付，不以 Edge Function、自製 API 或其他 HTTP 路徑替代。這是當次工具能力邊界，不代表 Supabase 平台沒有 Storage 上傳 API。**保留 C 作為有效的 BLOCKED 實驗結果，不刪除。**
+
+## 本輪結案摘要
+
+- A：Supabase 與 D1 的 INSERT／摘要寫回及目的地獨立讀回 PASS；UPDATE、冪等性未測。
+- B：站著直接文字交付 BLOCKED；兩種資料庫來源經 Workspace 產生節錄 TXT、上傳 Dropbox、獨立讀回 PASS；全文保真未測。
+- C：Supabase Connector 缺少原生 Storage 上傳工具，C1／C2 BLOCKED；唯讀 metadata PASS，未上傳。
+
+實驗已完成本輪能力邊界調查；整體證據狀態仍為 Partial。往後測試其他 API 呼叫能力，應獨立記錄，不改寫本實驗的 C 結果。
