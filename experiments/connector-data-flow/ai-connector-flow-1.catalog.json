@@ -1,7 +1,7 @@
 {
   "id": "AI-CONNECTOR-FLOW-1",
   "title": "AI Connector 資料流動｜站著與坐著",
-  "summary": "ChatGPT Conversation 已驗證 Supabase／Cloudflare D1 的 Table 摘要 INSERT 閉環，以及兩種資料庫來源經 Workspace TXT 交付 Dropbox 並獨立讀回；B1 站著模式受工具輸入契約阻擋；A UPDATE、C、全文保真尚未驗證。",
+  "summary": "ChatGPT Conversation 已驗證 Supabase／Cloudflare D1 的 Table 摘要 INSERT 閉環，以及兩種資料庫來源經 Workspace TXT 交付 Dropbox 並獨立讀回；B1 站著模式受工具輸入契約阻擋；A UPDATE 與全文保真未測；C 原生 Storage 上傳工具未提供，交付 BLOCKED。",
   "recordPath": "experiments/connector-data-flow/README.md",
   "tags": [
     "AI Connector",
