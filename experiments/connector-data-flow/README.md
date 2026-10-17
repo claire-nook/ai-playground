@@ -141,16 +141,16 @@ Phase A 的本次執行結果與驗收矩陣已直接保存在本主 Record。�
 
 - **Source**：Supabase `public.test_ai_content`，`oid=1`，4,382 字元。
 - **Transformation**：由讀取結果選取小說標題、第一節與前段節錄，加上來源與字數註記；在 Execution Workspace 建立 UTF-8 TXT，**749 bytes**。輸出不是全文備份。
-- **Destination**：Dropbox `/AI Output/B2_supabase_to_dropbox_20261017.txt`。使用 `dropbox.upload_file`，參數 `source_file` 傳入 Workspace 絕對路徑，`destination_path` 傳入完整 Dropbox 路徑；工具先回 `in_progress`，經 `check_upload_file_status` 取得 `completed`，Dropbox file ID `id:NJHKuvk6IgYAAAAAAAAB_w`，server modified `2026-10-17T10:38:13Z`。
-- **Independent readback**：再次使用 `dropbox.fetch` 從遠端路徑讀取，文字包含來源註記、小說標題與原始節錄，與本輪生成檔內容一致。可供人工查看的連結：<https://www.dropbox.com/scl/fi/od0xdjufgqw9trzpr44ro>。
+- **Destination**：Dropbox `<Dropbox 測試輸出區>/<Supabase B2 測試檔>.txt`。使用 `dropbox.upload_file`，參數 `source_file` 傳入 Workspace 絕對路徑，`destination_path` 傳入完整 Dropbox 路徑；工具先回 `in_progress`，經 `check_upload_file_status` 取得 `completed`，Dropbox 遠端檔案識別已於當次 Connector 回應確認（公開紀錄不揭露 file ID），server modified `2026-10-17T10:38:13Z`。
+- **Independent readback**：再次使用 `dropbox.fetch` 從遠端路徑讀取，文字包含來源註記、小說標題與原始節錄，與本輪生成檔內容一致。分享連結不列入公開紀錄。
 - **Outcome**：**PASS（節錄加工／交付）**；未執行來源全文與遠端檔案的逐 byte/hash 保真比對。
 
 ### B2-D｜坐著：Cloudflare D1 → Model Context → Workspace → Dropbox
 
 - **Source**：Cloudflare D1 `lab-smoke-db` 的 `test_ai_content`、`oid=1`；D1 Connector 透過 SQL 查詢回傳原文節錄及 `length(content)=4382`，HTTP 200、`success=true`、`rows_read=1`、`rows_written=0`。**本次查詢直接取的是節錄，並未展開整篇 4,382 字元到模型**，不可誤稱已完成全文閱讀。
 - **Transformation**：將實際查得的節錄與來源註記封裝成 Workspace UTF-8 TXT，**757 bytes**；不是全文備份。
-- **Destination**：Dropbox `/AI Output/B2_cloudflare_D1_to_dropbox_20261017.txt`，由 Connector 上傳完成；遠端 metadata 的 server modified 為 `2026-10-17T10:39:32Z`。
-- **Independent readback**：再次使用 `dropbox.fetch` 讀回，確認來源註記、標題及節錄內容與預期一致。遠端連結：<https://www.dropbox.com/scl/fi/xz4a1gdr94qyzj1ngxjzb>。
+- **Destination**：Dropbox `<Dropbox 測試輸出區>/<D1 B2 測試檔>.txt`，由 Connector 上傳完成；遠端 metadata 的 server modified 為 `2026-10-17T10:39:32Z`。
+- **Independent readback**：再次使用 `dropbox.fetch` 讀回，確認來源註記、標題及節錄內容與預期一致。分享連結不列入公開紀錄。
 - **Outcome**：**PASS（節錄加工／交付）**；沒有全文保真或雜湊驗證。
 
 ### 觀察矩陣
@@ -162,6 +162,11 @@ Phase A 的本次執行結果與驗收矩陣已直接保存在本主 Record。�
 | B2 坐著：Workspace → Dropbox | PASS（重試） | PASS | Supabase 第一次呼叫遇安全檢查阻擋；重試成功 |
 | B2：Dropbox 獨立讀回 | PASS | PASS | 已核對節錄內容；未做 byte/hash 驗證 |
 | B2：完整節錄交付鏈路 | **PASS** | **PASS** | 僅證明本次互動式 Conversation 的節錄流程 |
+
+### 公開紀錄的資訊邊界
+
+- 本文件**不公開 Dropbox 分享 URL、file ID、namespace ID、完整私人資料夾路徑**；驗證依據為執行時 Connector 回傳與獨立讀回紀錄，必要時由具授權的執行者重新查驗。
+- GitHub commit 歷史可能仍保留先前版本中誤公開的連結；更新最新版本**不等於清除歷史紀錄，也不會撤銷既有分享連結**。如有存取風險，須另行處理 Dropbox 分享權限與 Git 歷史。
 
 ### 給後續 AI 的操作經驗與排錯提醒
 
