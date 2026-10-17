@@ -1,7 +1,7 @@
 {
   "id": "AI-CONNECTOR-FLOW-1",
   "title": "AI Connector 資料流動｜站著與坐著",
-  "summary": "驗證 Supabase PostgreSQL／Cloudflare D1 經 AI Connector 讀取後，能否寫入另一個 Table、交付 Dropbox 或 Supabase Storage；區分直接 Connector 交接與 Workspace 加工。目前僅成立研究計畫，尚無執行證據。",
+  "summary": "ChatGPT Conversation 已實測 Supabase 與 Cloudflare D1 的原創內容 INSERT、讀取摘要及目的地 SELECT 閉環；新視窗全文閱讀軌跡、UPDATE、無人值守排程、Dropbox 與 Supabase Storage 尚未驗證。",
   "recordPath": "experiments/connector-data-flow/README.md",
   "tags": [
     "AI Connector",
@@ -15,7 +15,7 @@
   "outputType": "experiment",
   "researchMethod": "controlled-experiment",
   "demoStatus": "none",
-  "verificationStatus": "candidate",
-  "completedDate": null,
+  "verificationStatus": "partial",
+  "completedDate": "2026-10-17",
   "flow": "Supabase Table / D1 → Connector → AI（站著或坐著）→ Table / Dropbox / Supabase Storage"
 }
