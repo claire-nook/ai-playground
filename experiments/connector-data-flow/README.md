@@ -116,7 +116,7 @@ AI 透過 Connector **讀得到**外部資料，是否也能將資料**實際運
 - 既有 Codex Cloud 實測曾將 Notion／Dropbox Connector 文字重建至 Workspace、加工 EPUB、上傳 Dropbox 並核對遠端結果；本實驗仍須獨立驗證 ChatGPT Conversation 的 Table 來源交付路徑。
 - Supabase Connector 工具清單已檢查，當次未提供原生 Storage 物件上傳工具；D1 與 Supabase 讀寫權限、資料量上限也須以當次工具驗證。
 - 研究工廠是公開 Repo；真實環境憑證、私人作品內容及非公開操作資訊不得入庫。
-- 本次已取得 A1／A2 INSERT 與摘要寫回的直接證據；B2 後續已驗證；B1 站著模式遭工具契約阻擋，C 與 A 的 UPDATE 仍未測試。
+- 本次已取得 A1／A2 INSERT 與摘要寫回的直接證據；B2 後續已驗證；B1 站著模式遭工具契約阻擋，C 已完成工具預檢且原生上傳 BLOCKED；A UPDATE 未測。
 
 ## Current Judgment
 
