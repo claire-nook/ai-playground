@@ -1,3 +1,16 @@
+## 2026-10-17｜AI Connector 資料流動能力
+
+### AI-CONNECTOR-FLOW-1 — AI Connector Data Handoff / 站著與坐著
+
+- Status: Candidate / Planned（尚無本實驗執行證據）
+- Record: [AI Connector 資料流動實驗](../experiments/connector-data-flow/README.md)
+- Card: [Catalog metadata](../experiments/connector-data-flow/ai-connector-flow-1.catalog.json)
+- Tags: AI Connector, Supabase PostgreSQL, Cloudflare D1, Dropbox, Supabase Storage, Workspace, Data Handoff
+
+研究 AI 透過 Connector 讀到資料後，能否完成實際加工與持久化交付。A 為 Table → Table 的作家／編輯寫回閉環（核心）；B 為 Table → Dropbox 的直接整理與 EPUB 工作台對照；C 為 Supabase Table／D1 → Supabase Storage 的 TXT／JSON 物件交付。逐條區分不進 Workspace 的「站著」與資料進入 Workspace 的「坐著」，並以目的地讀回驗證；成立計畫不代表測試成功。
+
+---
+
 ## 2026-10-09｜Cloudflare Connector Direct Control
 
 ### CF-CONNECTOR-1 — Cloud Oracle / Workers × D1 × Netlify
